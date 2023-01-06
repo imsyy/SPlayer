@@ -1,0 +1,101 @@
+<template>
+  <!-- 全局配置组件 -->
+  <n-config-provider
+    :locale="zhCN"
+    :date-locale="dateZhCN"
+    :theme="theme"
+    :theme-overrides="themeOverrides"
+    abstract
+    inline-theme-disabled
+  >
+    <n-loading-bar-provider>
+      <n-dialog-provider>
+        <n-notification-provider>
+          <n-message-provider>
+            <slot></slot>
+            <NaiveProviderContent />
+          </n-message-provider>
+        </n-notification-provider>
+      </n-dialog-provider>
+    </n-loading-bar-provider>
+  </n-config-provider>
+</template>
+
+<script setup>
+import {
+  zhCN,
+  dateZhCN,
+  darkTheme,
+  useOsTheme,
+  useLoadingBar,
+  useDialog,
+  useMessage,
+  useNotification,
+} from "naive-ui";
+import { settingStore } from "@/store/index";
+const setting = settingStore();
+const osThemeRef = useOsTheme();
+
+// 明暗切换
+let theme = ref(null);
+const changeTheme = () => {
+  if (setting.getSiteTheme == "light") {
+    theme.value = null;
+  } else if (setting.getSiteTheme == "dark") {
+    theme.value = darkTheme;
+  }
+};
+
+onMounted(() => {
+  changeTheme();
+});
+
+// 监听明暗变化
+watch(
+  () => setting.getSiteTheme,
+  () => {
+    changeTheme();
+  }
+);
+
+// 监听系统明暗变化
+watch(
+  () => osThemeRef.value,
+  (value) => {
+    value == "dark"
+      ? setting.setSiteTheme("dark")
+      : setting.setSiteTheme("light");
+  }
+);
+
+// 配置主题色
+const themeOverrides = {
+  common: {
+    primaryColor: "#f55e55",
+    primaryColorHover: "#F57B74",
+    primaryColorSuppl: "#F57B74",
+    primaryColorPressed: "#F64B41",
+  },
+};
+
+// 挂载 naive 组件的方法
+const setupNaiveTools = () => {
+  window.$loadingBar = useLoadingBar(); // 进度条
+  window.$notification = useNotification(); // 通知
+  window.$message = useMessage(); // 信息
+  window.$dialog = useDialog(); // 对话框
+};
+
+const NaiveProviderContent = defineComponent({
+  setup() {
+    setupNaiveTools();
+  },
+  render() {
+    return h("div", {
+      class: {
+        tools: true,
+      },
+    });
+  },
+});
+</script>
