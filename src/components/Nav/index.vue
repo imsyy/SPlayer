@@ -24,6 +24,7 @@
     </div>
     <div class="right">
       <SearchInp />
+      <!-- 下拉菜单 -->
       <n-dropdown
         class="dropdown"
         placement="bottom-end"
@@ -47,6 +48,52 @@
           @click="showDropdown = !showDropdown"
         />
       </n-dropdown>
+      <!-- 关于本站 -->
+      <n-modal
+        class="main-model"
+        v-model:show="showAboutModal"
+        style="width: 60vw; min-width: min(24rem, 100vw)"
+        preset="card"
+        title="关于本站"
+        :bordered="false"
+      >
+        <div class="copyright">
+          <div class="desc">
+            <n-text class="name">SPlayer</n-text>
+            <n-text class="version" :depth="3">
+              v&nbsp;{{ packageJson.version }}
+            </n-text>
+          </div>
+          <n-blockquote>
+            <n-text class="power">
+              Copyright&nbsp;©&nbsp;2020 - {{ new Date().getFullYear() }}
+              <n-a
+                :href="packageJson.home"
+                target="_blank"
+                v-html="packageJson.author"
+              />
+            </n-text>
+            <n-a
+              v-if="icp"
+              class="beian"
+              href="https://beian.miit.gov.cn/"
+              target="_blank"
+              v-html="icp"
+            />
+          </n-blockquote>
+          <n-button
+            class="github"
+            secondary
+            strong
+            @click="jumpUrl(packageJson.github)"
+          >
+            <template #icon>
+              <n-icon :component="GithubOne" />
+            </template>
+            Github
+          </n-button>
+        </div>
+      </n-modal>
     </div>
   </nav>
 </template>
@@ -61,10 +108,13 @@ import {
   SettingsRound,
   WbSunnyFilled,
   DarkModeFilled,
+  InfoRound,
 } from "@vicons/material";
-import SearchInp from "@/components/SearchInp/index.vue";
+import { GithubOne, Copyright } from "@icon-park/vue-next";
 import { userStore, settingStore } from "@/store/index";
 import { useRouter } from "vue-router";
+import SearchInp from "@/components/SearchInp/index.vue";
+import packageJson from "@/../package.json";
 const router = useRouter();
 const user = userStore();
 const setting = settingStore();
@@ -78,6 +128,15 @@ const closeDropdown = (event) => {
   } else {
     showDropdown.value = false;
   }
+};
+
+// 关于本站弹窗
+let showAboutModal = ref(false);
+let icp = ref(import.meta.env.VITE_ICP ? import.meta.env.VITE_ICP : null);
+
+// 链接跳转
+const jumpUrl = (url) => {
+  window.open(url);
 };
 
 // 用户数据模块
@@ -194,32 +253,25 @@ let dropdownOptions = ref([
       });
     },
     key: "user",
-    props: {
-      onClick: () => {
-        if (user.userLogin) {
-          // 退出登录
-          $dialog.warning({
-            title: "退出登录",
-            content: "确认退出当前用户登录？",
-            positiveText: "退出",
-            negativeText: "取消",
-            onPositiveClick: () => {
-              user.userLogOut();
-              $message.success("已退出登录");
-            },
-          });
-        } else {
-          // 登录
-          router.push("/login");
-        }
-      },
-    },
     icon: () => {
       return h(
         NIcon,
         { style: "transform: translateY(-1px)" },
         {
           default: () => (user.userLogin ? h(LogOutFilled) : h(LogInFilled)),
+        }
+      );
+    },
+  },
+  {
+    label: "关于本站",
+    key: "about",
+    icon: () => {
+      return h(
+        NIcon,
+        { style: "transform: translateY(-2px)" },
+        {
+          default: () => h(InfoRound),
         }
       );
     },
@@ -239,6 +291,29 @@ const dropdownSelect = (key) => {
     // 设置
     case "setting":
       router.push("/setting");
+      break;
+    // 用户
+    case "user":
+      if (user.userLogin) {
+        // 退出登录
+        $dialog.warning({
+          title: "退出登录",
+          content: "确认退出当前用户登录？",
+          positiveText: "退出",
+          negativeText: "取消",
+          onPositiveClick: () => {
+            user.userLogOut();
+            $message.success("已退出登录");
+          },
+        });
+      } else {
+        // 登录
+        router.push("/login");
+      }
+      break;
+    // 关于
+    case "about":
+      showAboutModal.value = true;
       break;
     default:
       break;
@@ -342,6 +417,29 @@ nav {
       box-shadow: 0 4px 12px -2px rgb(0 0 0 / 10%);
       cursor: pointer;
     }
+  }
+}
+.copyright {
+  display: flex;
+  flex-direction: column;
+  a {
+    text-decoration: none;
+  }
+  .name {
+    font-size: 30px;
+    font-weight: bold;
+  }
+  .version {
+    margin-left: 6px;
+  }
+  .beian {
+    &::before {
+      content: "·";
+      margin: 0 4px;
+    }
+  }
+  .github {
+    margin-top: 8px;
   }
 }
 </style>

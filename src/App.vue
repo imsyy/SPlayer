@@ -23,17 +23,6 @@
             </keep-alive>
           </router-view>
           <Player />
-          <div class="copyright" v-if="false">
-            <n-text class="power">
-              SPlayer ·
-              <a :href="packageJson.github" target="_blank">
-                Made By {{ packageJson.author }}
-              </a>
-            </n-text>
-            <n-text class="version" :depth="3">
-              v&nbsp;{{ packageJson.version }}
-            </n-text>
-          </div>
         </main>
       </n-layout-content>
     </n-layout>
@@ -44,7 +33,6 @@
 import Provider from "@/components/Provider/index.vue";
 import Nav from "@/components/Nav/index.vue";
 import Player from "@/components/Player/index.vue";
-import packageJson from "@/../package.json";
 import { musicStore, userStore } from "@/store/index";
 import { useRouter } from "vue-router";
 import { getLoginState } from "@/api";
@@ -112,23 +100,6 @@ onMounted(() => {
   transition: all 0.3s;
   &.show {
     bottom: 70px;
-  }
-  .copyright {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 30px;
-    margin-bottom: -20px;
-    .power {
-      cursor: pointer;
-      transition: all 0.3s;
-      &:hover {
-        color: $mainColor;
-      }
-    }
-    .version {
-      font-size: 12px;
-    }
   }
 }
 

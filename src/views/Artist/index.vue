@@ -32,7 +32,7 @@
         <n-modal
           v-model:show="artistDescShow"
           preset="card"
-          style="width: 60vw"
+          style="width: 60vw; min-width: min(24rem, 100vw)"
           title="歌手介绍"
           :bordered="false"
         >
