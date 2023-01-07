@@ -36,7 +36,7 @@ const useUserDataStore = defineStore('userData', {
         // 更改用户数据
         setUserData(value) {
             this.userData = value;
-            this.setUserLevel();
+            if (!this.userData.level) this.setUserLevel();
         },
         // 更改用户等级信息
         setUserLevel() {

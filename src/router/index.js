@@ -24,7 +24,8 @@ router.beforeEach((to, from, next) => {
   // 判断是否需要登录
   if (to.meta.needLogin) {
     getLoginState().then(res => {
-      if (res.data.profile && window.localStorage.getItem("cookie")) {
+      if (res.data.profile && user.userLogin) {
+        if (user.userLogin && !user.userData.level) user.setUserLevel();
         next();
       } else {
         $message.error("请登录账号后使用");
@@ -36,6 +37,7 @@ router.beforeEach((to, from, next) => {
       return false;
     });
   } else {
+    if (user.userLogin && !user.userData.level) user.setUserLevel();
     next();
   }
 })

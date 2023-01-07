@@ -79,7 +79,7 @@ onMounted(() => {
   // 检查账号登录状态
   getLoginState()
     .then((res) => {
-      if (res.data.profile && window.localStorage.getItem("cookie")) {
+      if (res.data.profile && user.userLogin) {
         user.userLogin = true;
         user.setUserLevel();
       } else {
