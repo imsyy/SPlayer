@@ -130,8 +130,6 @@ let commentsCount = ref(0);
 // 获取视频数据
 const getVideoData = (id) => {
   getVideoDetail(id).then((res) => {
-    // 请求后回顶
-    $mainContent.scrollIntoView({ behavior: "smooth" });
     videoData.value = res.data;
     let requests = res.data.brs.map((v) => {
       return getVideoUrl(id, v.br);
@@ -156,6 +154,8 @@ const getVideoData = (id) => {
         console.error(err);
         $message.error("视频加载失败，请重试");
       });
+    // 请求后回顶
+    if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
   });
   // 获取相似视频
   getSimiVideo(id).then((res) => {

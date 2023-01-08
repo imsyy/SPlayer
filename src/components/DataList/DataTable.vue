@@ -240,7 +240,7 @@ const addPlaylists = (data, row) => {
       &.play {
         td {
           color: $mainColor;
-          background-color: #f55e5520;
+          background-color: $mainSecondaryColor;
           .n-text {
             color: $mainColor;
           }

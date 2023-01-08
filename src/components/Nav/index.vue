@@ -73,6 +73,7 @@
                 v-html="packageJson.author"
               />
             </n-text>
+            <n-text class="point" v-html="'·'" />
             <n-a
               v-if="icp"
               class="beian"
@@ -432,9 +433,15 @@ nav {
   .version {
     margin-left: 6px;
   }
-  .beian {
-    &::before {
-      content: "·";
+  .n-blockquote {
+    @media (max-width: 768px) {
+      display: flex;
+      flex-direction: column;
+      .point {
+        display: none;
+      }
+    }
+    .point {
       margin: 0 4px;
     }
   }

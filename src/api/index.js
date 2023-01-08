@@ -363,6 +363,28 @@ export const getArtistVideos = (id, limit = 30, offset = 0) => {
  * 歌单与专辑部分
  */
 
+// 歌单分类
+export const getPlayListCatlist = (hot = false) => {
+    return axios({
+        method: "GET",
+        url: `/playlist/${hot?'hot':'catlist'}`
+    })
+}
+
+// 歌单 ( 网友精选碟 )
+export const getTopPlaylist = (cat = "全部", limit = 30, offset = 0, order = "hot") => {
+    return axios({
+        method: "GET",
+        url: "/top/playlist",
+        params: {
+            cat,
+            limit,
+            offset,
+            order,
+        }
+    })
+}
+
 // 获取歌单详情
 export const getPlayListDetail = (id) => {
     return axios({

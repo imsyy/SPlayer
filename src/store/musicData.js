@@ -26,8 +26,10 @@ const useMusicDataStore = defineStore('musicData', {
             showPlayList: false,
             // 播放状态
             playState: false,
-            // 每日推荐数据
+            // 每日推荐
             dailySongsData: [],
+            // 歌单分类
+            catList: [],
             // 持久化数据
             persistData: {
                 // 是否处于私人 FM 模式

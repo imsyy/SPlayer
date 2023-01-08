@@ -15,23 +15,23 @@ const routes = [{
         component: () => import('@/views/Search/index.vue'),
         redirect: '/search/songs',
         children: [{
-            path: '/search/songs',
+            path: 'songs',
             name: 's-songs',
             component: () => import('@/views/Search/songs.vue'),
         }, {
-            path: '/search/artists',
+            path: 'artists',
             name: 's-artists',
             component: () => import('@/views/Search/artists.vue'),
         }, {
-            path: '/search/albums',
+            path: 'albums',
             name: 's-albums',
             component: () => import('@/views/Search/albums.vue'),
         }, {
-            path: '/search/videos',
+            path: 'videos',
             name: 's-videos',
             component: () => import('@/views/Search/videos.vue'),
         }, {
-            path: '/search/playlists',
+            path: 'playlists',
             name: 's-playlists',
             component: () => import('@/views/Search/playlists.vue'),
         }, ]
@@ -63,13 +63,27 @@ const routes = [{
             title: '视频',
         },
         component: () => import('@/views/Video/VideoView.vue'),
-    },{
+    }, {
         path: '/discover',
         name: 'discover',
         meta: {
             title: '发现',
         },
         component: () => import('@/views/Discover/index.vue'),
+        redirect: '/discover/playlists',
+        children: [{
+            path: 'playlists',
+            name: 'dsc-playlists',
+            component: () => import('@/views/Discover/playlists.vue'),
+        }, {
+            path: 'toplists',
+            name: 'dsc-toplists',
+            component: () => import('@/views/Discover/toplists.vue'),
+        }, {
+            path: 'artists',
+            name: 'dsc-artists',
+            component: () => import('@/views/Discover/artists.vue'),
+        }]
     }, {
         path: '/playlist',
         name: 'playlist',

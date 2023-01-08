@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import { userStore } from "@/store/index";
+import { userStore } from "@/store";
 import { getLoginState, getQrKey, checkQr } from "@/api";
 import { useRouter } from "vue-router";
 import QrcodeVue from "qrcode.vue";

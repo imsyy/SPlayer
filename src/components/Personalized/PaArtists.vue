@@ -14,7 +14,7 @@
         <n-tab :name="8"> 日本 </n-tab>
         <n-tab :name="16"> 韩国 </n-tab>
       </n-tabs>
-      <span class="more">更多</span>
+      <span class="more" @click="router.push('/discover/artists')">更多</span>
     </n-h3>
     <ArtistLists :listData="artistsData" :gridCollapsed="true" />
   </div>
@@ -22,7 +22,10 @@
 
 <script setup>
 import { getArtistList } from "@/api";
+import { useRouter } from "vue-router";
 import ArtistLists from "@/components/DataList/ArtistLists.vue";
+
+const router = useRouter();
 
 // 歌手数据
 let artistsData = ref([]);

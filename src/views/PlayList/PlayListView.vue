@@ -163,7 +163,7 @@ const getAllPlayListData = (id, limit = 30, offset = 0) => {
       $message.error("获取歌单内歌曲失败");
     }
     // 请求后回顶
-    $mainContent.scrollIntoView({ behavior: "smooth" });
+    if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
   });
 };
 

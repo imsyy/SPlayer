@@ -131,7 +131,7 @@ watch(
           }
           &.play {
             color: $mainColor;
-            background-color: #f55e5520;
+            background-color: $mainSecondaryColor;
             border-color: $mainColor;
           }
 

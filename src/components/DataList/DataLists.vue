@@ -437,7 +437,7 @@ const jumpLink = (id, type) => {
     //   transform: scale(0.99);
     // }
     &.play {
-      background-color: #f55e5520;
+      background-color: $mainSecondaryColor;
       border-color: $mainColor;
       a,
       span,
