@@ -62,6 +62,13 @@
                     @click="changeTagName(item.name)"
                   >
                     {{ item.name }}
+                    <template #icon>
+                      <n-icon
+                        class="icon"
+                        v-if="item.hot"
+                        :component="LocalFireDepartmentRound"
+                      />
+                    </template>
                   </n-tag>
                 </n-space>
               </n-list-item>
@@ -82,7 +89,7 @@
 </template>
 
 <script setup>
-import { ChevronRightRound } from "@vicons/material";
+import { ChevronRightRound, LocalFireDepartmentRound } from "@vicons/material";
 import { useRouter } from "vue-router";
 import { musicStore } from "@/store";
 import { getPlayListCatlist, getTopPlaylist } from "@/api";
@@ -240,6 +247,12 @@ onMounted(() => {
   }
   &:active {
     transform: scale(0.95);
+  }
+  .icon {
+    color: $mainColor;
+    font-size: 16px;
+    margin-left: 4px;
+    transform: translateY(-1px);
   }
 }
 </style>
