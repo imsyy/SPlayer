@@ -46,17 +46,19 @@
           </n-scrollbar>
         </n-modal>
       </div>
-      <div class="tag" v-if="playListDetail.tags">
+      <n-space class="tag" v-if="playListDetail.tags">
         <n-tag
           class="tags"
+          size="large"
           round
           :bordered="false"
           v-for="item in playListDetail.tags"
           :key="item"
+          @click="router.push(`/discover/playlists?cat=${item}`)"
         >
           {{ item }}
         </n-tag>
-      </div>
+      </n-space>
     </div>
     <div class="right">
       <div class="meta">
@@ -298,13 +300,16 @@ watch(
     }
     .tag {
       margin-top: 20px;
-      width: 100%;
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
       .tags {
-        margin-right: 8px;
-        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.3s;
+        &:hover {
+          background-color: $mainSecondaryColor;
+          color: $mainColor;
+        }
+        &:active {
+          transform: scale(0.95);
+        }
       }
     }
   }
