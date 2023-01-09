@@ -38,6 +38,14 @@ const tabChange = (value) => {
     path: `/discover/${value}`,
   });
 };
+
+// 监听路由参数变化
+watch(
+  () => router.currentRoute.value,
+  (val) => {
+    tabValue.value = val.path.split("/")[2];
+  }
+);
 </script>
 
 <style lang="scss" scoped>

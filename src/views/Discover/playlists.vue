@@ -3,6 +3,8 @@
     <div class="menu">
       <!-- 分类选择 -->
       <n-button
+        strong
+        secondary
         class="cat"
         icon-placement="right"
         round
@@ -77,6 +79,13 @@
           <div class="error" v-else>分类数据获取失败</div>
         </n-scrollbar>
       </n-modal>
+      <!-- 排序类型 -->
+      <n-select
+        class="order"
+        v-model:value="listOrder"
+        :options="listOrderOptions"
+        @update:value="listOrderChange"
+      />
     </div>
     <CoverLists :listData="playlistsData" />
     <Pagination
@@ -107,6 +116,23 @@ let catName = ref(
     ? router.currentRoute.value.query.cat
     : "全部歌单"
 );
+
+// 排序数据
+let listOrder = ref(
+  router.currentRoute.value.query.order
+    ? router.currentRoute.value.query.order
+    : "hot"
+);
+let listOrderOptions = [
+  {
+    label: "最热",
+    value: "hot",
+  },
+  {
+    label: "最新",
+    value: "new",
+  },
+];
 
 // 歌单数据
 let playlistsData = ref([]);
@@ -142,7 +168,7 @@ const getPlaylistData = (
     totalCount.value = res.total;
     // 列表数据
     playlistsData.value = [];
-    if (res.playlists) {
+    if (res.playlists[0]) {
       res.playlists.forEach((v) => {
         playlistsData.value.push({
           id: v.id,
@@ -153,7 +179,7 @@ const getPlaylistData = (
         });
       });
     } else {
-      $message.error("歌单分类为空");
+      $message.error("歌单列表为空");
     }
     // 请求后回顶
     if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
@@ -167,16 +193,35 @@ const changeTagName = (name) => {
     query: {
       page: 1,
       cat: name,
+      order: listOrder.value,
     },
   });
   catModelShow.value = false;
+};
+
+// 排序方式变化
+const listOrderChange = (order) => {
+  console.log(order);
+  router.push({
+    path: "/discover/playlists",
+    query: {
+      page: 1,
+      cat: catName.value,
+      order,
+    },
+  });
 };
 
 // 每页个数数据变化
 const pageSizeChange = (val) => {
   console.log(val);
   pagelimit.value = val;
-  getPlaylistData(catName.value, val, (pageNumber.value - 1) * pagelimit.value);
+  getPlaylistData(
+    catName.value,
+    val,
+    (pageNumber.value - 1) * pagelimit.value,
+    listOrder.value
+  );
 };
 
 // 当前页数数据变化
@@ -186,6 +231,7 @@ const pageNumberChange = (val) => {
     query: {
       page: val,
       cat: catName.value,
+      order: listOrder.value,
     },
   });
 };
@@ -196,11 +242,13 @@ watch(
   (val) => {
     catName.value = val.query.cat;
     pageNumber.value = Number(val.query.page);
+    listOrder.value = val.query.order;
     if (val.name == "dsc-playlists") {
       getPlaylistData(
         catName.value,
         pagelimit.value,
-        (pageNumber.value - 1) * pagelimit.value
+        (pageNumber.value - 1) * pagelimit.value,
+        listOrder.value
       );
     }
   }
@@ -213,7 +261,8 @@ onMounted(() => {
   getPlaylistData(
     catName.value,
     pagelimit.value,
-    (pageNumber.value - 1) * pagelimit.value
+    (pageNumber.value - 1) * pagelimit.value,
+    listOrder.value
   );
 });
 </script>
@@ -226,6 +275,9 @@ onMounted(() => {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 20px;
+    .order {
+      width: 80px;
+    }
   }
 }
 .all-cat {

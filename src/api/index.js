@@ -171,6 +171,7 @@ export const getMusicUrl = (id) => {
     return axios({
         method: "GET",
         url: "/song/url",
+        loadingBar: "Hidden",
         params: {
             id,
             time: new Date().getTime(),
@@ -183,6 +184,7 @@ export const getMusicLyric = (id) => {
     return axios({
         method: "GET",
         url: "/lyric",
+        loadingBar: "Hidden",
         params: {
             id,
         }
@@ -299,14 +301,16 @@ export const getCloud = (limit = 30, offset = 0) => {
  */
 
 // 歌手分类列表
-export const getArtistList = (type = -1, area = -1, limit = 30) => {
+export const getArtistList = (type = -1, area = -1, limit = 30, offset = 0, initial = -1) => {
     return axios({
         method: "GET",
         url: "/artist/list",
         params: {
             type,
             area,
-            limit
+            limit,
+            offset,
+            initial,
         }
     })
 }

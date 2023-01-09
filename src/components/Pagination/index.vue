@@ -89,7 +89,7 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .pagination {
-  margin-top: 20px;
+  margin-top: 40px;
   justify-content: center;
 }
 
