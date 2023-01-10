@@ -1,13 +1,23 @@
 <template>
   <div class="artists">
-    <span class="artist" v-for="(item, index) in artistsData" :key="item">
+    <span
+      class="artist"
+      v-for="(item, index) in artistsData.filter((v) => v)"
+      :key="item"
+    >
       <n-text
         class="name"
         depth="3"
         v-html="item.name"
         @click.stop="jumpArtist(item.id)"
       />
-      <span class="line" v-if="index != artistsData.length - 1">/</span>
+      <span
+        class="line"
+        v-if="
+          index != artistsData.length - 1 && artistsData[artistsData.length - 1]
+        "
+        >/</span
+      >
     </span>
   </div>
 </template>

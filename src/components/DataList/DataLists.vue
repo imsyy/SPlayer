@@ -496,13 +496,19 @@ const jumpLink = (id, type) => {
       }
       .meta {
         display: flex;
-        align-items: center;
         font-size: 13px;
+        flex-direction: column;
+        .artists {
+          margin-top: 2px;
+        }
         .alia {
-          &::before {
-            content: "·";
-            margin: 0 4px;
-          }
+          margin-top: 2px;
+          font-size: 12px;
+          opacity: 0.8;
+          // &::before {
+          //   content: "·";
+          //   margin: 0 4px;
+          // }
         }
       }
     }
