@@ -45,6 +45,7 @@
           </div>
         </div>
         <n-icon
+          v-if="music.getPlaySongData && user.userLogin"
           class="like"
           size="20"
           :component="
@@ -142,12 +143,13 @@ import {
 } from "@vicons/material";
 import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
 import { getSongPlayingTime } from "@/utils/timeTools.js";
-import { musicStore } from "@/store/index";
+import { musicStore, userStore } from "@/store/index";
 import { useRouter } from "vue-router";
 import AllArtists from "@/components/DataList/AllArtists.vue";
 
 const router = useRouter();
 const music = musicStore();
+const user = userStore();
 
 let canvas = ref(null);
 

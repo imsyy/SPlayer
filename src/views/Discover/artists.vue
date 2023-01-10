@@ -8,6 +8,7 @@
           :key="item"
           :bordered="false"
           :type="item.key == artistInitialChoose ? 'primary' : 'default'"
+          @click="artistInitialChange(item.key)"
         >
           {{ item.value }}
         </n-tag>
@@ -15,18 +16,29 @@
       <n-space class="category">
         <n-tag
           round
+          :class="item.length > 2 ? 'hidden' : 'show'"
           v-for="(item, index) in artistTypeNames"
           :key="item"
           :bordered="false"
           :type="index == artistTypeNamesChoose ? 'primary' : 'default'"
+          @click="artistTypeChange(index)"
         >
           {{ item }}
         </n-tag>
       </n-space>
     </div>
     <ArtistLists :listData="artistsData" :loadingNum="30" />
-    <n-button v-if="hasMore" class="more" size="large" strong secondary round>
-      更多
+    <n-button
+      v-if="hasMore"
+      class="more"
+      size="large"
+      strong
+      secondary
+      round
+      :loading="loading"
+      @click="loadingMore"
+    >
+      加载更多
     </n-button>
   </div>
 </template>
@@ -90,6 +102,7 @@ let artistTypeNamesChoose = ref(
 let artistsData = ref([]);
 let artistsOffset = ref(0);
 let hasMore = ref(true);
+let loading = ref(false);
 
 // 获取歌手数据
 const getArtistListData = (
@@ -103,6 +116,7 @@ const getArtistListData = (
     if (res.artists) {
       // 是否还有更多
       res.more ? (hasMore.value = true) : (hasMore.value = false);
+      loading.value = false;
       // 遍历数据
       res.artists.forEach((v) => {
         artistsData.value.push({
@@ -117,6 +131,63 @@ const getArtistListData = (
     }
   });
 };
+
+// 歌手标签变化
+const artistInitialChange = (key) => {
+  artistsData.value = [];
+  router.push({
+    path: "/discover/artists",
+    query: {
+      type: artistTypeNamesChoose.value,
+      initial: key,
+    },
+  });
+};
+
+// 歌手分类变化
+const artistTypeChange = (index) => {
+  artistsData.value = [];
+  router.push({
+    path: "/discover/artists",
+    query: {
+      type: index,
+      initial: artistInitialChoose.value,
+    },
+  });
+};
+
+// 加载更多
+const loadingMore = () => {
+  loading.value = true;
+  artistsOffset.value += 30;
+  if (artistsOffset.value >= 300) $message.info("太多了吧 😲");
+  getArtistListData(
+    artistType[artistTypeNamesChoose.value],
+    artistArea[artistTypeNamesChoose.value],
+    30,
+    artistsOffset.value,
+    artistInitialChoose.value
+  );
+};
+
+// 监听路由参数变化
+watch(
+  () => router.currentRoute.value,
+  (val) => {
+    artistTypeNamesChoose.value = Number(val.query.type);
+    artistInitialChoose.value = val.query.initial;
+    artistsOffset.value = 0;
+    if (val.name == "dsc-artists") {
+      getArtistListData(
+        artistType[artistTypeNamesChoose.value],
+        artistArea[artistTypeNamesChoose.value],
+        30,
+        0,
+        artistInitialChoose.value
+      );
+    }
+  }
+);
 
 onMounted(() => {
   // 获取歌手数据
@@ -135,6 +206,23 @@ onMounted(() => {
   text-align: center;
   .menu {
     margin-bottom: 16px;
+    @media (max-width: 768px) {
+      .initial {
+        display: none !important;
+      }
+    }
+    @media (max-width: 480px) {
+      .category {
+        gap: initial !important;
+        .hidden {
+          display: none !important;
+        }
+        .show {
+          margin-right: 12px;
+          margin-bottom: 8px;
+        }
+      }
+    }
     .n-tag {
       font-size: 13px;
       padding: 0 16px;
@@ -152,9 +240,26 @@ onMounted(() => {
       margin-top: 18px;
     }
   }
+  .artistlists {
+    @media (max-width: 480px) {
+      padding-top: 12px;
+    }
+  }
   .more {
     margin-top: 40px;
-    width: 100px;
+    width: 140px;
+    font-size: 16px;
+    transition: all 0.3s;
+    &:hover {
+      background-color: $mainSecondaryColor;
+      color: $mainColor;
+    }
+    &:active {
+      transform: scale(0.95);
+    }
+    :deep(.n-button__icon) {
+      margin-right: 12px;
+    }
   }
 }
 </style>

@@ -4,7 +4,7 @@
       <n-grid
         x-gap="30"
         y-gap="34"
-        cols="4 s:5 l:6"
+        cols="3 mb:4 s:5 l:6"
         responsive="screen"
         :collapsed="gridCollapsed"
         :collapsed-rows="gridCollapsedRows"
@@ -33,7 +33,7 @@
         class="loading"
         x-gap="20"
         y-gap="26"
-        cols="4 s:5 m:6"
+        cols="3 mb:4 s:5 l:6"
         responsive="screen"
         :collapsed="gridCollapsed"
         :collapsed-rows="gridCollapsedRows"
