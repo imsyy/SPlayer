@@ -1,5 +1,6 @@
 <template>
   <n-pagination
+    v-if="totalCount > currentPageSize"
     class="pagination"
     :display-order="['pages', 'size-picker', 'quick-jumper']"
     :item-count="totalCount"

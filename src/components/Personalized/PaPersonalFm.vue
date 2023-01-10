@@ -5,7 +5,7 @@
     :style="
       'background-image: url(' +
       music.getPersonalFmData.album.picUrl.replace(/^http:/, 'https:') +
-      '?param=50y50)'
+      '?param=300y300)'
     "
   >
     <div class="gray" />

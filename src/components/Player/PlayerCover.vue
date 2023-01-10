@@ -14,21 +14,45 @@
     </div>
     <div class="control">
       <div class="data">
-        <span class="name text-hidden">
-          {{ music.getPlaySongData ? music.getPlaySongData.name : "暂无歌曲" }}
-        </span>
-        <div class="message" v-if="music.getPlaySongData">
-          <AllArtists
-            class="text-hidden"
-            :artistsData="music.getPlaySongData.artist"
-          />
-          <div class="ablum">
-            &nbsp;·&nbsp;
-            <span class="ablumName text-hidden">
+        <div class="desc">
+          <span class="name text-hidden">
+            {{
+              music.getPlaySongData ? music.getPlaySongData.name : "暂无歌曲"
+            }}
+          </span>
+          <div v-if="music.getPlaySongData" class="message">
+            <AllArtists
+              class="text-hidden"
+              :artistsData="music.getPlaySongData.artist"
+            />
+            <span
+              class="ablum"
+              @click="
+                routerJump('/album', {
+                  id: music.getPlaySongData
+                    ? music.getPlaySongData.album.id
+                    : null,
+                })
+              "
+            >
               {{ music.getPlaySongData.album.name }}
             </span>
           </div>
         </div>
+        <n-icon
+          class="like"
+          size="20"
+          :component="
+            music.getSongIsLike(music.getPlaySongData.id)
+              ? FavoriteRound
+              : FavoriteBorderRound
+          "
+          @click.stop="
+            music.getSongIsLike(music.getPlaySongData.id)
+              ? music.changeLikeList(music.getPlaySongData.id, false)
+              : music.changeLikeList(music.getPlaySongData.id, true)
+          "
+        />
       </div>
       <div class="time">
         <span>{{ songTimePlayed }}</span>
@@ -89,7 +113,11 @@
           class="comment"
           size="18"
           :component="MessageFilled"
-          @click="toComment"
+          @click="
+            routerJump('/comment', {
+              id: music.getPlaySongData ? music.getPlaySongData.id : null,
+            })
+          "
         />
       </div>
     </div>
@@ -104,6 +132,8 @@ import {
   SkipPreviousRound,
   MessageFilled,
   ThumbDownRound,
+  FavoriteBorderRound,
+  FavoriteRound,
 } from "@vicons/material";
 import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
 import { getSongPlayingTime } from "@/utils/timeTools.js";
@@ -127,14 +157,12 @@ const songTimeSliderUpdate = (val) => {
     $player.currentTime = (music.getPlaySongTime.duration / 100) * val;
 };
 
-// 前往评论
-const toComment = () => {
+// 页面跳转
+const routerJump = (url, query) => {
   music.setBigPlayerState(false);
   router.push({
-    path: "/comment",
-    query: {
-      id: music.getPlaySongData ? music.getPlaySongData.id : null,
-    },
+    path: url,
+    query,
   });
 };
 
@@ -170,40 +198,63 @@ watch(
     margin-top: 24px;
     .data {
       width: 50vh;
-      .name {
-        font-size: 3vh;
-        font-weight: bold;
-      }
-      .message {
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        margin: 2px 0 6px;
-        font-size: 2vh;
-        width: 50vh;
-        color: #ffffffcc;
-        .ablum {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      .desc {
+        width: 100%;
+        padding-right: 4px;
+        .name {
+          font-size: 3vh;
+          font-weight: bold;
+          -webkit-line-clamp: 2;
+        }
+        .message {
+          cursor: pointer;
           display: flex;
           align-items: center;
-          .ablumName {
+          margin: 2px 0 6px;
+          font-size: 2vh;
+          width: 100%;
+          color: #ffffffcc;
+          .ablum {
+            display: flex;
+            align-items: center;
             transition: all 0.3s;
             &:hover {
               color: #fff;
             }
+            &::before {
+              content: "·";
+              margin: 0 4px;
+            }
           }
-        }
-        .artists {
-          flex-wrap: nowrap;
-          :deep(.artist) {
-            display: inline-block;
-            white-space: nowrap;
-            .name {
-              color: #ffffffcc;
-              &:hover {
-                color: #fff;
+          .artists {
+            flex-wrap: nowrap;
+            :deep(.artist) {
+              display: inline-block;
+              white-space: nowrap;
+              .name {
+                color: #ffffffcc;
+                &:hover {
+                  color: #fff;
+                }
               }
             }
           }
+        }
+      }
+      .like {
+        padding: 8px;
+        border-radius: 8px;
+        transition: all 0.3s;
+        cursor: pointer;
+        &:hover {
+          background-color: #ffffff26;
+        }
+        &:active {
+          transform: scale(0.9);
         }
       }
     }
