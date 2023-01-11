@@ -224,6 +224,46 @@
           </div>
         </n-drawer-content>
       </n-drawer>
+      <!-- 歌曲信息纠正 -->
+      <n-modal
+        style="width: 60vw; min-width: min(24rem, 100vw)"
+        v-model:show="cloudMatchModel"
+        preset="card"
+        title="歌曲信息纠正"
+        :bordered="false"
+      >
+        <n-form class="cloud-match" :label-width="80" :model="cloudMatchValue">
+          <n-form-item label="用户 ID" path="uid">
+            <n-input-number
+              v-model:value="cloudMatchValue.uid"
+              :show-button="false"
+              disabled
+            />
+          </n-form-item>
+          <n-form-item label="原歌曲 ID" path="sid">
+            <n-input-number
+              v-model:value="cloudMatchValue.sid"
+              :show-button="false"
+              disabled
+            />
+          </n-form-item>
+          <n-form-item label="匹配 ID" path="asid">
+            <n-input-number
+              v-model:value="cloudMatchValue.asid"
+              placeholder="请输入要匹配的歌曲 ID"
+              :show-button="false"
+            />
+          </n-form-item>
+        </n-form>
+        <template #footer>
+          <n-space justify="end">
+            <n-button @click="cloudMatchModel = false"> 取消 </n-button>
+            <n-button type="primary" @click="setCloudMatchBtn">
+              纠正歌曲
+            </n-button>
+          </n-space>
+        </template>
+      </n-modal>
     </div>
     <n-spin class="loading" size="small" v-else />
   </Transition>
@@ -242,13 +282,15 @@ import {
   AlbumRound,
   OndemandVideoRound,
 } from "@vicons/material";
-import { musicStore, settingStore } from "@/store/index";
+import { musicStore, settingStore, userStore } from "@/store/index";
 import { useRouter } from "vue-router";
+import { setCloudDel, setCloudMatch } from "@/api";
 import AllArtists from "./AllArtists.vue";
 
 const router = useRouter();
 const music = musicStore();
 const setting = settingStore();
+const user = userStore();
 
 const props = defineProps({
   // 表格数据
@@ -273,6 +315,14 @@ const rightMenuOptions = ref(null);
 let drawerShow = ref(false);
 let drawerData = ref(null);
 
+// 歌曲信息纠正数据
+let cloudMatchModel = ref(false);
+let cloudMatchValue = ref({
+  uid: user.getUserData.userId,
+  sid: null,
+  asid: null,
+});
+
 // 复制歌曲链接
 const copySongLink = (id) => {
   if (navigator.clipboard) {
@@ -286,7 +336,7 @@ const copySongLink = (id) => {
     $message.error("您的浏览器暂不支持该操作");
   }
 };
-
+const cloudDataLoad = inject("cloudDataLoad");
 // 打开右侧菜单
 const openRightMenu = (e, data) => {
   e.preventDefault();
@@ -333,6 +383,50 @@ const openRightMenu = (e, data) => {
       },
       {
         key: "line1",
+        type: "divider",
+        show: router.currentRoute.value.name == "cloud" ? true : false,
+      },
+      {
+        key: "delete",
+        label: "从云盘中删除",
+        show: router.currentRoute.value.name == "cloud" ? true : false,
+        props: {
+          onClick: () => {
+            $dialog.warning({
+              title: "歌曲删除",
+              content: "确认从云盘中删除歌曲 " + data.name + " ？",
+              positiveText: "删除",
+              negativeText: "取消",
+              onPositiveClick: () => {
+                setCloudDel(data.id).then((res) => {
+                  if (res.code == 200) {
+                    $message.success("云盘歌曲删除成功");
+                    props.listData.forEach((v, i) => {
+                      if (v.id == data.id) props.listData.splice(i, 1);
+                    });
+                  } else {
+                    $message.error("云盘歌曲删除失败");
+                  }
+                });
+              },
+            });
+          },
+        },
+      },
+      {
+        key: "match",
+        label: "歌曲信息纠正",
+        show: router.currentRoute.value.name == "cloud" ? true : false,
+        props: {
+          onClick: () => {
+            // cloudDataLoad();
+            cloudMatchValue.value.sid = data.id;
+            cloudMatchModel.value = true;
+          },
+        },
+      },
+      {
+        key: "line2",
         type: "divider",
       },
       {
@@ -388,6 +482,8 @@ const checkCanClick = (listData, item) => {
       : null
     : playSong(listData, item);
 };
+
+const setCloudMatchBtn = () => {};
 
 // 跳转链接
 const jumpLink = (id, type) => {
@@ -603,6 +699,11 @@ const jumpLink = (id, type) => {
         flex-direction: row;
       }
     }
+  }
+}
+.cloud-match {
+  :deep(.n-input-number) {
+    width: 100%;
   }
 }
 </style>

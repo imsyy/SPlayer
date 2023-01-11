@@ -292,6 +292,33 @@ export const getCloud = (limit = 30, offset = 0) => {
         params: {
             limit,
             offset,
+            time: new Date().getTime(),
+        }
+    })
+}
+
+// 云盘歌曲删除
+export const setCloudDel = (id) => {
+    return axios({
+        method: "GET",
+        url: "/user/cloud/del",
+        params: {
+            id,
+            time: new Date().getTime(),
+        }
+    })
+}
+
+// 云盘歌曲信息匹配纠正
+export const setCloudMatch = (uid, sid, asid) => {
+    return axios({
+        method: "GET",
+        url: "/cloud/match",
+        params: {
+            uid,
+            sid,
+            asid,
+            time: new Date().getTime(),
         }
     })
 }

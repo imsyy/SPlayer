@@ -72,9 +72,11 @@ const pageNumberChange = (val) => {
   });
 };
 
-onMounted(() => {
+// 当前页数据重载
+const cloudDataLoad = () => {
   getCloudData(pagelimit.value, (pageNumber.value - 1) * pagelimit.value);
-});
+};
+provide("cloudDataLoad", cloudDataLoad);
 
 // 监听路由参数变化
 watch(
@@ -86,4 +88,8 @@ watch(
     }
   }
 );
+
+onMounted(() => {
+  getCloudData(pagelimit.value, (pageNumber.value - 1) * pagelimit.value);
+});
 </script>

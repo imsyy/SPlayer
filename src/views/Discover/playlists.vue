@@ -188,6 +188,7 @@ const getPlaylistData = (
 
 // 更换标签名
 const changeTagName = (name) => {
+  playlistsData.value = [];
   router.push({
     path: "/discover/playlists",
     query: {
