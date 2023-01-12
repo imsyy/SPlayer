@@ -28,18 +28,20 @@
       </n-space>
     </div>
     <ArtistLists :listData="artistsData" :loadingNum="30" />
-    <n-button
-      v-if="hasMore"
-      class="more"
-      size="large"
-      strong
-      secondary
-      round
-      :loading="loading"
-      @click="loadingMore"
-    >
-      加载更多
-    </n-button>
+    <n-space justify="center">
+      <n-button
+        v-if="hasMore"
+        class="more"
+        size="large"
+        strong
+        secondary
+        round
+        :loading="loading"
+        @click="loadingMore"
+      >
+        加载更多
+      </n-button>
+    </n-space>
   </div>
 </template>
 
@@ -113,7 +115,7 @@ const getArtistListData = (
   initial = -1
 ) => {
   getArtistList(type, area, limit, offset, initial).then((res) => {
-    if (res.artists) {
+    if (res.artists[0]) {
       // 是否还有更多
       res.more ? (hasMore.value = true) : (hasMore.value = false);
       loading.value = false;
@@ -203,7 +205,6 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .artists {
-  text-align: center;
   .menu {
     margin-bottom: 16px;
     @media (max-width: 768px) {

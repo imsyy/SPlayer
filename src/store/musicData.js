@@ -29,7 +29,9 @@ const useMusicDataStore = defineStore('musicData', {
             // 每日推荐
             dailySongsData: [],
             // 歌单分类
-            catList: [],
+            catList: {},
+            // 精品歌单分类
+            highqualityCatList: [],
             // 持久化数据
             persistData: {
                 // 是否处于私人 FM 模式

@@ -395,15 +395,15 @@ export const getArtistVideos = (id, limit = 30, offset = 0) => {
  */
 
 // 歌单分类
-export const getPlayListCatlist = (hot = false) => {
+export const getPlayListCatlist = (highquality = false) => {
     return axios({
         method: "GET",
-        url: `/playlist/${hot?'hot':'catlist'}`
+        url: `/playlist/${highquality ? 'highquality/tags':'catlist'}`
     })
 }
 
-// 歌单 ( 网友精选碟 )
-export const getTopPlaylist = (cat = "全部", limit = 30, offset = 0, order = "hot") => {
+// 获取歌单列表
+export const getTopPlaylist = (cat = "全部", limit = 30, offset = 0) => {
     return axios({
         method: "GET",
         url: "/top/playlist",
@@ -411,7 +411,19 @@ export const getTopPlaylist = (cat = "全部", limit = 30, offset = 0, order = "
             cat,
             limit,
             offset,
-            order,
+        }
+    })
+}
+
+// 获取精品歌单列表
+export const getHighqualityPlaylist = (cat = "全部", limit = 30, before) => {
+    return axios({
+        method: "GET",
+        url: "/top/playlist/highquality",
+        params: {
+            cat,
+            limit,
+            before,
         }
     })
 }
