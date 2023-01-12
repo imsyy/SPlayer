@@ -30,7 +30,7 @@
           :src="
             item.album && item.album.picUrl
               ? item.album.picUrl.replace(/^http:/, 'https:') + '?param=60y60'
-              : null
+              : '/images/pic/default.png'
           "
           fallback-src="/images/pic/default.png"
         />
@@ -63,16 +63,20 @@
             </n-tag>
           </div>
           <div class="meta">
-            <AllArtists class="text-hidden" :artistsData="item.artist" />
+            <AllArtists
+              v-if="item.artist"
+              class="text-hidden"
+              :artistsData="item.artist"
+            />
             <n-text
               class="alia text-hidden"
               depth="3"
-              v-if="item.alia[0]"
+              v-if="item.alia && item.alia[0]"
               v-html="item.alia[0]"
             />
           </div>
         </div>
-        <div class="album" v-if="!hideAlbum">
+        <div class="album" v-if="!hideAlbum && item.album">
           <n-text
             v-html="item.album.name"
             @click.stop="jumpLink(item.album.id, 10)"
@@ -127,30 +131,8 @@
           body-content-style="padding: 0"
           closable
         >
-          <template #header style="display: flex; align-items: center">
-            <div class="header">
-              <n-avatar
-                class="pic"
-                :size="48"
-                :src="
-                  drawerData.album.picUrl.replace(/^http:/, 'https:') +
-                  '?param=60y60'
-                "
-                fallback-src="/images/pic/default.png"
-              />
-              <div class="name">
-                <n-text
-                  class="text-hidden"
-                  depth="2"
-                  v-html="drawerData.name"
-                  @click.stop="jumpLink(drawerData.id, 1)"
-                />
-                <AllArtists
-                  class="text-hidden"
-                  :artistsData="drawerData.artist"
-                />
-              </div>
-            </div>
+          <template #header>
+            <SmallSongData :songData="drawerData" notJump />
           </template>
           <div class="menu">
             <div
@@ -231,21 +213,13 @@
         preset="card"
         title="歌曲信息纠正"
         :bordered="false"
+        :on-after-leave="closeCloudMatch"
       >
         <n-form class="cloud-match" :label-width="80" :model="cloudMatchValue">
-          <n-form-item label="用户 ID" path="uid">
-            <n-input-number
-              v-model:value="cloudMatchValue.uid"
-              :show-button="false"
-              disabled
-            />
-          </n-form-item>
-          <n-form-item label="原歌曲 ID" path="sid">
-            <n-input-number
-              v-model:value="cloudMatchValue.sid"
-              :show-button="false"
-              disabled
-            />
+          <n-form-item label="原歌曲信息">
+            <n-card content-style="padding: 16px" :bordered="false" embedded>
+              <SmallSongData :songData="cloudMatchBeforeData" notJump />
+            </n-card>
           </n-form-item>
           <n-form-item label="匹配 ID" path="asid">
             <n-input-number
@@ -253,12 +227,35 @@
               placeholder="请输入要匹配的歌曲 ID"
               :show-button="false"
             />
+            <n-button
+              style="margin-left: 12px"
+              :disabled="!cloudMatchValue.asid"
+              @click="cloudMatchId = cloudMatchValue.asid"
+            >
+              检查
+            </n-button>
           </n-form-item>
         </n-form>
+        <n-card
+          v-if="cloudMatchId"
+          content-style="padding: 16px"
+          :bordered="false"
+          embedded
+        >
+          <SmallSongData
+            ref="smallSongDataRef"
+            :getDataByID="cloudMatchId"
+            notJump
+          />
+        </n-card>
         <template #footer>
           <n-space justify="end">
-            <n-button @click="cloudMatchModel = false"> 取消 </n-button>
-            <n-button type="primary" @click="setCloudMatchBtn">
+            <n-button @click="closeCloudMatch"> 取消 </n-button>
+            <n-button
+              type="primary"
+              @click="setCloudMatchBtn(cloudMatchValue)"
+              :disabled="!cloudMatchValue.asid"
+            >
               纠正歌曲
             </n-button>
           </n-space>
@@ -286,11 +283,15 @@ import { musicStore, settingStore, userStore } from "@/store/index";
 import { useRouter } from "vue-router";
 import { setCloudDel, setCloudMatch } from "@/api";
 import AllArtists from "./AllArtists.vue";
+import SmallSongData from "./SmallSongData.vue";
 
 const router = useRouter();
 const music = musicStore();
 const setting = settingStore();
 const user = userStore();
+
+// 父组件方法
+const emit = defineEmits(["cloudDataLoad"]);
 
 const props = defineProps({
   // 表格数据
@@ -316,7 +317,10 @@ let drawerShow = ref(false);
 let drawerData = ref(null);
 
 // 歌曲信息纠正数据
+let smallSongDataRef = ref(null);
 let cloudMatchModel = ref(false);
+let cloudMatchBeforeData = ref(null);
+let cloudMatchId = ref(null);
 let cloudMatchValue = ref({
   uid: user.getUserData.userId,
   sid: null,
@@ -336,7 +340,7 @@ const copySongLink = (id) => {
     $message.error("您的浏览器暂不支持该操作");
   }
 };
-const cloudDataLoad = inject("cloudDataLoad");
+
 // 打开右侧菜单
 const openRightMenu = (e, data) => {
   e.preventDefault();
@@ -419,8 +423,8 @@ const openRightMenu = (e, data) => {
         show: router.currentRoute.value.name == "cloud" ? true : false,
         props: {
           onClick: () => {
-            // cloudDataLoad();
             cloudMatchValue.value.sid = data.id;
+            cloudMatchBeforeData.value = data;
             cloudMatchModel.value = true;
           },
         },
@@ -459,6 +463,38 @@ const onClickoutside = () => {
   rightMenuShow.value = false;
 };
 
+// 歌曲纠正
+const setCloudMatchBtn = (data) => {
+  if (data.sid == data.asid) {
+    $message.error("与原歌曲 ID 一致，无需纠正");
+  } else {
+    if (!smallSongDataRef.value) {
+      $message.error("请先检查");
+    } else if (smallSongDataRef.value.checkSongData()) {
+      setCloudMatch(data.uid, data.sid, data.asid).then((res) => {
+        console.log(res);
+        if (res.data) {
+          closeCloudMatch();
+          $message.success("歌曲纠正成功");
+          emit("cloudDataLoad");
+        } else {
+          $message.error("歌曲纠正失败，请重试");
+        }
+      });
+    } else {
+      $message.error("非正常歌曲，无法匹配");
+    }
+  }
+};
+
+// 关闭歌曲纠正
+const closeCloudMatch = () => {
+  cloudMatchBeforeData.value = null;
+  cloudMatchId.value = null;
+  cloudMatchValue.value.asid = null;
+  cloudMatchModel.value = false;
+};
+
 // 开启抽屉
 const openDrawer = (data) => {
   console.log(data);
@@ -482,8 +518,6 @@ const checkCanClick = (listData, item) => {
       : null
     : playSong(listData, item);
 };
-
-const setCloudMatchBtn = () => {};
 
 // 跳转链接
 const jumpLink = (id, type) => {
@@ -661,24 +695,6 @@ const jumpLink = (id, type) => {
   align-items: center;
 }
 .drawer {
-  .header {
-    display: flex;
-    align-items: center;
-    .pic {
-      margin-right: 12px;
-      border-radius: 8px;
-    }
-    .name {
-      pointer-events: none;
-      .n-text {
-        font-size: 16px;
-        margin-bottom: 6px;
-      }
-      .artists {
-        font-size: 12px;
-      }
-    }
-  }
   .menu {
     .item {
       padding: 12px 24px;

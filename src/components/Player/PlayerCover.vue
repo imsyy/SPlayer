@@ -28,7 +28,6 @@
                   ? music.getPlaySongData.artist[1]
                   : null,
               ]"
-              :class="music.getPlaySongData.artist.length > 2 ? 'more' : null"
             />
             <span
               class="ablum text-hidden"
@@ -225,12 +224,6 @@ watch(
           font-size: 2vh;
           width: 100%;
           color: #ffffffcc;
-          .more {
-            &::after {
-              content: "/...";
-              margin-left: 4px;
-            }
-          }
           .ablum {
             transition: all 0.3s;
             &:hover {

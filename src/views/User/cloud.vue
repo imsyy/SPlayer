@@ -1,6 +1,6 @@
 <template>
   <div class="cloud">
-    <DataLists :listData="cloudData" />
+    <DataLists :listData="cloudData" @cloudDataLoad="cloudDataLoad" />
     <Pagination
       :totalCount="totalCount"
       :pageNumber="pageNumber"
@@ -76,7 +76,6 @@ const pageNumberChange = (val) => {
 const cloudDataLoad = () => {
   getCloudData(pagelimit.value, (pageNumber.value - 1) * pagelimit.value);
 };
-provide("cloudDataLoad", cloudDataLoad);
 
 // 监听路由参数变化
 watch(
