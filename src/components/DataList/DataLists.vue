@@ -122,7 +122,7 @@
         class="drawer"
         v-model:show="drawerShow"
         placement="bottom"
-        height="60vh"
+        height="70vh"
         style="border-radius: 8px 8px 0 0"
       >
         <n-drawer-content
@@ -178,7 +178,7 @@
               class="item"
               @click="
                 () => {
-                  copySongLink(drawerData.id);
+                  copySongData(drawerData.id);
                   drawerShow = false;
                 }
               "
@@ -202,6 +202,34 @@
             >
               <n-icon size="20" :component="AlbumRound" />
               <n-text>专辑：{{ drawerData.album.name }}</n-text>
+            </div>
+            <div
+              v-if="router.currentRoute.value.name == 'cloud'"
+              class="item"
+              @click="
+                () => {
+                  cloudMatchValue.sid = drawerData.id;
+                  cloudMatchBeforeData = drawerData;
+                  cloudMatchModel = true;
+                  drawerShow = false;
+                }
+              "
+            >
+              <n-icon size="20" :component="InsertPageBreakRound" />
+              <n-text>歌曲信息纠正</n-text>
+            </div>
+            <div
+              v-if="router.currentRoute.value.name == 'cloud'"
+              class="item"
+              @click="
+                () => {
+                  delCloudSong(drawerData);
+                  drawerShow = false;
+                }
+              "
+            >
+              <n-icon size="20" :component="DeleteRound" />
+              <n-text>从云盘中删除</n-text>
             </div>
           </div>
         </n-drawer-content>
@@ -278,6 +306,8 @@ import {
   AccountCircleRound,
   AlbumRound,
   OndemandVideoRound,
+  InsertPageBreakRound,
+  DeleteRound,
 } from "@vicons/material";
 import { musicStore, settingStore, userStore } from "@/store/index";
 import { useRouter } from "vue-router";
@@ -327,12 +357,14 @@ let cloudMatchValue = ref({
   asid: null,
 });
 
-// 复制歌曲链接
-const copySongLink = (id) => {
+// 复制歌曲链接或ID
+const copySongData = (id, url = true) => {
   if (navigator.clipboard) {
     try {
-      navigator.clipboard.writeText(`https://music.163.com/#/song?id=${id}`);
-      $message.success("歌曲链接复制成功");
+      navigator.clipboard.writeText(
+        url ? `https://music.163.com/#/song?id=${id}` : id
+      );
+      $message.success(`歌曲${url ? "链接" : " ID "}复制成功`);
     } catch (err) {
       $message.error("复制失败：", err);
     }
@@ -396,24 +428,7 @@ const openRightMenu = (e, data) => {
         show: router.currentRoute.value.name == "cloud" ? true : false,
         props: {
           onClick: () => {
-            $dialog.warning({
-              title: "歌曲删除",
-              content: "确认从云盘中删除歌曲 " + data.name + " ？",
-              positiveText: "删除",
-              negativeText: "取消",
-              onPositiveClick: () => {
-                setCloudDel(data.id).then((res) => {
-                  if (res.code == 200) {
-                    $message.success("云盘歌曲删除成功");
-                    props.listData.forEach((v, i) => {
-                      if (v.id == data.id) props.listData.splice(i, 1);
-                    });
-                  } else {
-                    $message.error("云盘歌曲删除失败");
-                  }
-                });
-              },
-            });
+            delCloudSong(data);
           },
         },
       },
@@ -434,11 +449,20 @@ const openRightMenu = (e, data) => {
         type: "divider",
       },
       {
+        key: "copyId",
+        label: "复制歌曲 ID",
+        props: {
+          onClick: () => {
+            copySongData(data.id, false);
+          },
+        },
+      },
+      {
         key: "copy",
         label: "复制链接",
         props: {
           onClick: () => {
-            copySongLink(data.id);
+            copySongData(data.id);
           },
         },
       },
@@ -463,6 +487,28 @@ const onClickoutside = () => {
   rightMenuShow.value = false;
 };
 
+// 云盘歌曲删除
+const delCloudSong = (data) => {
+  $dialog.warning({
+    title: "歌曲删除",
+    content: "确认从云盘中删除歌曲 " + data.name + " ？",
+    positiveText: "删除",
+    negativeText: "取消",
+    onPositiveClick: () => {
+      setCloudDel(data.id).then((res) => {
+        if (res.code == 200) {
+          $message.success("云盘歌曲删除成功");
+          props.listData.forEach((v, i) => {
+            if (v.id == data.id) props.listData.splice(i, 1);
+          });
+        } else {
+          $message.error("云盘歌曲删除失败");
+        }
+      });
+    },
+  });
+};
+
 // 歌曲纠正
 const setCloudMatchBtn = (data) => {
   if (data.sid == data.asid) {
@@ -482,7 +528,7 @@ const setCloudMatchBtn = (data) => {
         }
       });
     } else {
-      $message.error("非正常歌曲，无法匹配");
+      $message.error("非正常歌曲 ID，无法匹配");
     }
   }
 };

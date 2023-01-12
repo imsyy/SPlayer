@@ -14,7 +14,7 @@
       <n-text
         class="text-hidden"
         depth="2"
-        v-html="songDetail ? songDetail.name : '暂无歌曲'"
+        v-html="songDetail ? songDetail.name : '获取失败'"
         @click.stop="router.push(`/song?id=${songDetail.id}`)"
       />
       <AllArtists
@@ -45,7 +45,7 @@ const props = defineProps({
   },
   // 通过歌曲 ID 获取
   getDataByID: {
-    type: Number,
+    type: String,
     default: null,
   },
 });

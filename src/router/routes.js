@@ -6,6 +6,7 @@ const routes = [{
         },
         component: () => import('@/views/Home/HomeView.vue'),
     },
+    // 搜索页 
     {
         path: '/search',
         name: 'search',
@@ -35,35 +36,9 @@ const routes = [{
             name: 's-playlists',
             component: () => import('@/views/Search/playlists.vue'),
         }, ]
-    }, {
-        path: '/comment',
-        name: 'comment',
-        meta: {
-            title: '歌曲评论',
-        },
-        component: () => import('@/views/Comment/CommentView.vue'),
-    }, {
-        path: '/setting',
-        name: 'setting',
-        meta: {
-            title: '全局设置',
-        },
-        component: () => import('@/views/Setting/SettingView.vue'),
-    }, {
-        path: '/login',
-        name: 'login',
-        meta: {
-            title: '登录',
-        },
-        component: () => import('@/views/Login/LoginView.vue'),
-    }, {
-        path: '/video',
-        name: 'video',
-        meta: {
-            title: '视频',
-        },
-        component: () => import('@/views/Video/VideoView.vue'),
-    }, {
+    },
+    // 发现页 
+    {
         path: '/discover',
         name: 'discover',
         meta: {
@@ -84,36 +59,9 @@ const routes = [{
             name: 'dsc-artists',
             component: () => import('@/views/Discover/artists.vue'),
         }]
-    }, {
-        path: '/playlist',
-        name: 'playlist',
-        meta: {
-            title: '歌单',
-        },
-        component: () => import('@/views/PlayList/PlayListView.vue'),
-    }, {
-        path: '/song',
-        name: 'song',
-        meta: {
-            title: '歌曲',
-        },
-        component: () => import('@/views/Song/SongView.vue'),
-    }, {
-        path: '/dailySongs',
-        name: 'dailySongs',
-        meta: {
-            title: '每日推荐',
-            needLogin: true,
-        },
-        component: () => import('@/views/DailySongs/DailySongsView.vue'),
-    }, {
-        path: '/album',
-        name: 'album',
-        meta: {
-            title: '专辑',
-        },
-        component: () => import('@/views/Album/AlbumView.vue'),
-    }, {
+    },
+    // 我的页面
+    {
         path: '/user',
         name: 'user',
         meta: {
@@ -131,7 +79,82 @@ const routes = [{
             name: 'cloud',
             component: () => import('@/views/User/cloud.vue')
         }]
-    }, {
+    },
+    // 评论页 
+    {
+        path: '/comment',
+        name: 'comment',
+        meta: {
+            title: '歌曲评论',
+        },
+        component: () => import('@/views/Comment/CommentView.vue'),
+    },
+    // 设置页 
+    {
+        path: '/setting',
+        name: 'setting',
+        meta: {
+            title: '全局设置',
+        },
+        component: () => import('@/views/Setting/SettingView.vue'),
+    },
+    // 登录页 
+    {
+        path: '/login',
+        name: 'login',
+        meta: {
+            title: '登录',
+        },
+        component: () => import('@/views/Login/LoginView.vue'),
+    },
+    // 视频页 
+    {
+        path: '/video',
+        name: 'video',
+        meta: {
+            title: '视频',
+        },
+        component: () => import('@/views/Video/VideoView.vue'),
+    },
+    // 歌单页 
+    {
+        path: '/playlist',
+        name: 'playlist',
+        meta: {
+            title: '歌单',
+        },
+        component: () => import('@/views/PlayList/PlayListView.vue'),
+    },
+    // 歌曲页
+    {
+        path: '/song',
+        name: 'song',
+        meta: {
+            title: '歌曲',
+        },
+        component: () => import('@/views/Song/SongView.vue'),
+    },
+    // 每日推荐
+    {
+        path: '/dailySongs',
+        name: 'dailySongs',
+        meta: {
+            title: '每日推荐',
+            needLogin: true,
+        },
+        component: () => import('@/views/DailySongs/DailySongsView.vue'),
+    },
+    // 专辑页
+    {
+        path: '/album',
+        name: 'album',
+        meta: {
+            title: '专辑',
+        },
+        component: () => import('@/views/Album/AlbumView.vue'),
+    },
+    // 歌手页
+    {
         path: '/artist',
         name: 'artist',
         meta: {
@@ -152,6 +175,38 @@ const routes = [{
             name: 'ar-videos',
             component: () => import('@/views/Artist/videos.vue'),
         }]
+    },
+    // 状态页
+    // 404
+    {
+        path: '/404',
+        name: '404',
+        meta: {
+            title: '404'
+        },
+        component: () => import('@/views/State/404.vue'),
+    },
+    {
+        path: '/:pathMatch(.*)',
+        redirect: '/404'
+    },
+    // 403
+    {
+        path: '/403',
+        name: '403',
+        meta: {
+            title: '403'
+        },
+        component: () => import('@/views/State/403.vue'),
+    },
+    // 500
+    {
+        path: '/500',
+        name: '500',
+        meta: {
+            title: '500'
+        },
+        component: () => import('@/views/State/500.vue'),
     },
 ]
 

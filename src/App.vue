@@ -60,7 +60,7 @@ onMounted(() => {
   console.log("初始化完成");
   $notification["info"]({
     content: "项目未完成",
-    meta: "最近更新：新增移动端歌曲列表抽屉",
+    meta: "最近更新：发现页面完善中",
     duration: 8000,
   });
 
