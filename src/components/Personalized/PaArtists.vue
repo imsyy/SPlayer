@@ -51,6 +51,7 @@ const getArtistListData = (type = -1, area = -1, limit = 6) => {
 // Tab 切换
 const tabChange = (value) => {
   console.log(value);
+  artistsData.value = [];
   getArtistListData(-1, value);
 };
 

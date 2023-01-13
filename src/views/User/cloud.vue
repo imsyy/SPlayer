@@ -30,7 +30,7 @@ let pageNumber = ref(
 let totalCount = ref(0);
 
 // 获取云盘数据
-const getCloudData = (limit = 30, offset = 0) => {
+const getCloudData = (limit = 30, offset = 0, scroll = true) => {
   getCloud(limit, offset).then((res) => {
     console.log(res);
     totalCount.value = res.count;
@@ -51,7 +51,8 @@ const getCloudData = (limit = 30, offset = 0) => {
       $message.error("搜索内容为空");
     }
     // 请求后回顶
-    if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
+    if ($mainContent && scroll)
+      $mainContent.scrollIntoView({ behavior: "smooth" });
   });
 };
 
@@ -73,8 +74,12 @@ const pageNumberChange = (val) => {
 };
 
 // 当前页数据重载
-const cloudDataLoad = () => {
-  getCloudData(pagelimit.value, (pageNumber.value - 1) * pagelimit.value);
+const cloudDataLoad = (scroll = false) => {
+  getCloudData(
+    pagelimit.value,
+    (pageNumber.value - 1) * pagelimit.value,
+    scroll
+  );
 };
 
 // 监听路由参数变化

@@ -59,6 +59,7 @@ import { musicStore } from "@/store/index";
 import { RemoveCircleOutlineFilled } from "@vicons/material";
 import AllArtists from "./AllArtists.vue";
 import CollapseTransition from "@ivanv/vue-collapse-transition/src/CollapseTransition.vue";
+import { nextTick } from "vue";
 
 const music = musicStore();
 
@@ -74,25 +75,6 @@ const changeIndex = (index) => {
   music.persistData.playSongIndex = index;
   music.setPlayState(true);
 };
-
-// 监听页面是否打开
-watch(
-  () => music.showPlayList,
-  (val) => {
-    if (val) {
-      const el = document.getElementById(
-        `playlist${music.persistData.playSongIndex}`
-      );
-      if (el) {
-        console.log(111);
-        el.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }
-    }
-  }
-);
 </script>
 
 <style lang="scss" scoped>

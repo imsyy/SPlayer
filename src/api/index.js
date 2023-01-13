@@ -398,7 +398,7 @@ export const getArtistVideos = (id, limit = 30, offset = 0) => {
 export const getPlayListCatlist = (highquality = false) => {
     return axios({
         method: "GET",
-        url: `/playlist/${highquality ? 'highquality/tags':'catlist'}`
+        url: `/playlist/${highquality ? 'highquality/tags' : 'catlist'}`
     })
 }
 
@@ -468,6 +468,14 @@ export const getNewAlbum = () => {
     return axios({
         method: "GET",
         url: "/album/newest"
+    })
+}
+
+// 获取排行榜数据
+export const getToplist = (detail = true) => {
+    return axios({
+        method: "GET",
+        url: `/toplist${detail ? '/detail' : null}`
     })
 }
 
