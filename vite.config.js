@@ -39,7 +39,6 @@ export default ({
     open: true,
     http: true,
     ssr: false,
-    // 设置代理
     proxy: {
       '/api': {
         target: loadEnv(mode, process.cwd()).VITE_MUSIC_API,

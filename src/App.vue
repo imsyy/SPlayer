@@ -30,12 +30,13 @@
 </template>
 
 <script setup>
-import Provider from "@/components/Provider/index.vue";
-import Nav from "@/components/Nav/index.vue";
-import Player from "@/components/Player/index.vue";
 import { musicStore, userStore } from "@/store/index";
 import { useRouter } from "vue-router";
 import { getLoginState } from "@/api";
+import Provider from "@/components/Provider/index.vue";
+import Nav from "@/components/Nav/index.vue";
+import Player from "@/components/Player/index.vue";
+import packageJson from "@/../package.json";
 
 const music = musicStore();
 const user = userStore();
@@ -57,12 +58,21 @@ onMounted(() => {
   window.$mainContent = mainContent.value;
 
   // 初始化
-  console.log("初始化完成");
+  console.clear();
   $notification["info"]({
     content: "项目未完成",
-    meta: "最近更新：发现页面完善中",
+    meta: "最近更新：发现-排行榜页面完善",
     duration: 8000,
   });
+
+  // 版权声明
+  let logoText = "SPlayer";
+  let copyrightNotice = `\n\n版本: ${packageJson.version}\n作者: ${packageJson.author}\n作者主页: ${packageJson.home}\nGitHub: ${packageJson.github}`;
+  console.info(
+    `%c${logoText} %c ${copyrightNotice}`,
+    "color:#f55e55;font-size:26px;font-weight:bold;",
+    "font-size:16px"
+  );
 
   // 检查账号登录状态
   getLoginState()

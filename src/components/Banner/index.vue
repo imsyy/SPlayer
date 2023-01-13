@@ -93,7 +93,6 @@ const bannerJump = (type, id, url) => {
 
 // 获取宽度计算轮播图高度
 const getBannerHeight = () => {
-  console.log(window.innerWidth);
   if (window.innerWidth > 680) {
     bannerType.value = "card";
     if (window.innerWidth >= 1200) {

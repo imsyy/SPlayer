@@ -21,13 +21,17 @@
             hoverable
             @click="router.push(`/playlist?id=${item.id}`)"
           >
-            <n-avatar
-              class="cover"
-              :src="
-                item.coverImgUrl.replace(/^http:/, 'https:') + '?param=300y300'
-              "
-              fallback-src="/images/pic/default.png"
-            />
+            <div class="cover">
+              <n-avatar
+                class="coverImg"
+                :src="
+                  item.coverImgUrl.replace(/^http:/, 'https:') +
+                  '?param=300y300'
+                "
+                fallback-src="/images/pic/default.png"
+              />
+              <n-text class="update" v-html="item.updateFrequency" />
+            </div>
             <div class="data">
               <n-text class="title" v-html="item.name" />
               <div class="desc">
@@ -112,9 +116,11 @@ onMounted(() => {
     @media (max-width: 768px) {
       grid-template-columns: repeat(1, minmax(0px, 1fr)) !important;
       .cover {
-        width: 120px !important;
-        height: 120px !important;
-        min-width: 120px !important;
+        .coverImg {
+          width: 120px !important;
+          height: 120px !important;
+          min-width: 120px !important;
+        }
       }
       .data {
         height: 120px !important;
@@ -133,11 +139,28 @@ onMounted(() => {
         transform: scale(0.98);
       }
       .cover {
-        width: 160px;
-        height: 160px;
-        min-width: 160px;
-        border-radius: 8px;
+        position: relative;
         margin-right: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        .coverImg {
+          width: 160px;
+          height: 160px;
+          min-width: 160px;
+          border-radius: 8px;
+        }
+        .update {
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          color: #fff;
+          background-color: #00000030;
+          font-size: 12px;
+          backdrop-filter: blur(40px);
+          padding: 4px 8px;
+          border-top-left-radius: 8px;
+        }
       }
       .data {
         height: 160px;
