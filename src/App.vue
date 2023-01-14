@@ -58,7 +58,6 @@ onMounted(() => {
   window.$mainContent = mainContent.value;
 
   // 初始化
-  console.clear();
   $notification["info"]({
     content: "项目未完成",
     meta: "最近更新：发现-排行榜页面完善",

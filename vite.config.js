@@ -59,5 +59,14 @@ export default ({
       '@': fileURLToPath(new URL('./src',
         import.meta.url))
     }
-  }
+  },
+  build: {
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        // 生产环境时移除 console
+        pure_funcs: ['console.log'],
+      },
+    },
+  },
 })

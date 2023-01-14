@@ -159,7 +159,7 @@ onMounted(() => {
           font-size: 12px;
           backdrop-filter: blur(40px);
           padding: 4px 8px;
-          border-top-left-radius: 8px;
+          border-radius: 8px 0 8px 0;
         }
       }
       .data {
