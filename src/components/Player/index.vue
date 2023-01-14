@@ -307,7 +307,7 @@ const sliderTooltip = (val) => {
 
 // 歌曲播放失败事件
 const songError = () => {
-  $message.error("播放失败，请重试");
+  // $message.error("播放失败，请重试");
   if (music.getPlaylists[0]) getPlaySongData(music.getPlaySongData.id);
   if (music.getPlayState) songInOrOut("play");
 };

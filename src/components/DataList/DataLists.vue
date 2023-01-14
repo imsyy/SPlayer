@@ -662,12 +662,13 @@ const jumpLink = (id, type) => {
           }
         }
         .n-tag {
+          transform: translateY(-1px);
           margin-left: 8px;
           height: 18px;
         }
         .vip {
-          color: #fff;
-          background-color: #ec4141;
+          color: $mainColor;
+          background-color: $mainSecondaryColor;
         }
       }
       .meta {

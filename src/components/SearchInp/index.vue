@@ -33,12 +33,18 @@
           >
             <div :class="index < 3 ? 'num hot' : 'num'">{{ index + 1 }}</div>
             <div class="title">
-              <span class="name" v-if="item.iconUrl">
+              <span class="name">
                 {{ item.searchWord }}
-                <img :src="item.iconUrl" alt="icon" />
-              </span>
-              <span class="name" v-else>
-                {{ item.searchWord }}
+                <!-- <img :src="item.iconUrl" alt="icon" /> -->
+                <n-tag
+                  v-if="item.iconUrl"
+                  class="tag"
+                  round
+                  :bordered="false"
+                  size="small"
+                >
+                  {{ item.iconType == 1 ? "HOT" : "UP" }}
+                </n-tag>
               </span>
               <n-text class="tip" depth="3" v-html="item.content" />
             </div>
@@ -320,6 +326,14 @@ watch(
                 width: auto;
                 margin-left: 6px;
                 margin-bottom: 2px;
+              }
+              .tag {
+                transform: translateY(-1px);
+                margin-left: 6px;
+                height: 18px;
+                color: $mainColor;
+                background-color: $mainSecondaryColor;
+                border-color: $mainColor;
               }
             }
             .tip {
