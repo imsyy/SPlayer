@@ -67,7 +67,7 @@
           </div>
         </div>
       </div>
-      <DataLists :listData="albumData" />
+      <DataLists :listData="albumData" hideAlbum />
     </div>
   </div>
   <div class="title" v-else-if="!albumId">
