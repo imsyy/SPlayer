@@ -32,14 +32,15 @@ axios.interceptors.request.use(request => {
 
 // 响应拦截
 axios.interceptors.response.use(response => {
-    if (response.config.loadingBar != "Hidden") $loadingBar.finish();
+    $loadingBar.finish();
     return response.data;
 }, error => {
     $loadingBar.error();
     if (error.response) {
+        let data = error.response.data;
         switch (error.response.status) {
             case 401:
-                console.log('您未登录')
+                $message.error("您未登录");
                 break
             case 301:
                 $message.error("请求路径发生跳转");
@@ -51,7 +52,7 @@ axios.interceptors.response.use(response => {
                 $message.error("内部服务器错误");
                 break
             default:
-                $message.error("请求失败，请稍后重试");
+                $message.error(data.message ? data.message : "请求失败，请稍后重试");
                 break
         }
     } else {

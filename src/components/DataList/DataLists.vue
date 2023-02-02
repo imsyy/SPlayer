@@ -677,6 +677,7 @@ const jumpLink = (id, type) => {
         flex-direction: column;
         .artists {
           margin-top: 2px;
+          -webkit-line-clamp: 2;
         }
         .alia {
           margin-top: 2px;
