@@ -46,8 +46,6 @@ const useUserDataStore = defineStore('userData', {
                 }).catch(err => {
                     $message.error("获取用户等级出错 " + err);
                 });
-            } else {
-                $message.error("请登录后执行该操作");
             }
         },
         // 退出登录

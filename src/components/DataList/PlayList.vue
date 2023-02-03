@@ -112,9 +112,22 @@ const changeIndex = (index) => {
             }
           }
           &.play {
-            color: $mainColor;
             background-color: $mainSecondaryColor;
             border-color: $mainColor;
+            a,
+            span,
+            div,
+            .n-icon {
+              color: $mainColor;
+            }
+            .right {
+              .remove {
+                color: $mainColor;
+                &:hover {
+                  background-color: var(--n-action-color);
+                }
+              }
+            }
           }
 
           .left {

@@ -130,6 +130,26 @@ let qrCheckInterval = ref(null);
 // 登陆状态弹窗
 let loginStateMessage = null;
 
+// 储存登录信息
+const saveLoginData = (data) => {
+  user.setCookie(data.cookie);
+  // 验证用户登录信息
+  getLoginState().then((res) => {
+    if (res.data.profile) {
+      user.setUserData(res.data.profile);
+      user.userLogin = true;
+      qrText.value = "登录成功";
+      $message.success("登录成功");
+      clearInterval(qrCheckInterval.value);
+      router.go(-1);
+    } else {
+      user.userLogOut();
+      $message.error("登录出错，请重试");
+      getQrKeyData();
+    }
+  });
+};
+
 // 获取二维码登录 key
 const getQrKeyData = () => {
   // 检测是否登录
@@ -176,22 +196,7 @@ const checkQrState = (key) => {
         }
       } else if (res.code == 803) {
         loginStateMessage.destroy();
-        user.setCookie(res.cookie);
-        // 储存用户登录信息
-        getLoginState().then((res) => {
-          if (res.data.profile) {
-            user.setUserData(res.data.profile);
-            user.userLogin = true;
-            qrText.value = "登录成功";
-            $message.success("登录成功");
-            clearInterval(qrCheckInterval.value);
-            router.push("/user");
-          } else {
-            user.userLogOut();
-            $message.error("登录出错，请重试");
-            getQrKeyData();
-          }
-        });
+        saveLoginData(res);
       }
     });
   }, 1000);

@@ -43,8 +43,9 @@ export default ({
         enabled: true
       },
       workbox: {
+        cleanupOutdatedCaches: true,
         runtimeCaching: [{
-            urlPattern: /(.*?)\.(js|css|woff2|woff|ttf)/,
+            urlPattern: /(.*?)\.(woff2|woff|ttf)/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'file-cache',
