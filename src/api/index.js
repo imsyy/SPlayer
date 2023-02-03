@@ -41,6 +41,44 @@ export const checkQr = (key) => {
     })
 }
 
+// 手机登录
+export const toLogin = (phone, captcha, type = "phone") => {
+    return axios({
+        method: "GET",
+        url: `/login/${type=="phone"?"cellphone":null}`,
+        params: {
+            phone,
+            captcha,
+            time: new Date().getTime(),
+        }
+    })
+}
+
+// 发送验证码
+export const sentCaptcha = (phone) => {
+    return axios({
+        method: "GET",
+        url: "/captcha/sent",
+        params: {
+            phone,
+            time: new Date().getTime(),
+        }
+    })
+}
+
+// 验证验证码
+export const verifyCaptcha = (phone, captcha) => {
+    return axios({
+        method: "GET",
+        url: "/captcha/verify",
+        params: {
+            phone,
+            captcha,
+            time: new Date().getTime(),
+        }
+    })
+}
+
 // 获取登录状态
 export const getLoginState = () => {
     return axios({

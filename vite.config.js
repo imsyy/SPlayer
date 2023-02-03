@@ -12,6 +12,9 @@ import Components from 'unplugin-vue-components/vite'
 import {
   NaiveUiResolver
 } from 'unplugin-vue-components/resolvers'
+import {
+  VitePWA
+} from 'vite-plugin-pwa'
 
 // https://vitejs.dev/config/
 export default ({
@@ -32,6 +35,45 @@ export default ({
     }),
     Components({
       resolvers: [NaiveUiResolver()]
+    }),
+    // PWA
+    VitePWA({
+      registerType: 'autoUpdate',
+      devOptions: {
+        enabled: true
+      },
+      workbox: {
+        cleanupOutdatedCaches: true,
+        runtimeCaching: [{
+            urlPattern: /(.*?)\.(woff2|woff|ttf)/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'file-cache',
+            },
+          },
+          {
+            urlPattern: /(.*?)\.(webp|png|jpe?g|svg|gif|bmp|psd|tiff|tga|eps)/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'image-cache',
+            },
+          },
+        ],
+      },
+      manifest: {
+        "name": "SPlayer",
+        "short_name": "SPlayer",
+        "description": "一个简约的在线音乐播放器",
+        "display": "standalone",
+        "start_url": "/",
+        "theme_color": "#f55e55",
+        "background_color": "#efefef",
+        "icons": [{
+          "src": "/images/logo/favicon.png",
+          "sizes": "200x200",
+          "type": "image/png"
+        }]
+      }
     })
   ],
   server: {

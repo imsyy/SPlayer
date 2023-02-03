@@ -449,6 +449,15 @@ const openRightMenu = (e, data) => {
         type: "divider",
       },
       {
+        key: "search",
+        label: "同名搜索",
+        props: {
+          onClick: () => {
+            router.push(`/search/songs?keywords=${data.name}`);
+          },
+        },
+      },
+      {
         key: "copyId",
         label: "复制歌曲 ID",
         props: {
@@ -677,6 +686,7 @@ const jumpLink = (id, type) => {
         flex-direction: column;
         .artists {
           margin-top: 2px;
+          -webkit-line-clamp: 2;
         }
         .alia {
           margin-top: 2px;

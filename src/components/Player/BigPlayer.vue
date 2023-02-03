@@ -74,7 +74,9 @@
               >
                 <div class="placeholder"></div>
                 <div
-                  :class="lrcOnPlayIndex == index ? 'lrc on' : 'lrc'"
+                  :class="
+                    music.getPlaySongLyricIndex == index ? 'lrc on' : 'lrc'
+                  "
                   v-for="(item, index) in music.getPlaySongLyric"
                   :key="item"
                   :id="'lrc' + index"
@@ -137,10 +139,6 @@ const setting = settingStore();
 // 工具栏显隐
 let menuShow = ref(false);
 
-// 歌词数据
-let lrcOnPlayIndex = ref(0);
-let lrcInterval = ref(null);
-
 // 音乐频谱
 let avBars = ref(null);
 let musicFrequency = ref(null);
@@ -162,31 +160,14 @@ const toComment = () => {
 };
 
 // 歌词滚动
-const lyricsScroll = () => {
-  lrcInterval.value = setInterval(() => {
-    // console.log(11);
-    let oldIndex = lrcOnPlayIndex.value;
-    let index = music.getPlaySongLyric.findIndex(
-      (v) => v.time > music.getPlaySongTime.currentTime
-    );
-    if (index === -1) {
-      // 如果没有找到合适的歌词，则返回最后一句歌词
-      lrcOnPlayIndex.value = music.getPlaySongLyric.length - 1;
-      music.lrcOnPlayIndex = music.getPlaySongLyric.length - 1;
-    } else {
-      lrcOnPlayIndex.value = index - 1;
-      music.lrcOnPlayIndex = index - 1;
-    }
-    if (oldIndex !== lrcOnPlayIndex.value) {
-      const el = document.getElementById(`lrc${lrcOnPlayIndex.value}`);
-      if (el) {
-        el.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }
-    }
-  }, 500);
+const lyricsScroll = (index) => {
+  const el = document.getElementById(`lrc${index}`);
+  if (el) {
+    el.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }
 };
 
 onMounted(() => {
@@ -212,25 +193,19 @@ watch(
   () => music.showBigPlayer,
   (val) => {
     if (val) {
-      clearInterval(lrcInterval.value);
-      lyricsScroll();
-    } else {
-      clearInterval(lrcInterval.value);
+      console.log("开启播放器", music.getPlaySongLyricIndex);
+      nextTick(() => {
+        lyricsScroll(music.getPlaySongLyricIndex);
+      });
     }
   }
 );
 
-// 音乐频谱适配
-// watch(
-//   () => music.getPlaySongData,
-//   () => {
-//     if (setting.musicFrequency) $player.play();
-//   }
-// );
-
-onBeforeUnmount(() => {
-  clearInterval(lrcInterval.value);
-});
+// 监听歌词滚动
+watch(
+  () => music.getPlaySongLyricIndex,
+  (val) => lyricsScroll(val)
+);
 </script>
 
 <style lang="scss" scoped>

@@ -189,6 +189,7 @@ const toLink = (id) => {
         }
       }
       &:hover {
+        box-shadow: 0 15px 30px rgb(0 0 0 / 10%);
         .coverImg {
           filter: brightness(0.8);
           transform: scale(1.1);
