@@ -23,7 +23,7 @@ const useSettingDataStore = defineStore('settingData', {
             // 歌词位置
             lyricsPosition: "left",
             // 歌词大小
-            lyricsFontSize: "10px",
+            lyricsFontSize: 2.4,
             // 音乐频谱
             musicFrequency: false,
         }
