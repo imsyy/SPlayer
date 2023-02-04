@@ -22,6 +22,8 @@ const useSettingDataStore = defineStore('settingData', {
             showTransl: true,
             // 歌词位置
             lyricsPosition: "left",
+            // 歌词大小
+            lyricsFontSize: "10px",
             // 音乐频谱
             musicFrequency: false,
         }

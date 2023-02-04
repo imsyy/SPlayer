@@ -74,7 +74,7 @@
                 v-if="music.getPlaySongLyric[0]"
                 :style="
                   setting.lyricsPosition === 'center'
-                    ? 'text-align: center'
+                    ? { textAlign: 'center', paddingRight: '0' }
                     : null
                 "
               >
@@ -83,21 +83,35 @@
                   :class="
                     music.getPlaySongLyricIndex == index ? 'lrc on' : 'lrc'
                   "
+                  :style="{ marginBottom: setting.lyricsFontSize - 1.6 + 'vh' }"
                   v-for="(item, index) in music.getPlaySongLyric"
                   :key="item"
                   :id="'lrc' + index"
                   @click="jumpTime(item.time)"
                 >
-                  <span class="lyric">{{ item.lyric }}</span>
-                  <span
-                    v-show="
-                      music.getPlaySongTransl &&
-                      setting.getShowTransl &&
-                      item.lyricFy
-                    "
-                    class="lyric-fy"
-                    >{{ item.lyricFy }}</span
+                  <div
+                    class="lrc-text"
+                    :style="{
+                      transformOrigin:
+                        setting.lyricsPosition === 'center' ? 'center' : null,
+                    }"
                   >
+                    <span
+                      class="lyric"
+                      :style="{ fontSize: setting.lyricsFontSize + 'vh' }"
+                      >{{ item.lyric }}
+                    </span>
+                    <span
+                      v-show="
+                        music.getPlaySongTransl &&
+                        setting.getShowTransl &&
+                        item.lyricFy
+                      "
+                      :style="{ fontSize: setting.lyricsFontSize - 0.4 + 'vh' }"
+                      class="lyric-fy"
+                      >{{ item.lyricFy }}</span
+                    >
+                  </div>
                 </div>
                 <div class="placeholder"></div>
               </div>
@@ -304,6 +318,9 @@ watch(
   .screenfull {
     right: 80px;
     padding: 2px;
+    @media (max-width: 768px) {
+      display: none;
+    }
   }
   .all {
     width: 100%;
@@ -314,7 +331,7 @@ watch(
     transition: all 0.3s ease-in-out;
     &.noLrc {
       .left {
-        transform: translateX(25vh);
+        transform: translateX(27.75vh);
       }
       @media (max-width: 768px) {
         .left {
@@ -336,7 +353,7 @@ watch(
         .lrcShow {
           .lrc-all {
             height: 70vh !important;
-            padding-right: 0 !important;
+            padding-right: 16% !important;
           }
           .data,
           .menu {
@@ -347,18 +364,21 @@ watch(
       }
     }
     .left {
-      flex: 1;
-      padding: 0 4vw;
+      // flex: 1;
+      // padding: 0 4vw;
+      width: 50%;
       display: flex;
       flex-direction: column;
       align-items: flex-end;
       justify-content: center;
       transition: all 0.3s ease-in-out;
+      padding-right: 4vw;
+      box-sizing: border-box;
     }
     .right {
       flex: 1;
       height: 100%;
-      // padding: 0 4vw;
+      padding-left: 2vw;
       .lrcShow {
         height: 100%;
         display: flex;
@@ -393,7 +413,7 @@ watch(
           }
         }
         .lrc-all {
-          padding-right: 14%;
+          padding-right: 20%;
           scrollbar-width: none;
           max-width: 460px;
           overflow: auto;
@@ -431,35 +451,52 @@ watch(
           .lrc {
             opacity: 0.6;
             transition: all 0.3s;
-            display: flex;
-            flex-direction: column;
+            // display: flex;
+            // flex-direction: column;
             // margin-bottom: 4px;
             // padding: 12px 20px;
             margin-bottom: 0.8vh;
             padding: 1.8vh 3vh;
             border-radius: 8px;
             transition: all 0.3s;
+            transform-origin: center left;
             cursor: pointer;
-            .lyric {
+            .lrc-text {
+              display: flex;
+              flex-direction: column;
               transition: all 0.3s;
-              font-size: 2.3vh;
-            }
-            .lyric-fy {
-              margin-top: 2px;
-              transition: all 0.3s;
-              opacity: 0.8;
-              font-size: 2vh;
+              transform-origin: center left;
+              .lyric {
+                transition: all 0.3s;
+                // font-size: 2.4vh;
+                transform-origin: center left;
+              }
+              .lyric-fy {
+                margin-top: 2px;
+                transition: all 0.3s;
+                opacity: 0.8;
+                // font-size: 2vh;
+                transform-origin: center left;
+              }
             }
             &.on {
               opacity: 1;
-              .lyric {
-                font-weight: bold;
-                font-size: 3vh;
+              .lrc-text {
+                transform: scale(1.2);
+                .lyric {
+                  font-weight: bold;
+                }
               }
-              .lyric-fy {
-                font-weight: normal;
-                font-size: 2.3vh;
-              }
+              // .lyric {
+              //   font-weight: bold;
+              //   // font-size: 3vh;
+              //   transform: scale(1.3);
+              // }
+              // .lyric-fy {
+              //   // font-weight: normal;
+              //   // font-size: 2.3vh;
+              //   transform: scale(1.1);
+              // }
             }
             &:hover {
               @media (min-width: 768px) {
