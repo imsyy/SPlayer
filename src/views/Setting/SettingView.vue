@@ -45,7 +45,9 @@
         :min="2.2"
         :step="0.01"
         :marks="{
+          2.2: '最小',
           2.4: '默认',
+          2.8: '最大',
         }"
       />
       <div class="more">
@@ -141,30 +143,6 @@ let lyricsPositionOptions = [
   },
 ];
 
-// 歌词位置
-let lyricsFontSizeOptions = [
-  {
-    label: "很小",
-    value: "2",
-  },
-  {
-    label: "小",
-    value: "2.2",
-  },
-  {
-    label: "默认",
-    value: "2.4",
-  },
-  {
-    label: "大",
-    value: "2.6",
-  },
-  {
-    label: "超大",
-    value: "2.8",
-  },
-];
-
 // 播放器样式
 let playerStyleOptions = [
   {
@@ -247,11 +225,13 @@ const changeMusicFrequency = () => {
         background-color: var(--n-border-color);
         width: 100%;
         margin-top: 12px;
+        box-sizing: border-box;
         .lrc {
           opacity: 0.6;
           display: flex;
           flex-direction: column;
           &.on {
+            font-weight: bold;
             opacity: 1;
             transform: scale(1.2);
           }

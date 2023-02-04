@@ -1,5 +1,24 @@
 <template>
   <div class="cloud">
+    <div class="data">
+      <n-button class="up" type="primary" strong secondary round>
+        <template #icon>
+          <n-icon :component="BackupRound" />
+        </template>
+        上传音乐
+      </n-button>
+      <div class="space" v-if="cloudSpace[0]">
+        <span>{{ cloudSpace[0] }} G</span>
+        <n-progress
+          type="line"
+          color="#f55e55"
+          class="progress"
+          :show-indicator="false"
+          :percentage="100 / (cloudSpace[1] / cloudSpace[0])"
+        />
+        <span>{{ cloudSpace[1] }} G</span>
+      </div>
+    </div>
     <DataLists :listData="cloudData" @cloudDataLoad="cloudDataLoad" />
     <Pagination
       :totalCount="totalCount"
@@ -14,12 +33,14 @@
 import { getCloud } from "@/api";
 import { useRouter } from "vue-router";
 import { getSongTime } from "@/utils/timeTools.js";
+import { BackupRound } from "@vicons/material";
 import DataLists from "@/components/DataList/DataLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
 
 const router = useRouter();
 
 // 云盘数据
+let cloudSpace = ref([]);
 let cloudData = ref([]);
 let pagelimit = ref(30);
 let pageNumber = ref(
@@ -35,6 +56,12 @@ const getCloudData = (limit = 30, offset = 0, scroll = true) => {
     console.log(res);
     totalCount.value = res.count;
     cloudData.value = [];
+    // 云盘空间
+    cloudSpace.value = [
+      (res.size / Math.pow(1024, 3)).toFixed(2),
+      (res.maxSize / Math.pow(1024, 3)).toFixed(0),
+    ];
+    // 全部歌曲
     if (res.data) {
       res.data.forEach((v, i) => {
         cloudData.value.push({
@@ -97,3 +124,27 @@ onMounted(() => {
   getCloudData(pagelimit.value, (pageNumber.value - 1) * pagelimit.value);
 });
 </script>
+
+<style lang="scss" scoped>
+.cloud {
+  .data {
+    width: 100%;
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    .space {
+      width: 160px;
+      display: flex;
+      align-items: center;
+      span {
+        white-space: nowrap;
+        font-size: 13px;
+      }
+      .progress {
+        margin: 0 8px;
+      }
+    }
+  }
+}
+</style>
