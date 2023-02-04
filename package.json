@@ -1,6 +1,6 @@
 {
   "name": "splayer",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "private": true,
   "author": "imsyy",
   "home": "https://imsyy.top",
@@ -20,6 +20,7 @@
     "plyr": "^3.7.3",
     "qrcode.vue": "^3.3.3",
     "sass": "^1.56.1",
+    "screenfull": "^6.0.2",
     "terser": "^5.16.1",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6"

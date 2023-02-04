@@ -13,6 +13,7 @@ specifiers:
   plyr: ^3.7.3
   qrcode.vue: ^3.3.3
   sass: ^1.56.1
+  screenfull: ^6.0.2
   terser: ^5.16.1
   unplugin-auto-import: ^0.12.0
   unplugin-vue-components: ^0.22.11
@@ -32,6 +33,7 @@ dependencies:
   plyr: 3.7.3
   qrcode.vue: 3.3.3_vue@3.2.45
   sass: 1.56.1
+  screenfull: 6.0.2
   terser: 5.16.1
   vue: 3.2.45
   vue-router: 4.1.6_vue@3.2.45
