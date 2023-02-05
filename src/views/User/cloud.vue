@@ -1,12 +1,26 @@
 <template>
   <div class="cloud">
     <div class="data">
-      <n-button class="up" type="primary" strong secondary round>
+      <n-button
+        class="up"
+        type="primary"
+        strong
+        secondary
+        round
+        @click="upSongRef.click()"
+      >
         <template #icon>
           <n-icon :component="BackupRound" />
         </template>
         上传音乐
       </n-button>
+      <input
+        ref="upSongRef"
+        type="file"
+        style="display: none"
+        accept="audio/*"
+        @change="upCloudSongData"
+      />
       <div class="space" v-if="cloudSpace[0]">
         <span>{{ cloudSpace[0] }} G</span>
         <n-progress
@@ -30,7 +44,7 @@
 </template>
 
 <script setup>
-import { getCloud } from "@/api";
+import { getCloud, upCloudSong } from "@/api";
 import { useRouter } from "vue-router";
 import { getSongTime } from "@/utils/timeTools.js";
 import { BackupRound } from "@vicons/material";
@@ -49,6 +63,8 @@ let pageNumber = ref(
     : 1
 );
 let totalCount = ref(0);
+let upSongRef = ref(null);
+let upSongMessage = null;
 
 // 获取云盘数据
 const getCloudData = (limit = 30, offset = 0, scroll = true) => {
@@ -81,6 +97,32 @@ const getCloudData = (limit = 30, offset = 0, scroll = true) => {
     if ($mainContent && scroll)
       $mainContent.scrollIntoView({ behavior: "smooth" });
   });
+};
+
+// 歌曲上传
+const upCloudSongData = (e) => {
+  console.log(e.target.files);
+  const files = e.target.files;
+  upSongMessage = $message.loading("歌曲正在上传", {
+    duration: 0,
+  });
+  upCloudSong(files[0])
+    .then((res) => {
+      console.log(res);
+      if (res.code === 200) {
+        upSongMessage.destroy();
+        $message.success(res.privateCloud.simpleSong.name + " 上传成功");
+        if (!res.privateCloud.simpleSong.al.name) {
+          $message.warning("歌曲详细信息获取失败，可尝试歌曲纠正");
+        }
+        getCloudData(pagelimit.value, (pageNumber.value - 1) * pagelimit.value);
+      }
+    })
+    .catch((err) => {
+      upSongMessage.destroy();
+      $message.error("歌曲上传出错，请重试");
+      console.error("歌曲上传出错：" + err);
+    });
 };
 
 // 每页个数数据变化

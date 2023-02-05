@@ -32,6 +32,8 @@ const useMusicDataStore = defineStore('musicData', {
             catList: {},
             // 精品歌单分类
             highqualityCatList: [],
+            // 用户歌单
+            userPlayLists: [],
             // 持久化数据
             persistData: {
                 // 是否处于私人 FM 模式
@@ -118,7 +120,11 @@ const useMusicDataStore = defineStore('musicData', {
         // 获取喜欢音乐列表
         getLikeList(state) {
             return state.persistData.likeList;
-        }
+        },
+        // 获取用户歌单
+        getUserPlayLists(state) {
+            return state.userPlayLists;
+        },
     },
     actions: {
         // 更改是否处于私人FM模式
@@ -399,6 +405,10 @@ const useMusicDataStore = defineStore('musicData', {
             }
             $message.success(name + " 已从播放列表中移除");
             this.persistData.playlists.splice(index, 1);
+        },
+        // 更改用户歌单
+        setUserPlayLists(data) {
+            this.userPlayLists = data;
         }
     },
     // 开启数据持久化

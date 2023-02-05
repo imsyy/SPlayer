@@ -3,7 +3,8 @@ import {
 } from 'pinia';
 import {
     userLogOut,
-    getUserLevel
+    getUserLevel,
+    getUserSubcount
 } from "@/api";
 
 const useUserDataStore = defineStore('userData', {
@@ -36,15 +37,20 @@ const useUserDataStore = defineStore('userData', {
         // 更改用户数据
         setUserData(value) {
             this.userData = value;
-            if (!this.userData.level) this.setUserLevel();
+            if (!this.userData.level) this.setUserOtherData();
         },
         // 更改用户等级信息
-        setUserLevel() {
+        setUserOtherData() {
             if (this.userLogin) {
                 getUserLevel().then(res => {
                     this.userData.level = res.data;
                 }).catch(err => {
                     $message.error("获取用户等级出错 " + err);
+                });
+                getUserSubcount().then(res => {
+                    this.userData.subcount = res;
+                }).catch(err => {
+                    $message.error("获取用户详情失败 " + err);
                 });
             }
         },

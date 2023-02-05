@@ -60,7 +60,7 @@ onMounted(() => {
   // 初始化
   $notification["info"]({
     content: "项目未完成",
-    meta: "最近更新：发现-排行榜页面完善",
+    meta: "最近更新：音乐库页面完善",
     duration: 8000,
   });
 
@@ -78,7 +78,7 @@ onMounted(() => {
     .then((res) => {
       if (res.data.profile && user.userLogin) {
         user.userLogin = true;
-        user.setUserLevel();
+        user.setUserOtherData();
       } else {
         user.userLogOut();
       }

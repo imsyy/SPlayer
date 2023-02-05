@@ -90,12 +90,37 @@ export const getLoginState = () => {
     })
 }
 
+// 获取用户信息 , 歌单，收藏，mv, dj 数量
+export const getUserSubcount = () => {
+    return axios({
+        method: "GET",
+        url: "/user/subcount",
+        params: {
+            time: new Date().getTime(),
+        }
+    })
+}
+
 // 获取用户等级信息
 export const getUserLevel = () => {
     return axios({
         method: "GET",
         url: "/user/level",
         params: {
+            time: new Date().getTime(),
+        }
+    })
+}
+
+// 获取用户歌单
+export const getUserPlaylist = (uid, limit = 30, offset = 0) => {
+    return axios({
+        method: "GET",
+        url: "/user/playlist",
+        params: {
+            uid,
+            limit,
+            offset,
             time: new Date().getTime(),
         }
     })
@@ -358,6 +383,25 @@ export const setCloudMatch = (uid, sid, asid) => {
             asid,
             time: new Date().getTime(),
         }
+    })
+}
+
+// 云盘上传
+export const upCloudSong = (file) => {
+    let formData = new FormData();
+    formData.append('songFile', file);
+    return axios({
+        url: '/cloud',
+        method: 'POST',
+        loadingBar: "Hidden",
+        params: {
+            time: new Date().getTime(),
+        },
+        data: formData,
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+        timeout: 200000,
     })
 }
 
