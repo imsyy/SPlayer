@@ -126,6 +126,19 @@ export const getUserPlaylist = (uid, limit = 30, offset = 0) => {
     })
 }
 
+// 新建歌单
+export const createPlaylist = (name, privacy = false) => {
+    return axios({
+        method: "GET",
+        url: "/playlist/create",
+        params: {
+            name,
+            privacy,
+            time: new Date().getTime(),
+        }
+    })
+}
+
 // 退出登录
 export const userLogOut = () => {
     return axios({
