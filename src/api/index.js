@@ -547,6 +547,33 @@ export const getAllPlayList = (id, limit = 30, offset = 0) => {
     })
 }
 
+// 删除歌单
+export const delPlayList = (id) => {
+    return axios({
+        method: "GET",
+        url: "/playlist/delete",
+        params: {
+            id,
+            time: new Date().getTime(),
+        }
+    })
+}
+
+// 更新歌单
+export const playlistUpdate = (id, name, desc = null, tags = null) => {
+    return axios({
+        method: "GET",
+        url: "/playlist/update",
+        params: {
+            id,
+            name,
+            desc,
+            tags,
+            time: new Date().getTime(),
+        }
+    })
+}
+
 // 获取专辑内容
 export const getAlbum = (id) => {
     return axios({

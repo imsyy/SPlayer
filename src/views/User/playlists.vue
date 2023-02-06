@@ -45,13 +45,7 @@
         </template>
       </n-modal>
     </div>
-    <CoverLists :listData="music.getUserPlayLists" />
-    <Pagination
-      :totalCount="totalCount"
-      :pageNumber="pageNumber"
-      @pageSizeChange="pageSizeChange"
-      @pageNumberChange="pageNumberChange"
-    />
+    <CoverLists :listData="music.getUserPlayLists.own" :showMore="true" />
   </div>
 </template>
 
@@ -62,67 +56,31 @@ import { useRouter } from "vue-router";
 import { musicStore, userStore } from "@/store";
 import { formatNumber } from "@/utils/timeTools.js";
 import CoverLists from "@/components/DataList/CoverLists.vue";
-import Pagination from "@/components/Pagination/index.vue";
 
 const router = useRouter();
 const music = musicStore();
 const user = userStore();
-
-// 歌单数据
-let pagelimit = ref(30);
-let pageNumber = ref(
-  router.currentRoute.value.query.page
-    ? Number(router.currentRoute.value.query.page)
-    : 1
-);
-let totalCount = ref(0);
 
 // 新建歌单数据
 let createModelShow = ref(false);
 let createPrivacy = ref(false);
 let createName = ref(null);
 
-// 获取歌单数据
-const getUserPlaylistData = (limit = 30, offset = 0) => {
-  getUserPlaylist(user.getUserData.userId, limit, offset).then((res) => {
-    console.log(res);
-    totalCount.value =
-      user.getUserData.subcount.createdPlaylistCount +
-      user.getUserData.subcount.subPlaylistCount;
-    let data = [];
-    if (res.playlist) {
-      res.playlist.forEach((v) => {
-        data.push({
-          id: v.id,
-          cover: v.coverImgUrl,
-          name: v.name,
-          artist: v.creator,
-          playCount: formatNumber(v.playCount),
-        });
-        music.setUserPlayLists(data);
-      });
-    } else {
-      $message.error("搜索内容为空");
-    }
-    // 请求后回顶
-    if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
-  });
-};
-
 // 新建歌单
 const createPlaylistBtn = (name, privacy = false) => {
-  createPlaylist(name, privacy ? "10" : null).then((res) => {
-    if (res.code === 200) {
-      createClose();
-      $message.success("歌单新建成功");
-      getUserPlaylistData(
-        pagelimit.value,
-        (pageNumber.value - 1) * pagelimit.value
-      );
-    } else {
-      $message.error("歌单新建失败，请重试");
-    }
-  });
+  if (createName.value) {
+    createPlaylist(name, privacy ? "10" : null).then((res) => {
+      if (res.code === 200) {
+        createClose();
+        $message.success("歌单新建成功");
+        music.setUserPlayLists();
+      } else {
+        $message.error("歌单新建失败，请重试");
+      }
+    });
+  } else {
+    $message.info("请输入歌单名称");
+  }
 };
 
 // 取消新建歌单
@@ -132,29 +90,8 @@ const createClose = () => {
   createModelShow.value = false;
 };
 
-// 每页个数数据变化
-const pageSizeChange = (val) => {
-  console.log(val);
-  pagelimit.value = val;
-  getUserPlaylistData(val, (pageNumber.value - 1) * pagelimit.value);
-};
-
-// 当前页数数据变化
-const pageNumberChange = (val) => {
-  router.push({
-    path: "/user/playlists",
-    query: {
-      page: val,
-    },
-  });
-};
-
 onMounted(() => {
-  if (!music.getUserPlayLists[0])
-    getUserPlaylistData(
-      pagelimit.value,
-      (pageNumber.value - 1) * pagelimit.value
-    );
+  if (!music.getUserPlayLists.has) music.setUserPlayLists();
 });
 </script>
 

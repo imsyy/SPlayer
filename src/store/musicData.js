@@ -2,13 +2,15 @@ import {
     defineStore
 } from 'pinia';
 import {
-    getSongTime
+    getSongTime,
+    formatNumber
 } from "@/utils/timeTools.js";
 import {
     getPersonalFm,
     setFmTrash,
     getLikelist,
-    setLikeSong
+    setLikeSong,
+    getUserPlaylist
 } from "@/api";
 import {
     userStore
@@ -33,7 +35,11 @@ const useMusicDataStore = defineStore('musicData', {
             // 精品歌单分类
             highqualityCatList: [],
             // 用户歌单
-            userPlayLists: [],
+            userPlayLists: {
+                has: false,
+                own: [], // 创建歌单
+                like: [], // 收藏歌单
+            },
             // 持久化数据
             persistData: {
                 // 是否处于私人 FM 模式
@@ -407,8 +413,45 @@ const useMusicDataStore = defineStore('musicData', {
             this.persistData.playlists.splice(index, 1);
         },
         // 更改用户歌单
-        setUserPlayLists(data) {
-            this.userPlayLists = data;
+        setUserPlayLists() {
+            const user = userStore();
+            if (user.userLogin) {
+                getUserPlaylist(
+                    user.getUserData.userId,
+                    user.getUserData.subcount.createdPlaylistCount +
+                    user.getUserData.subcount.subPlaylistCount).then((res) => {
+                    if (res.playlist) {
+                        this.userPlayLists.has = true;
+                        this.userPlayLists = {
+                            own: [],
+                            like: [],
+                        };
+                        res.playlist.forEach((v) => {
+                            if (v.creator.userId === user.getUserData.userId) {
+                                this.userPlayLists.own.push({
+                                    id: v.id,
+                                    cover: v.coverImgUrl,
+                                    name: v.name,
+                                    artist: v.creator,
+                                    desc: v.description,
+                                    tags: v.tags,
+                                    playCount: formatNumber(v.playCount),
+                                })
+                            } else {
+                                this.userPlayLists.like.push({
+                                    id: v.id,
+                                    cover: v.coverImgUrl,
+                                    name: v.name,
+                                    artist: v.creator,
+                                    playCount: formatNumber(v.playCount),
+                                });
+                            }
+                        });
+                    } else {
+                        $message.error("用户歌单为空");
+                    }
+                });
+            }
         }
     },
     // 开启数据持久化

@@ -15,6 +15,7 @@
           v-for="item in listData"
           :key="item"
           @click="toLink(item.id)"
+          @contextmenu="openRightMenu($event, item)"
         >
           <div class="cover">
             <n-avatar
@@ -62,15 +63,81 @@
         </n-gi>
       </n-grid>
     </Transition>
+    <!-- 右键菜单 -->
+    <n-dropdown
+      style="--n-font-size: 14px; --n-border-radius: 6px"
+      placement="bottom-start"
+      trigger="manual"
+      size="large"
+      :x="rightMenuX"
+      :y="rightMenuY"
+      :options="rightMenuOptions"
+      :show="rightMenuShow"
+      :on-clickoutside="onClickoutside"
+      @select="rightMenuShow = false"
+    />
+    <!-- 更新歌单弹窗 -->
+    <n-modal
+      style="width: 60vw; min-width: min(24rem, 100vw)"
+      v-model:show="playlistUpdateModel"
+      preset="card"
+      title="歌单编辑"
+      :bordered="false"
+      :on-after-leave="closeUpdateModel"
+    >
+      <n-form
+        ref="playlistUpdateRef"
+        :rules="playlistUpdateRules"
+        :label-width="80"
+        :model="playlistUpdateValue"
+      >
+        <n-form-item label="歌单名称" path="name">
+          <n-input
+            v-model:value="playlistUpdateValue.name"
+            placeholder="请输入歌单名称"
+          />
+        </n-form-item>
+        <n-form-item label="歌单描述" path="desc">
+          <n-input
+            v-model:value="playlistUpdateValue.desc"
+            placeholder="请输入歌单描述"
+            type="textarea"
+            :autosize="{
+              minRows: 3,
+              maxRows: 5,
+            }"
+          />
+        </n-form-item>
+        <n-form-item label="歌单标签" path="tags">
+          <n-select
+            v-model:value="playlistUpdateValue.tags"
+            placeholder="请输入歌单标签"
+            :options="playlistTags"
+            multiple
+          />
+        </n-form-item>
+      </n-form>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="closeUpdateModel"> 取消 </n-button>
+          <n-button type="primary" @click="toUpdatePlayList"> 编辑 </n-button>
+        </n-space>
+      </template>
+    </n-modal>
   </div>
 </template>
 
 <script setup>
 import { PlayArrowRound, HeadsetFilled } from "@vicons/material";
+import { delPlayList, playlistUpdate } from "@/api";
+import { musicStore } from "@/store";
 import { useRouter } from "vue-router";
+import { formRules } from "@/utils/formRules.js";
 import AllArtists from "./AllArtists.vue";
 
 const router = useRouter();
+const music = musicStore();
+const { textRule } = formRules();
 const props = defineProps({
   // 列表数据
   listData: {
@@ -104,6 +171,117 @@ const props = defineProps({
   },
 });
 
+// 弹窗数据
+let rightMenuX = ref(0);
+let rightMenuY = ref(0);
+let rightMenuShow = ref(false);
+const rightMenuOptions = ref(null);
+
+// 更新歌单数据
+let playlistUpdateId = ref(null);
+let playlistUpdateRef = ref(null);
+let playlistUpdateModel = ref(false);
+let playlistUpdateRules = {
+  name: textRule,
+};
+let playlistUpdateValue = ref({
+  name: null,
+  desc: null,
+  tags: null,
+});
+
+// 打开右键菜单
+const openRightMenu = (e, data) => {
+  e.preventDefault();
+  rightMenuShow.value = false;
+  nextTick().then(() => {
+    rightMenuOptions.value = [
+      {
+        key: "update",
+        label: "编辑歌单",
+        show: router.currentRoute.value.name == "playlists" ? true : false,
+        props: {
+          onClick: () => {
+            playlistUpdateId.value = data.id;
+            playlistUpdateModel.value = true;
+            playlistUpdateValue.value = {
+              name: data.name,
+              desc: data.desc,
+              tags: data.tags,
+            };
+          },
+        },
+      },
+      {
+        key: "del",
+        label: "删除歌单",
+        show: router.currentRoute.value.name == "playlists" ? true : false,
+        props: {
+          onClick: () => {
+            toDelPlayList(data);
+          },
+        },
+      },
+      {
+        key: "copy",
+        label: "复制歌单链接",
+        props: {
+          onClick: () => {
+            if (navigator.clipboard) {
+              try {
+                navigator.clipboard.writeText(
+                  `https://music.163.com/#/playlist?id=${data.id}`
+                );
+                $message.success("歌单链接复制成功");
+              } catch (err) {
+                $message.error("复制失败：", err);
+              }
+            } else {
+              $message.error("您的浏览器暂不支持该操作");
+            }
+          },
+        },
+      },
+    ];
+    rightMenuShow.value = true;
+    rightMenuX.value = e.clientX;
+    rightMenuY.value = e.clientY;
+  });
+};
+
+// 点击右键菜单外部
+const onClickoutside = () => {
+  rightMenuShow.value = false;
+};
+
+// 更新歌单
+const toUpdatePlayList = (e) => {
+  e.preventDefault();
+  playlistUpdateRef.value?.validate((errors) => {
+    if (!errors) {
+      console.log("通过");
+      playlistUpdate(
+        playlistUpdateId.value,
+        playlistUpdateValue._value.name,
+        playlistUpdateValue._value.desc,
+        playlistUpdateValue._value.tags.join(";")
+      ).then((res) => {
+        console.log(res);
+        if (res.code === 200) {
+          $message.success("编辑成功");
+          closeUpdateModel();
+          music.setUserPlayLists();
+        } else {
+          $message.error("编辑失败，请重试");
+        }
+      });
+    } else {
+      $loadingBar.error();
+      $message.error("请检查您的输入");
+    }
+  });
+};
+
 // 链接跳转
 const toLink = (id) => {
   if (props.listType == "playList" || props.listType == "topList") {
@@ -122,6 +300,38 @@ const toLink = (id) => {
     });
   }
 };
+
+// 关闭更新歌单弹窗
+const closeUpdateModel = () => {
+  playlistUpdateModel.value = false;
+  playlistUpdateId.value = null;
+};
+
+// 删除歌单
+const toDelPlayList = (data) => {
+  $dialog.warning({
+    title: "删除歌单",
+    content: "确认删除歌单 " + data.name + "？",
+    positiveText: "删除",
+    negativeText: "取消",
+    onPositiveClick: () => {
+      delPlayList(data.id).then((res) => {
+        if (res.code === 200) {
+          $message.success("删除成功");
+          music.setUserPlayLists();
+        }
+      });
+    },
+  });
+};
+
+// 歌单标签数据
+const playlistTags = [
+  {
+    label: "全部",
+    value: "全部",
+  },
+];
 </script>
 
 <style lang="scss" scoped>
