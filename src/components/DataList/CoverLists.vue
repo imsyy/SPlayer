@@ -110,10 +110,11 @@
         </n-form-item>
         <n-form-item label="歌单标签" path="tags">
           <n-select
+            multiple
             v-model:value="playlistUpdateValue.tags"
             placeholder="请输入歌单标签"
             :options="playlistTags"
-            multiple
+            @click="openSelect"
           />
         </n-form-item>
       </n-form>
@@ -325,13 +326,27 @@ const toDelPlayList = (data) => {
   });
 };
 
-// 歌单标签数据
-const playlistTags = [
-  {
-    label: "全部",
-    value: "全部",
-  },
-];
+// 歌单分类标签
+let playlistTags = ref([]);
+// const playlistTags = music.catList.sub.map((v) => ({
+//   label: v.name,
+//   value: v.name,
+// }));
+const openSelect = () => {
+  if (music.catList.sub) {
+    playlistTags.value = music.catList.sub.map((v) => ({
+      label: v.name,
+      value: v.name,
+    }));
+  } else {
+    music.setCatList();
+  }
+};
+
+onMounted(() => {
+  if (router.currentRoute.value.name == "playlists" && !music.catList.sub)
+    music.setCatList();
+});
 </script>
 
 <style lang="scss" scoped>

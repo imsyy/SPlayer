@@ -189,24 +189,6 @@ const hqPLayListChange = (val) => {
   });
 };
 
-// 获取歌单分类
-const getPlayListCatlistData = () => {
-  getPlayListCatlist().then((res) => {
-    if (res.code == 200) {
-      music.catList = res;
-    } else {
-      $message.error("歌单分类获取失败");
-    }
-  });
-  getPlayListCatlist(true).then((res) => {
-    if (res.code == 200) {
-      music.highqualityCatList = res.tags;
-    } else {
-      $message.error("精品歌单分类获取失败");
-    }
-  });
-};
-
 // 获取歌单数据
 const getPlaylistData = (cat = "全部歌单", limit = 30, offset = 0) => {
   getTopPlaylist(cat, limit, offset).then((res) => {
@@ -336,7 +318,7 @@ watch(
 onMounted(() => {
   // 获取歌单分类
   if (!music.catList.sub || !music.highqualityCatList[0])
-    getPlayListCatlistData();
+    music.setCatList(true);
   // 获取歌单数据
   if (hqPLayListOpen.value) {
     getHqPlaylistData(catName.value);

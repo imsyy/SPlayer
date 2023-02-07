@@ -10,7 +10,8 @@ import {
     setFmTrash,
     getLikelist,
     setLikeSong,
-    getUserPlaylist
+    getUserPlaylist,
+    getPlayListCatlist
 } from "@/api";
 import {
     userStore
@@ -411,6 +412,25 @@ const useMusicDataStore = defineStore('musicData', {
             }
             $message.success(name + " 已从播放列表中移除");
             this.persistData.playlists.splice(index, 1);
+        },
+        // 获取歌单分类
+        setCatList(highquality = false) {
+            getPlayListCatlist().then((res) => {
+                if (res.code == 200) {
+                    this.catList = res;
+                } else {
+                    $message.error("歌单分类获取失败");
+                }
+            });
+            if (highquality) {
+                getPlayListCatlist(true).then((res) => {
+                    if (res.code == 200) {
+                        this.highqualityCatList = res.tags;
+                    } else {
+                        $message.error("精品歌单分类获取失败");
+                    }
+                });
+            }
         },
         // 更改用户歌单
         setUserPlayLists() {
