@@ -161,6 +161,18 @@
             </div>
             <div
               class="item"
+              @click="
+                () => {
+                  openAddToPlaylist(drawerData.id);
+                  drawerShow = false;
+                }
+              "
+            >
+              <n-icon size="20" :component="AddCircleRound" />
+              <n-text>收藏到歌单</n-text>
+            </div>
+            <div
+              class="item"
               @click="router.push(`/comment?id=${drawerData.id}`)"
             >
               <n-icon size="20" :component="MessageFilled" />
@@ -258,7 +270,7 @@
             <n-button
               style="margin-left: 12px"
               :disabled="!cloudMatchValue.asid"
-              @click="cloudMatchId = cloudMatchValue.asid"
+              @click="cloudMatchId = cloudMatchValue.asid.toString()"
             >
               检查
             </n-button>
@@ -289,6 +301,39 @@
           </n-space>
         </template>
       </n-modal>
+      <!-- 收藏到歌单 -->
+      <n-modal
+        class="add-playlist"
+        style="width: 60vw; min-width: min(24rem, 100vw)"
+        v-model:show="addToPlaylistModel"
+        preset="card"
+        title="收藏到歌单"
+        :bordered="false"
+        :on-after-leave="closeAddToPlaylist"
+      >
+        <n-space vertical class="list" v-if="music.getUserPlayLists.own[0]">
+          <div
+            class="item"
+            v-for="item in music.getUserPlayLists.own"
+            :key="item"
+            @click="addToPlayList(item.id, addToPlaylistId)"
+          >
+            <n-avatar
+              class="pic"
+              :src="
+                item.cover
+                  ? item.cover.replace(/^http:/, 'https:') + '?param=60y60'
+                  : '/images/pic/default.png'
+              "
+              fallback-src="/images/pic/default.png"
+            />
+            <div class="desc">
+              <n-text class="name">{{ item.name }}</n-text>
+              <n-text class="num">{{ item.trackCount }}首</n-text>
+            </div>
+          </div>
+        </n-space>
+      </n-modal>
     </div>
     <n-spin class="loading" size="small" v-else />
   </Transition>
@@ -308,10 +353,11 @@ import {
   OndemandVideoRound,
   InsertPageBreakRound,
   DeleteRound,
+  AddCircleRound,
 } from "@vicons/material";
 import { musicStore, settingStore, userStore } from "@/store/index";
 import { useRouter } from "vue-router";
-import { setCloudDel, setCloudMatch } from "@/api";
+import { setCloudDel, setCloudMatch, addSongToPlayList } from "@/api";
 import AllArtists from "./AllArtists.vue";
 import SmallSongData from "./SmallSongData.vue";
 
@@ -395,6 +441,16 @@ const openRightMenu = (e, data) => {
         props: {
           onClick: () => {
             music.addSongToNext(data);
+          },
+        },
+      },
+      {
+        key: "add",
+        label: "添加到歌单",
+        show: user.userLogin ? true : false,
+        props: {
+          onClick: () => {
+            openAddToPlaylist(data.id);
           },
         },
       },
@@ -588,6 +644,37 @@ const jumpLink = (id, type) => {
       break;
   }
 };
+
+// 收藏到歌单数据
+let addToPlaylistModel = ref(false);
+let addToPlaylistId = ref(null);
+
+// 收藏到歌单
+const addToPlayList = (pid, tracks) => {
+  console.log("添加" + tracks + "到" + pid);
+  addSongToPlayList(pid, tracks).then((res) => {
+    console.log(res);
+    if (res.status === 200) {
+      $message.success("收藏歌曲至歌单成功");
+      closeAddToPlaylist();
+      music.setUserPlayLists();
+    } else {
+      $message.error("添加失败，请重试");
+    }
+  });
+};
+
+// 开启收藏到歌单
+const openAddToPlaylist = (id) => {
+  if (!music.getUserPlayLists.has) music.setUserPlayLists();
+  addToPlaylistModel.value = true;
+  addToPlaylistId.value = id;
+};
+
+// 关闭收藏到歌单
+const closeAddToPlaylist = () => {
+  addToPlaylistModel.value = false;
+};
 </script>
 
 <style lang="scss" scoped>
@@ -777,6 +864,38 @@ const jumpLink = (id, type) => {
 .cloud-match {
   :deep(.n-input-number) {
     width: 100%;
+  }
+}
+.add-playlist {
+  .list {
+    .item {
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      &:hover {
+        background-color: var(--n-border-color);
+      }
+      .pic {
+        width: 60px;
+        height: 60px;
+      }
+      .desc {
+        margin-left: 12px;
+        display: flex;
+        flex-direction: column;
+        .name {
+          // font-weight: bold;
+          font-size: 15px;
+        }
+        .num {
+          margin-top: 2px;
+          opacity: 0.8;
+        }
+      }
+    }
   }
 }
 </style>

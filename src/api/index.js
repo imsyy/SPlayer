@@ -574,6 +574,20 @@ export const playlistUpdate = (id, name, desc = null, tags = null) => {
     })
 }
 
+// 对歌单添加或删除歌曲
+export const addSongToPlayList = (pid, tracks, op = "add") => {
+    return axios({
+        method: "GET",
+        url: "/playlist/tracks",
+        params: {
+            op,
+            pid,
+            tracks,
+            time: new Date().getTime(),
+        }
+    })
+}
+
 // 获取专辑内容
 export const getAlbum = (id) => {
     return axios({

@@ -46,10 +46,14 @@ const mainContent = ref(null);
 // 空格暂停与播放
 const spacePlayOrPause = (e) => {
   if (e.code === "Space") {
-    if (e.target.tagName === "INPUT") return false;
+    console.log(e.target.tagName);
     if (router.currentRoute.value.name == "video") return false;
-    e.preventDefault();
-    music.setPlayState(!music.getPlayState);
+    if (e.target.tagName === "BODY") {
+      e.preventDefault();
+      music.setPlayState(!music.getPlayState);
+    } else {
+      return false;
+    }
   }
 };
 

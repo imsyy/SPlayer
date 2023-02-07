@@ -441,11 +441,11 @@ const useMusicDataStore = defineStore('musicData', {
                     user.getUserData.subcount.createdPlaylistCount +
                     user.getUserData.subcount.subPlaylistCount).then((res) => {
                     if (res.playlist) {
-                        this.userPlayLists.has = true;
                         this.userPlayLists = {
                             own: [],
                             like: [],
                         };
+                        this.userPlayLists.has = true;
                         res.playlist.forEach((v) => {
                             if (v.creator.userId === user.getUserData.userId) {
                                 this.userPlayLists.own.push({
@@ -456,6 +456,7 @@ const useMusicDataStore = defineStore('musicData', {
                                     desc: v.description,
                                     tags: v.tags,
                                     playCount: formatNumber(v.playCount),
+                                    trackCount: v.trackCount,
                                 })
                             } else {
                                 this.userPlayLists.like.push({
