@@ -343,7 +343,7 @@ export const getSimiVideo = (mvid) => {
  * 评论部分
  */
 
-// 获取歌曲评论
+// 获取评论
 export const getComment = (id, offset = 0, before = null, type = "music") => {
     return axios({
         method: "GET",
@@ -351,7 +351,24 @@ export const getComment = (id, offset = 0, before = null, type = "music") => {
         params: {
             id,
             offset,
-            before
+            before,
+            time: new Date().getTime(),
+        }
+    })
+}
+
+// 评论点赞
+// 0: 歌曲 1: mv 2: 歌单 3: 专辑 4: 电台节目 5: 视频 6: 动态 7: 电台
+export const likeComment = (id, cid, t, type = 0) => {
+    return axios({
+        method: "GET",
+        url: "/comment/like",
+        params: {
+            id,
+            cid,
+            t,
+            type,
+            time: new Date().getTime(),
         }
     })
 }
@@ -583,6 +600,19 @@ export const addSongToPlayList = (pid, tracks, op = "add") => {
             op,
             pid,
             tracks,
+            time: new Date().getTime(),
+        }
+    })
+}
+
+// 收藏/取消收藏歌单
+export const likePlaylist = (t, id) => {
+    return axios({
+        method: "GET",
+        url: "/playlist/subscribe",
+        params: {
+            t,
+            id,
             time: new Date().getTime(),
         }
     })

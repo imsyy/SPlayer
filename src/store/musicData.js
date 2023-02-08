@@ -72,6 +72,8 @@ const useMusicDataStore = defineStore('musicData', {
                 playlistState: 0, // 0 顺序 1 单曲循环 2 随机
                 // 是否拥有翻译
                 playSongTransl: false,
+                // 播放历史
+                playHistory: [],
             }
         }
     },
@@ -131,6 +133,10 @@ const useMusicDataStore = defineStore('musicData', {
         // 获取用户歌单
         getUserPlayLists(state) {
             return state.userPlayLists;
+        },
+        // 获取播放历史
+        getPlayHistory(state) {
+            return state.persistData.playHistory;
         },
     },
     actions: {
@@ -473,7 +479,21 @@ const useMusicDataStore = defineStore('musicData', {
                     }
                 });
             }
-        }
+        },
+        // 更改播放历史
+        setPlayHistory(data, clean = false) {
+            if (clean) {
+                this.persistData.playHistory = [];
+            } else {
+                const index = this.persistData.playHistory.findIndex(item => item.id === data.id);
+                if (index !== -1) {
+                    return false;
+                    // this.persistData.playHistory.splice(index, 1);
+                }
+                if (this.persistData.playHistory.length > 50) this.persistData.playHistory.pop();
+                this.persistData.playHistory.unshift(data);
+            }
+        },
     },
     // 开启数据持久化
     persist: [{

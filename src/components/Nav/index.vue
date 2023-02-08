@@ -110,6 +110,7 @@ import {
   WbSunnyFilled,
   DarkModeFilled,
   InfoRound,
+  HistoryRound,
 } from "@vicons/material";
 import { GithubOne, Copyright } from "@icon-park/vue-next";
 import { userStore, settingStore } from "@/store/index";
@@ -235,6 +236,19 @@ let dropdownOptions = ref([
     },
   },
   {
+    label: "播放历史",
+    key: "history",
+    icon: () => {
+      return h(
+        NIcon,
+        { style: "transform: translateY(-1px)" },
+        {
+          default: () => h(HistoryRound),
+        }
+      );
+    },
+  },
+  {
     label: "全局设置",
     key: "setting",
     icon: () => {
@@ -288,6 +302,10 @@ const dropdownSelect = (key) => {
       setting.getSiteTheme == "light"
         ? setting.setSiteTheme("dark")
         : setting.setSiteTheme("light");
+      break;
+    // 播放历史
+    case "history":
+      router.push("/history");
       break;
     // 设置
     case "setting":

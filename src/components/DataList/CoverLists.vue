@@ -130,14 +130,15 @@
 
 <script setup>
 import { PlayArrowRound, HeadsetFilled } from "@vicons/material";
-import { delPlayList, playlistUpdate } from "@/api";
-import { musicStore } from "@/store";
+import { delPlayList, playlistUpdate, likePlaylist } from "@/api";
+import { musicStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
 import { formRules } from "@/utils/formRules.js";
 import AllArtists from "./AllArtists.vue";
 
 const router = useRouter();
 const music = musicStore();
+const user = userStore();
 const { textRule } = formRules();
 const props = defineProps({
   // 列表数据
@@ -220,6 +221,16 @@ const openRightMenu = (e, data) => {
         props: {
           onClick: () => {
             toDelPlayList(data);
+          },
+        },
+      },
+      {
+        key: "like",
+        label: isLikeOrDislike(data.id) ? "收藏歌单" : "取消收藏歌单",
+        show: user.userLogin && music.getUserPlayLists.like[0] ? true : false,
+        props: {
+          onClick: () => {
+            toLikePlaylist(data.id);
           },
         },
       },
@@ -328,10 +339,6 @@ const toDelPlayList = (data) => {
 
 // 歌单分类标签
 let playlistTags = ref([]);
-// const playlistTags = music.catList.sub.map((v) => ({
-//   label: v.name,
-//   value: v.name,
-// }));
 const openSelect = () => {
   if (music.catList.sub) {
     playlistTags.value = music.catList.sub.map((v) => ({
@@ -343,9 +350,38 @@ const openSelect = () => {
   }
 };
 
+// 判断收藏还是取消
+const isLikeOrDislike = (id) => {
+  if (music.getUserPlayLists.like[0]) {
+    const index = music.getUserPlayLists.like.findIndex(
+      (item) => item.id === id
+    );
+    if (index !== -1) {
+      return false;
+    }
+    return true;
+  } else {
+    return true;
+  }
+};
+
+// 收藏/取消收藏歌单
+const toLikePlaylist = (id) => {
+  let type = isLikeOrDislike(id) ? 1 : 2;
+  likePlaylist(type, id).then((res) => {
+    if (res.code === 200) {
+      $message.success(`歌单${type == 1 ? "收藏成功" : "取消收藏成功"}`);
+      music.setUserPlayLists();
+    } else {
+      $message.error(`歌单${type == 1 ? "收藏失败" : "取消收藏失败"}`);
+    }
+  });
+};
+
 onMounted(() => {
   if (router.currentRoute.value.name == "playlists" && !music.catList.sub)
     music.setCatList();
+  if (user.userLogin && !music.getUserPlayLists.has) music.setUserPlayLists();
 });
 </script>
 

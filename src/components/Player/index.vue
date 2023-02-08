@@ -244,6 +244,8 @@ const songPlay = () => {
         }),
     }
   );
+  // 写入播放历史
+  music.setPlayHistory(music.getPlaySongData);
   // 更改页面标题
   window.document.title = music.getPlaySongData.name + " - SPlayer";
 };

@@ -11,6 +11,7 @@
       v-model:value="tabValue"
     >
       <n-tab name="playlists"> 我的歌单 </n-tab>
+      <n-tab name="like"> 收藏的歌单 </n-tab>
       <n-tab name="cloud"> 音乐云盘 </n-tab>
     </n-tabs>
     <main class="content">

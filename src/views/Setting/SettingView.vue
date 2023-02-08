@@ -179,6 +179,7 @@ const changeMusicFrequency = () => {
 .setting {
   padding: 0 10vw;
   max-width: 800px;
+  margin: 0 auto;
   @media (max-width: 768px) {
     padding: 0;
   }

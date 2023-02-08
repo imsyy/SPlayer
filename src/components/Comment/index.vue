@@ -4,7 +4,10 @@
       <div class="avatar">
         <img
           class="avatarImg"
-          :src="commentData.user.avatarUrl.replace(/^http:/, 'https:') + '?param=50y50'"
+          :src="
+            commentData.user.avatarUrl.replace(/^http:/, 'https:') +
+            '?param=50y50'
+          "
           alt="avatar"
         />
         <img
@@ -50,8 +53,15 @@
           <n-icon :component="FmdGoodOutlined" />
           {{ commentData.ipLocation.location }}
         </span>
-        <span class="like">
-          <n-icon :component="ThumbUpAltOutlined" />
+        <span
+          :class="commentData.liked ? 'like liked' : 'like'"
+          @click="toLikeComment"
+        >
+          <n-icon
+            :component="
+              commentData.liked ? ThumbUpOffAltRound : ThumbUpAltOutlined
+            "
+          />
           {{ formatNumber(commentData.likedCount) }}
         </span>
       </div>
@@ -61,12 +71,18 @@
 
 <script setup>
 import { getCommentTime, formatNumber } from "@/utils/timeTools.js";
+import { userStore } from "@/store";
+import { useRouter } from "vue-router";
+import { likeComment } from "@/api";
 import {
   AccessTimeFilled,
   FmdGoodOutlined,
   ThumbUpAltOutlined,
+  ThumbUpOffAltRound,
 } from "@vicons/material";
 
+const user = userStore();
+const router = useRouter();
 const props = defineProps({
   // 评论 数据
   commentData: {
@@ -74,6 +90,28 @@ const props = defineProps({
     default: [],
   },
 });
+
+// 点赞评论
+const toLikeComment = () => {
+  if (user.userLogin) {
+    let type = props.commentData.liked ? 0 : 1;
+    likeComment(
+      router.currentRoute.value.query.id,
+      props.commentData.commentId,
+      type
+    ).then((res) => {
+      if (res.code === 200) {
+        $message.success(type ? "点赞成功" : "取消点赞成功");
+        props.commentData.liked = !props.commentData.liked;
+        props.commentData.likedCount += type ? 1 : -1;
+      } else {
+        $message.error("操作失败，请重试");
+      }
+    });
+  } else {
+    $message.error("请登录账号后使用");
+  }
+};
 </script>
 
 <style lang="scss" scoped>
@@ -160,12 +198,29 @@ const props = defineProps({
         margin-top: 12px;
         display: flex;
         align-items: center;
-        opacity: 0.6;
         .time {
           margin-right: 12px;
+          opacity: 0.6;
+        }
+        .ip {
+          opacity: 0.6;
         }
         .like {
           margin-left: auto;
+          cursor: pointer;
+          transition: all 0.3s;
+          opacity: 0.6;
+          &:hover {
+            color: $mainColor;
+            opacity: 1;
+          }
+          &:active {
+            transform: scale(0.95);
+          }
+          &.liked {
+            color: $mainColor;
+            opacity: 1;
+          }
         }
         .n-icon {
           font-size: 16px;

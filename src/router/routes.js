@@ -75,6 +75,10 @@ const routes = [{
             name: 'playlists',
             component: () => import('@/views/User/playlists.vue')
         }, {
+            path: 'like',
+            name: 'like',
+            component: () => import('@/views/User/like.vue')
+        }, {
             path: 'cloud',
             name: 'cloud',
             component: () => import('@/views/User/cloud.vue')
@@ -175,6 +179,15 @@ const routes = [{
             name: 'ar-videos',
             component: () => import('@/views/Artist/videos.vue'),
         }]
+    },
+    // 历史记录
+    {
+        path: '/history',
+        name: 'history',
+        meta: {
+            title: 'history',
+        },
+        component: () => import('@/views/History/HistoryView.vue'),
     },
     // 状态页
     // 404

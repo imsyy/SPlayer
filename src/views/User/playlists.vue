@@ -50,11 +50,10 @@
 </template>
 
 <script setup>
-import { getUserPlaylist, createPlaylist } from "@/api";
+import { createPlaylist } from "@/api";
 import { AddCircleRound } from "@vicons/material";
 import { useRouter } from "vue-router";
 import { musicStore, userStore } from "@/store";
-import { formatNumber } from "@/utils/timeTools.js";
 import CoverLists from "@/components/DataList/CoverLists.vue";
 
 const router = useRouter();
