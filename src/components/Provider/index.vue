@@ -17,6 +17,7 @@
     abstract
     inline-theme-disabled
   >
+    <n-global-style />
     <n-loading-bar-provider>
       <n-dialog-provider>
         <n-notification-provider>

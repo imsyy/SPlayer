@@ -1,0 +1,43 @@
+* {
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+// Dialog
+.s-dialog {
+    .n-dialog__close {
+        margin: 16px 26px 0 0;
+    }
+
+    .n-dialog__title {
+        transform: translateX(-8px);
+        font-size: 16px;
+        font-weight: bold;
+
+        i {
+            font-size: 24px;
+            transform: translateY(-1px);
+        }
+    }
+}
+
+// Tab
+.main-tab {
+    .n-tabs-tab {
+        &.n-tabs-tab--active {
+            font-weight: bold !important;
+            transition: all 0.3s;
+        }
+    }
+}
+
+// 文本超出隐藏
+.text-hidden {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    word-break: break-all;
+}

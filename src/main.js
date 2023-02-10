@@ -9,6 +9,9 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import App from './App.vue'
 import router from './router'
 
+// 全局样式
+import '@/style/global.scss'
+
 // 字体文件
 import 'vfonts/Lato.css'
 import 'vfonts/FiraCode.css'

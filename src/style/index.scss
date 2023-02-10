@@ -1,32 +1,6 @@
-* {
-    -webkit-user-select: none;
-    -webkit-user-drag: none;
-    -webkit-user-drag: none;
-    user-select: none;
-}
-
 // 主题色
 $mainColor: #f55e55;
 $mainSecondaryColor: #f55e551f;
-
-// 文本超出隐藏
-.text-hidden {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 1;
-    overflow: hidden;
-    word-break: break-all;
-}
-
-// Tab
-.main-tab {
-    :deep(.n-tabs-tab) {
-        &.n-tabs-tab--active {
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-    }
-}
 
 // 响应式布局
 @mixin changeWidth($padding:10vw) {

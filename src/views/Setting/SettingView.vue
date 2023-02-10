@@ -62,7 +62,7 @@
               lyricsPosition == 'center' ? 'center' : 'center left',
           }"
         >
-          <span :style="{ fontSize: lyricsFontSize + 'vh', fontWeight: bold }"
+          <span :style="{ fontSize: lyricsFontSize + 'vh', fontWeight: 'bold' }"
             >这是一句歌词
           </span>
           <span :style="{ fontSize: lyricsFontSize - 0.4 + 'vh' }"
@@ -96,6 +96,7 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { settingStore } from "@/store/index";
+import { onBeforeUnmount } from "vue";
 const setting = settingStore();
 const {
   theme,
@@ -159,10 +160,14 @@ let playerStyleOptions = [
 const changeMusicFrequency = () => {
   if (musicFrequency.value) {
     $dialog.warning({
+      class: "s-dialog",
       title: "实验性功能",
       content: "确认开启音乐频谱？将于刷新后生效",
       positiveText: "开启",
       negativeText: "取消",
+      onMaskClick: () => {
+        musicFrequency.value = false;
+      },
       onPositiveClick: () => {
         musicFrequency.value = true;
         location.reload();
