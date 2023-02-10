@@ -38,6 +38,12 @@
         <span class="tip">{{ qrText }}</span>
       </n-tab-pane>
       <n-tab-pane name="phone" tab="手机号登录">
+        <n-alert
+          style="width: 100%; margin-top: -20px; margin-bottom: 12px"
+          type="warning"
+        >
+          该登录方式暂时无法使用
+        </n-alert>
         <n-form
           class="phone"
           ref="phoneFormRef"
