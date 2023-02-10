@@ -227,7 +227,12 @@ const openRightMenu = (e, data) => {
       {
         key: "like",
         label: isLikeOrDislike(data.id) ? "收藏歌单" : "取消收藏歌单",
-        show: user.userLogin && music.getUserPlayLists.like[0] ? true : false,
+        show:
+          user.userLogin &&
+          music.getUserPlayLists.has &&
+          router.currentRoute.value.name != "playlists"
+            ? true
+            : false,
         props: {
           onClick: () => {
             toLikePlaylist(data.id);

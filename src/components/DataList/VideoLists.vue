@@ -167,7 +167,8 @@ const props = defineProps({
       flex-direction: column;
       margin-top: 12px;
       .name {
-        font-size: 2vh;
+        // font-size: 2vh;
+        font-size: 15px;
         -webkit-line-clamp: 2;
         transition: all 0.3s;
         cursor: pointer;

@@ -35,7 +35,7 @@
 
 // 文本超出隐藏
 .text-hidden {
-    display: -webkit-box;
+    display: -webkit-box !important;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
     overflow: hidden;
