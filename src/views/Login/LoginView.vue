@@ -321,6 +321,7 @@ onBeforeUnmount(() => {
       width: 220px;
       height: 220px;
       border-radius: 8px;
+      background-color: #fff;
       :deep(.n-card__content) {
         display: flex;
         align-items: center;
