@@ -5,14 +5,18 @@
     "
     content-style="padding: 0"
   >
-    <n-slider
-      v-model:value="music.getPlaySongTime.barMoveDistance"
-      class="progress"
-      :step="0.01"
-      :tooltip="false"
-      @update:value="songTimeSliderUpdate"
-      @click.stop
-    />
+    <div class="slider">
+      <span>{{ music.getPlaySongTime.songTimePlayed }}</span>
+      <n-slider
+        v-model:value="music.getPlaySongTime.barMoveDistance"
+        class="progress"
+        :step="0.01"
+        :tooltip="false"
+        @update:value="songTimeSliderUpdate"
+        @click.stop
+      />
+      <span>{{ music.getPlaySongTime.songTimeDuration }}</span>
+    </div>
     <div class="data">
       <div class="pic" @click.stop="music.setBigPlayerState(true)">
         <img
@@ -33,16 +37,33 @@
         >
           {{ music.getPlaySongData ? music.getPlaySongData.name : "暂无歌曲" }}
         </div>
-        <AllArtists
-          class="text-hidden"
-          v-if="music.getPlaySongData"
-          :artistsData="music.getPlaySongData.artist"
-        />
-      </div>
-      <div class="time">
-        <span>{{ music.getPlaySongTime.songTimePlayed }}</span>
-        <span>/</span>
-        <span>{{ music.getPlaySongTime.songTimeDuration }}</span>
+        <div class="artisrOrLrc" v-if="music.getPlaySongData">
+          <template v-if="setting.bottomLyricShow">
+            <Transition mode="out-in">
+              <AllArtists
+                v-if="!music.getPlayState || !music.getPlaySongLyric[0]"
+                class="text-hidden"
+                :artistsData="music.getPlaySongData.artist"
+              />
+              <n-text
+                v-else-if="
+                  music.getPlaySongLyric[0] && music.getPlaySongLyricIndex != -1
+                "
+                class="lrc text-hidden"
+                :depth="3"
+                v-html="
+                  music.getPlaySongLyric[music.getPlaySongLyricIndex].lyric
+                "
+              />
+            </Transition>
+          </template>
+          <template v-else>
+            <AllArtists
+              class="text-hidden"
+              :artistsData="music.getPlaySongData.artist"
+            />
+          </template>
+        </div>
       </div>
     </div>
     <div class="control">
@@ -90,6 +111,16 @@
             music.getSongIsLike(music.getPlaySongData.id)
               ? music.changeLikeList(music.getPlaySongData.id, false)
               : music.changeLikeList(music.getPlaySongData.id, true)
+          "
+        />
+      </div>
+      <div class="add-playlist">
+        <n-icon
+          class="add-icon"
+          size="30"
+          :component="PlaylistAddRound"
+          @click.stop="
+            addPlayListRef.openAddToPlaylist(music.getPlaySongData.id)
           "
         />
       </div>
@@ -151,6 +182,7 @@
       :src="music.getPlaySongLink"
     ></audio>
   </n-card>
+  <AddPlaylist ref="addPlayListRef" />
   <BigPlayer />
 </template>
 
@@ -174,21 +206,23 @@ import {
   ThumbDownRound,
   FavoriteBorderRound,
   FavoriteRound,
+  PlaylistAddRound,
 } from "@vicons/material";
 import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
 import { storeToRefs } from "pinia";
-import { musicStore, userStore } from "@/store/index";
+import { musicStore, settingStore } from "@/store/index";
 import { useRouter } from "vue-router";
+import AddPlaylist from "@/components/DataList/AddPlaylist.vue";
 import AllArtists from "@/components/DataList/AllArtists.vue";
 import PlayList from "@/components/DataList/PlayList.vue";
 import BigPlayer from "./BigPlayer.vue";
 import debounce from "@/utils/debounce";
-import { nextTick } from "vue";
 
 const router = useRouter();
-const user = userStore();
+const setting = settingStore();
 const music = musicStore();
 const { persistData } = storeToRefs(music);
+const addPlayListRef = ref(null);
 
 // 音频标签
 const player = ref(null);
@@ -396,13 +430,39 @@ watch(
     bottom: 0;
     transition: 0.5s;
   }
-  .progress {
+  .slider {
     position: absolute;
-    top: -6px;
+    top: -12px;
     left: 0;
-    --n-handle-size: 12px;
-    --n-rail-height: 3px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    @media (max-width: 640px) {
+      top: -6px;
+      > {
+        span {
+          display: none;
+        }
+      }
+    }
+
+    .progress {
+      --n-handle-size: 12px;
+      --n-rail-height: 3px;
+    }
+    > {
+      span {
+        font-size: 12px;
+        white-space: nowrap;
+        background-color: var(--n-color);
+        outline: 1px solid var(--n-border-color);
+        padding: 2px 8px;
+        border-radius: 25px;
+        margin: 0 2px;
+      }
+    }
   }
+
   :deep(.n-card__content) {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -477,18 +537,17 @@ watch(
             color: $mainColor;
           }
         }
-        .artists {
+        .artisrOrLrc {
           font-size: 12px;
-        }
-      }
-      .time {
-        font-size: 12px;
-        opacity: 0.6;
-        margin-left: auto;
-        white-space: nowrap;
-        span {
-          &:nth-of-type(2) {
-            margin: 0 2px;
+          margin-top: 2px;
+          .v-enter-active,
+          .v-leave-active {
+            transition: opacity 0.3s ease;
+          }
+
+          .v-enter-from,
+          .v-leave-to {
+            opacity: 0;
           }
         }
       }
@@ -543,7 +602,10 @@ watch(
       justify-content: flex-end;
       color: $mainColor;
       @media (max-width: 640px) {
-        .volume {
+        .volume,
+        .like,
+        .add-playlist,
+        .pattern {
           display: none !important;
         }
       }
@@ -574,6 +636,12 @@ watch(
           padding: 7px;
           margin-top: 1px;
         }
+      }
+      .add-playlist {
+        margin-left: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       .pattern {
         margin-left: 8px;

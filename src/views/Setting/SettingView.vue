@@ -17,6 +17,10 @@
         :options="listClickModeOptions"
       />
     </n-card>
+    <n-card class="set-item">
+      <div class="name">底栏歌词显示</div>
+      <n-switch v-model:value="bottomLyricShow" :round="false" />
+    </n-card>
     <n-h6 prefix="bar"> 歌词设置 </n-h6>
     <n-card class="set-item">
       <div class="name">显示歌词翻译</div>
@@ -62,7 +66,7 @@
               lyricsPosition == 'center' ? 'center' : 'center left',
           }"
         >
-          <span :style="{ fontSize: lyricsFontSize + 'vh', fontWeight: 'bold' }"
+          <span :style="{ fontSize: lyricsFontSize + 'vh' }"
             >这是一句歌词
           </span>
           <span :style="{ fontSize: lyricsFontSize - 0.4 + 'vh' }"
@@ -106,6 +110,7 @@ const {
   musicFrequency,
   listClickMode,
   lyricsFontSize,
+  bottomLyricShow,
 } = storeToRefs(setting);
 
 // 深浅模式
@@ -236,10 +241,11 @@ const changeMusicFrequency = () => {
           opacity: 0.6;
           display: flex;
           flex-direction: column;
+          transform: scale(0.95);
           &.on {
             font-weight: bold;
             opacity: 1;
-            transform: scale(1.2);
+            transform: scale(1.05);
           }
         }
       }

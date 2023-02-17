@@ -198,7 +198,7 @@ const useMusicDataStore = defineStore("musicData", {
           }
         });
       } else {
-        $message.error("请登录后执行该操作");
+        $message.error("请登录账号后使用");
       }
     },
     // 更改喜欢列表
@@ -248,7 +248,7 @@ const useMusicDataStore = defineStore("musicData", {
           }
         }
       } else {
-        $message.error("请登录后执行该操作");
+        $message.error("请登录账号后使用");
       }
     },
     // 更改音乐播放状态
@@ -513,6 +513,8 @@ const useMusicDataStore = defineStore("musicData", {
             $message.error("用户歌单为空");
           }
         });
+      } else {
+        $message.error("请登录账号后使用");
       }
     },
     // 更改播放历史
