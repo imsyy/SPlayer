@@ -39,6 +39,11 @@
           :artistsData="music.getPlaySongData.artist"
         />
       </div>
+      <div class="time">
+        <span>{{ music.getPlaySongTime.songTimePlayed }}</span>
+        <span>/</span>
+        <span>{{ music.getPlaySongTime.songTimeDuration }}</span>
+      </div>
     </div>
     <div class="control">
       <n-icon
@@ -410,6 +415,11 @@ watch(
       display: flex;
       flex-direction: row;
       justify-content: space-between;
+      .data {
+        .time {
+          display: none;
+        }
+      }
       .control {
         margin-left: auto;
         .prev,
@@ -473,6 +483,17 @@ watch(
         }
         .artists {
           font-size: 12px;
+        }
+      }
+      .time {
+        font-size: 12px;
+        opacity: 0.6;
+        margin-left: 16px;
+        white-space: nowrap;
+        span {
+          &:nth-of-type(2) {
+            margin: 0 2px;
+          }
         }
       }
     }

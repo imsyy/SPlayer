@@ -60,14 +60,14 @@
         />
       </div>
       <div class="time">
-        <span>{{ songTimePlayed }}</span>
+        <span>{{ music.getPlaySongTime.songTimePlayed }}</span>
         <n-slider
-          v-model:value="songTimeVal"
+          v-model:value="music.getPlaySongTime.barMoveDistance"
           class="progress"
           :step="0.01"
           @update:value="songTimeSliderUpdate"
         />
-        <span>{{ songTimeDuration }}</span>
+        <span>{{ music.getPlaySongTime.songTimeDuration }}</span>
       </div>
       <div class="buttons">
         <n-icon
@@ -141,7 +141,6 @@ import {
   FavoriteRound,
 } from "@vicons/material";
 import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
-import { getSongPlayingTime } from "@/utils/timeTools.js";
 import { musicStore, userStore } from "@/store/index";
 import { useRouter } from "vue-router";
 import AllArtists from "@/components/DataList/AllArtists.vue";
@@ -151,11 +150,6 @@ const music = musicStore();
 const user = userStore();
 
 let canvas = ref(null);
-
-// 进度条数据
-let songTimeVal = ref(0);
-let songTimePlayed = ref("00:00");
-let songTimeDuration = ref("00:00");
 
 // 歌曲进度条更新
 const songTimeSliderUpdate = (val) => {
@@ -171,20 +165,6 @@ const routerJump = (url, query) => {
     query,
   });
 };
-
-// 监听歌曲进度更新
-watch(
-  () => music.getPlaySongTime,
-  (val) => {
-    if (val.barMoveDistance) {
-      songTimeVal.value = val.barMoveDistance;
-      songTimePlayed.value = getSongPlayingTime(
-        (val.duration / 100) * val.barMoveDistance
-      );
-      songTimeDuration.value = getSongPlayingTime(val.duration);
-    }
-  }
-);
 </script>
 
 <style lang="scss" scoped>
