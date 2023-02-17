@@ -289,7 +289,7 @@ watch(
   display: flex;
   justify-content: center;
   &::after {
-    content: "";
+    // content: "";
     position: absolute;
     top: 0;
     left: calc(50% - 2px);

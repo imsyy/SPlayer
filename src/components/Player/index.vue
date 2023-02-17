@@ -484,7 +484,7 @@ watch(
       .time {
         font-size: 12px;
         opacity: 0.6;
-        margin-left: 16px;
+        margin-left: auto;
         white-space: nowrap;
         span {
           &:nth-of-type(2) {
