@@ -24,7 +24,13 @@
         :component="screenfullIcon"
         @click="screenfullChange"
       />
-      <div :class="music.getPlaySongLyric[0] ? 'all' : 'all noLrc'">
+      <div
+        :class="
+          music.getPlaySongLyric[0] && music.getPlaySongLyric.length > 4
+            ? 'all'
+            : 'all noLrc'
+        "
+      >
         <div class="left">
           <PlayerCover v-if="setting.playerStyle === 'cover'" />
           <PlayerRecord v-else />
@@ -35,7 +41,12 @@
           @mouseleave="menuShow = false"
         >
           <Transition name="lrc">
-            <div class="lrcShow" v-if="music.getPlaySongLyric[0]">
+            <div
+              class="lrcShow"
+              v-if="
+                music.getPlaySongLyric[0] && music.getPlaySongLyric.length > 4
+              "
+            >
               <div class="data" v-show="setting.playerStyle === 'record'">
                 <div class="name text-hidden">
                   <span>{{
@@ -278,7 +289,7 @@ watch(
   display: flex;
   justify-content: center;
   &::after {
-    // content: "";
+    content: "";
     position: absolute;
     top: 0;
     left: calc(50% - 2px);
@@ -331,10 +342,12 @@ watch(
     transition: all 0.3s ease-in-out;
     &.noLrc {
       .left {
-        transform: translateX(27.75vh);
+        padding-right: 0;
+        transform: translateX(25vh);
       }
       @media (max-width: 768px) {
         .left {
+          width: 100%;
           display: flex !important;
           transform: none;
           align-items: center;
@@ -372,7 +385,7 @@ watch(
       align-items: flex-end;
       justify-content: center;
       transition: all 0.3s ease-in-out;
-      padding-right: 4vw;
+      padding-right: 3.8vw;
       box-sizing: border-box;
     }
     .right {
@@ -415,7 +428,8 @@ watch(
         .lrc-all {
           padding-right: 20%;
           scrollbar-width: none;
-          max-width: 460px;
+          // max-width: 460px;
+          max-width: 52vh;
           overflow: auto;
           mask: linear-gradient(
             180deg,
@@ -449,7 +463,7 @@ watch(
             height: 50%;
           }
           .lrc {
-            opacity: 0.6;
+            opacity: 0.5;
             transition: all 0.3s;
             // display: flex;
             // flex-direction: column;
@@ -465,6 +479,7 @@ watch(
               display: flex;
               flex-direction: column;
               transition: all 0.3s;
+              transform: scale(0.95);
               transform-origin: center left;
               .lyric {
                 transition: all 0.3s;
@@ -482,7 +497,7 @@ watch(
             &.on {
               opacity: 1;
               .lrc-text {
-                transform: scale(1.2);
+                transform: scale(1.05);
                 .lyric {
                   font-weight: bold;
                 }

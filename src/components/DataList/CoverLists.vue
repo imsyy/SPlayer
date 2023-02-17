@@ -413,6 +413,7 @@ onMounted(() => {
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.3s;
+      position: relative;
       .coverImg {
         border-radius: 8px;
         width: 100%;

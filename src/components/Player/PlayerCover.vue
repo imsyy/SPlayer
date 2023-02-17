@@ -6,7 +6,7 @@
         :src="
           music.getPlaySongData
             ? music.getPlaySongData.album.picUrl.replace(/^http:/, 'https:') +
-              '?param=500y500'
+              '?param=1024y1024'
             : '/images/pic/default.png'
         "
         alt="cover"
