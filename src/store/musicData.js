@@ -320,10 +320,8 @@ const useMusicDataStore = defineStore("musicData", {
     },
     // 歌曲播放进度
     setPlaySongTime(value) {
-      this.persistData.playSongTime = {
-        ...this.persistData.playSongTime,
-        value,
-      };
+      this.persistData.playSongTime.currentTime = value.currentTime;
+      this.persistData.playSongTime.duration = value.duration;
       // 计算进度条应该移动的距离
       this.persistData.playSongTime.barMoveDistance = Number(
         (value.currentTime / (value.duration / 100)).toFixed(2)

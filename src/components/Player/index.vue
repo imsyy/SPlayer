@@ -6,10 +6,10 @@
     content-style="padding: 0"
   >
     <n-slider
-      v-model:value="songTimeVal"
+      v-model:value="music.getPlaySongTime.barMoveDistance"
       class="progress"
       :step="0.01"
-      :format-tooltip="sliderTooltip"
+      :tooltip="false"
       @update:value="songTimeSliderUpdate"
       @click.stop
     />
@@ -178,7 +178,6 @@ import {
 import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
 import { storeToRefs } from "pinia";
 import { musicStore, userStore } from "@/store/index";
-import { getSongPlayingTime } from "@/utils/timeTools.js";
 import { useRouter } from "vue-router";
 import AllArtists from "@/components/DataList/AllArtists.vue";
 import PlayList from "@/components/DataList/PlayList.vue";
@@ -193,9 +192,6 @@ const { persistData } = storeToRefs(music);
 
 // 音频标签
 const player = ref(null);
-
-// 歌曲进度条
-let songTimeVal = ref(0);
 
 // 获取歌曲播放数据
 const getPlaySongData = (id) => {
@@ -307,10 +303,10 @@ const songTimeSliderUpdate = (val) => {
 };
 
 // 进度条弹出提示
-const sliderTooltip = (val) => {
-  if ($player && music.getPlaySongTime && music.getPlaySongTime.duration)
-    return getSongPlayingTime((music.getPlaySongTime.duration / 100) * val);
-};
+// const sliderTooltip = (val) => {
+//   if ($player && music.getPlaySongTime && music.getPlaySongTime.duration)
+//     return getSongPlayingTime((music.getPlaySongTime.duration / 100) * val);
+// };
 
 // 歌曲播放失败事件
 const songError = () => {
@@ -378,14 +374,14 @@ watch(
 );
 
 // 监听歌曲进度更新
-watch(
-  () => music.getPlaySongTime,
-  (val) => {
-    if (val.barMoveDistance) {
-      songTimeVal.value = val.barMoveDistance;
-    }
-  }
-);
+// watch(
+//   () => music.getPlaySongTime,
+//   (val) => {
+//     if (val.barMoveDistance) {
+//       songTimeVal.value = val.barMoveDistance;
+//     }
+//   }
+// );
 </script>
 
 <style lang="scss" scoped>
