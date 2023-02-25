@@ -19,6 +19,9 @@
       v-if="music.getPlayHistory[0]"
       :listData="music.getPlayHistory"
     />
+    <n-divider v-if="music.getPlayHistory[0]" class="tip" dashed>
+      <n-text :depth="3" style="font-size: 12px">仅显示最近 100 首</n-text>
+    </n-divider>
   </div>
 </template>
 

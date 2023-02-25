@@ -526,10 +526,10 @@ const useMusicDataStore = defineStore("musicData", {
           (item) => item.id === data.id
         );
         if (index !== -1) {
-          return false;
-          // this.persistData.playHistory.splice(index, 1);
+          this.persistData.playHistory.splice(index, 1);
+          // return false;
         }
-        if (this.persistData.playHistory.length > 50)
+        if (this.persistData.playHistory.length > 100)
           this.persistData.playHistory.pop();
         this.persistData.playHistory.unshift(data);
       }

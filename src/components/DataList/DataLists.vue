@@ -588,7 +588,7 @@ const openDrawer = (data) => {
 const playSong = (data, song) => {
   console.log(data, song);
   music.setPersonalFmMode(false);
-  music.setPlaylists(data);
+  if (router.currentRoute.value.name !== "history") music.setPlaylists(data);
   music.addSongToPlaylists(song);
 };
 

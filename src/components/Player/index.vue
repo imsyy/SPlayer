@@ -270,6 +270,41 @@ const songCanplay = () => {
 // 歌曲开始播放
 const songPlay = () => {
   music.setPlayState(true);
+  // 兼容 mediaSession
+  console.log(music.getPlaySongData.album.picUrl);
+  if ("mediaSession" in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: music.getPlaySongData.name,
+      artist: music.getPlaySongData.artist[0].name,
+      album: music.getPlaySongData.album.name,
+      artwork: [
+        {
+          src:
+            music.getPlaySongData.album.picUrl.replace(/^http:/, "https:") +
+            "?param=96y96",
+          sizes: "96x96",
+        },
+        {
+          src:
+            music.getPlaySongData.album.picUrl.replace(/^http:/, "https:") +
+            "?param=128y128",
+          sizes: "128x128",
+        },
+        {
+          src:
+            music.getPlaySongData.album.picUrl.replace(/^http:/, "https:") +
+            "?param=192y192",
+          sizes: "192x192",
+        },
+      ],
+    });
+    navigator.mediaSession.setActionHandler("nexttrack", () => {
+      music.setPlaySongIndex("next");
+    });
+    navigator.mediaSession.setActionHandler("previoustrack", () => {
+      music.setPlaySongIndex("prev");
+    });
+  }
   $message.info(
     music.getPlaySongData.name + " - " + music.getPlaySongData.artist[0].name,
     {
