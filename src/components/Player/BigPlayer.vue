@@ -146,7 +146,9 @@
           </Transition>
         </div>
       </div>
-      <canvas v-if="setting.musicFrequency" class="avBars" ref="avBars" />
+      <div class="canvas">
+        <canvas v-if="setting.musicFrequency" class="avBars" ref="avBars" />
+      </div>
     </div>
   </Transition>
 </template>
@@ -556,11 +558,14 @@ watch(
       }
     }
   }
-  .avBars {
+  .canvas {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    max-width: 1600px;
     z-index: -1;
     position: absolute;
     bottom: 0;
-    opacity: 0.6;
     -webkit-mask: linear-gradient(
       to right,
       hsla(0deg, 0%, 100%, 0) 0,
@@ -579,6 +584,10 @@ watch(
       hsla(0deg, 0%, 100%, 0.6) 85%,
       hsla(0deg, 0%, 100%, 0)
     );
+    .avBars {
+      max-width: 1600px;
+      opacity: 0.6;
+    }
   }
 }
 </style>
