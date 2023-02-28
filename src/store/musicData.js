@@ -11,6 +11,7 @@ import {
   setLikeSong,
   getUserPlaylist,
   getPlayListCatlist,
+  getUserArtistlist,
 } from "@/api";
 import { userStore } from "@/store";
 import lyricFormat from "@/utils/lyricFormat";
@@ -37,6 +38,11 @@ const useMusicDataStore = defineStore("musicData", {
         has: false,
         own: [], // 创建歌单
         like: [], // 收藏歌单
+      },
+      // 用户收藏歌手
+      userArtistLists: {
+        has: false,
+        list: [],
       },
       // 持久化数据
       persistData: {
@@ -136,6 +142,10 @@ const useMusicDataStore = defineStore("musicData", {
     // 获取用户歌单
     getUserPlayLists(state) {
       return state.userPlayLists;
+    },
+    // 获取收藏歌手
+    getUserArtistlists(state) {
+      return state.userArtistLists;
     },
     // 获取播放历史
     getPlayHistory(state) {
@@ -511,6 +521,31 @@ const useMusicDataStore = defineStore("musicData", {
             });
           } else {
             $message.error("用户歌单为空");
+          }
+        });
+      } else {
+        $message.error("请登录账号后使用");
+      }
+    },
+    // 更改用户收藏歌手
+    setUserArtistLists() {
+      const user = userStore();
+      if (user.userLogin) {
+        getUserArtistlist().then((res) => {
+          if (res.data) {
+            this.userArtistLists = {
+              list: [],
+            };
+            this.userArtistLists.has = true;
+            res.data.forEach((v) => {
+              this.userArtistLists.list.push({
+                id: v.id,
+                name: v.name,
+                cover: v.img1v1Url,
+              });
+            });
+          } else {
+            $message.error("用户收藏歌手为空");
           }
         });
       } else {

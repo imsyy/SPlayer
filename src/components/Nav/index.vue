@@ -316,6 +316,7 @@ const dropdownSelect = (key) => {
       if (user.userLogin) {
         // 退出登录
         $dialog.warning({
+          class: "s-dialog",
           title: "退出登录",
           content: "确认退出当前用户登录？",
           positiveText: "退出",

@@ -526,6 +526,7 @@ const onClickoutside = () => {
 // 云盘歌曲删除
 const delCloudSong = (data) => {
   $dialog.warning({
+    class: "s-dialog",
     title: "歌曲删除",
     content: "确认从云盘中删除歌曲 " + data.name + " ？",
     positiveText: "删除",

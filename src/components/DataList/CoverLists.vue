@@ -327,6 +327,7 @@ const closeUpdateModel = () => {
 // 删除歌单
 const toDelPlayList = (data) => {
   $dialog.warning({
+    class: "s-dialog",
     title: "删除歌单",
     content: "确认删除歌单 " + data.name + "？",
     positiveText: "删除",
