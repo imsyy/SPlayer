@@ -355,7 +355,7 @@ const useMusicDataStore = defineStore("musicData", {
         this.persistData.playSongLyricIndex =
           this.persistData.playSongLyric.length - 1;
       } else {
-        this.persistData.playSongLyricIndex = index - 1;
+        this.persistData.playSongLyricIndex = (index ? index : index + 1) - 1;
       }
     },
     // 设置当前播放模式
