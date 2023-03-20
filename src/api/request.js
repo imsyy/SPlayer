@@ -21,7 +21,7 @@ axios.defaults.withCredentials = true;
 // 请求拦截
 axios.interceptors.request.use(request => {
     if (request.loadingBar != "Hidden") $loadingBar.start();
-    // let token = localStorage.getItem("cookie");
+    // const token = localStorage.getItem("cookie");
     // token && (request.headers.Authorization = token);
     return request;
 }, error => {
@@ -37,13 +37,13 @@ axios.interceptors.response.use(response => {
 }, error => {
     $loadingBar.error();
     if (error.response) {
-        let data = error.response.data;
+        const data = error.response.data;
         switch (error.response.status) {
             case 401:
                 $message.error("您未登录");
                 break
             case 301:
-                $message.error("请求路径发生跳转");
+                $message.error("请求发生重定向");
                 break
             case 404:
                 $message.error("请求资源不存在");

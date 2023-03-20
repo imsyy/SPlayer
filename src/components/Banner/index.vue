@@ -40,11 +40,11 @@ import { getBanner } from "@/api";
 const router = useRouter();
 
 // 轮播图高度
-let bannerHeight = ref(0);
+const bannerHeight = ref(0);
 
 // 轮播图数据
-let bannerType = ref("card");
-let bannerData = ref([]);
+const bannerType = ref("card");
+const bannerData = ref([]);
 
 // 请求轮播图数据
 const getBannerData = () => {
@@ -75,7 +75,7 @@ const bannerJump = (type, id, url) => {
       break;
     case 3000:
       // 站外链接
-      let time = setTimeout(() => {
+      const time = setTimeout(() => {
         window.open(url);
       }, 2000);
       $message.loading("即将跳转至站外链接", {

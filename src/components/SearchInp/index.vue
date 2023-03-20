@@ -149,10 +149,10 @@ const router = useRouter();
 const music = musicStore();
 
 // 输入框内容
-let inputValue = ref(null);
+const inputValue = ref(null);
 
 // 输入框激活状态
-let inputActive = ref(false);
+const inputActive = ref(false);
 
 // 输入框激活事件
 const inputFocus = () => {
@@ -162,7 +162,7 @@ const inputFocus = () => {
 };
 
 // 搜索相关数据
-let searchData = reactive({
+const searchData = reactive({
   hot: [], // 热搜
   suggest: {}, // 搜索建议
 });

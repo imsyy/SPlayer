@@ -174,19 +174,19 @@ const props = defineProps({
 });
 
 // 弹窗数据
-let rightMenuX = ref(0);
-let rightMenuY = ref(0);
-let rightMenuShow = ref(false);
+const rightMenuX = ref(0);
+const rightMenuY = ref(0);
+const rightMenuShow = ref(false);
 const rightMenuOptions = ref(null);
 
 // 更新歌单数据
-let playlistUpdateId = ref(null);
-let playlistUpdateRef = ref(null);
-let playlistUpdateModel = ref(false);
-let playlistUpdateRules = {
+const playlistUpdateId = ref(null);
+const playlistUpdateRef = ref(null);
+const playlistUpdateModel = ref(false);
+const playlistUpdateRules = {
   name: textRule,
 };
-let playlistUpdateValue = ref({
+const playlistUpdateValue = ref({
   name: null,
   desc: null,
   tags: null,
@@ -344,7 +344,7 @@ const toDelPlayList = (data) => {
 };
 
 // 歌单分类标签
-let playlistTags = ref([]);
+const playlistTags = ref([]);
 const openSelect = () => {
   if (music.catList.sub) {
     playlistTags.value = music.catList.sub.map((v) => ({
@@ -373,7 +373,7 @@ const isLikeOrDislike = (id) => {
 
 // 收藏/取消收藏歌单
 const toLikePlaylist = (id) => {
-  let type = isLikeOrDislike(id) ? 1 : 2;
+  const type = isLikeOrDislike(id) ? 1 : 2;
   likePlaylist(type, id).then((res) => {
     if (res.code === 200) {
       $message.success(`歌单${type == 1 ? "收藏成功" : "取消收藏成功"}`);

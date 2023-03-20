@@ -251,14 +251,14 @@ export const checkMusicCanUse = (id) => {
 };
 
 // 获取音乐 url
-export const getMusicUrl = (id) => {
+export const getMusicUrl = (id, level = "exhigh") => {
   return axios({
     method: "GET",
-    url: "/song/url",
+    url: "/song/url/v1",
     loadingBar: "Hidden",
     params: {
       id,
-      time: new Date().getTime(),
+      level,
     },
   });
 };

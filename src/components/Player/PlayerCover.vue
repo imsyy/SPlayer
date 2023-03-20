@@ -149,7 +149,7 @@ const router = useRouter();
 const music = musicStore();
 const user = userStore();
 
-let canvas = ref(null);
+const canvas = ref(null);
 
 // 歌曲进度条更新
 const songTimeSliderUpdate = (val) => {

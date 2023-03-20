@@ -1,33 +1,31 @@
+/**
+ * 格式化歌词字符串为时间轴和歌词文本的数组
+ * @param {string} lrc 歌词字符串
+ * @returns {Array<{ time: number, lyric: string }>} 时间轴和歌词文本的数组
+ */
 const lyricFormat = (lrc) => {
-    // 正则匹配，取出时间和歌词文本
-    let lines = lrc.split('\n');
-    let regex = /^\[(.+?)\](.*)$/;
-    let regex2 = /纯音乐，请欣赏/;
-    let result = [];
-    for (let i = 0; i < lines.length; i++) {
-        let line = lines[i];
-        let match = line.match(regex);
-        if (match) {
-            // 如果匹配不到时间信息或者歌词文本，则跳过
-            if (!match[1] || (match[2].trim() === '' || !match[2].trim())) {
-                continue;
-            }
-            // 如果文本中包含 "纯音乐，请欣赏"
-            if (regex2.test(match[2])) {
-                console.log("该歌曲为纯音乐");
-                result = [];
-                return result;
-            }
-            // 将时间转换为秒
-            let time = match[1].split(':').map(i => parseFloat(i));
-            let seconds = time[0] * 60 + time[1];
-            result.push({
-                time: seconds,
-                lyric: match[2],
-            });
-        }
-    }
-    return result;
-}
+  // 匹配时间轴和歌词文本的正则表达式
+  const regex = /^\[(.*?)\]\s*(.+?)\s*$/;
+  // 将歌词字符串按行分割为数组
+  const lines = lrc.split("\n");
+  // 对每一行进行转换
+  const result = lines
+    // 筛选出包含时间轴和歌词文本的行
+    .filter((line) => regex.test(line))
+    // 转换时间轴和歌词文本为对象
+    .map((line) => {
+      const [, time, text] = line.match(regex);
+      const seconds = time
+        .split(":")
+        .reduce((acc, cur) => acc * 60 + parseFloat(cur), 0);
+      return { time: seconds, lyric: text };
+    });
+  // 检查是否为纯音乐，是则返回空数组
+  if (result.length && /纯音乐，请欣赏/.test(result[0].lyric)) {
+    console.log("该歌曲为纯音乐");
+    return [];
+  }
+  return result;
+};
 
 export default lyricFormat;

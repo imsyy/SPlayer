@@ -69,8 +69,8 @@ onMounted(() => {
   });
 
   // 版权声明
-  let logoText = "SPlayer";
-  let copyrightNotice = `\n\n版本: ${packageJson.version}\n作者: ${packageJson.author}\n作者主页: ${packageJson.home}\nGitHub: ${packageJson.github}`;
+  const logoText = "SPlayer";
+  const copyrightNotice = `\n\n版本: ${packageJson.version}\n作者: ${packageJson.author}\n作者主页: ${packageJson.home}\nGitHub: ${packageJson.github}`;
   console.info(
     `%c${logoText} %c ${copyrightNotice}`,
     "color:#f55e55;font-size:26px;font-weight:bold;",
@@ -85,6 +85,10 @@ onMounted(() => {
         user.setUserOtherData();
       } else {
         user.userLogOut();
+        if (music.getPlayListMode === "cloud") {
+          $message.info("登录已失效，请重新登录");
+          music.setPlaylists([]);
+        }
       }
     })
     .catch((err) => {

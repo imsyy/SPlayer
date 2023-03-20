@@ -50,6 +50,8 @@ const useMusicDataStore = defineStore("musicData", {
         personalFmMode: false,
         // 私人 FM 数据
         personalFmData: {},
+        // 播放列表类型
+        playListMode: "list",
         // 喜欢音乐列表
         likeList: [],
         // 播放列表
@@ -150,6 +152,10 @@ const useMusicDataStore = defineStore("musicData", {
     // 获取播放历史
     getPlayHistory(state) {
       return state.persistData.playHistory;
+    },
+    // 获取播放列表模式
+    getPlayListMode(state) {
+      return state.persistData.playListMode;
     },
   },
   actions: {
@@ -276,6 +282,11 @@ const useMusicDataStore = defineStore("musicData", {
     // 更改歌曲播放链接
     setPlaySongLink(value) {
       this.persistData.playSongLink = value;
+    },
+    // 更改播放列表模式
+    setPlayListMode(value) {
+      console.log(value);
+      this.persistData.playListMode = value;
     },
     // 添加歌单至播放列表
     setPlaylists(value) {

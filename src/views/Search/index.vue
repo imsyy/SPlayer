@@ -46,10 +46,10 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 
 // 搜索关键词
-let searchKeywords = ref(router.currentRoute.value.query.keywords);
+const searchKeywords = ref(router.currentRoute.value.query.keywords);
 
 // Tab 默认选中
-let tabValue = ref(router.currentRoute.value.path.split("/")[2]);
+const tabValue = ref(router.currentRoute.value.path.split("/")[2]);
 
 // 监听路由参数变化
 watch(

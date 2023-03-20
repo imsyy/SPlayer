@@ -27,15 +27,15 @@ const props = defineProps({
 });
 
 // 歌手数据
-let artistId = ref(router.currentRoute.value.query.id);
-let artistData = ref([]);
-let pagelimit = ref(30);
-let pageNumber = ref(
+const artistId = ref(router.currentRoute.value.query.id);
+const artistData = ref([]);
+const pagelimit = ref(30);
+const pageNumber = ref(
   router.currentRoute.value.query.page
     ? Number(router.currentRoute.value.query.page)
     : 1
 );
-let totalCount = ref(0);
+const totalCount = ref(0);
 
 // 获取歌手视频（网易云你视频就不返回总数了？）
 const getArtistVideosData = (id, limit = 30, offset = 0) => {

@@ -28,7 +28,7 @@ import ArtistLists from "@/components/DataList/ArtistLists.vue";
 const router = useRouter();
 
 // 歌手数据
-let artistsData = ref([]);
+const artistsData = ref([]);
 
 // 获取歌手数据
 const getArtistListData = (type = -1, area = -1, limit = 6) => {

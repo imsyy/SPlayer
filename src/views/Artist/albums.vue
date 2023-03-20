@@ -19,15 +19,15 @@ import Pagination from "@/components/Pagination/index.vue";
 const router = useRouter();
 
 // 歌手数据
-let artistId = ref(router.currentRoute.value.query.id);
-let artistData = ref([]);
-let pagelimit = ref(30);
-let pageNumber = ref(
+const artistId = ref(router.currentRoute.value.query.id);
+const artistData = ref([]);
+const pagelimit = ref(30);
+const pageNumber = ref(
   router.currentRoute.value.query.page
     ? Number(router.currentRoute.value.query.page)
     : 1
 );
-let totalCount = ref(0);
+const totalCount = ref(0);
 
 // 获取歌手专辑
 const getArtistAblumsData = (id, limit = 30, offset = 0) => {

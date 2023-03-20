@@ -20,7 +20,7 @@ import CoverLists from "@/components/DataList/CoverLists.vue";
 const router = useRouter();
 
 // 推荐数据
-let personalizedData = ref([]);
+const personalizedData = ref([]);
 
 // 获取推荐数据
 const getPersonalizedData = (type = null, limit = 12) => {

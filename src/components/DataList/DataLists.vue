@@ -354,21 +354,21 @@ const props = defineProps({
 });
 
 // 弹窗数据
-let rightMenuX = ref(0);
-let rightMenuY = ref(0);
-let rightMenuShow = ref(false);
+const rightMenuX = ref(0);
+const rightMenuY = ref(0);
+const rightMenuShow = ref(false);
 const rightMenuOptions = ref(null);
 
 // 抽屉数据
-let drawerShow = ref(false);
-let drawerData = ref(null);
+const drawerShow = ref(false);
+const drawerData = ref(null);
 
 // 歌曲信息纠正数据
-let smallSongDataRef = ref(null);
-let cloudMatchModel = ref(false);
-let cloudMatchBeforeData = ref(null);
-let cloudMatchId = ref(null);
-let cloudMatchValue = ref({
+const smallSongDataRef = ref(null);
+const cloudMatchModel = ref(false);
+const cloudMatchBeforeData = ref(null);
+const cloudMatchId = ref(null);
+const cloudMatchValue = ref({
   uid: user.getUserData.userId,
   sid: null,
   asid: null,
@@ -590,6 +590,12 @@ const playSong = (data, song) => {
   console.log(data, song);
   music.setPersonalFmMode(false);
   if (router.currentRoute.value.name !== "history") music.setPlaylists(data);
+  // 检查是否为云盘歌曲
+  if (router.currentRoute.value.name === "cloud") {
+    music.setPlayListMode("cloud");
+  } else {
+    music.setPlayListMode("list");
+  }
   music.addSongToPlaylists(song);
 };
 

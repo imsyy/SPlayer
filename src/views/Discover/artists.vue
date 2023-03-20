@@ -53,7 +53,7 @@ import ArtistLists from "@/components/DataList/ArtistLists.vue";
 const router = useRouter();
 
 // 歌手标签数据
-let artistInitials = [
+const artistInitials = [
   { key: "-1", value: "热门" },
   ...Array.from({ length: 26 }, (_, i) => String.fromCharCode(i + 65)).map(
     (v) => ({
@@ -63,14 +63,14 @@ let artistInitials = [
   ),
   { key: "0", value: "#" },
 ];
-let artistInitialChoose = ref(
+const artistInitialChoose = ref(
   router.currentRoute.value.query.initial
     ? router.currentRoute.value.query.initial
     : artistInitials[0].key
 );
 
 // 歌手分类数据
-let artistTypeNames = [
+const artistTypeNames = [
   "全部",
   "华语",
   "华语男",
@@ -90,21 +90,21 @@ let artistTypeNames = [
   "韩国组合",
   "其他",
 ];
-let artistType = [-1, -1, 1, 2, 3, -1, 1, 2, 3, -1, 1, 2, 3, -1, 1, 2, 3, -1];
-let artistArea = [
+const artistType = [-1, -1, 1, 2, 3, -1, 1, 2, 3, -1, 1, 2, 3, -1, 1, 2, 3, -1];
+const artistArea = [
   -1, 7, 7, 7, 7, 96, 96, 96, 96, 8, 8, 8, 8, 16, 16, 16, 16, 0,
 ];
-let artistTypeNamesChoose = ref(
+const artistTypeNamesChoose = ref(
   router.currentRoute.value.query.type
     ? Number(router.currentRoute.value.query.type)
     : 0
 );
 
 // 歌手数据
-let artistsData = ref([]);
-let artistsOffset = ref(0);
-let hasMore = ref(true);
-let loading = ref(false);
+const artistsData = ref([]);
+const artistsOffset = ref(0);
+const hasMore = ref(true);
+const loading = ref(false);
 
 // 获取歌手数据
 const getArtistListData = (

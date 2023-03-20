@@ -21,7 +21,7 @@ import CoverLists from "@/components/DataList/CoverLists.vue";
 const router = useRouter();
 
 // 专辑数据
-let newAlbumData = ref([]);
+const newAlbumData = ref([]);
 
 // 获取推荐数据
 const getNewAlbumData = () => {

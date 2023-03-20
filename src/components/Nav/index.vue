@@ -122,7 +122,7 @@ const user = userStore();
 const setting = settingStore();
 
 // 下拉菜单显隐
-let showDropdown = ref(false);
+const showDropdown = ref(false);
 const closeDropdown = (event) => {
   // 解决点击头像无法关闭
   if (event.target.className == "avatarImg") {
@@ -133,8 +133,8 @@ const closeDropdown = (event) => {
 };
 
 // 关于本站弹窗
-let showAboutModal = ref(false);
-let icp = ref(import.meta.env.VITE_ICP ? import.meta.env.VITE_ICP : null);
+const showAboutModal = ref(false);
+const icp = ref(import.meta.env.VITE_ICP ? import.meta.env.VITE_ICP : null);
 
 // 链接跳转
 const jumpUrl = (url) => {
@@ -204,7 +204,7 @@ const userDataRender = () => {
 };
 
 // 下拉框数据
-let dropdownOptions = ref([
+const dropdownOptions = ref([
   {
     key: "header",
     type: "render",
@@ -254,7 +254,7 @@ let dropdownOptions = ref([
     icon: () => {
       return h(
         NIcon,
-        { style: "transform: translateY(-2px)" },
+        { style: "transform: translateY(-0.5px)" },
         {
           default: () => h(SettingsRound),
         }
@@ -271,7 +271,7 @@ let dropdownOptions = ref([
     icon: () => {
       return h(
         NIcon,
-        { style: "transform: translateY(-1px)" },
+        { style: "transform: translateY(-0.5px)" },
         {
           default: () => (user.userLogin ? h(LogOutFilled) : h(LogInFilled)),
         }

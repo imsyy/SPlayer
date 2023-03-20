@@ -98,10 +98,10 @@ import DataLists from "@/components/DataList/DataLists.vue";
 const router = useRouter();
 
 // 歌单数据
-let albumId = ref(router.currentRoute.value.query.id);
-let albumDetail = ref(null);
-let albumData = ref([]);
-let albumDescShow = ref(false);
+const albumId = ref(router.currentRoute.value.query.id);
+const albumDetail = ref(null);
+const albumData = ref([]);
+const albumDescShow = ref(false);
 
 // 获取歌单信息
 const getAlbumData = (id) => {

@@ -51,7 +51,7 @@ const props = defineProps({
 });
 
 // 歌曲数据
-let songDetail = ref(props.songData);
+const songDetail = ref(props.songData);
 
 // 获取歌曲详情
 const getMusicDetailData = (id) => {

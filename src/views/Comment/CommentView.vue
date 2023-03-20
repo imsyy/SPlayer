@@ -79,21 +79,21 @@ const router = useRouter();
 const music = musicStore();
 
 // 歌曲信息
-let songId = ref(router.currentRoute.value.query.id);
-let pageNumber = ref(
+const songId = ref(router.currentRoute.value.query.id);
+const pageNumber = ref(
   router.currentRoute.value.query.page
     ? Number(router.currentRoute.value.query.page)
     : 1
 );
 
 // 评论数据
-let commentData = reactive({
+const commentData = reactive({
   hotComments: [], // 热门评论
   allComments: [], // 全部评论
 });
 
 // 评论总数
-let commentsCount = ref(0);
+const commentsCount = ref(0);
 
 // 获取评论数据
 const getCommentData = (id, offset = 0) => {

@@ -87,16 +87,16 @@ const router = useRouter();
 const music = musicStore();
 
 // 视频 id
-let videoId = ref(router.currentRoute.value.query.id);
+const videoId = ref(router.currentRoute.value.query.id);
 
 // 相似视频
-let simiVideo = ref([]);
+const simiVideo = ref([]);
 
 // 播放器数据
-let videoData = ref(null);
-let videoRef = ref(null);
-let player = ref(null);
-let playerOptions = {
+const videoData = ref(null);
+const videoRef = ref(null);
+const player = ref(null);
+const playerOptions = {
   settings: ["quality", "speed"],
   invertTime: false,
   autoplay: false,
@@ -121,22 +121,22 @@ let playerOptions = {
 };
 
 // 评论数据
-let commentData = reactive({
+const commentData = reactive({
   hotComments: [], // 热门评论
   allComments: [], // 全部评论
 });
-let commentsCount = ref(0);
+const commentsCount = ref(0);
 
 // 获取视频数据
 const getVideoData = (id) => {
   getVideoDetail(id).then((res) => {
     videoData.value = res.data;
-    let requests = res.data.brs.map((v) => {
+    const requests = res.data.brs.map((v) => {
       return getVideoUrl(id, v.br);
     });
     Promise.all(requests)
       .then((results) => {
-        let sources = results.map((result) => {
+        const sources = results.map((result) => {
           return {
             src: result.data.url.replace(/^http:/, "https:"),
             type: "video/mp4",
@@ -146,7 +146,7 @@ const getVideoData = (id) => {
         player.value.source = {
           type: "video",
           title: videoData.value.name,
-          sources: sources,
+          sources,
           poster: videoData.value.cover.replace(/^http:/, "https:"),
         };
       })

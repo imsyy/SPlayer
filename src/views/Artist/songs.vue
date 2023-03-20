@@ -12,8 +12,8 @@ import DataLists from "@/components/DataList/DataLists.vue";
 const router = useRouter();
 
 // 歌手数据
-let artistId = ref(router.currentRoute.value.query.id);
-let artistData = ref([]);
+const artistId = ref(router.currentRoute.value.query.id);
+const artistData = ref([]);
 
 // 获取歌手热门歌曲
 const getArtistSongsData = (id) => {

@@ -113,28 +113,28 @@ const user = userStore();
 const { numberRule, mobileRule } = formRules();
 
 // 二维码数据
-let qrImg = ref(null);
-let qrText = ref("请打开云音乐 APP 扫码登录");
+const qrImg = ref(null);
+const qrText = ref("请打开云音乐 APP 扫码登录");
 
 // 手机号登录数据
-let phoneFormRef = ref(null);
-let phoneFormData = ref({
+const phoneFormRef = ref(null);
+const phoneFormData = ref({
   phone: null,
   captcha: null,
 });
-let phoneFormRules = {
+const phoneFormRules = {
   phone: mobileRule,
   captcha: numberRule,
 };
-let captchaTimeOut = ref(null);
-let captchaText = ref("获取验证码");
-let captchaDisabled = ref(false);
+const captchaTimeOut = ref(null);
+const captchaText = ref("获取验证码");
+const captchaDisabled = ref(false);
 
 // 定时器
-let qrCheckInterval = ref(null);
+const qrCheckInterval = ref(null);
 
 // 登陆状态弹窗
-let loginStateMessage = null;
+const loginStateMessage = ref(null);
 
 // 储存登录信息
 const saveLoginData = (data) => {
@@ -188,20 +188,23 @@ const checkQrState = (key) => {
       console.log(res);
       if (res.code == 800) {
         getQrKeyData();
-        loginStateMessage = null;
+        loginStateMessage.value = null;
         qrText.value = "当前二维码已失效，请重新扫码";
       } else if (res.code == 801) {
-        loginStateMessage = null;
+        loginStateMessage.value = null;
         qrText.value = "请打开云音乐 APP 扫码登录";
       } else if (res.code == 802) {
         qrText.value = "扫描成功，请在客户端确认登录";
-        if (!loginStateMessage) {
-          loginStateMessage = $message.loading("扫描成功，请在客户端确认登录", {
-            duration: 0,
-          });
+        if (!loginStateMessage.value) {
+          loginStateMessage.value = $message.loading(
+            "扫描成功，请在客户端确认登录",
+            {
+              duration: 0,
+            }
+          );
         }
       } else if (res.code == 803) {
-        loginStateMessage.destroy();
+        loginStateMessage.value.destroy();
         saveLoginData(res);
       }
     });

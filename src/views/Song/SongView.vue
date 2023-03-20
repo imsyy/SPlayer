@@ -100,11 +100,11 @@ const router = useRouter();
 const music = musicStore();
 
 // 歌曲数据
-let musicId = ref(router.currentRoute.value.query.id);
-let musicDetail = ref(null);
+const musicId = ref(router.currentRoute.value.query.id);
+const musicDetail = ref(null);
 
 // 相似数据
-let simiPlayList = ref([]);
+const simiPlayList = ref([]);
 
 // 获取歌曲数据
 const getMusicDetailData = (id) => {
@@ -139,7 +139,7 @@ const getSimiData = (id) => {
 
 // 添加歌曲并播放
 const addSong = (data) => {
-  let song = {
+  const song = {
     album: data.al,
     artist: data.ar,
     fee: data.fee,

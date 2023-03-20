@@ -40,9 +40,9 @@ const props = defineProps({
 const emit = defineEmits(["pageSizeChange", "pageNumberChange"]);
 
 // 每页个数
-let currentPageSize = ref(30);
+const currentPageSize = ref(30);
 // 当前页数
-let currentPageNumber = ref(1);
+const currentPageNumber = ref(1);
 
 // 自定义每页数量
 const pageSizes = ref([
@@ -57,6 +57,10 @@ const pageSizes = ref([
   {
     label: "30条/页",
     value: 30,
+  },
+  {
+    label: "50条/页",
+    value: 50,
   },
 ]);
 

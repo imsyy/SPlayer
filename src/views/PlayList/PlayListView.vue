@@ -134,17 +134,17 @@ const user = userStore();
 const music = musicStore();
 
 // 歌单数据
-let playListId = ref(router.currentRoute.value.query.id);
-let playListDetail = ref(null);
-let playListData = ref([]);
-let playListDescShow = ref(false);
-let pagelimit = ref(30);
-let pageNumber = ref(
+const playListId = ref(router.currentRoute.value.query.id);
+const playListDetail = ref(null);
+const playListData = ref([]);
+const playListDescShow = ref(false);
+const pagelimit = ref(30);
+const pageNumber = ref(
   router.currentRoute.value.query.page
     ? Number(router.currentRoute.value.query.page)
     : 1
 );
-let totalCount = ref(0);
+const totalCount = ref(0);
 
 // 获取歌单信息
 const getPlayListDetailData = (id) => {

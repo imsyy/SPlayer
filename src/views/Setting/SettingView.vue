@@ -21,6 +21,17 @@
       <div class="name">底栏歌词显示</div>
       <n-switch v-model:value="bottomLyricShow" :round="false" />
     </n-card>
+    <n-card class="set-item">
+      <div class="name">
+        歌曲音质
+        <span class="tip">无损音质及以上需要您为黑胶会员</span>
+      </div>
+      <n-select
+        class="set"
+        v-model:value="songLevel"
+        :options="songLevelOptions"
+      />
+    </n-card>
     <n-h6 prefix="bar"> 歌词设置 </n-h6>
     <n-card class="set-item">
       <div class="name">显示歌词翻译</div>
@@ -85,6 +96,17 @@
     </n-card>
     <n-card class="set-item">
       <div class="name">
+        歌词滚动位置
+        <span class="tip">歌词高亮时所处的位置</span>
+      </div>
+      <n-select
+        class="set"
+        v-model:value="lyricsBlock"
+        :options="lyricsBlockOptions"
+      />
+    </n-card>
+    <n-card class="set-item">
+      <div class="name">
         显示音乐频谱
         <span class="tip">实验性功能，可能会导致一些意想不到的后果</span>
       </div>
@@ -99,9 +121,9 @@
 
 <script setup>
 import { storeToRefs } from "pinia";
-import { settingStore } from "@/store/index";
-import { onBeforeUnmount } from "vue";
+import { settingStore, userStore } from "@/store";
 const setting = settingStore();
+const user = userStore();
 const {
   theme,
   showTransl,
@@ -111,10 +133,12 @@ const {
   listClickMode,
   lyricsFontSize,
   bottomLyricShow,
+  lyricsBlock,
+  songLevel,
 } = storeToRefs(setting);
 
 // 深浅模式
-let darkOptions = [
+const darkOptions = [
   {
     label: "浅色模式",
     value: "light",
@@ -126,7 +150,7 @@ let darkOptions = [
 ];
 
 // 列表模式
-let listClickModeOptions = [
+const listClickModeOptions = [
   {
     label: "双击播放",
     value: "dblclick",
@@ -137,8 +161,37 @@ let listClickModeOptions = [
   },
 ];
 
+// 歌曲音质
+const songLevelOptions = [
+  {
+    label: "标准",
+    value: "standard",
+  },
+  {
+    label: "较高",
+    value: "higher",
+  },
+  ,
+  {
+    label: "极高",
+    value: "exhigh",
+  },
+  ,
+  {
+    label: "无损",
+    value: "lossless",
+    disabled: user.userData?.vipType ? false : true,
+  },
+  ,
+  {
+    label: "Hi-Res",
+    value: "hires",
+    disabled: user.userData?.vipType ? false : true,
+  },
+];
+
 // 歌词位置
-let lyricsPositionOptions = [
+const lyricsPositionOptions = [
   {
     label: "居左",
     value: "left",
@@ -149,8 +202,20 @@ let lyricsPositionOptions = [
   },
 ];
 
+// 歌词滚动位置
+const lyricsBlockOptions = [
+  {
+    label: "顶部",
+    value: "start",
+  },
+  {
+    label: "水平居中",
+    value: "center",
+  },
+];
+
 // 播放器样式
-let playerStyleOptions = [
+const playerStyleOptions = [
   {
     label: "封面模式",
     value: "cover",

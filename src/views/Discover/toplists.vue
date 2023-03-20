@@ -63,7 +63,7 @@ import CoverLists from "@/components/DataList/CoverLists.vue";
 const router = useRouter();
 
 // 排行榜数据
-let toplistData = reactive({
+const toplistData = reactive({
   // 官方榜
   officialList: [],
   // 全球榜

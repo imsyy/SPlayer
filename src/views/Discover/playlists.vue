@@ -138,33 +138,33 @@ const router = useRouter();
 const music = musicStore();
 
 // 分类数据
-let catModelShow = ref(false);
-let catName = ref(
+const catModelShow = ref(false);
+const catName = ref(
   router.currentRoute.value.query.cat
     ? router.currentRoute.value.query.cat
     : "全部歌单"
 );
 
 // 歌单数据
-let playlistsData = ref([]);
-let totalCount = ref(0);
-let pagelimit = ref(30);
-let pageNumber = ref(
+const playlistsData = ref([]);
+const totalCount = ref(0);
+const pagelimit = ref(30);
+const pageNumber = ref(
   router.currentRoute.value.query.page
     ? Number(router.currentRoute.value.query.page)
     : 1
 );
 
 // 精品歌单数据
-let hqPLayListOpen = ref(
+const hqPLayListOpen = ref(
   router.currentRoute.value.query.hq
     ? router.currentRoute.value.query.hq == "true"
       ? true
       : false
     : false
 );
-let hasMore = ref(true);
-let loading = ref(false);
+const hasMore = ref(true);
+const loading = ref(false);
 
 // 获取是否有精品歌单
 const getHaveHqPlaylists = (array, name) => {
@@ -218,7 +218,7 @@ const getPlaylistData = (cat = "全部歌单", limit = 30, offset = 0) => {
 // 获取精品歌单数据
 const getHqPlaylistData = (cat = "全部歌单", limit = 30) => {
   // 获取 before
-  let before = playlistsData.value[0]
+  const before = playlistsData.value[0]
     ? playlistsData.value[playlistsData.value.length - 1].updateTime
     : null;
   // 获取数据

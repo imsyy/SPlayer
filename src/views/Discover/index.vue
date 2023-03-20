@@ -29,7 +29,7 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 
 // Tab 默认选中
-let tabValue = ref(router.currentRoute.value.path.split("/")[2]);
+const tabValue = ref(router.currentRoute.value.path.split("/")[2]);
 
 // Tab 选项卡变化
 const tabChange = (value) => {

@@ -12,20 +12,12 @@
         />
         <img
           class="musicPackage"
-          v-if="
-            commentData.user.vipRights &&
-            commentData.user.vipRights.musicPackage
-          "
+          v-if="commentData.user.vipRights?.musicPackage"
           :src="commentData.user.vipRights.musicPackage.iconUrl"
           alt="vip"
         />
       </div>
-      <div
-        class="associator"
-        v-if="
-          commentData.user.vipRights && commentData.user.vipRights.redVipLevel
-        "
-      >
+      <div class="associator" v-if="commentData.user?.redVipLevel">
         <img
           v-if="commentData.user.vipRights.associator"
           :src="commentData.user.vipRights.associator.iconUrl"
@@ -94,7 +86,7 @@ const props = defineProps({
 // 点赞评论
 const toLikeComment = () => {
   if (user.userLogin) {
-    let type = props.commentData.liked ? 0 : 1;
+    const type = props.commentData.liked ? 0 : 1;
     likeComment(
       router.currentRoute.value.query.id,
       props.commentData.commentId,

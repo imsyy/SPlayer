@@ -66,7 +66,7 @@ export default ({
         "description": "一个简约的在线音乐播放器",
         "display": "standalone",
         "start_url": "/",
-        "theme_color": "#f55e55",
+        "theme_color": "#fff",
         "background_color": "#efefef",
         "icons": [{
           "src": "/images/logo/favicon.png",

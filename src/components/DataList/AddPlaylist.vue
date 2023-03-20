@@ -41,8 +41,8 @@ const music = musicStore();
 const user = userStore();
 
 // 收藏到歌单数据
-let addToPlaylistModel = ref(false);
-let addToPlaylistId = ref(null);
+const addToPlaylistModel = ref(false);
+const addToPlaylistId = ref(null);
 
 // 收藏到歌单
 const addToPlayList = (pid, tracks) => {

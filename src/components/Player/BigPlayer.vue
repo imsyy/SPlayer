@@ -173,11 +173,11 @@ const music = musicStore();
 const setting = settingStore();
 
 // 工具栏显隐
-let menuShow = ref(false);
+const menuShow = ref(false);
 
 // 音乐频谱
-let avBars = ref(null);
-let musicFrequency = ref(null);
+const avBars = ref(null);
+const musicFrequency = ref(null);
 
 // 点击歌词跳转
 const jumpTime = (time) => {
@@ -185,7 +185,7 @@ const jumpTime = (time) => {
 };
 
 // 全屏切换
-let screenfullIcon = shallowRef(FullscreenRound);
+const screenfullIcon = shallowRef(FullscreenRound);
 const screenfullChange = () => {
   if (screenfull.isEnabled) {
     screenfull.toggle();
@@ -208,11 +208,14 @@ const toComment = () => {
 
 // 歌词滚动
 const lyricsScroll = (index) => {
-  const el = document.getElementById(`lrc${index}`);
+  const type = setting.lyricsBlock;
+  const el = document.getElementById(
+    `lrc${type === "center" ? index : index - 2}`
+  );
   if (el) {
     el.scrollIntoView({
       behavior: "smooth",
-      block: "center",
+      block: type,
     });
   }
 };

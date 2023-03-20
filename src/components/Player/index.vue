@@ -228,12 +228,12 @@ const addPlayListRef = ref(null);
 const player = ref(null);
 
 // 获取歌曲播放数据
-const getPlaySongData = (id) => {
+const getPlaySongData = (id, level = setting.songLevel) => {
   checkMusicCanUse(id).then((res) => {
     if (res.success) {
       console.log("音乐可用");
       // 获取音乐地址
-      getMusicUrl(id).then((res) => {
+      getMusicUrl(id, level).then((res) => {
         if (res.data[0].fee == 1) {
           $message.warning("当前歌曲为 VIP 专享，仅可试听");
         }
@@ -253,8 +253,8 @@ const getPlaySongData = (id) => {
 
 // 歌曲进度更新事件
 const songUpdate = (e) => {
-  let currentTime = e.target.currentTime;
-  let duration = e.target.duration;
+  const currentTime = e.target.currentTime;
+  const duration = e.target.duration;
   music.setPlaySongTime({ currentTime, duration });
 };
 

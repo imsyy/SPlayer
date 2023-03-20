@@ -15,8 +15,12 @@ const useSettingDataStore = defineStore("settingData", {
       bottomLyricShow: true,
       // 是否显示歌词翻译
       showTransl: true,
+      // 歌曲音质
+      songLevel: "exhigh",
       // 歌词位置
       lyricsPosition: "left",
+      // 歌词滚动位置
+      lyricsBlock: "center",
       // 歌词大小
       lyricsFontSize: 2.4,
       // 音乐频谱
@@ -36,20 +40,13 @@ const useSettingDataStore = defineStore("settingData", {
   actions: {
     // 切换明暗模式
     setSiteTheme(value) {
+      const isLightMode = value === "light";
+      const message = isLightMode ? "已切换至浅色模式" : "已切换至深色模式";
+      const icon = isLightMode ? WbSunnyFilled : DarkModeFilled;
       this.theme = value;
-      this.theme == "light"
-        ? $message.info("已切换至浅色模式", {
-            icon: () =>
-              h(NIcon, null, {
-                default: () => h(WbSunnyFilled),
-              }),
-          })
-        : $message.info("已切换至深色模式", {
-            icon: () =>
-              h(NIcon, null, {
-                default: () => h(DarkModeFilled),
-              }),
-          });
+      $message.info(message, {
+        icon: () => h(NIcon, null, { default: () => h(icon) }),
+      });
     },
     // 更改翻译开启选项
     setShowTransl(value) {

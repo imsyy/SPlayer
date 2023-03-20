@@ -61,9 +61,9 @@ const music = musicStore();
 const user = userStore();
 
 // 新建歌单数据
-let createModelShow = ref(false);
-let createPrivacy = ref(false);
-let createName = ref(null);
+const createModelShow = ref(false);
+const createPrivacy = ref(false);
+const createName = ref(null);
 
 // 新建歌单
 const createPlaylistBtn = (name, privacy = false) => {

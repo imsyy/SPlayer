@@ -47,7 +47,7 @@ const setting = settingStore();
 const osThemeRef = useOsTheme();
 
 // 明暗切换
-let theme = ref(null);
+const theme = ref(null);
 const changeTheme = () => {
   if (setting.getSiteTheme == "light") {
     theme.value = null;

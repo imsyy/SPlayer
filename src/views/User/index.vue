@@ -35,7 +35,7 @@ const router = useRouter();
 const user = userStore();
 
 // Tab 默认选中
-let tabValue = ref(router.currentRoute.value.path.split("/")[2]);
+const tabValue = ref(router.currentRoute.value.path.split("/")[2]);
 
 // Tab 选项卡变化
 const tabChange = (value) => {

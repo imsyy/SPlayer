@@ -75,12 +75,12 @@ import { MusicNoteFilled, AlbumFilled, VideocamRound } from "@vicons/material";
 const router = useRouter();
 
 // 歌手数据
-let artistId = ref(router.currentRoute.value.query.id);
-let artistData = ref(null);
-let artistDescShow = ref(false);
+const artistId = ref(router.currentRoute.value.query.id);
+const artistData = ref(null);
+const artistDescShow = ref(false);
 
 // Tab 默认选中
-let tabValue = ref(router.currentRoute.value.path.split("/")[2]);
+const tabValue = ref(router.currentRoute.value.path.split("/")[2]);
 
 // 获取歌手数据
 const getArtistDetailData = (id) => {

@@ -12,11 +12,11 @@ import ArtistLists from "@/components/DataList/ArtistLists.vue";
 const router = useRouter();
 
 // 搜索数据
-let searchKeywords = ref(router.currentRoute.value.query.keywords);
-let searchData = ref([]);
-let pagelimit = ref(30);
-let pageNumber = ref(1);
-let totalCount = ref(0);
+const searchKeywords = ref(router.currentRoute.value.query.keywords);
+const searchData = ref([]);
+const pagelimit = ref(30);
+const pageNumber = ref(1);
+const totalCount = ref(0);
 
 // 获取搜索数据
 const getSearchDataList = (keywords, limit = 30, offset = 0, type = 100) => {

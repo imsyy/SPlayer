@@ -19,11 +19,11 @@ import Pagination from "@/components/Pagination/index.vue";
 const router = useRouter();
 
 // 搜索数据
-let searchKeywords = ref(router.currentRoute.value.query.keywords);
-let searchData = ref([]);
-let totalCount = ref(0);
-let pagelimit = ref(30);
-let pageNumber = ref(
+const searchKeywords = ref(router.currentRoute.value.query.keywords);
+const searchData = ref([]);
+const totalCount = ref(0);
+const pagelimit = ref(30);
+const pageNumber = ref(
   router.currentRoute.value.query.page
     ? Number(router.currentRoute.value.query.page)
     : 1

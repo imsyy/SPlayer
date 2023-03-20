@@ -54,17 +54,17 @@ import Pagination from "@/components/Pagination/index.vue";
 const router = useRouter();
 
 // 云盘数据
-let cloudSpace = ref([]);
-let cloudData = ref([]);
-let pagelimit = ref(30);
-let pageNumber = ref(
+const cloudSpace = ref([]);
+const cloudData = ref([]);
+const pagelimit = ref(30);
+const pageNumber = ref(
   router.currentRoute.value.query.page
     ? Number(router.currentRoute.value.query.page)
     : 1
 );
-let totalCount = ref(0);
-let upSongRef = ref(null);
-let upSongMessage = null;
+const totalCount = ref(0);
+const upSongRef = ref(null);
+const upSongMessage = ref(null);
 
 // 获取云盘数据
 const getCloudData = (limit = 30, offset = 0, scroll = true) => {
@@ -103,14 +103,14 @@ const getCloudData = (limit = 30, offset = 0, scroll = true) => {
 const upCloudSongData = (e) => {
   console.log(e.target.files);
   const files = e.target.files;
-  upSongMessage = $message.loading("歌曲正在上传", {
+  upSongMessage.value = $message.loading("歌曲正在上传", {
     duration: 0,
   });
   upCloudSong(files[0])
     .then((res) => {
       console.log(res);
       if (res.code === 200) {
-        upSongMessage.destroy();
+        upSongMessage.value.destroy();
         $message.success(res.privateCloud.simpleSong.name + " 上传成功");
         if (!res.privateCloud.simpleSong.al.name) {
           $message.warning("歌曲详细信息获取失败，可尝试歌曲纠正");
@@ -119,7 +119,7 @@ const upCloudSongData = (e) => {
       }
     })
     .catch((err) => {
-      upSongMessage.destroy();
+      upSongMessage.value.destroy();
       $message.error("歌曲上传出错，请重试");
       console.error("歌曲上传出错：" + err);
     });
