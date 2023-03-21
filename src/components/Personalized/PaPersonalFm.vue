@@ -142,6 +142,8 @@ onMounted(() => {
     flex-direction: column;
     justify-content: space-between;
     .info {
+      width: 100%;
+      box-sizing: border-box;
       .name {
         font-size: 24px;
         font-weight: bold;
@@ -225,6 +227,22 @@ onMounted(() => {
           font-size: 12px;
           font-weight: normal;
           display: block;
+        }
+      }
+    }
+  }
+  @media (max-width: 500px) {
+    .pic {
+      height: 96px;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+    }
+    .data {
+      .info {
+        padding-left: 116px;
+        .name {
+          font-size: 22px;
         }
       }
     }

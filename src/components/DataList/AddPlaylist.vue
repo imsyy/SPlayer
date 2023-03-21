@@ -35,7 +35,7 @@
 
 <script setup>
 import { addSongToPlayList } from "@/api";
-import { musicStore, userStore } from "@/store/index";
+import { musicStore, userStore } from "@/store";
 
 const music = musicStore();
 const user = userStore();

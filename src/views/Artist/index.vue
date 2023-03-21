@@ -36,9 +36,10 @@
           title="歌手介绍"
           :bordered="false"
         >
-          <n-scrollbar style="max-height: 60vh">
-            {{ artistData.desc }}
-          </n-scrollbar>
+          <n-scrollbar
+            style="max-height: 60vh"
+            v-html="artistData.desc.replace(/\n/g, '<br>')"
+          />
         </n-modal>
       </div>
     </div>
@@ -207,7 +208,7 @@ watch(
       }
       .desc {
         margin-top: 12px;
-        -webkit-line-clamp: 2;
+        -webkit-line-clamp: 3;
         cursor: pointer;
         transition: all 0.3s;
         &:hover {

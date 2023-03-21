@@ -141,7 +141,7 @@ import {
   FavoriteRound,
 } from "@vicons/material";
 import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
-import { musicStore, userStore } from "@/store/index";
+import { musicStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
 import AllArtists from "@/components/DataList/AllArtists.vue";
 

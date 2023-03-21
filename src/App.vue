@@ -30,7 +30,7 @@
 </template>
 
 <script setup>
-import { musicStore, userStore } from "@/store/index";
+import { musicStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
 import { getLoginState } from "@/api";
 import Provider from "@/components/Provider/index.vue";
@@ -117,6 +117,9 @@ onMounted(() => {
   transition: all 0.3s;
   &.show {
     bottom: 70px;
+  }
+  :deep(.n-scrollbar-rail--vertical) {
+    right: 0;
   }
 }
 

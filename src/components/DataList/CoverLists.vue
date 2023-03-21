@@ -201,7 +201,7 @@ const openRightMenu = (e, data) => {
       {
         key: "update",
         label: "编辑歌单",
-        show: router.currentRoute.value.name == "playlists" ? true : false,
+        show: router.currentRoute.value.name === "playlists" ? true : false,
         props: {
           onClick: () => {
             playlistUpdateId.value = data.id;
@@ -217,7 +217,7 @@ const openRightMenu = (e, data) => {
       {
         key: "del",
         label: "删除歌单",
-        show: router.currentRoute.value.name == "playlists" ? true : false,
+        show: router.currentRoute.value.name === "playlists" ? true : false,
         props: {
           onClick: () => {
             toDelPlayList(data);
@@ -385,7 +385,7 @@ const toLikePlaylist = (id) => {
 };
 
 onMounted(() => {
-  if (router.currentRoute.value.name == "playlists" && !music.catList.sub)
+  if (router.currentRoute.value.name === "playlists" && !music.catList.sub)
     music.setCatList();
   if (user.userLogin && !music.getUserPlayLists.has) music.setUserPlayLists();
 });

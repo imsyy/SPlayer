@@ -60,7 +60,7 @@ import {
   SkipNextRound,
   SkipPreviousRound,
 } from "@vicons/material";
-import { musicStore } from "@/store/index";
+import { musicStore } from "@/store";
 const music = musicStore();
 </script>
 

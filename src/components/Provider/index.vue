@@ -42,7 +42,7 @@ import {
   useMessage,
   useNotification,
 } from "naive-ui";
-import { settingStore } from "@/store/index";
+import { settingStore } from "@/store";
 const setting = settingStore();
 const osThemeRef = useOsTheme();
 

@@ -61,6 +61,17 @@
             >
               云盘
             </n-tag>
+            <n-tag
+              v-if="item.mv"
+              class="mv"
+              round
+              type="warning"
+              size="small"
+              :bordered="false"
+              @click.stop="router.push(`/video?id=${item.mv}`)"
+            >
+              MV
+            </n-tag>
           </div>
           <div class="meta">
             <AllArtists
@@ -324,7 +335,7 @@ import {
   DeleteRound,
   AddCircleRound,
 } from "@vicons/material";
-import { musicStore, settingStore, userStore } from "@/store/index";
+import { musicStore, settingStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
 import { setCloudDel, setCloudMatch, addSongToPlayList } from "@/api";
 import AllArtists from "./AllArtists.vue";
@@ -712,6 +723,9 @@ const jumpLink = (id, type) => {
         .vip {
           color: $mainColor;
           background-color: $mainSecondaryColor;
+        }
+        .mv {
+          cursor: pointer;
         }
       }
       .meta {

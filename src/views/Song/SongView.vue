@@ -89,7 +89,7 @@
 <script setup>
 import { getMusicDetail, getSimiPlayList } from "@/api";
 import { useRouter } from "vue-router";
-import { musicStore } from "@/store/index";
+import { musicStore } from "@/store";
 import { getSongTime, getLongTime } from "@/utils/timeTools.js";
 import { PlayArrowRound, MessageFilled, VideocamRound } from "@vicons/material";
 import { formatNumber } from "@/utils/timeTools.js";
@@ -207,7 +207,7 @@ watch(
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: space-evenly;
+      justify-content: space-between;
       .intr {
         display: flex;
         flex-direction: column;

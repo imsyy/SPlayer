@@ -55,7 +55,7 @@
 </template>
 
 <script setup>
-import { musicStore } from "@/store/index";
+import { musicStore } from "@/store";
 import { RemoveCircleOutlineFilled } from "@vicons/material";
 import AllArtists from "./AllArtists.vue";
 import CollapseTransition from "@ivanv/vue-collapse-transition/src/CollapseTransition.vue";

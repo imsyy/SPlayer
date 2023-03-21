@@ -161,7 +161,7 @@ import {
   FullscreenRound,
   FullscreenExitRound,
 } from "@vicons/material";
-import { musicStore, settingStore } from "@/store/index";
+import { musicStore, settingStore } from "@/store";
 import { useRouter } from "vue-router";
 import MusicFrequency from "@/utils/MusicFrequency.js";
 import PlayerRecord from "./PlayerRecord.vue";

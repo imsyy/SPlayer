@@ -24,7 +24,7 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { musicStore } from "@/store/index";
+import { musicStore } from "@/store";
 
 const music = musicStore();
 const router = useRouter();

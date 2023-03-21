@@ -68,7 +68,7 @@
 </template>
 
 <script setup>
-import { musicStore } from "@/store/index";
+import { musicStore } from "@/store";
 import { useRouter } from "vue-router";
 import { getComment } from "@/api";
 import SmallSongData from "@/components/DataList/SmallSongData.vue";

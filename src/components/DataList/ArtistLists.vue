@@ -15,6 +15,7 @@
           v-for="item in listData"
           :key="item"
           @click="router.push(`/artist?id=${item.id}`)"
+          @contextmenu="openRightMenu($event, item)"
         >
           <div class="cover">
             <n-avatar
@@ -47,13 +48,30 @@
         </n-gi>
       </n-grid>
     </Transition>
+    <!-- 右键菜单 -->
+    <n-dropdown
+      style="--n-font-size: 14px; --n-border-radius: 6px"
+      placement="bottom-start"
+      trigger="manual"
+      size="large"
+      :x="rightMenuX"
+      :y="rightMenuY"
+      :options="rightMenuOptions"
+      :show="rightMenuShow"
+      :on-clickoutside="onClickoutside"
+      @select="rightMenuShow = false"
+    />
   </div>
 </template>
 
 <script setup>
 import { PersonSearchFilled } from "@vicons/material";
+import { likeArtist } from "@/api";
 import { useRouter } from "vue-router";
+import { musicStore, userStore } from "@/store";
 
+const music = musicStore();
+const user = userStore();
 const router = useRouter();
 const props = defineProps({
   // 列表数据
@@ -76,6 +94,95 @@ const props = defineProps({
     type: Number,
     default: 6,
   },
+});
+
+// 弹窗数据
+const rightMenuX = ref(0);
+const rightMenuY = ref(0);
+const rightMenuShow = ref(false);
+const rightMenuOptions = ref(null);
+
+// 打开右键菜单
+const openRightMenu = (e, data) => {
+  e.preventDefault();
+  rightMenuShow.value = false;
+  nextTick().then(() => {
+    rightMenuOptions.value = [
+      {
+        key: "like",
+        label: isLikeOrDislike(data.id) ? "收藏歌手" : "取消收藏歌手",
+        show: user.userLogin && music.getUserArtistlists.has ? true : false,
+        props: {
+          onClick: () => {
+            toLikeArtist(data);
+          },
+        },
+      },
+      {
+        key: "copy",
+        label: "复制歌手链接",
+        props: {
+          onClick: () => {
+            if (navigator.clipboard) {
+              try {
+                navigator.clipboard.writeText(
+                  `https://music.163.com/#/artist?id=${data.id}`
+                );
+                $message.success("歌手链接复制成功");
+              } catch (err) {
+                $message.error("复制失败：", err);
+              }
+            } else {
+              $message.error("您的浏览器暂不支持该操作");
+            }
+          },
+        },
+      },
+    ];
+    rightMenuShow.value = true;
+    rightMenuX.value = e.clientX;
+    rightMenuY.value = e.clientY;
+  });
+};
+
+// 点击右键菜单外部
+const onClickoutside = () => {
+  rightMenuShow.value = false;
+};
+
+// 收藏/取消收藏歌手
+const toLikeArtist = (data) => {
+  const type = isLikeOrDislike(data.id) ? 1 : 2;
+  likeArtist(type, data.id).then((res) => {
+    if (res.code === 200) {
+      $message.success(
+        `${data.name}${type == 1 ? "收藏成功" : "取消收藏成功"}`
+      );
+      music.setUserArtistLists();
+    } else {
+      $message.error(`${data.name}${type == 1 ? "收藏失败" : "取消收藏失败"}`);
+    }
+  });
+};
+
+// 判断收藏还是取消
+const isLikeOrDislike = (id) => {
+  if (music.getUserArtistlists.list[0]) {
+    const index = music.getUserArtistlists.list.findIndex(
+      (item) => item.id === id
+    );
+    if (index !== -1) {
+      return false;
+    }
+    return true;
+  } else {
+    return true;
+  }
+};
+
+onMounted(() => {
+  if (user.userLogin && !music.getUserArtistlists.has)
+    music.setUserArtistLists();
 });
 </script>
 

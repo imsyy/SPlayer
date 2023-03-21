@@ -210,7 +210,7 @@ import {
 } from "@vicons/material";
 import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
 import { storeToRefs } from "pinia";
-import { musicStore, settingStore } from "@/store/index";
+import { musicStore, settingStore } from "@/store";
 import { useRouter } from "vue-router";
 import AddPlaylist from "@/components/DataList/AddPlaylist.vue";
 import AllArtists from "@/components/DataList/AllArtists.vue";

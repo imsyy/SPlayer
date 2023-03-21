@@ -79,6 +79,9 @@ onMounted(() => {
       transform: none;
       height: 100%;
     }
+    @media (max-width: 500px) {
+      transform: none;
+    }
   }
   .text {
     display: flex;
@@ -95,6 +98,15 @@ onMounted(() => {
     @media (min-width: 750px) and (max-width: 1056px) {
       .tip {
         display: none;
+      }
+    }
+  }
+  @media (max-width: 500px) {
+    height: 160px;
+    .text {
+      .title {
+        font-size: 30px;
+        margin-bottom: 4px;
       }
     }
   }

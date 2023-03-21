@@ -8,6 +8,7 @@ import axios from "@/api/request";
 export const getQrKey = () => {
   return axios({
     method: "GET",
+    loadingBar: "Hidden",
     url: "/login/qr/key",
     params: {
       time: new Date().getTime(),
@@ -19,6 +20,7 @@ export const getQrKey = () => {
 export const qrCreate = (key, qrimg = true) => {
   return axios({
     method: "GET",
+    loadingBar: "Hidden",
     url: "/login/qr/create",
     params: {
       key,
@@ -144,6 +146,9 @@ export const getUserArtistlist = () => {
   return axios({
     method: "GET",
     url: "/artist/sublist",
+    params: {
+      time: new Date().getTime(),
+    },
   });
 };
 
@@ -370,6 +375,7 @@ export const getComment = (id, offset = 0, before = null, type = "music") => {
 export const likeComment = (id, cid, t, type = 0) => {
   return axios({
     method: "GET",
+    loadingBar: "Hidden",
     url: "/comment/like",
     params: {
       id,
@@ -512,6 +518,19 @@ export const getArtistVideos = (id, limit = 30, offset = 0) => {
       id,
       limit,
       offset,
+    },
+  });
+};
+
+// 收藏/取消收藏歌手
+export const likeArtist = (t, id) => {
+  return axios({
+    method: "GET",
+    url: "/artist/sub",
+    params: {
+      t,
+      id,
+      time: new Date().getTime(),
     },
   });
 };

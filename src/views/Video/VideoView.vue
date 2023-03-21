@@ -5,6 +5,14 @@
       <div class="info" v-if="videoData">
         <span class="title">{{ videoData.name }}</span>
         <AllArtists :artistsData="videoData.artists" />
+        <n-ellipsis
+          v-if="videoData.desc"
+          class="desc"
+          expand-trigger="click"
+          line-clamp="3"
+          :tooltip="false"
+          v-html="videoData.desc.replace(/\n/g, '<br>')"
+        />
         <div class="num">
           <span class="playCount">
             <n-icon :component="OndemandVideoFilled" />
@@ -68,7 +76,7 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { musicStore } from "@/store/index";
+import { musicStore } from "@/store";
 import { getVideoDetail, getVideoUrl, getSimiVideo, getComment } from "@/api";
 import { formatNumber, getSongTime } from "@/utils/timeTools.js";
 import {
@@ -252,19 +260,21 @@ watch(
     .info {
       margin-top: 20px;
       .title {
-        font-size: 3.5vh;
+        font-size: 24px;
         font-weight: bold;
       }
       .artists {
-        font-size: 2vh;
+        font-size: 16px;
         opacity: 0.8;
         margin-top: 2px;
+      }
+      .desc {
+        margin-top: 8px;
       }
       .num {
         margin-top: 8px;
         display: flex;
         flex-direction: row;
-        font-size: 2vh;
         opacity: 0.8;
         span {
           display: flex;

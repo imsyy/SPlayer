@@ -313,7 +313,7 @@ onBeforeUnmount(() => {
       margin-bottom: 20px;
     }
     span {
-      font-size: 20px;
+      font-size: 26px;
       font-weight: bold;
     }
   }

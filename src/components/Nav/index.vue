@@ -113,7 +113,7 @@ import {
   HistoryRound,
 } from "@vicons/material";
 import { GithubOne, Copyright } from "@icon-park/vue-next";
-import { userStore, settingStore } from "@/store/index";
+import { userStore, settingStore } from "@/store";
 import { useRouter } from "vue-router";
 import SearchInp from "@/components/SearchInp/index.vue";
 import packageJson from "@/../package.json";

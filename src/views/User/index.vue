@@ -28,7 +28,7 @@
 </template>
 
 <script setup>
-import { userStore } from "@/store/index";
+import { userStore } from "@/store";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
