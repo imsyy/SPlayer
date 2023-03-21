@@ -7,6 +7,8 @@ const useSettingDataStore = defineStore("settingData", {
     return {
       // 全局主题
       theme: "light",
+      // 轮播图显示
+      bannerShow: true,
       // 列表点击方式
       listClickMode: "dblclick",
       // 播放器样式

@@ -23,7 +23,7 @@
           block
           strong
           secondary
-          v-if="albumDetail.description && albumDetail.description.length > 70"
+          v-if="albumDetail?.description.length > 70"
           @click="albumDescShow = true"
         >
           全部简介
@@ -89,7 +89,7 @@
     </div>
   </div>
 </template>
-  
+
 <script setup>
 import { getAlbum } from "@/api";
 import { useRouter } from "vue-router";
@@ -148,7 +148,7 @@ watch(
   }
 );
 </script>
-  
+
 <style lang="scss" scoped>
 .playlist,
 .loading {

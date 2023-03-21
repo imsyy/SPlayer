@@ -41,7 +41,7 @@
           </n-tag>
         </template>
         <n-scrollbar style="max-height: 80vh">
-          <div class="all-cat" v-if="music.catList.sub && music.catList.sub[0]">
+          <div class="all-cat" v-if="music.catList?.sub[0]">
             <n-list>
               <n-list-item
                 v-for="(cat, key) in music.catList.categories"

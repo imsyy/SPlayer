@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <Banner />
+    <Banner v-if="setting.bannerShow" />
     <!-- 个性化推荐 -->
     <n-h3 class="title" prefix="bar"> 专属推荐 </n-h3>
     <n-grid class="recommendation" cols="4" item-responsive x-gap="20">
@@ -19,12 +19,15 @@
 </template>
 
 <script setup>
+import { settingStore } from "@/store";
 import Banner from "@/components/Banner/index.vue";
 import PaPlayLists from "@/components/Personalized/PaPlayLists.vue";
 import PaArtists from "@/components/Personalized/PaArtists.vue";
 import PaAlbum from "@/components/Personalized/PaAlbum.vue";
 import PaDailySongs from "@/components/Personalized/PaDailySongs.vue";
 import PaPersonalFm from "@/components/Personalized/PaPersonalFm.vue";
+
+const setting = settingStore();
 </script>
 
 <style lang="scss" scoped>

@@ -13,6 +13,8 @@
   "dependencies": {
     "@icon-park/vue-next": "^1.4.2",
     "@ivanv/vue-collapse-transition": "^1.0.2",
+    "@jridgewell/sourcemap-codec": "^1.4.14",
+    "@rollup/plugin-terser": "^0.4.0",
     "artplayer": "^4.5.12",
     "axios": "^1.2.0",
     "pinia": "^2.0.26",
@@ -21,7 +23,6 @@
     "qrcode.vue": "^3.3.3",
     "sass": "^1.56.1",
     "screenfull": "^6.0.2",
-    "terser": "^5.16.1",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6"
   },

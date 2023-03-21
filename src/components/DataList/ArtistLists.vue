@@ -25,7 +25,10 @@
             />
             <n-icon :component="PersonSearchFilled" />
           </div>
-          <div class="name text-hidden">{{ item.name }}</div>
+          <n-text class="name text-hidden">{{ item.name }}</n-text>
+          <n-text class="size" :depth="3" v-if="item.size">
+            {{ item.size }}首
+          </n-text>
         </n-gi>
       </n-grid>
       <n-grid
@@ -133,9 +136,7 @@ const props = defineProps({
     }
     .name {
       margin-top: 14px;
-      // font-size: 2vh;
-      // font-weight: bold;
-      font-size: 15px;
+      font-size: 16px;
       transition: all 0.3s;
       cursor: pointer;
       &:hover {

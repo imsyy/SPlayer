@@ -1,43 +1,51 @@
 * {
-    -webkit-user-select: none;
-    -webkit-user-drag: none;
-    -webkit-user-drag: none;
-    user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+// HarmonyOS Sans
+html,
+body,
+#app {
+  -webkit-font-smoothing: subpixel-antialiased;
+  font-family: "HarmonyOS_Regular", sans-serif;
 }
 
 // Dialog
 .s-dialog {
-    .n-dialog__close {
-        margin: 16px 26px 0 0;
-    }
+  .n-dialog__close {
+    margin: 16px 26px 0 0;
+  }
 
-    .n-dialog__title {
-        transform: translateX(-8px);
-        font-size: 16px;
-        font-weight: bold;
+  .n-dialog__title {
+    transform: translateX(-8px);
+    font-size: 16px;
+    font-weight: bold;
 
-        i {
-            font-size: 24px;
-            transform: translateY(-1px);
-        }
+    i {
+      font-size: 24px;
+      transform: translateY(-1px);
     }
+  }
 }
 
 // Tab
 .main-tab {
-    .n-tabs-tab {
-        &.n-tabs-tab--active {
-            font-weight: bold !important;
-            transition: all 0.3s;
-        }
+  .n-tabs-tab {
+    &.n-tabs-tab--active {
+      font-weight: bold !important;
+      transition: all 0.3s;
     }
+  }
 }
 
 // 文本超出隐藏
 .text-hidden {
-    display: -webkit-box !important;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 1;
-    overflow: hidden;
-    word-break: break-all;
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+  word-break: break-all;
 }

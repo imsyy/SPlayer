@@ -3,6 +3,7 @@
     <div class="menu">
       <n-space class="initial">
         <n-tag
+          class="tag"
           round
           v-for="item in artistInitials"
           :key="item"
@@ -15,6 +16,7 @@
       </n-space>
       <n-space class="category">
         <n-tag
+          class="tag"
           round
           :class="item.length > 2 ? 'hidden' : 'show'"
           v-for="(item, index) in artistTypeNames"
@@ -125,6 +127,7 @@ const getArtistListData = (
           id: v.id,
           name: v.name,
           cover: v.img1v1Url,
+          size: v.musicSize,
         });
       });
     } else {
@@ -224,9 +227,10 @@ onMounted(() => {
         }
       }
     }
-    .n-tag {
+    .tag {
       font-size: 13px;
       padding: 0 16px;
+      line-height: 0;
       cursor: pointer;
       transition: all 0.3s;
       &:hover {

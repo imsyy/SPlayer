@@ -1,6 +1,6 @@
 <template>
   <div class="toplists">
-    <n-divider>官方榜</n-divider>
+    <n-divider v-if="toplistData.officialList[0]">官方榜</n-divider>
     <Transition mode="out-in">
       <n-grid
         class="official"

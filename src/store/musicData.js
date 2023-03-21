@@ -553,6 +553,7 @@ const useMusicDataStore = defineStore("musicData", {
                 id: v.id,
                 name: v.name,
                 cover: v.img1v1Url,
+                size: v.musicSize,
               });
             });
           } else {

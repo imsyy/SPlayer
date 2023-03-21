@@ -40,6 +40,7 @@ const getArtistListData = (type = -1, area = -1, limit = 6) => {
           id: v.id,
           name: v.name,
           cover: v.img1v1Url,
+          size: v.musicSize,
         });
       });
     } else {

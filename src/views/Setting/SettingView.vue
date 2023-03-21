@@ -18,6 +18,10 @@
       />
     </n-card>
     <n-card class="set-item">
+      <div class="name">轮播图显示</div>
+      <n-switch v-model:value="bannerShow" :round="false" />
+    </n-card>
+    <n-card class="set-item">
       <div class="name">底栏歌词显示</div>
       <n-switch v-model:value="bottomLyricShow" :round="false" />
     </n-card>
@@ -135,6 +139,7 @@ const {
   bottomLyricShow,
   lyricsBlock,
   songLevel,
+  bannerShow,
 } = storeToRefs(setting);
 
 // 深浅模式

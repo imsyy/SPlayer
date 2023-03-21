@@ -27,9 +27,7 @@
           block
           strong
           secondary
-          v-if="
-            playListDetail.description && playListDetail.description.length > 70
-          "
+          v-if="playListDetail?.description.length > 70"
           @click="playListDescShow = true"
         >
           全部简介
