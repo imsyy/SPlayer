@@ -41,6 +41,7 @@
                 :bordered="false"
                 round
                 v-html="item"
+                @click="toSearch(item, 0)"
               />
             </n-space>
           </div>
