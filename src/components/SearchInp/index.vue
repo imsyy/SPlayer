@@ -44,6 +44,10 @@
                 @click="toSearch(item, 0)"
               />
             </n-space>
+            <div class="del" @click="delHistory">
+              <n-icon size="16" :depth="3" :component="DeleteRound" />
+              <n-text :depth="3">删除搜索历史</n-text>
+            </div>
           </div>
           <div class="hot-list" v-if="searchData.hot[0]">
             <div class="list-title">
@@ -107,7 +111,8 @@
                 v-for="songs in searchData.suggest.songs"
                 :key="songs"
                 @click="toSearch(songs.id, 1)"
-                >{{ songs.name }} - {{ songs.artists[0].name }}</span
+              >
+                {{ songs.name }} - {{ songs.artists[0].name }}</span
               >
             </div>
             <div class="suggest-item" v-if="searchData.suggest.artists">
@@ -120,8 +125,8 @@
                 v-for="artists in searchData.suggest.artists"
                 :key="artists"
                 @click="toSearch(artists.id, 100)"
-                >{{ artists.name }}</span
-              >
+                v-html="artists.name"
+              />
             </div>
             <div class="suggest-item" v-if="searchData.suggest.albums">
               <div class="type">
@@ -133,8 +138,9 @@
                 v-for="albums in searchData.suggest.albums"
                 :key="albums"
                 @click="toSearch(albums.id, 10)"
-                >{{ albums.name }} - {{ albums.artist.name }}</span
               >
+                {{ albums.name }} - {{ albums.artist.name }}
+              </span>
             </div>
             <div class="suggest-item" v-if="searchData.suggest.playlists">
               <div class="type">
@@ -146,8 +152,9 @@
                 v-for="playlists in searchData.suggest.playlists"
                 :key="playlists"
                 @click="toSearch(playlists.id, 1000)"
-                >{{ playlists.name }}</span
               >
+                {{ playlists.name }}
+              </span>
             </div>
           </div>
         </n-scrollbar>
@@ -168,6 +175,7 @@ import {
   ManageSearchFilled,
   LocalFireDepartmentRound,
   HistoryRound,
+  DeleteRound,
 } from "@vicons/material";
 import CollapseTransition from "@ivanv/vue-collapse-transition/src/CollapseTransition.vue";
 import debounce from "@/utils/debounce";
@@ -254,6 +262,21 @@ const inputkeydown = (e) => {
       },
     });
   }
+};
+
+// 删除搜索历史
+const delHistory = () => {
+  $dialog.warning({
+    class: "s-dialog",
+    title: "删除历史",
+    content: "确认删除全部的搜索历史记录？",
+    positiveText: "删除",
+    negativeText: "取消",
+    onPositiveClick: () => {
+      music.setSearchHistory(null, true);
+      $message.success("删除成功");
+    },
+  });
 };
 
 onMounted(() => {
@@ -343,6 +366,13 @@ watch(
                 transform: scale(0.95);
               }
             }
+          }
+          .del {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            cursor: pointer;
           }
         }
         .hot-list {

@@ -87,6 +87,7 @@ const getCloudData = (limit = 30, offset = 0, scroll = true) => {
           artist: v.simpleSong.ar,
           album: v.simpleSong.al,
           alia: v.simpleSong.alia,
+          mv: v.simpleSong.mv,
           time: getSongTime(v.simpleSong.dt),
         });
       });

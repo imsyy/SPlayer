@@ -590,15 +590,16 @@ const useMusicDataStore = defineStore("musicData", {
     // 更改搜索历史
     setSearchHistory(name, clean = false) {
       if (clean) {
-        this.searchHistory = [];
-      }
-      const index = this.persistData.searchHistory.indexOf(name);
-      if (index !== -1) {
-        this.persistData.searchHistory.splice(index, 1);
-      }
-      this.persistData.searchHistory.unshift(name);
-      if (this.persistData.searchHistory.length > 30) {
-        this.persistData.searchHistory.pop();
+        this.persistData.searchHistory = [];
+      } else {
+        const index = this.persistData.searchHistory.indexOf(name);
+        if (index !== -1) {
+          this.persistData.searchHistory.splice(index, 1);
+        }
+        this.persistData.searchHistory.unshift(name);
+        if (this.persistData.searchHistory.length > 30) {
+          this.persistData.searchHistory.pop();
+        }
       }
     },
   },
