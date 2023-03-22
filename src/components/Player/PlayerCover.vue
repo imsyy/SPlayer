@@ -206,10 +206,12 @@ const routerJump = (url, query) => {
         width: 100%;
         padding-right: 4px;
         .name {
-          // font-size: 3vh;
           font-size: 23px;
           font-weight: bold;
           -webkit-line-clamp: 2;
+          @media (max-width: 1200px) {
+            font-size: 20px;
+          }
         }
         .message {
           cursor: pointer;
@@ -220,6 +222,9 @@ const routerJump = (url, query) => {
           font-size: 15px;
           width: 100%;
           color: #ffffffcc;
+          @media (max-width: 1200px) {
+            font-size: 14px;
+          }
           .ablum {
             transition: all 0.3s;
             &:hover {

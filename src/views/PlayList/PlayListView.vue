@@ -250,26 +250,6 @@ watch(
 .loading {
   display: flex;
   flex-direction: row;
-  @media (max-width: 768px) {
-    flex-direction: column;
-    .left {
-      margin-bottom: 12px;
-      position: static !important;
-      width: 60vw !important;
-      max-width: none !important;
-      .intr,
-      .tag {
-        display: none !important;
-      }
-    }
-    .right {
-      .meta {
-        .name {
-          font-size: 26px !important;
-        }
-      }
-    }
-  }
   .left {
     width: 40vw;
     height: 100%;
@@ -370,6 +350,26 @@ watch(
           .time {
             display: none;
           }
+        }
+      }
+    }
+  }
+  @media (max-width: 768px) {
+    flex-direction: column;
+    .left {
+      margin-bottom: 12px;
+      position: static;
+      width: 60vw;
+      max-width: none;
+      .intr,
+      .tag {
+        display: none;
+      }
+    }
+    .right {
+      .meta {
+        .name {
+          font-size: 26px;
         }
       }
     }
