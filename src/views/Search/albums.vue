@@ -3,6 +3,7 @@
     <CoverLists :listData="searchData" listType="album" />
     <Pagination
       v-if="searchData[0]"
+      :pageNumber="pageNumber"
       :totalCount="totalCount"
       @pageSizeChange="pageSizeChange"
       @pageNumberChange="pageNumberChange"

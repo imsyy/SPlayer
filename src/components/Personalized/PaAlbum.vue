@@ -2,7 +2,7 @@
   <div class="paalbum">
     <n-h3 class="title" prefix="bar">
       新碟上架
-      <span class="more">更多</span>
+      <span class="more" @click="router.push('/new-album')">更多</span>
     </n-h3>
     <CoverLists
       listType="album"

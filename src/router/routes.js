@@ -213,6 +213,15 @@ const routes = [
     },
     component: () => import("@/views/History/HistoryView.vue"),
   },
+  // 全部新碟
+  {
+    path: "/new-album",
+    name: "new-album",
+    meta: {
+      title: "全部新碟",
+    },
+    component: () => import("@/views/NewAlbum/NewAlbumView.vue"),
+  },
   // 状态页
   // 404
   {

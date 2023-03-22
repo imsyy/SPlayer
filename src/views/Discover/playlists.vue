@@ -96,6 +96,7 @@
     <Pagination
       v-if="playlistsData[0] && !hqPLayListOpen"
       :totalCount="totalCount"
+      :pageNumber="pageNumber"
       @pageSizeChange="pageSizeChange"
       @pageNumberChange="pageNumberChange"
     />
@@ -125,11 +126,7 @@
 import { ChevronRightRound, LocalFireDepartmentRound } from "@vicons/material";
 import { useRouter } from "vue-router";
 import { musicStore } from "@/store";
-import {
-  getPlayListCatlist,
-  getHighqualityPlaylist,
-  getTopPlaylist,
-} from "@/api";
+import { getHighqualityPlaylist, getTopPlaylist } from "@/api";
 import { formatNumber } from "@/utils/timeTools.js";
 import CoverLists from "@/components/DataList/CoverLists.vue";
 import Pagination from "@/components/Pagination/index.vue";

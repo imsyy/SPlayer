@@ -123,6 +123,7 @@ const getAlbumData = (id) => {
           time: getSongTime(v.dt),
           fee: v.fee,
           pc: v.pc ? v.pc : null,
+          mv: v.mv ? v.mv : null,
         });
       });
     } else {

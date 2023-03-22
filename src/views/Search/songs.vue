@@ -3,6 +3,7 @@
     <DataLists :listData="searchData" />
     <Pagination
       v-if="searchData[0]"
+      :pageNumber="pageNumber"
       :totalCount="totalCount"
       @pageSizeChange="pageSizeChange"
       @pageNumberChange="pageNumberChange"
@@ -52,7 +53,7 @@ const getSearchDataList = (keywords, limit = 30, offset = 0, type = 1) => {
             time: getSongTime(v.dt),
             fee: v.fee,
             pc: v.pc ? v.pc : null,
-            mv: v.mv,
+            mv: v.mv ? v.mv : null,
           });
         });
       });

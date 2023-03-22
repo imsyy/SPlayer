@@ -61,6 +61,7 @@
           </div>
         </div>
         <Pagination
+          :pageNumber="pageNumber"
           :totalCount="commentsCount"
           :showSizePicker="false"
           @pageNumberChange="pageNumberChange"

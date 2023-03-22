@@ -670,6 +670,19 @@ export const getNewAlbum = () => {
   });
 };
 
+// 全部新碟
+export const getAlbumNew = (area, limit = 30, offset = 0) => {
+  return axios({
+    method: "GET",
+    url: "/album/new",
+    params: {
+      area,
+      limit,
+      offset,
+    },
+  });
+};
+
 // 获取排行榜数据
 export const getToplist = (detail = true) => {
   return axios({
