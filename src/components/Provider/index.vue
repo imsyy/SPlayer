@@ -72,9 +72,11 @@ watch(
 watch(
   () => osThemeRef.value,
   (value) => {
-    value == "dark"
-      ? setting.setSiteTheme("dark")
-      : setting.setSiteTheme("light");
+    if (setting.themeAuto) {
+      value == "dark"
+        ? setting.setSiteTheme("dark")
+        : setting.setSiteTheme("light");
+    }
   }
 );
 

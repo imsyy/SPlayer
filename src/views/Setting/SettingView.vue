@@ -3,8 +3,12 @@
     <div class="title">全局设置</div>
     <n-h6 prefix="bar"> 基础设置 </n-h6>
     <n-card class="set-item">
-      <div class="name">站点模式</div>
+      <div class="name">明暗模式</div>
       <n-select class="set" v-model:value="theme" :options="darkOptions" />
+    </n-card>
+    <n-card class="set-item">
+      <div class="name">明暗模式跟随系统</div>
+      <n-switch v-model:value="themeAuto" :round="false" />
     </n-card>
     <n-card class="set-item">
       <div class="name">
@@ -130,6 +134,7 @@ const setting = settingStore();
 const user = userStore();
 const {
   theme,
+  themeAuto,
   showTransl,
   lyricsPosition,
   playerStyle,
@@ -258,7 +263,7 @@ const changeMusicFrequency = () => {
 <style lang="scss" scoped>
 .setting {
   padding: 0 10vw;
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
   @media (max-width: 768px) {
     padding: 0;

@@ -46,6 +46,8 @@ const useMusicDataStore = defineStore("musicData", {
       },
       // 持久化数据
       persistData: {
+        // 搜索历史
+        searchHistory: [],
         // 是否处于私人 FM 模式
         personalFmMode: false,
         // 私人 FM 数据
@@ -156,6 +158,10 @@ const useMusicDataStore = defineStore("musicData", {
     // 获取播放列表模式
     getPlayListMode(state) {
       return state.persistData.playListMode;
+    },
+    // 获取搜索历史
+    getSearchHistory(state) {
+      return state.persistData.searchHistory;
     },
   },
   actions: {
@@ -579,6 +585,20 @@ const useMusicDataStore = defineStore("musicData", {
         if (this.persistData.playHistory.length > 100)
           this.persistData.playHistory.pop();
         this.persistData.playHistory.unshift(data);
+      }
+    },
+    // 更改搜索历史
+    setSearchHistory(name, clean = false) {
+      if (clean) {
+        this.searchHistory = [];
+      }
+      const index = this.persistData.searchHistory.indexOf(name);
+      if (index !== -1) {
+        this.persistData.searchHistory.splice(index, 1);
+      }
+      this.persistData.searchHistory.unshift(name);
+      if (this.persistData.searchHistory.length > 30) {
+        this.persistData.searchHistory.pop();
       }
     },
   },

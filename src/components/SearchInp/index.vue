@@ -21,32 +21,57 @@
     <CollapseTransition easing="ease-in-out">
       <n-card
         class="list"
-        v-show="inputActive && !inputValue && searchData.hot[0]"
+        v-show="
+          inputActive &&
+          !inputValue &&
+          (music.getSearchHistory[0] || searchData.hot[0])
+        "
         content-style="padding: 0"
       >
         <n-scrollbar>
-          <div
-            class="hot-item"
-            v-for="(item, index) in searchData.hot"
-            :key="item"
-            @click="toSearch(item.searchWord, 0)"
-          >
-            <div :class="index < 3 ? 'num hot' : 'num'">{{ index + 1 }}</div>
-            <div class="title">
-              <span class="name">
-                {{ item.searchWord }}
-                <!-- <img :src="item.iconUrl" alt="icon" /> -->
-                <n-tag
-                  v-if="item.iconUrl"
-                  class="tag"
-                  round
-                  :bordered="false"
-                  size="small"
-                >
-                  {{ item.iconType == 1 ? "HOT" : "UP" }}
-                </n-tag>
-              </span>
-              <n-text class="tip" depth="3" v-html="item.content" />
+          <div class="history-list" v-if="music.getSearchHistory[0]">
+            <div class="list-title">
+              <n-icon size="16" :component="HistoryRound" />
+              <n-text>搜索历史</n-text>
+            </div>
+            <n-space>
+              <n-tag
+                v-for="item in music.getSearchHistory"
+                :key="item"
+                :bordered="false"
+                round
+                v-html="item"
+              />
+            </n-space>
+          </div>
+          <div class="hot-list" v-if="searchData.hot[0]">
+            <div class="list-title">
+              <n-icon size="16" :component="LocalFireDepartmentRound" />
+              <n-text>热搜榜</n-text>
+            </div>
+            <div
+              class="hot-item"
+              v-for="(item, index) in searchData.hot"
+              :key="item"
+              @click="toSearch(item.searchWord, 0)"
+            >
+              <div :class="index < 3 ? 'num hot' : 'num'">{{ index + 1 }}</div>
+              <div class="title">
+                <span class="name">
+                  {{ item.searchWord }}
+                  <!-- <img :src="item.iconUrl" alt="icon" /> -->
+                  <n-tag
+                    v-if="item.iconUrl"
+                    class="tag"
+                    round
+                    :bordered="false"
+                    size="small"
+                  >
+                    {{ item.iconType == 1 ? "HOT" : "UP" }}
+                  </n-tag>
+                </span>
+                <n-text class="tip" depth="3" v-html="item.content" />
+              </div>
             </div>
           </div>
         </n-scrollbar>
@@ -61,7 +86,7 @@
         <n-scrollbar>
           <div
             class="suggest-tip"
-            v-if="JSON.stringify(searchData.suggest) == '{}'"
+            v-if="Object.keys(searchData.suggest).length === 0"
           >
             <n-icon size="22" :component="SearchOffFilled" />
             <span>暂无搜索结果</span>
@@ -140,6 +165,8 @@ import {
   PlaylistPlayFilled,
   SearchOffFilled,
   ManageSearchFilled,
+  LocalFireDepartmentRound,
+  HistoryRound,
 } from "@vicons/material";
 import CollapseTransition from "@ivanv/vue-collapse-transition/src/CollapseTransition.vue";
 import debounce from "@/utils/debounce";
@@ -187,6 +214,8 @@ const toSearch = (val, type) => {
     case 0:
       // 直接搜索
       inputValue.value = val;
+      // 写入搜索历史
+      music.setSearchHistory(inputValue.value.trim());
       router.push(`/search/songs?keywords=${val}`);
       break;
     case 1:
@@ -215,6 +244,8 @@ const inputkeydown = (e) => {
   if (e.key === "Enter" && inputValue.value != null) {
     console.log("执行搜索" + inputValue.value.trim());
     inputActive.value = false;
+    // 写入搜索历史
+    music.setSearchHistory(inputValue.value.trim());
     router.push({
       path: "/search/songs",
       query: {
@@ -283,61 +314,94 @@ watch(
       }
       .n-scrollbar-content {
         padding: 12px;
-        .hot-item {
+        .list-title {
+          color: $mainColor;
           display: flex;
-          flex-direction: row;
           align-items: center;
           margin-bottom: 8px;
-          cursor: pointer;
-          border-radius: 8px;
-          padding: 6px;
-          transition: all 0.3s;
-
-          &:nth-last-of-type(1) {
-            margin-bottom: 0;
+          .n-text {
+            margin-left: 4px;
+            font-size: 14px;
+            color: $mainColor;
+            line-height: 0;
           }
-
-          &:hover {
-            background-color: var(--n-border-color);
-          }
-          .num {
-            width: 30px;
-            height: 30px;
-            min-width: 30px;
-            text-align: center;
-            line-height: 30px;
-            font-size: 16px;
-            font-weight: bold;
-            margin-right: 8px;
-            &.hot {
-              color: #ff5656;
-            }
-          }
-          .title {
-            display: flex;
-            flex-direction: column;
-            .name {
-              font-size: 16px;
-              display: flex;
-              flex-direction: row;
-              align-items: center;
-              img {
-                height: 16px;
-                width: auto;
-                margin-left: 6px;
-                margin-bottom: 2px;
-              }
-              .tag {
-                transform: translateY(-1px);
-                margin-left: 6px;
-                height: 18px;
-                color: $mainColor;
+        }
+        .history-list {
+          margin-bottom: 18px;
+          .n-space {
+            margin: 12px 0;
+            .n-tag {
+              font-size: 13px;
+              cursor: pointer;
+              transition: all 0.3s;
+              &:hover {
                 background-color: $mainSecondaryColor;
-                border-color: $mainColor;
+                color: $mainColor;
+              }
+              &:active {
+                transform: scale(0.95);
               }
             }
-            .tip {
-              font-size: 12px;
+          }
+        }
+        .hot-list {
+          margin-top: 6px;
+          .hot-item {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+            border-radius: 8px;
+            padding: 6px;
+            transition: all 0.3s;
+
+            &:nth-last-of-type(1) {
+              margin-bottom: 0;
+            }
+
+            &:hover {
+              background-color: var(--n-border-color);
+            }
+            .num {
+              width: 30px;
+              height: 30px;
+              min-width: 30px;
+              text-align: center;
+              line-height: 30px;
+              font-size: 16px;
+              font-weight: bold;
+              margin-right: 8px;
+              &.hot {
+                color: #ff5656;
+              }
+            }
+            .title {
+              display: flex;
+              flex-direction: column;
+              .name {
+                font-size: 16px;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                img {
+                  height: 16px;
+                  width: auto;
+                  margin-left: 6px;
+                  margin-bottom: 2px;
+                }
+                .tag {
+                  transform: translateY(-1px);
+                  margin-left: 6px;
+                  height: 18px;
+                  color: $mainColor;
+                  background-color: $mainSecondaryColor;
+                  border-color: $mainColor;
+                }
+              }
+              .tip {
+                font-size: 12px;
+              }
             }
           }
         }

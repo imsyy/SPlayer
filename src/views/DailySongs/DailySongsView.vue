@@ -7,7 +7,9 @@
       </div>
       <div class="right">
         <n-gradient-text class="big" type="danger"> 每日推荐 </n-gradient-text>
-        <n-text class="tip">根据你的音乐口味生成 · 每天 6:00 更新</n-text>
+        <n-text class="tip" :depth="3">
+          根据你的音乐口味生成 · 每天 6:00 更新
+        </n-text>
       </div>
     </div>
     <DataLists :listData="music.getDailySongs" />
@@ -57,7 +59,7 @@ onMounted(() => {
         transform: translateY(-3px);
       }
       .num {
-        margin-top: 12px;
+        margin-top: 7px;
         position: absolute;
         font-size: 30px;
         font-weight: bold;
@@ -72,7 +74,7 @@ onMounted(() => {
         line-height: 50px;
       }
       .tip {
-        font-size: 16px;
+        font-size: 14px;
         margin-left: 2px;
       }
     }
