@@ -18,7 +18,6 @@ specifiers:
   screenfull: ^6.0.2
   unplugin-auto-import: ^0.12.0
   unplugin-vue-components: ^0.22.11
-  vfonts: ^0.0.3
   vite: ^3.2.4
   vite-plugin-pwa: ^0.14.1
   vue: ^3.2.45
@@ -46,7 +45,6 @@ devDependencies:
   naive-ui: 2.34.2_vue@3.2.45
   unplugin-auto-import: 0.12.0
   unplugin-vue-components: 0.22.11_vue@3.2.45
-  vfonts: 0.0.3
   vite: 3.2.4_sass@1.56.1
   vite-plugin-pwa: 0.14.1_vite@3.2.4
 
@@ -3424,10 +3422,6 @@ packages:
     dependencies:
       evtd: 0.2.4
       vue: 3.2.45
-    dev: true
-
-  /vfonts/0.0.3:
-    resolution: {integrity: sha512-nguyw8L6Un8eelg1vQ31vIU2ESxqid7EYmy8V+MDeMaHBqaRSkg3dTBToC1PR00D89UzS/SLkfYPnx0Wf23IQQ==}
     dev: true
 
   /vite-plugin-pwa/0.14.1_vite@3.2.4:
