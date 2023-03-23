@@ -1,6 +1,18 @@
 <template>
   <div class="songs">
     <DataLists :listData="artistData" />
+    <n-space justify="center" v-if="artistData[0]">
+      <n-button
+        class="more"
+        size="large"
+        strong
+        secondary
+        round
+        @click="router.push(`/all-songs?id=${artistId}`)"
+      >
+        全部歌曲
+      </n-button>
+    </n-space>
   </div>
 </template>
 
@@ -52,3 +64,21 @@ watch(
   }
 );
 </script>
+
+<style lang="scss" scoped>
+.songs {
+  .more {
+    margin-top: 40px;
+    width: 140px;
+    font-size: 16px;
+    transition: all 0.3s;
+    &:hover {
+      background-color: $mainSecondaryColor;
+      color: $mainColor;
+    }
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+</style>

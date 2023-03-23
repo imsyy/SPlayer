@@ -50,9 +50,8 @@
       </n-dropdown>
       <!-- 关于本站 -->
       <n-modal
-        class="main-model"
+        class="s-model"
         v-model:show="showAboutModal"
-        style="width: 60vw; min-width: min(24rem, 100vw)"
         preset="card"
         title="关于本站"
         :bordered="false"

@@ -29,15 +29,13 @@
           全部简介
         </n-button>
         <n-modal
+          class="s-model"
           v-model:show="albumDescShow"
           preset="card"
-          style="width: 60vw; min-width: min(24rem, 100vw)"
           title="歌单简介"
           :bordered="false"
         >
-          <n-scrollbar style="max-height: 60vh">
-            {{ albumDetail.description }}
-          </n-scrollbar>
+          <n-scrollbar v-html="albumDetail.description" />
         </n-modal>
       </div>
       <div class="tag" v-if="albumDetail.tags">

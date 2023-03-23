@@ -1,7 +1,6 @@
 <template>
   <n-modal
-    class="add-playlist"
-    style="width: 60vw; min-width: min(24rem, 100vw)"
+    class="add-playlist s-model"
     v-model:show="addToPlaylistModel"
     preset="card"
     title="收藏到歌单"

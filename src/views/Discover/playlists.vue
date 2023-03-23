@@ -16,9 +16,8 @@
         {{ catName }}
       </n-button>
       <n-modal
-        class="cat-model"
+        class="s-model"
         v-model:show="catModelShow"
-        style="width: 60vw; min-width: min(24rem, 100vw)"
         preset="card"
         title="歌单分类"
         :bordered="false"

@@ -15,9 +15,8 @@
         新建歌单
       </n-button>
       <n-modal
-        class="create"
+        class="s-model"
         v-model:show="createModelShow"
-        style="width: 60vw; min-width: min(24rem, 100vw)"
         preset="card"
         title="新建歌单"
         :bordered="false"

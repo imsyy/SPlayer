@@ -34,10 +34,10 @@ const pageNumber = ref(
 const getSearchDataList = (keywords, limit = 30, offset = 0, type = 1) => {
   getSearchData(keywords, limit, offset, type).then((res) => {
     console.log(res);
-    // 数据总数
-    totalCount.value = res.result.songCount;
     // 列表数据
     if (res.result.songs) {
+      // 数据总数
+      totalCount.value = res.result.songCount;
       const ids = res.result.songs.map((obj) => obj.id);
       getMusicDetail(ids.join(",")).then((res) => {
         console.log(res);

@@ -496,6 +496,25 @@ export const getArtistSongs = (id) => {
   });
 };
 
+// 歌手全部歌曲
+export const getArtistAllSongs = (
+  id,
+  limit = 30,
+  offset = 0,
+  order = "hot"
+) => {
+  return axios({
+    method: "GET",
+    url: "/artist/songs",
+    params: {
+      id,
+      limit,
+      offset,
+      order,
+    },
+  });
+};
+
 // 获取歌手专辑
 export const getArtistAblums = (id, limit = 30, offset = 0) => {
   return axios({

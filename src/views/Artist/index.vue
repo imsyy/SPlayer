@@ -30,16 +30,13 @@
           {{ artistData.desc }}
         </span>
         <n-modal
+          class="s-model"
           v-model:show="artistDescShow"
           preset="card"
-          style="width: 60vw; min-width: min(24rem, 100vw)"
           title="歌手介绍"
           :bordered="false"
         >
-          <n-scrollbar
-            style="max-height: 60vh"
-            v-html="artistData.desc.replace(/\n/g, '<br>')"
-          />
+          <n-scrollbar v-html="artistData.desc.replace(/\n/g, '<br>')" />
         </n-modal>
       </div>
     </div>
@@ -50,7 +47,7 @@
       v-model:value="tabValue"
       v-if="artistId"
     >
-      <n-tab name="songs"> 单曲 </n-tab>
+      <n-tab name="songs"> 热门单曲 </n-tab>
       <n-tab name="albums"> 专辑 </n-tab>
       <n-tab name="videos"> MV </n-tab>
     </n-tabs>

@@ -204,6 +204,15 @@ const routes = [
       },
     ],
   },
+  // 歌手全部歌曲
+  {
+    path: "/all-songs",
+    name: "all-songs",
+    meta: {
+      title: "全部歌曲",
+    },
+    component: () => import("@/views/Artist/all-songs.vue"),
+  },
   // 历史记录
   {
     path: "/history",

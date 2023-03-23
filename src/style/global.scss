@@ -31,6 +31,23 @@ body,
   }
 }
 
+// Model
+.s-model {
+  width: 60vw;
+  max-width: 800px;
+  min-width: min(24rem, 100vw);
+  .n-card-header {
+    .n-card-header__main {
+      font-weight: bold;
+    }
+  }
+  .n-scrollbar {
+    max-height: 60vh;
+    font-size: 16px;
+    line-height: 32px;
+  }
+}
+
 // Tab
 .main-tab {
   .n-tabs-tab {

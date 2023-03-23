@@ -26,14 +26,14 @@
         @contextmenu="openRightMenu($event, item)"
       >
         <n-avatar
+          v-if="item.album?.picUrl"
           class="pic"
-          :src="
-            item.album && item.album.picUrl
-              ? item.album.picUrl.replace(/^http:/, 'https:') + '?param=60y60'
-              : '/images/pic/default.png'
-          "
+          :src="item.album.picUrl.replace(/^http:/, 'https:') + '?param=60y60'"
           fallback-src="/images/pic/default.png"
         />
+        <div class="num" v-else-if="item.num">
+          <n-text :depth="2" v-html="item.num" />
+        </div>
         <div class="name">
           <div class="title">
             <n-text
@@ -259,7 +259,7 @@
       </n-drawer>
       <!-- 歌曲信息纠正 -->
       <n-modal
-        style="width: 60vw; min-width: min(24rem, 100vw)"
+        class="s-model"
         v-model:show="cloudMatchModel"
         preset="card"
         title="歌曲信息纠正"
@@ -689,12 +689,18 @@ const jumpLink = (id, type) => {
         display: none;
       }
     }
-    .pic {
+    .pic,
+    .num {
       width: 50px;
       height: 50px;
       min-width: 50px;
       border-radius: 8px;
       margin-right: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: bold;
     }
     .name {
       flex: 1;

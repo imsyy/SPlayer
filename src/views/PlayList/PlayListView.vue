@@ -33,15 +33,13 @@
           全部简介
         </n-button>
         <n-modal
+          class="s-model"
           v-model:show="playListDescShow"
           preset="card"
-          style="width: 60vw; min-width: min(24rem, 100vw)"
           title="歌单简介"
           :bordered="false"
         >
-          <n-scrollbar style="max-height: 60vh">
-            {{ playListDetail.description }}
-          </n-scrollbar>
+          <n-scrollbar v-html="playListDetail.description" />
         </n-modal>
       </div>
       <n-space class="tag" v-if="playListDetail.tags">
