@@ -200,6 +200,7 @@ const useMusicDataStore = defineStore("musicData", {
             this.persistData.playlists.push(fmData);
             this.persistData.playSongIndex = 0;
           }
+          this.playState = true;
         } else {
           $message.error("获取私人 FM 失败");
         }
@@ -389,7 +390,7 @@ const useMusicDataStore = defineStore("musicData", {
     },
     // 上下曲调整
     setPlaySongIndex(type) {
-      if (!$player.ended) $player.pause();
+      this.playState = false;
       if (this.persistData.personalFmMode) {
         this.persistData.playSongLink = null;
         this.setPersonalFmData();
@@ -417,8 +418,8 @@ const useMusicDataStore = defineStore("musicData", {
         if (listMode !== "single") {
           this.persistData.playSongLink = null;
         }
+        this.playState = true;
       }
-      this.playState = true;
     },
     // 添加歌曲至播放列表
     addSongToPlaylists(value, play = true) {
@@ -435,7 +436,7 @@ const useMusicDataStore = defineStore("musicData", {
           this.persistData.playSongLink = null;
         }
       } catch (error) {
-        console.error("出现致命错误：" + error);
+        console.error("出现错误：" + error);
       }
       if (index !== -1) {
         this.persistData.playSongIndex = index;

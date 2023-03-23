@@ -201,8 +201,6 @@ import {
   VolumeMuteRound,
   VolumeDownRound,
   VolumeUpRound,
-  RepeatRound,
-  RepeatOneRound,
   ThumbDownRound,
   FavoriteBorderRound,
   FavoriteRound,
