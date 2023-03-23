@@ -87,8 +87,7 @@
 </template>
 
 <script setup>
-import { getSimiPlayList } from "@/api/playlist";
-import { getMusicDetail } from "@/api/song";
+import { getSimiPlayList, getMusicDetail } from "@/api/song";
 import { useRouter } from "vue-router";
 import { musicStore } from "@/store";
 import { getLongTime } from "@/utils/timeTools.js";
