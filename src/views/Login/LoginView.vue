@@ -102,7 +102,7 @@ import {
   toLogin,
   sentCaptcha,
   verifyCaptcha,
-} from "@/api";
+} from "@/api/login";
 import { useRouter } from "vue-router";
 import { PhoneAndroidRound, PasswordRound } from "@vicons/material";
 import { formRules } from "@/utils/formRules.js";

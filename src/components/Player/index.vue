@@ -187,7 +187,7 @@
 </template>
 
 <script setup>
-import { checkMusicCanUse, getMusicUrl, getMusicLyric } from "@/api";
+import { checkMusicCanUse, getMusicUrl, getMusicLyric } from "@/api/song";
 import { NIcon } from "naive-ui";
 import {
   KeyboardArrowUpFilled,

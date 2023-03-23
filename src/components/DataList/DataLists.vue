@@ -337,7 +337,7 @@ import {
 } from "@vicons/material";
 import { musicStore, settingStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
-import { setCloudDel, setCloudMatch, addSongToPlayList } from "@/api";
+import { setCloudDel, setCloudMatch } from "@/api/user";
 import AllArtists from "./AllArtists.vue";
 import AddPlaylist from "./AddPlaylist.vue";
 import SmallSongData from "./SmallSongData.vue";

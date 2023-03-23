@@ -35,7 +35,7 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { getBanner } from "@/api";
+import { getBanner } from "@/api/home";
 
 const router = useRouter();
 

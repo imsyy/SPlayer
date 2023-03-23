@@ -28,7 +28,7 @@
 </template>
 
 <script setup>
-import { getAlbumNew } from "@/api";
+import { getAlbumNew } from "@/api/album";
 import { useRouter } from "vue-router";
 import { getLongTime } from "@/utils/timeTools.js";
 import CoverLists from "@/components/DataList/CoverLists.vue";

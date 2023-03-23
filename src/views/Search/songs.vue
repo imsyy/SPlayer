@@ -12,7 +12,8 @@
 </template>
 
 <script setup>
-import { getSearchData, getMusicDetail } from "@/api";
+import { getSearchData } from "@/api/search";
+import { getMusicDetail } from "@/api/song";
 import { useRouter } from "vue-router";
 import { getSongTime } from "@/utils/timeTools.js";
 import DataLists from "@/components/DataList/DataLists.vue";

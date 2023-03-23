@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import { getArtistList } from "@/api";
+import { getArtistList } from "@/api/artist";
 import { useRouter } from "vue-router";
 import ArtistLists from "@/components/DataList/ArtistLists.vue";
 

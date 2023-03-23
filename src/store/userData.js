@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { userLogOut, getUserLevel, getUserSubcount } from "@/api";
+import { userLogOut, getUserLevel, getUserSubcount } from "@/api/user";
 
 const useUserDataStore = defineStore("userData", {
   state: () => {

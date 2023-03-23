@@ -130,7 +130,7 @@
 
 <script setup>
 import { PlayArrowRound, HeadsetFilled } from "@vicons/material";
-import { delPlayList, playlistUpdate, likePlaylist } from "@/api";
+import { delPlayList, playlistUpdate, likePlaylist } from "@/api/playlist";
 import { musicStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
 import { formRules } from "@/utils/formRules.js";

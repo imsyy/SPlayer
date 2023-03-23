@@ -65,7 +65,7 @@
 import { getCommentTime, formatNumber } from "@/utils/timeTools.js";
 import { userStore } from "@/store";
 import { useRouter } from "vue-router";
-import { likeComment } from "@/api";
+import { likeComment } from "@/api/comment";
 import {
   AccessTimeFilled,
   FmdGoodOutlined,

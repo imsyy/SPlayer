@@ -44,7 +44,7 @@
 </template>
 
 <script setup>
-import { getCloud, upCloudSong } from "@/api";
+import { getCloud, upCloudSong } from "@/api/user";
 import { useRouter } from "vue-router";
 import { getSongTime } from "@/utils/timeTools.js";
 import { BackupRound } from "@vicons/material";

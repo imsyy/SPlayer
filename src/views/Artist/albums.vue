@@ -11,7 +11,7 @@
 </template>
 
 <script setup>
-import { getArtistAblums } from "@/api";
+import { getArtistAblums } from "@/api/artist";
 import { useRouter } from "vue-router";
 import { getLongTime } from "@/utils/timeTools.js";
 import CoverLists from "@/components/DataList/CoverLists.vue";

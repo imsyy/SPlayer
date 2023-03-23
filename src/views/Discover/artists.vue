@@ -49,7 +49,7 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { getArtistList } from "@/api";
+import { getArtistList } from "@/api/artist";
 import ArtistLists from "@/components/DataList/ArtistLists.vue";
 
 const router = useRouter();

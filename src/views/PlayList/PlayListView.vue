@@ -118,7 +118,7 @@
 </template>
 
 <script setup>
-import { getPlayListDetail, getAllPlayList } from "@/api";
+import { getPlayListDetail, getAllPlayList } from "@/api/playlist";
 import { useRouter } from "vue-router";
 import { userStore, musicStore } from "@/store";
 import { getSongTime, getLongTime } from "@/utils/timeTools.js";

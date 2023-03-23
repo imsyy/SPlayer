@@ -66,7 +66,7 @@
 
 <script setup>
 import { PersonSearchFilled } from "@vicons/material";
-import { likeArtist } from "@/api";
+import { likeArtist } from "@/api/artist";
 import { useRouter } from "vue-router";
 import { musicStore, userStore } from "@/store";
 

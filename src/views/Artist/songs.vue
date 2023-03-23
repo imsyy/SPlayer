@@ -17,7 +17,7 @@
 </template>
 
 <script setup>
-import { getArtistSongs } from "@/api";
+import { getArtistSongs } from "@/api/artist";
 import { useRouter } from "vue-router";
 import { getSongTime } from "@/utils/timeTools.js";
 import DataLists from "@/components/DataList/DataLists.vue";

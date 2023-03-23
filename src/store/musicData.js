@@ -4,15 +4,14 @@ import {
   formatNumber,
   getSongPlayingTime,
 } from "@/utils/timeTools.js";
+import { getPersonalFm, setFmTrash } from "@/api/home";
 import {
-  getPersonalFm,
-  setFmTrash,
   getLikelist,
   setLikeSong,
   getUserPlaylist,
-  getPlayListCatlist,
   getUserArtistlist,
-} from "@/api";
+} from "@/api/user";
+import { getPlayListCatlist } from "@/api/playlist";
 import { userStore } from "@/store";
 import lyricFormat from "@/utils/lyricFormat";
 

@@ -68,7 +68,7 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { getArtistDetail } from "@/api";
+import { getArtistDetail } from "@/api/artist";
 import { MusicNoteFilled, AlbumFilled, VideocamRound } from "@vicons/material";
 const router = useRouter();
 

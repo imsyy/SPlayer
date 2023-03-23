@@ -12,7 +12,7 @@
 </template>
   
 <script setup>
-import { getSearchData } from "@/api";
+import { getSearchData } from "@/api/search";
 import { useRouter } from "vue-router";
 import { formatNumber, getSongTime } from "@/utils/timeTools.js";
 import VideoLists from "@/components/DataList/VideoLists.vue";

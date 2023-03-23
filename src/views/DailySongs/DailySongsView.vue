@@ -17,7 +17,7 @@
 </template>
 
 <script setup>
-import { getDailySongs } from "@/api";
+import { getDailySongs } from "@/api/home";
 import { musicStore } from "@/store";
 import { CalendarTodayFilled } from "@vicons/material";
 import DataLists from "@/components/DataList/DataLists.vue";

@@ -33,7 +33,7 @@
 </template>
 
 <script setup>
-import { addSongToPlayList } from "@/api";
+import { addSongToPlayList } from "@/api/playlist";
 import { musicStore, userStore } from "@/store";
 
 const music = musicStore();

@@ -19,9 +19,7 @@ axios.defaults.withCredentials = true;
 // 请求拦截
 axios.interceptors.request.use(
   (request) => {
-    if (request.loadingBar != "Hidden") $loadingBar.start();
-    // const token = localStorage.getItem("cookie");
-    // token && (request.headers.Authorization = token);
+    if (!request.hiddenBar) $loadingBar.start();
     return request;
   },
   (error) => {

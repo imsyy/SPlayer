@@ -1,17 +1,16 @@
-import axios from "@/api/request";
+import axios from "@/utils/request";
 
 /**
- * 用户及登录部分
+ * 用户部分
  */
 
 /**
- * 生成二维码 key
+ * 获取用户等级信息
  */
-export const getQrKey = () => {
+export const getUserLevel = () => {
   return axios({
     method: "GET",
-    loadingBar: "Hidden",
-    url: "/login/qr/key",
+    url: "/user/level",
     params: {
       time: new Date().getTime(),
     },
@@ -19,18 +18,165 @@ export const getQrKey = () => {
 };
 
 /**
- * 生成二维码
- * @param {string} key 二维码key
- * @param {boolean} qrimg 是否生成二维码图片，默认为true
-*/
-export const qrCreate = (key, qrimg = true) => {
+ * 获取用户订阅信息，包括歌单、收藏、MV和DJ数量
+ */
+export const getUserSubcount = () => {
   return axios({
     method: "GET",
-    loadingBar: "Hidden",
-    url: "/login/qr/create",
+    url: "/user/subcount",
     params: {
-      key,
-      qrimg,
+      time: new Date().getTime(),
+    },
+  });
+};
+
+/**
+ * 获取用户的歌单列表
+ * @param {string} uid 用户的id
+ * @param {number} [limit=30] - 返回数量，默认30
+ * @param {number} [offset=0] - 偏移数量，默认0
+ */
+export const getUserPlaylist = (uid, limit = 30, offset = 0) => {
+  return axios({
+    method: "GET",
+    url: "/user/playlist",
+    params: {
+      uid,
+      limit,
+      offset,
+      time: new Date().getTime(),
+    },
+  });
+};
+
+/**
+ * 获取用户收藏的歌手列表
+ */
+export const getUserArtistlist = () => {
+  return axios({
+    method: "GET",
+    url: "/artist/sublist",
+    params: {
+      time: new Date().getTime(),
+    },
+  });
+};
+
+/**
+ * 获取用户喜欢的音乐列表
+ * @param {string} uid 用户的id
+ */
+export const getLikelist = (uid) => {
+  return axios({
+    method: "GET",
+    hiddenBar: true,
+    url: "/likelist",
+    params: {
+      uid,
+      time: new Date().getTime(),
+    },
+  });
+};
+
+/**
+ * 将指定音乐添加或移除喜欢列表
+ * @param {number} id 音乐ID
+ * @param {boolean} [like=true] 是否添加到喜欢列表，默认为true
+ */
+export const setLikeSong = (id, like = true) => {
+  return axios({
+    method: "GET",
+    hiddenBar: true,
+    url: "/like",
+    params: {
+      id,
+      like,
+      time: new Date().getTime(),
+    },
+  });
+};
+
+/**
+ * 获取用户云盘数据
+ * @param {number} [limit=30] - 返回数量，默认30
+ * @param {number} [offset=0] - 偏移数量，默认0
+ */
+export const getCloud = (limit = 30, offset = 0) => {
+  return axios({
+    method: "GET",
+    url: "/user/cloud",
+    params: {
+      limit,
+      offset,
+      time: new Date().getTime(),
+    },
+  });
+};
+
+/**
+ * 用户云盘歌曲删除
+ * @param {string} id - 歌曲的id
+ */
+export const setCloudDel = (id) => {
+  return axios({
+    method: "GET",
+    url: "/user/cloud/del",
+    params: {
+      id,
+      time: new Date().getTime(),
+    },
+  });
+};
+
+/**
+ * 云盘歌曲信息匹配纠正
+ * @param {string} uid - 用户id
+ * @param {string} sid - 原歌曲id
+ * @param {string} asid - 要匹配的歌曲id
+ */
+export const setCloudMatch = (uid, sid, asid) => {
+  return axios({
+    method: "GET",
+    url: "/cloud/match",
+    params: {
+      uid,
+      sid,
+      asid,
+      time: new Date().getTime(),
+    },
+  });
+};
+
+/**
+ * 用户云盘上传
+ * @param {File} file - 要上传的文件
+ */
+export const upCloudSong = (file) => {
+  const formData = new FormData();
+  formData.append("songFile", file);
+  return axios({
+    url: "/cloud",
+    method: "POST",
+    loadingBar: "Hidden",
+    params: {
+      time: new Date().getTime(),
+    },
+    data: formData,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+    timeout: 200000,
+  });
+};
+
+/**
+ * 退出登录
+ */
+export const userLogOut = () => {
+  return axios({
+    method: "GET",
+    url: "/logout",
+    params: {
       time: new Date().getTime(),
     },
   });

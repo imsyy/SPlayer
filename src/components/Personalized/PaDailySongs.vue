@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { getDailySongs } from "@/api";
+import { getDailySongs } from "@/api/home";
 import { useRouter } from "vue-router";
 import { musicStore, userStore } from "@/store";
 

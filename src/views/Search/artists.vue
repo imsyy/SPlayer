@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { getSearchData } from "@/api";
+import { getSearchData } from "@/api/search";
 import { useRouter } from "vue-router";
 import ArtistLists from "@/components/DataList/ArtistLists.vue";
 

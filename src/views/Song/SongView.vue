@@ -87,10 +87,11 @@
 </template>
 
 <script setup>
-import { getMusicDetail, getSimiPlayList } from "@/api";
+import { getSimiPlayList } from "@/api/playlist";
+import { getMusicDetail } from "@/api/song";
 import { useRouter } from "vue-router";
 import { musicStore } from "@/store";
-import { getSongTime, getLongTime } from "@/utils/timeTools.js";
+import { getLongTime } from "@/utils/timeTools.js";
 import { PlayArrowRound, MessageFilled, VideocamRound } from "@vicons/material";
 import { formatNumber } from "@/utils/timeTools.js";
 import AllArtists from "@/components/DataList/AllArtists.vue";

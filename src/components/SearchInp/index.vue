@@ -164,7 +164,7 @@
 </template>
 
 <script setup>
-import { getSearchHot, getSearchSuggest } from "@/api";
+import { getSearchHot, getSearchSuggest } from "@/api/search";
 import {
   SearchFilled,
   MusicNoteFilled,

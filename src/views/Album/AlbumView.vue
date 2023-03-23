@@ -89,7 +89,7 @@
 </template>
 
 <script setup>
-import { getAlbum } from "@/api";
+import { getAlbum } from "@/api/album";
 import { useRouter } from "vue-router";
 import { getSongTime, getLongTime } from "@/utils/timeTools.js";
 import DataLists from "@/components/DataList/DataLists.vue";

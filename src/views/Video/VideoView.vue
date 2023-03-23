@@ -78,7 +78,8 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { musicStore } from "@/store";
-import { getVideoDetail, getVideoUrl, getSimiVideo, getComment } from "@/api";
+import { getVideoDetail, getVideoUrl, getSimiVideo } from "@/api/video";
+import { getComment } from "@/api/comment";
 import { formatNumber, getSongTime } from "@/utils/timeTools.js";
 import {
   OndemandVideoFilled,

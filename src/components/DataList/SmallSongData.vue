@@ -28,7 +28,7 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { getMusicDetail } from "@/api";
+import { getMusicDetail } from "@/api/song";
 import AllArtists from "./AllArtists.vue";
 
 const router = useRouter();

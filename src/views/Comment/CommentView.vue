@@ -70,9 +70,8 @@
 <script setup>
 import { musicStore } from "@/store";
 import { useRouter } from "vue-router";
-import { getComment } from "@/api";
+import { getComment } from "@/api/comment";
 import SmallSongData from "@/components/DataList/SmallSongData.vue";
-import AllArtists from "@/components/DataList/AllArtists.vue";
 import Comment from "@/components/Comment/index.vue";
 import Pagination from "@/components/Pagination/index.vue";
 const router = useRouter();

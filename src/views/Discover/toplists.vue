@@ -55,7 +55,7 @@
 </template>
 
 <script setup>
-import { getToplist } from "@/api";
+import { getToplist } from "@/api/album";
 import { useRouter } from "vue-router";
 import { formatNumber } from "@/utils/timeTools.js";
 import CoverLists from "@/components/DataList/CoverLists.vue";

@@ -13,7 +13,7 @@
 </template>
 
 <script setup>
-import { getPersonalized } from "@/api";
+import { getPersonalized } from "@/api/home";
 import { useRouter } from "vue-router";
 import { formatNumber } from "@/utils/timeTools.js";
 import CoverLists from "@/components/DataList/CoverLists.vue";

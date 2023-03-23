@@ -49,7 +49,7 @@
 </template>
 
 <script setup>
-import { createPlaylist } from "@/api";
+import { createPlaylist } from "@/api/playlist";
 import { AddCircleRound } from "@vicons/material";
 import { useRouter } from "vue-router";
 import { musicStore, userStore } from "@/store";

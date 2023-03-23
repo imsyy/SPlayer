@@ -32,7 +32,7 @@
 <script setup>
 import { musicStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
-import { getLoginState } from "@/api";
+import { getLoginState } from "@/api/login";
 import Provider from "@/components/Provider/index.vue";
 import Nav from "@/components/Nav/index.vue";
 import Player from "@/components/Player/index.vue";
@@ -63,9 +63,9 @@ onMounted(() => {
 
   // 初始化
   $notification["info"]({
-    content: "项目未完成",
-    meta: "最近更新：音乐库页面完善",
-    duration: 8000,
+    content: "项目即将完成",
+    meta: "页面完善中",
+    duration: 2000,
   });
 
   // 版权声明
