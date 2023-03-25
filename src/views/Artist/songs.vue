@@ -8,7 +8,7 @@
         strong
         secondary
         round
-        @click="router.push(`/all-songs?id=${artistId}`)"
+        @click="router.push(`/all-songs?id=${artistId}&page=1`)"
       >
         全部歌曲
       </n-button>

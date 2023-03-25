@@ -50,7 +50,7 @@
           :bordered="false"
           v-for="item in playListDetail.tags"
           :key="item"
-          @click="router.push(`/discover/playlists?cat=${item}`)"
+          @click="router.push(`/discover/playlists?cat=${item}&page=1`)"
         >
           {{ item }}
         </n-tag>
@@ -223,7 +223,7 @@ watch(
   () => router.currentRoute.value,
   (val, oldVal) => {
     playListId.value = val.query.id;
-    pageNumber.value = Number(val.query.page);
+    pageNumber.value = Number(val.query.page ? val.query.page : 1);
     if (val.name == "playlist") {
       if (val.query.id != oldVal.query.id) {
         getPlayListDetailData(playListId.value);

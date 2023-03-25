@@ -19,7 +19,7 @@
               alignItems: 'center',
             }"
             hoverable
-            @click="router.push(`/playlist?id=${item.id}`)"
+            @click="router.push(`/playlist?id=${item.id}&page=1`)"
           >
             <div class="cover">
               <n-avatar

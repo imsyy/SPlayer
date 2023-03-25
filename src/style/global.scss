@@ -21,12 +21,12 @@ body,
 
   .n-dialog__title {
     transform: translateX(-8px);
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 18px;
+    // font-weight: bold;
 
     i {
       font-size: 24px;
-      transform: translateY(-1px);
+      // transform: translateY(-1px);
     }
   }
 }
@@ -38,7 +38,8 @@ body,
   min-width: min(24rem, 100vw);
   .n-card-header {
     .n-card-header__main {
-      font-weight: bold;
+      // font-weight: bold;
+      font-size: 18px;
     }
   }
   .n-scrollbar {

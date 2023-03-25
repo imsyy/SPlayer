@@ -181,6 +181,7 @@ const hqPLayListChange = (val) => {
     query: {
       cat: catName.value,
       hq: val ? true : false,
+      page: 1,
     },
   });
 };
@@ -290,7 +291,7 @@ const pageNumberChange = (val) => {
 watch(
   () => router.currentRoute.value,
   (val) => {
-    catName.value = val.query.cat;
+    catName.value = val.query.cat ? val.query.cat : "全部歌单";
     hqPLayListOpen.value = val.query.hq
       ? val.query.hq == "true"
         ? true

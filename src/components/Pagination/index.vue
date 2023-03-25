@@ -85,6 +85,12 @@ watch(
     pageNumberChange(val);
   }
 );
+watch(
+  () => props.pageNumber,
+  (val) => {
+    currentPageNumber.value = val;
+  }
+);
 
 onMounted(() => {
   // 更改当前页数

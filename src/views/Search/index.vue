@@ -67,6 +67,7 @@ const tabChange = (value) => {
     path: `/search/${value}`,
     query: {
       keywords: searchKeywords.value,
+      page: 1,
     },
   });
 };

@@ -1,7 +1,7 @@
 <template>
   <Transition name="up">
     <div
-      v-show="music.showBigPlayer"
+      v-if="music.showBigPlayer"
       class="bplayer"
       :style="
         music.getPlaySongData

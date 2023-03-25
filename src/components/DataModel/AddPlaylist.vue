@@ -3,7 +3,7 @@
     class="add-playlist s-model"
     v-model:show="addToPlaylistModel"
     preset="card"
-    title="收藏到歌单"
+    title="添加到歌单"
     :bordered="false"
     :on-after-leave="closeAddToPlaylist"
   >
@@ -49,7 +49,7 @@ const addToPlayList = (pid, tracks) => {
   addSongToPlayList(pid, tracks).then((res) => {
     console.log(res);
     if (res.status === 200) {
-      $message.success("收藏歌曲至歌单成功");
+      $message.success("添加歌曲至歌单成功");
       closeAddToPlaylist();
       music.setUserPlayLists();
     } else {

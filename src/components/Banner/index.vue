@@ -67,7 +67,7 @@ const bannerJump = (type, id, url) => {
       break;
     case 1000:
       // 歌单页
-      router.push(`/playlist?id=${id}`);
+      router.push(`/playlist?id=${id}&page=1`);
       break;
     case 1004:
       // MV页

@@ -225,7 +225,13 @@ const toSearch = (val, type) => {
       inputValue.value = val;
       // 写入搜索历史
       music.setSearchHistory(inputValue.value.trim());
-      router.push(`/search/songs?keywords=${val}`);
+      router.push({
+        path: "/search/songs",
+        query: {
+          keywords: val,
+          page: 1,
+        },
+      });
       break;
     case 1:
       // 歌曲页

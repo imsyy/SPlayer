@@ -90,7 +90,7 @@ watch(
   () => router.currentRoute.value,
   (val) => {
     artistId.value = val.query.id;
-    pageNumber.value = Number(val.query.page);
+    pageNumber.value = Number(val.query.page ? val.query.page : 1);
     if (val.name == "ar-albums") {
       getArtistAblumsData(
         artistId.value,

@@ -3,7 +3,7 @@
     <n-card
       class="goback"
       v-if="music.getPlaySongData && music.getPlaySongData.id != songId"
-      @click="router.push(`/comment?id=${music.getPlaySongData.id}`)"
+      @click="router.push(`/comment?id=${music.getPlaySongData.id}&page=1`)"
       content-style="padding: 6px"
       >前往当前歌曲评论
     </n-card>
@@ -140,9 +140,7 @@ onMounted(() => {
 watch(
   () => router.currentRoute.value,
   (val) => {
-    val.query.page
-      ? (pageNumber.value = Number(val.query.page))
-      : (pageNumber.value = 1);
+    pageNumber.value = Number(val.query.page ? val.query.page : 1);
     if (val.name == "comment") {
       songId.value = val.query.id;
       getCommentData(val.query.id, (pageNumber.value - 1) * 20);

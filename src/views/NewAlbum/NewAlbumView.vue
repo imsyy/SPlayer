@@ -104,7 +104,7 @@ watch(
   () => router.currentRoute.value,
   (val) => {
     albumAreaChoose.value = val.query.area;
-    pageNumber.value = Number(val.query.page);
+    pageNumber.value = Number(val.query.page ? val.query.page : 1);
     if (val.name == "new-album") {
       getAlbumNewData(
         albumAreaChoose.value,

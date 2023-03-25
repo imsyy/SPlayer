@@ -2,7 +2,9 @@
   <div class="paplaylists">
     <n-h3 class="title" prefix="bar">
       推荐歌单
-      <span class="more" @click="router.push('/discover/playlists')">更多</span>
+      <span class="more" @click="router.push('/discover/playlists?page=1')">
+        更多
+      </span>
     </n-h3>
     <CoverLists
       :listData="personalizedData"

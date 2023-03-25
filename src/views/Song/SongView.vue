@@ -57,7 +57,7 @@
           <n-button
             strong
             secondary
-            @click="router.push(`/comment?id=${musicDetail.id}`)"
+            @click="router.push(`/comment?id=${musicDetail.id}&page=1`)"
           >
             <template #icon>
               <n-icon :component="MessageFilled" />

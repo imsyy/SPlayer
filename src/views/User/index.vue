@@ -42,6 +42,9 @@ const tabChange = (value) => {
   console.log(value);
   router.push({
     path: `/user/${value}`,
+    query: {
+      page: 1,
+    },
   });
 };
 

@@ -33,7 +33,7 @@
         <span>{{ cloudSpace[1] }} G</span>
       </div>
     </div>
-    <DataLists :listData="cloudData" @cloudDataLoad="cloudDataLoad" />
+    <DataLists :listData="cloudData" />
     <Pagination
       :totalCount="totalCount"
       :pageNumber="pageNumber"
@@ -151,14 +151,15 @@ const cloudDataLoad = (scroll = false) => {
     scroll
   );
 };
+provide("cloudDataLoad", cloudDataLoad);
 
 // 监听路由参数变化
 watch(
   () => router.currentRoute.value,
   (val) => {
-    pageNumber.value = Number(val.query.page);
+    pageNumber.value = Number(val.query.page ? val.query.page : 1);
     if (val.name == "cloud") {
-      getCloudData(pagelimit.value, (val.query.page - 1) * pagelimit.value);
+      getCloudData(pagelimit.value, (pageNumber.value - 1) * pagelimit.value);
     }
   }
 );

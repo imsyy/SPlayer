@@ -145,6 +145,7 @@ const artistInitialChange = (key) => {
     query: {
       type: artistTypeNamesChoose.value,
       initial: key,
+      page: 1,
     },
   });
 };
@@ -157,6 +158,7 @@ const artistTypeChange = (index) => {
     query: {
       type: index,
       initial: artistInitialChoose.value,
+      page: 1,
     },
   });
 };
@@ -179,8 +181,10 @@ const loadingMore = () => {
 watch(
   () => router.currentRoute.value,
   (val) => {
-    artistTypeNamesChoose.value = Number(val.query.type);
-    artistInitialChoose.value = val.query.initial;
+    artistTypeNamesChoose.value = Number(val.query.type ? val.query.type : 0);
+    artistInitialChoose.value = val.query.initial
+      ? val.query.initial
+      : artistInitials[0].key;
     artistsOffset.value = 0;
     if (val.name == "dsc-artists") {
       getArtistListData(

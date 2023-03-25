@@ -219,7 +219,7 @@ import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
 import { storeToRefs } from "pinia";
 import { musicStore, settingStore } from "@/store";
 import { useRouter } from "vue-router";
-import AddPlaylist from "@/components/DataList/AddPlaylist.vue";
+import AddPlaylist from "@/components/DataModel/AddPlaylist.vue";
 import AllArtists from "@/components/DataList/AllArtists.vue";
 import PlayList from "@/components/DataList/PlayList.vue";
 import BigPlayer from "./BigPlayer.vue";

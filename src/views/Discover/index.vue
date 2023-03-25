@@ -36,6 +36,7 @@ const tabChange = (value) => {
   console.log(value);
   router.push({
     path: `/discover/${value}`,
+    page: 1,
   });
 };
 

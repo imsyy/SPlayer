@@ -107,6 +107,7 @@ const tabChange = (value) => {
     path: `/artist/${value}`,
     query: {
       id: artistId.value,
+      page: 1,
     },
   });
 };

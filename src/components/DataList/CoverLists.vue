@@ -306,6 +306,7 @@ const toLink = (id) => {
       path: "/playlist",
       query: {
         id,
+        page: 1,
       },
     });
   } else if (props.listType == "album") {
