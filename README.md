@@ -4,6 +4,7 @@
 <p>一个简约的在线音乐播放器</p>
 <img alt="main" src="./screenshots/main.png" />
 </div>
+<br />
 
 > 本项目采用 Vue 3 全家桶及 SCSS 开发  
 > 目前主要以 PC 端为主，移动端做了基础适配，仅保证功能
@@ -50,31 +51,31 @@
 <details>
 <summary>主页面</summary>
 
-![主页面](/screenshots/SPlayer%20-%20%E4%B8%BB%E9%A1%B5%E9%9D%A2.jpg)
+![主页面](/screenshots/SPlayer%20-%20%E4%B8%BB%E9%A1%B5%E9%9D%A2.png)
 </details>
 
 <details>
 <summary>播放页面</summary>
 
-![播放页面](/screenshots/SPlayer%20-%20%E6%92%AD%E6%94%BE%E9%A1%B5%E9%9D%A2.jpg)
+![播放页面](/screenshots/SPlayer%20-%20%E6%92%AD%E6%94%BE%E9%A1%B5%E9%9D%A2.png)
 </details>
 
 <details>
 <summary>发现页面</summary>
 
-![发现页面](/screenshots/SPlayer%20-%20%E5%8F%91%E7%8E%B0%E9%A1%B5%E9%9D%A2.jpg)
+![发现页面](/screenshots/SPlayer%20-%20%E5%8F%91%E7%8E%B0%E9%A1%B5%E9%9D%A2.png)
 </details>
 
 <details>
 <summary>歌单页面</summary>
 
-![歌单页面](/screenshots/SPlayer%20-%20%E6%AD%8C%E5%8D%95%E9%A1%B5%E9%9D%A2.jpg)
+![歌单页面](/screenshots/SPlayer%20-%20%E6%AD%8C%E5%8D%95%E9%A1%B5%E9%9D%A2.png)
 </details>
 
 <details>
 <summary>评论页面</summary>
 
-![评论页面](/screenshots/SPlayer%20-%20%E8%AF%84%E8%AE%BA%E9%A1%B5%E9%9D%A2.jpg)
+![评论页面](/screenshots/SPlayer%20-%20%E8%AF%84%E8%AE%BA%E9%A1%B5%E9%9D%A2.png)
 </details>
 
 ## ⚙️ 部署
