@@ -1,9 +1,12 @@
-# SPlayer
+<div align="center">
+<img alt="logo" height="80" src="./public/images/logo/favicon.png" />
+<h2>SPlayer</h2>
+<p>一个简约的在线音乐播放器</p>
+<img alt="main" src="./screenshots/main.png" />
+</div>
 
-> 一个简约的在线音乐播放器，**项目尚未完成**，不保证可用性
-
-本项目采用 Vue 3 全家桶及 SCSS 开发  
-目前主要以 PC 端为主，移动端做了基础适配，仅保证功能
+> 本项目采用 Vue 3 全家桶及 SCSS 开发  
+> 目前主要以 PC 端为主，移动端做了基础适配，仅保证功能
 
 ## 👀 Demo
 
