@@ -37,7 +37,7 @@ const pageNumber = ref(
 );
 const totalCount = ref(0);
 
-// 获取歌手视频（网易云你视频就不返回总数了？）
+// 获取歌手视频
 const getArtistVideosData = (id, limit = 30, offset = 0) => {
   getArtistVideos(id, limit, offset).then((res) => {
     console.log(res);

@@ -181,3 +181,31 @@ export const userLogOut = () => {
     },
   });
 };
+
+/**
+ * 每日签到
+ * @param {type} type - 签到类型 , 默认 0, 其中 0 为安卓端签到 ,1 为 web/PC 签到
+ */
+export const userDailySignin = (type = 0) => {
+  return axios({
+    method: "GET",
+    url: "/daily_signin",
+    params: {
+      type,
+      time: new Date().getTime(),
+    },
+  });
+};
+
+/**
+ * 云贝签到
+ */
+export const userYunbeiSign = () => {
+  return axios({
+    method: "GET",
+    url: "/yunbei/sign",
+    params: {
+      time: new Date().getTime(),
+    },
+  });
+};

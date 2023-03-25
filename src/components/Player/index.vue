@@ -17,157 +17,166 @@
       />
       <span>{{ music.getPlaySongTime.songTimeDuration }}</span>
     </div>
-    <div class="data">
-      <div class="pic" @click.stop="music.setBigPlayerState(true)">
-        <img
-          :src="
-            music.getPlaySongData
-              ? music.getPlaySongData.album.picUrl.replace(/^http:/, 'https:') +
-                '?param=50y50'
-              : '/images/pic/default.png'
-          "
-          alt="pic"
-        />
-        <n-icon class="open" size="30" :component="KeyboardArrowUpFilled" />
-      </div>
-      <div class="name">
-        <div
-          class="song text-hidden"
-          @click.stop="router.push(`/song?id=${music.getPlaySongData.id}`)"
-        >
-          {{ music.getPlaySongData ? music.getPlaySongData.name : "暂无歌曲" }}
+    <div class="all">
+      <div class="data">
+        <div class="pic" @click.stop="music.setBigPlayerState(true)">
+          <img
+            :src="
+              music.getPlaySongData
+                ? music.getPlaySongData.album.picUrl.replace(
+                    /^http:/,
+                    'https:'
+                  ) + '?param=50y50'
+                : '/images/pic/default.png'
+            "
+            alt="pic"
+          />
+          <n-icon class="open" size="30" :component="KeyboardArrowUpFilled" />
         </div>
-        <div class="artisrOrLrc" v-if="music.getPlaySongData">
-          <template v-if="setting.bottomLyricShow">
-            <Transition mode="out-in">
+        <div class="name">
+          <div
+            class="song text-hidden"
+            @click.stop="router.push(`/song?id=${music.getPlaySongData.id}`)"
+          >
+            {{
+              music.getPlaySongData ? music.getPlaySongData.name : "暂无歌曲"
+            }}
+          </div>
+          <div class="artisrOrLrc" v-if="music.getPlaySongData">
+            <template v-if="setting.bottomLyricShow">
+              <Transition mode="out-in">
+                <AllArtists
+                  v-if="!music.getPlayState || !music.getPlaySongLyric[0]"
+                  class="text-hidden"
+                  :artistsData="music.getPlaySongData.artist"
+                />
+                <n-text
+                  v-else-if="
+                    music.getPlaySongLyric[0] &&
+                    music.getPlaySongLyricIndex != -1
+                  "
+                  class="lrc text-hidden"
+                  :depth="3"
+                  v-html="
+                    music.getPlaySongLyric[music.getPlaySongLyricIndex].lyric
+                  "
+                />
+              </Transition>
+            </template>
+            <template v-else>
               <AllArtists
-                v-if="!music.getPlayState || !music.getPlaySongLyric[0]"
                 class="text-hidden"
                 :artistsData="music.getPlaySongData.artist"
               />
-              <n-text
-                v-else-if="
-                  music.getPlaySongLyric[0] && music.getPlaySongLyricIndex != -1
-                "
-                class="lrc text-hidden"
-                :depth="3"
-                v-html="
-                  music.getPlaySongLyric[music.getPlaySongLyricIndex].lyric
-                "
-              />
-            </Transition>
-          </template>
-          <template v-else>
-            <AllArtists
-              class="text-hidden"
-              :artistsData="music.getPlaySongData.artist"
-            />
-          </template>
+            </template>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="control">
-      <n-icon
-        v-if="!music.getPersonalFmMode"
-        title="上一曲"
-        class="prev"
-        size="30"
-        :component="SkipPreviousRound"
-        @click.stop="music.setPlaySongIndex('prev')"
-      />
-      <n-icon
-        v-else
-        class="dislike"
-        size="20"
-        :component="ThumbDownRound"
-        @click="music.setFmDislike(music.getPersonalFmData.id)"
-      />
-      <div class="play-state">
+      <div class="control">
         <n-icon
-          size="46"
-          :title="music.getPlayState ? '暂停' : '播放'"
-          :component="music.getPlayState ? PauseCircleFilled : PlayCircleFilled"
-          @click.stop="music.setPlayState(!music.getPlayState)"
-        />
-      </div>
-      <n-icon
-        class="next"
-        size="30"
-        :component="SkipNextRound"
-        @click.stop="music.setPlaySongIndex('next')"
-      />
-    </div>
-    <div :class="music.getPersonalFmMode ? 'menu fm' : 'menu'">
-      <div class="like" v-if="music.getPlaySongData">
-        <n-icon
-          class="like-icon"
-          size="24"
-          :component="
-            music.getSongIsLike(music.getPlaySongData.id)
-              ? FavoriteRound
-              : FavoriteBorderRound
-          "
-          @click.stop="
-            music.getSongIsLike(music.getPlaySongData.id)
-              ? music.changeLikeList(music.getPlaySongData.id, false)
-              : music.changeLikeList(music.getPlaySongData.id, true)
-          "
-        />
-      </div>
-      <div class="add-playlist">
-        <n-icon
-          class="add-icon"
+          v-if="!music.getPersonalFmMode"
+          title="上一曲"
+          class="prev"
           size="30"
-          :component="PlaylistAddRound"
-          @click.stop="
-            addPlayListRef.openAddToPlaylist(music.getPlaySongData.id)
-          "
+          :component="SkipPreviousRound"
+          @click.stop="music.setPlaySongIndex('prev')"
         />
-      </div>
-      <div class="pattern">
         <n-icon
-          :component="
-            persistData.playSongMode === 'normal'
-              ? PlayCycle
-              : persistData.playSongMode === 'random'
-              ? ShuffleOne
-              : PlayOnce
-          "
-          @click="music.setPlaySongMode()"
+          v-else
+          class="dislike"
+          size="20"
+          :component="ThumbDownRound"
+          @click="music.setFmDislike(music.getPersonalFmData.id)"
         />
-      </div>
-      <div class="playlist">
-        <PlayList />
+        <div class="play-state">
+          <n-icon
+            size="46"
+            :title="music.getPlayState ? '暂停' : '播放'"
+            :component="
+              music.getPlayState ? PauseCircleFilled : PlayCircleFilled
+            "
+            @click.stop="music.setPlayState(!music.getPlayState)"
+          />
+        </div>
         <n-icon
           class="next"
           size="30"
-          :component="PlaylistPlayRound"
-          @click.stop="music.showPlayList = !music.showPlayList"
+          :component="SkipNextRound"
+          @click.stop="music.setPlaySongIndex('next')"
         />
       </div>
-      <div class="volume">
-        <n-icon
-          size="28"
-          :component="
-            persistData.playVolume == 0
-              ? VolumeOffRound
-              : persistData.playVolume < 0.4
-              ? VolumeMuteRound
-              : persistData.playVolume < 0.7
-              ? VolumeDownRound
-              : VolumeUpRound
-          "
-          @click.stop="volumeMute"
-        />
-        <n-slider
-          class="volmePg"
-          v-model:value="persistData.playVolume"
-          :tooltip="false"
-          :min="0"
-          :max="1"
-          :step="0.01"
-          @click.stop
-        />
+      <div :class="music.getPersonalFmMode ? 'menu fm' : 'menu'">
+        <div class="like" v-if="music.getPlaySongData">
+          <n-icon
+            class="like-icon"
+            size="24"
+            :component="
+              music.getSongIsLike(music.getPlaySongData.id)
+                ? FavoriteRound
+                : FavoriteBorderRound
+            "
+            @click.stop="
+              music.getSongIsLike(music.getPlaySongData.id)
+                ? music.changeLikeList(music.getPlaySongData.id, false)
+                : music.changeLikeList(music.getPlaySongData.id, true)
+            "
+          />
+        </div>
+        <div class="add-playlist">
+          <n-icon
+            class="add-icon"
+            size="30"
+            :component="PlaylistAddRound"
+            @click.stop="
+              addPlayListRef.openAddToPlaylist(music.getPlaySongData.id)
+            "
+          />
+        </div>
+        <div class="pattern">
+          <n-icon
+            :component="
+              persistData.playSongMode === 'normal'
+                ? PlayCycle
+                : persistData.playSongMode === 'random'
+                ? ShuffleOne
+                : PlayOnce
+            "
+            @click="music.setPlaySongMode()"
+          />
+        </div>
+        <div class="playlist">
+          <PlayList />
+          <n-icon
+            class="next"
+            size="30"
+            :component="PlaylistPlayRound"
+            @click.stop="music.showPlayList = !music.showPlayList"
+          />
+        </div>
+        <div class="volume">
+          <n-icon
+            size="28"
+            :component="
+              persistData.playVolume == 0
+                ? VolumeOffRound
+                : persistData.playVolume < 0.4
+                ? VolumeMuteRound
+                : persistData.playVolume < 0.7
+                ? VolumeDownRound
+                : VolumeUpRound
+            "
+            @click.stop="volumeMute"
+          />
+          <n-slider
+            class="volmePg"
+            v-model:value="persistData.playVolume"
+            :tooltip="false"
+            :min="0"
+            :max="1"
+            :step="0.01"
+            @click.stop
+          />
+        </div>
       </div>
     </div>
     <audio
@@ -496,10 +505,13 @@ watch(
     }
   }
 
-  :deep(.n-card__content) {
+  .all {
+    height: 100%;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
     @media (max-width: 620px) {
       display: flex;
       flex-direction: row;

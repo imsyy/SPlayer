@@ -348,6 +348,8 @@ nav {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
   .left {
     flex: 1;
     max-width: 300px;

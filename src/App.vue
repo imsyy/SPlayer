@@ -33,6 +33,7 @@
 import { musicStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
 import { getLoginState } from "@/api/login";
+import { userDailySignin, userYunbeiSign } from "@/api/user";
 import Provider from "@/components/Provider/index.vue";
 import Nav from "@/components/Nav/index.vue";
 import Player from "@/components/Player/index.vue";
@@ -54,6 +55,32 @@ const spacePlayOrPause = (e) => {
     } else {
       return false;
     }
+  }
+};
+
+// 用户签到
+const signIn = () => {
+  // 获取当前日期
+  const today = new Date().toLocaleDateString();
+  // 从 localStorage 中获取上一次签到日期
+  const lastSignInDate = localStorage.getItem("lastSignInDate");
+  // 如果上一次签到日期不等于当前日期，说明今天还没有签到
+  if (lastSignInDate !== today) {
+    const signInPromises = [userDailySignin(0), userYunbeiSign()];
+    Promise.all(signInPromises)
+      .then((results) => {
+        // 更新上一次签到日期为今天
+        localStorage.setItem("lastSignInDate", today);
+        console.log("签到成功！");
+        console.log("userDailySignin:", results[0]);
+        console.log("userYunbeiSign:", results[1]);
+      })
+      .catch((error) => {
+        console.error("签到失败：", error);
+        $message.error("每日签到失败");
+      });
+  } else {
+    console.log("今天已经签到过了！");
   }
 };
 
@@ -81,6 +108,8 @@ onMounted(() => {
   getLoginState()
     .then((res) => {
       if (res.data.profile && user.userLogin) {
+        // 签到
+        signIn();
         user.userLogin = true;
         user.setUserOtherData();
       } else {
@@ -120,6 +149,10 @@ onMounted(() => {
   }
   :deep(.n-scrollbar-rail--vertical) {
     right: 0;
+  }
+  .main {
+    max-width: 1400px;
+    margin: 0 auto;
   }
 }
 

@@ -95,10 +95,12 @@ const bannerJump = (type, id, url) => {
 const getBannerHeight = () => {
   if (window.innerWidth > 680) {
     bannerType.value = "card";
-    if (window.innerWidth >= 1200) {
+    if (window.innerWidth >= 1200 && window.innerWidth <= 1500) {
       bannerHeight.value = window.innerWidth / 5.5;
-    } else {
+    } else if (window.innerWidth <= 1500) {
       bannerHeight.value = window.innerWidth / 5;
+    } else {
+      bannerHeight.value = 300;
     }
   } else {
     bannerType.value = "slide";
