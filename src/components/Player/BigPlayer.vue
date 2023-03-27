@@ -101,7 +101,7 @@
                   @click="jumpTime(item.time)"
                 >
                   <div
-                    class="lrc-text"
+                    :class="setting.lyricsBlur ? 'lrc-text blur' : 'lrc-text'"
                     :style="{
                       transformOrigin:
                         setting.lyricsPosition === 'center' ? 'center' : null,
@@ -463,6 +463,11 @@ watch(
           &.record {
             height: 60vh;
           }
+          &:hover {
+            .lrc-text {
+              filter: blur(0) !important;
+            }
+          }
           .placeholder {
             width: 100%;
             height: 50%;
@@ -486,6 +491,10 @@ watch(
               transition: all 0.3s;
               transform: scale(0.95);
               transform-origin: center left;
+              transition: all 0.3s;
+              &.blur {
+                filter: blur(2px);
+              }
               .lyric {
                 transition: all 0.3s;
                 // font-size: 2.4vh;
@@ -502,21 +511,12 @@ watch(
             &.on {
               opacity: 1;
               .lrc-text {
+                filter: blur(0);
                 transform: scale(1.05);
                 .lyric {
                   font-weight: bold;
                 }
               }
-              // .lyric {
-              //   font-weight: bold;
-              //   // font-size: 3vh;
-              //   transform: scale(1.3);
-              // }
-              // .lyric-fy {
-              //   // font-weight: normal;
-              //   // font-size: 2.3vh;
-              //   transform: scale(1.1);
-              // }
             }
             &:hover {
               @media (min-width: 768px) {

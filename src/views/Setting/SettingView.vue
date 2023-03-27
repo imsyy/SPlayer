@@ -73,7 +73,7 @@
           2.8: '最大',
         }"
       />
-      <div class="more">
+      <div :class="lyricsBlur ? 'more blur' : 'more'">
         <div
           v-for="n in 3"
           :key="n"
@@ -115,6 +115,13 @@
     </n-card>
     <n-card class="set-item">
       <div class="name">
+        歌词模糊
+        <span class="tip">未播放或已播放歌词模糊显示</span>
+      </div>
+      <n-switch v-model:value="lyricsBlur" :round="false" />
+    </n-card>
+    <n-card class="set-item">
+      <div class="name">
         显示音乐频谱
         <span class="tip">实验性功能，可能会导致一些意想不到的后果</span>
       </div>
@@ -145,6 +152,7 @@ const {
   lyricsBlock,
   songLevel,
   bannerShow,
+  lyricsBlur,
 } = storeToRefs(setting);
 
 // 深浅模式
@@ -312,11 +320,20 @@ const changeMusicFrequency = () => {
         width: 100%;
         margin-top: 12px;
         box-sizing: border-box;
+        &.blur {
+          .lrc {
+            filter: blur(2px);
+            &.on {
+              filter: blur(0);
+            }
+          }
+        }
         .lrc {
           opacity: 0.6;
           display: flex;
           flex-direction: column;
           transform: scale(0.95);
+          transition: all 0.3s;
           &.on {
             font-weight: bold;
             opacity: 1;

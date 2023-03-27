@@ -26,6 +26,8 @@ const useSettingDataStore = defineStore("settingData", {
       lyricsBlock: "center",
       // 歌词大小
       lyricsFontSize: 2.4,
+      // 歌词模糊
+      lyricsBlur: false,
       // 音乐频谱
       musicFrequency: false,
     };

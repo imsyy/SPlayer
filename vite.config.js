@@ -103,5 +103,6 @@ export default ({ mode }) =>
           pure_funcs: ["console.log"],
         },
       },
+      sourcemap: false,
     },
   });
