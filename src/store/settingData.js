@@ -25,7 +25,7 @@ const useSettingDataStore = defineStore("settingData", {
       // 歌词滚动位置
       lyricsBlock: "center",
       // 歌词大小
-      lyricsFontSize: 2.4,
+      lyricsFontSize: 2.8,
       // 歌词模糊
       lyricsBlur: false,
       // 音乐频谱

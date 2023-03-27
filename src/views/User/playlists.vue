@@ -15,7 +15,7 @@
         新建歌单
       </n-button>
       <n-modal
-        class="s-model"
+        class="s-modal"
         v-model:show="createModelShow"
         preset="card"
         title="新建歌单"

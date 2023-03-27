@@ -187,6 +187,7 @@ watch(
       : artistInitials[0].key;
     artistsOffset.value = 0;
     if (val.name == "dsc-artists") {
+      artistsData.value = [];
       getArtistListData(
         artistType[artistTypeNamesChoose.value],
         artistArea[artistTypeNamesChoose.value],

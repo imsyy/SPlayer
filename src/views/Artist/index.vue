@@ -30,7 +30,7 @@
           {{ artistData.desc }}
         </span>
         <n-modal
-          class="s-model"
+          class="s-modal"
           v-model:show="artistDescShow"
           preset="card"
           title="歌手介绍"

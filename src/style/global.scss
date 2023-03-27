@@ -31,11 +31,19 @@ body,
   }
 }
 
-// Model
-.s-model {
+// Modal
+.s-modal {
   width: 60vw;
-  max-width: 800px;
+  max-width: 700px;
   min-width: min(24rem, 100vw);
+  border-radius: 8px;
+  &.close {
+    .n-card-header {
+      .n-base-close {
+        display: none;
+      }
+    }
+  }
   .n-card-header {
     .n-card-header__main {
       // font-weight: bold;

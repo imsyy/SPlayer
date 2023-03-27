@@ -64,13 +64,13 @@
       <n-slider
         v-model:value="lyricsFontSize"
         :tooltip="false"
-        :max="2.8"
+        :max="3.4"
         :min="2.2"
         :step="0.01"
         :marks="{
           2.2: '最小',
-          2.4: '默认',
-          2.8: '最大',
+          2.8: '默认',
+          3.4: '最大',
         }"
       />
       <div :class="lyricsBlur ? 'more blur' : 'more'">

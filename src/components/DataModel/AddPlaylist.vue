@@ -1,6 +1,6 @@
 <template>
   <n-modal
-    class="add-playlist s-model"
+    class="add-playlist s-modal"
     v-model:show="addToPlaylistModel"
     preset="card"
     title="添加到歌单"

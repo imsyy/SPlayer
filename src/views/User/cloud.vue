@@ -40,6 +40,30 @@
       @pageSizeChange="pageSizeChange"
       @pageNumberChange="pageNumberChange"
     />
+    <!-- 上传进度弹窗 -->
+    <n-modal
+      class="s-modal close"
+      v-model:show="upSongModal"
+      preset="card"
+      title="云盘上传"
+      :bordered="false"
+      :close-on-esc="false"
+      :esc="false"
+      :mask-closable="false"
+    >
+      <n-progress
+        type="line"
+        :status="upSongType"
+        :percentage="upSongCompleted"
+        :indicator-placement="'inside'"
+        processing
+      />
+      <template #footer v-if="upSongType === 'error'">
+        <n-space justify="end">
+          <n-button @click="closeUpSongModal"> 取消 </n-button>
+        </n-space>
+      </template>
+    </n-modal>
   </div>
 </template>
 
@@ -63,8 +87,12 @@ const pageNumber = ref(
     : 1
 );
 const totalCount = ref(0);
+
+// 上传歌曲数据
 const upSongRef = ref(null);
-const upSongMessage = ref(null);
+const upSongType = ref("success");
+const upSongModal = ref(false);
+const upSongCompleted = ref(0);
 
 // 获取云盘数据
 const getCloudData = (limit = 30, offset = 0, scroll = true) => {
@@ -100,30 +128,42 @@ const getCloudData = (limit = 30, offset = 0, scroll = true) => {
   });
 };
 
+// 上传进度条
+const onUploadProgress = (progressEvent) => {
+  const { loaded, total } = progressEvent;
+  const percentCompleted = Math.round((loaded * 100) / total);
+  upSongCompleted.value = Number(percentCompleted);
+  console.log(`上传 ${percentCompleted}% 完成`);
+};
+
 // 歌曲上传
 const upCloudSongData = (e) => {
-  console.log(e.target.files);
+  console.log(e);
   const files = e.target.files;
-  upSongMessage.value = $message.loading("歌曲正在上传", {
-    duration: 0,
-  });
-  upCloudSong(files[0])
-    .then((res) => {
-      console.log(res);
-      if (res.code === 200) {
-        upSongMessage.value.destroy();
-        $message.success(res.privateCloud.simpleSong.name + " 上传成功");
-        if (!res.privateCloud.simpleSong.al.name) {
-          $message.warning("歌曲详细信息获取失败，可尝试歌曲纠正");
-        }
-        getCloudData(pagelimit.value, (pageNumber.value - 1) * pagelimit.value);
+  if (!files[0]) return false;
+  upSongType.value = "success";
+  upSongModal.value = true;
+  upCloudSong(files[0], onUploadProgress).then((res) => {
+    console.log(res);
+    if (res.code === 200) {
+      closeUpSongModal();
+      if (!res.privateCloud.simpleSong.al?.name) {
+        $message.warning("上传歌曲详细信息获取失败，可尝试歌曲纠正");
       }
-    })
-    .catch((err) => {
-      upSongMessage.value.destroy();
+      $message.success(res.privateCloud.simpleSong?.name + " 上传成功");
+      getCloudData(pagelimit.value, (pageNumber.value - 1) * pagelimit.value);
+    } else {
+      upSongType.value = "error";
       $message.error("歌曲上传出错，请重试");
-      console.error("歌曲上传出错：" + err);
-    });
+      console.error("歌曲上传出错，请重试");
+    }
+  });
+};
+
+// 关闭上传弹窗
+const closeUpSongModal = () => {
+  upSongModal.value = false;
+  upSongCompleted.value = 0;
 };
 
 // 每页个数数据变化

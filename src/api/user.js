@@ -151,7 +151,7 @@ export const setCloudMatch = (uid, sid, asid) => {
  * 用户云盘上传
  * @param {File} file - 要上传的文件
  */
-export const upCloudSong = (file) => {
+export const upCloudSong = (file, onUploadProgress) => {
   const formData = new FormData();
   formData.append("songFile", file);
   return axios({
@@ -166,6 +166,7 @@ export const upCloudSong = (file) => {
       "Content-Type": "multipart/form-data",
     },
     timeout: 200000,
+    onUploadProgress,
   });
 };
 

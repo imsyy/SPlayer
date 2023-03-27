@@ -102,7 +102,7 @@ onMounted(() => {
   .name {
     line-height: 1.6;
     .n-text {
-      font-size: 16px;
+      font-size: 18px;
       transition: all 0.3s;
       cursor: pointer;
       &:hover {

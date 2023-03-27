@@ -78,7 +78,7 @@
     />
     <!-- 更新歌单弹窗 -->
     <n-modal
-      class="s-model"
+      class="s-modal"
       v-model:show="playlistUpdateModel"
       preset="card"
       title="歌单编辑"

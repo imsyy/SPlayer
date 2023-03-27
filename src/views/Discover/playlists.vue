@@ -16,7 +16,7 @@
         {{ catName }}
       </n-button>
       <n-modal
-        class="s-model"
+        class="s-modal"
         v-model:show="catModelShow"
         preset="card"
         title="歌单分类"

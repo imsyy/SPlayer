@@ -473,7 +473,7 @@ watch(
             height: 50%;
           }
           .lrc {
-            opacity: 0.5;
+            opacity: 0.4;
             transition: all 0.3s;
             // display: flex;
             // flex-direction: column;
@@ -483,15 +483,14 @@ watch(
             padding: 1.8vh 3vh;
             border-radius: 8px;
             transition: all 0.3s;
-            transform-origin: center left;
+            transform-origin: left bottom;
             cursor: pointer;
             .lrc-text {
               display: flex;
               flex-direction: column;
-              transition: all 0.3s;
+              transition: all 0.35s ease-in-out;
               transform: scale(0.95);
-              transform-origin: center left;
-              transition: all 0.3s;
+              transform-origin: left bottom;
               &.blur {
                 filter: blur(2px);
               }
@@ -515,6 +514,7 @@ watch(
                 transform: scale(1.05);
                 .lyric {
                   font-weight: bold;
+                  text-shadow: 0px 0px 30px #ffffff40;
                 }
               }
             }

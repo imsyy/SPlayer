@@ -33,7 +33,7 @@
           全部简介
         </n-button>
         <n-modal
-          class="s-model"
+          class="s-modal"
           v-model:show="playListDescShow"
           preset="card"
           title="歌单简介"

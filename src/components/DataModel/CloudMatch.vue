@@ -1,6 +1,6 @@
 <template>
   <n-modal
-    class="s-model"
+    class="s-modal"
     v-model:show="cloudMatchModel"
     preset="card"
     title="歌曲信息纠正"

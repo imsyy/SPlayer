@@ -50,7 +50,7 @@
       </n-dropdown>
       <!-- 关于本站 -->
       <n-modal
-        class="s-model"
+        class="s-modal"
         v-model:show="showAboutModal"
         preset="card"
         title="关于本站"
