@@ -107,6 +107,12 @@
             "
           />
           <n-icon
+            class="download"
+            size="20"
+            :component="FileDownloadRound"
+            @click.stop="downloadSongRef.openDownloadModel(item)"
+          />
+          <n-icon
             class="more"
             size="20"
             :component="MoreHorizRound"
@@ -181,6 +187,18 @@
             >
               <n-icon size="20" :component="AddCircleRound" />
               <n-text>添加到歌单</n-text>
+            </div>
+            <div
+              class="item"
+              @click="
+                () => {
+                  downloadSongRef.openDownloadModel(drawerData);
+                  drawerShow = false;
+                }
+              "
+            >
+              <n-icon size="20" :component="FileDownloadRound" />
+              <n-text>歌曲下载</n-text>
             </div>
             <div
               class="item"
@@ -259,6 +277,8 @@
       <CloudMatch ref="cloudMatchRef" />
       <!-- 收藏到歌单 -->
       <AddPlaylist ref="addPlayListRef" />
+      <!-- 歌曲下载 -->
+      <DownloadSong ref="downloadSongRef" />
     </div>
     <n-spin class="loading" size="small" v-else />
   </Transition>
@@ -279,6 +299,7 @@ import {
   InsertPageBreakRound,
   DeleteRound,
   AddCircleRound,
+  FileDownloadRound,
 } from "@vicons/material";
 import { musicStore, settingStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
@@ -286,6 +307,7 @@ import { setCloudDel } from "@/api/user";
 import AllArtists from "./AllArtists.vue";
 import AddPlaylist from "@/components/DataModel/AddPlaylist.vue";
 import CloudMatch from "@/components/DataModel/CloudMatch.vue";
+import DownloadSong from "@/components/DataModel/DownloadSong.vue";
 import SmallSongData from "./SmallSongData.vue";
 
 const router = useRouter();
@@ -294,6 +316,7 @@ const setting = settingStore();
 const user = userStore();
 const addPlayListRef = ref(null);
 const cloudMatchRef = ref(null);
+const downloadSongRef = ref(null);
 
 const props = defineProps({
   // 列表数据
@@ -562,7 +585,8 @@ const jumpLink = (id, type) => {
       box-shadow: 0 1px 2px -2px #f55e5526, 0 3px 6px 0 #f55e5530,
         0 5px 12px 4px #f55e5505;
       .action {
-        .like {
+        .like,
+        .download {
           opacity: 1;
           transform: scale(1);
         }
@@ -669,12 +693,14 @@ const jumpLink = (id, type) => {
       }
     }
     .action {
-      width: 40px;
+      width: 80px;
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: space-evenly;
       @media (max-width: 768px) {
-        .like {
+        width: 40px;
+        .like,
+        .download {
           display: none;
         }
       }
@@ -683,14 +709,15 @@ const jumpLink = (id, type) => {
           display: none;
         }
       }
-      .like {
+      .like,
+      .download {
         cursor: pointer;
         opacity: 0;
         transform: scale(0.8);
         color: $mainColor;
         transition: all 0.3s;
         &:hover {
-          transform: scale(1.2);
+          transform: scale(1.1);
         }
         &:active {
           transform: scale(1);
@@ -724,6 +751,7 @@ const jumpLink = (id, type) => {
       }
       .n-icon {
         margin-right: 8px;
+        transform: translateY(1.5px);
       }
       .n-text {
         transform: translateY(1px);

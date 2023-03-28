@@ -14,7 +14,7 @@
       <n-text
         class="text-hidden"
         depth="2"
-        v-html="songDetail ? songDetail.name : '获取失败'"
+        v-html="songDetail ? songDetail.name : '未知歌曲'"
         @click.stop="router.push(`/song?id=${songDetail.id}`)"
       />
       <AllArtists
@@ -77,15 +77,22 @@ defineExpose({
   checkSongData,
 });
 
-// 监听路由参数变化
+// 监听参数变化
 watch(
   () => props.getDataByID,
   (val) => {
     getMusicDetailData(val);
   }
 );
+watch(
+  () => props.songData,
+  (val) => {
+    songDetail.value = val;
+  }
+);
 
 onMounted(() => {
+  if (props.songData) songDetail.value = props.songData;
   if (props.getDataByID) getMusicDetailData(props.getDataByID);
 });
 </script>

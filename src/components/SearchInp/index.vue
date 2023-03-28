@@ -2,6 +2,7 @@
   <div class="searchInp">
     <n-input
       :class="inputActive ? 'input focus' : 'input'"
+      :input-props="{ autoComplete: false }"
       round
       clearable
       placeholder="音乐/视频/电台/用户"

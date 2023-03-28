@@ -252,8 +252,10 @@ const getPlaySongData = (id, level = setting.songLevel) => {
       });
     } else {
       console.log("无法播放");
-      $message.error("当前歌曲无法播放，已跳至下一首");
-      music.setPlaySongIndex("next");
+      if (music.getPlayState && $player) {
+        $message.error("当前歌曲无法播放，已跳至下一首");
+        music.setPlaySongIndex("next");
+      }
     }
   });
 };
@@ -466,11 +468,10 @@ watch(
   position: fixed;
   bottom: -90px;
   left: 0;
-  transition: 0.3s;
+  transition: all 0.3s;
   z-index: 2;
   &.show {
     bottom: 0;
-    transition: 0.5s;
   }
   .slider {
     position: absolute;
