@@ -1,7 +1,7 @@
 <template>
   <Transition name="up">
     <div
-      v-if="music.showBigPlayer"
+      v-show="music.showBigPlayer"
       class="bplayer"
       :style="
         music.getPlaySongData
@@ -251,7 +251,7 @@ const lyricsScroll = (index) => {
 
 onMounted(() => {
   nextTick(() => {
-    if (setting.musicFrequency && music.getPlaylists[0]) {
+    if (setting.musicFrequency) {
       $player.crossOrigin = "anonymous";
       musicFrequency.value = new MusicFrequency(
         avBars.value,
