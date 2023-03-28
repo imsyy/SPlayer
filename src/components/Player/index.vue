@@ -333,7 +333,13 @@ const songPlay = () => {
 };
 
 // 音乐渐入渐出
+const isFading = ref(false);
 const songInOrOut = (type) => {
+  if (isFading.value) {
+    return;
+  }
+  isFading.value = true;
+
   if (type === "play") {
     let volume = 0;
     $player.play();
@@ -341,6 +347,7 @@ const songInOrOut = (type) => {
       // 如果音量已经到达当前音量，则停止渐入
       if (volume >= persistData.value.playVolume) {
         clearInterval(interval);
+        isFading.value = false;
         return;
       }
       // 增加音量
@@ -357,6 +364,7 @@ const songInOrOut = (type) => {
       if (volume <= 0) {
         clearInterval(interval);
         $player.pause();
+        isFading.value = false;
         return;
       }
       // 减小音量

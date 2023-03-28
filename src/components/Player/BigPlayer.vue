@@ -88,6 +88,7 @@
                     ? { textAlign: 'center', paddingRight: '0' }
                     : null
                 "
+                @mouseenter="lrcMouseStatus = true"
                 @mouseleave="lrcAllLeave"
               >
                 <div class="placeholder"></div>
@@ -203,10 +204,10 @@ const jumpTime = (time) => {
 };
 
 // 鼠标移出歌词区域
+const lrcMouseStatus = ref(false);
 const lrcAllLeave = () => {
-  if (!music.playState) {
-    lyricsScroll(music.getPlaySongLyricIndex);
-  }
+  lrcMouseStatus.value = false;
+  lyricsScroll(music.getPlaySongLyricIndex);
 };
 
 // 全屏切换
@@ -241,7 +242,7 @@ const lyricsScroll = (index) => {
   const el = document.getElementById(
     `lrc${type === "center" ? index : index - 2}`
   );
-  if (el) {
+  if (el && !lrcMouseStatus.value) {
     el.scrollIntoView({
       behavior: "smooth",
       block: type,
