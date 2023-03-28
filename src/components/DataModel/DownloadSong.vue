@@ -53,10 +53,12 @@
 
 <script setup>
 import { userStore } from "@/store";
+import { useRouter } from "vue-router";
 import { getMusicDetail, getSongDownload } from "@/api/song";
 import SmallSongData from "@/components/DataList/SmallSongData.vue";
 
 const user = userStore();
+const router = useRouter();
 
 // 歌曲下载数据
 const songId = ref(null);
@@ -145,7 +147,12 @@ const checkLevel = (val) => {
 // 开启歌曲下载
 const openDownloadModel = (data) => {
   if (user.userLogin) {
-    if (user.userData?.vipType || data?.fee === 0 || data?.pc) {
+    if (
+      router.currentRoute.value.name === "cloud" ||
+      user.userData?.vipType ||
+      data?.fee === 0 ||
+      data?.pc
+    ) {
       songId.value = data.id;
       downloadModel.value = true;
       getMusicDetailData(data.id);

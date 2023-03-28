@@ -88,6 +88,7 @@
                     ? { textAlign: 'center', paddingRight: '0' }
                     : null
                 "
+                @mouseleave="lrcAllLeave"
               >
                 <div class="placeholder"></div>
                 <div
@@ -101,10 +102,16 @@
                   @click="jumpTime(item.time)"
                 >
                   <div
-                    :class="setting.lyricsBlur ? 'lrc-text blur' : 'lrc-text'"
+                    class="lrc-text"
                     :style="{
                       transformOrigin:
                         setting.lyricsPosition === 'center' ? 'center' : null,
+                      filter: setting.lyricsBlur
+                        ? `blur(${getFilter(
+                            music.getPlaySongLyricIndex,
+                            index
+                          )}px)`
+                        : null,
                     }"
                   >
                     <span
@@ -181,9 +188,25 @@ const menuShow = ref(false);
 const avBars = ref(null);
 const musicFrequency = ref(null);
 
+// 歌词模糊数值
+const getFilter = (lrcIndex, index) => {
+  if (lrcIndex >= index) {
+    return lrcIndex - index;
+  } else {
+    return index - lrcIndex;
+  }
+};
+
 // 点击歌词跳转
 const jumpTime = (time) => {
   if ($player) $player.currentTime = time;
+};
+
+// 鼠标移出歌词区域
+const lrcAllLeave = () => {
+  if (!music.playState) {
+    lyricsScroll(music.getPlaySongLyricIndex);
+  }
 };
 
 // 全屏切换
@@ -194,6 +217,10 @@ const screenfullChange = () => {
     screenfullIcon.value = screenfull.isFullscreen
       ? FullscreenRound
       : FullscreenExitRound;
+    // 延迟一段时间执行列表滚动
+    setTimeout(() => {
+      lyricsScroll(music.getPlaySongLyricIndex);
+    }, 500);
   }
 };
 
@@ -237,6 +264,8 @@ onMounted(() => {
       );
       musicFrequency.value.drawSpectrum();
     }
+    // 滚动歌词
+    lyricsScroll(music.getPlaySongLyricIndex);
   });
 });
 
@@ -485,34 +514,28 @@ watch(
             padding: 1.8vh 3vh;
             border-radius: 8px;
             transition: all 0.3s;
-            transform-origin: left bottom;
+            transform-origin: left center;
             cursor: pointer;
             .lrc-text {
               display: flex;
               flex-direction: column;
               transition: all 0.35s ease-in-out;
               transform: scale(0.95);
-              transform-origin: left bottom;
-              &.blur {
-                filter: blur(2px);
-              }
+              transform-origin: left center;
               .lyric {
                 transition: all 0.3s;
                 // font-size: 2.4vh;
-                transform-origin: center left;
               }
               .lyric-fy {
                 margin-top: 2px;
                 transition: all 0.3s;
                 opacity: 0.8;
                 // font-size: 2vh;
-                transform-origin: center left;
               }
             }
             &.on {
               opacity: 1;
               .lrc-text {
-                filter: blur(0);
                 transform: scale(1.05);
                 .lyric {
                   font-weight: bold;
