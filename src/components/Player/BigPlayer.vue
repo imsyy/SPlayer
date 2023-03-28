@@ -110,7 +110,8 @@
                     <span
                       class="lyric"
                       :style="{ fontSize: setting.lyricsFontSize + 'vh' }"
-                      >{{ item.lyric }}
+                    >
+                      {{ item.lyric }}
                     </span>
                     <span
                       v-show="
@@ -120,7 +121,8 @@
                       "
                       :style="{ fontSize: setting.lyricsFontSize - 0.4 + 'vh' }"
                       class="lyric-fy"
-                      >{{ item.lyricFy }}</span
+                    >
+                      {{ item.lyricFy }}</span
                     >
                   </div>
                 </div>

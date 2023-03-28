@@ -18,8 +18,8 @@ const lyricFormat = (lrc) => {
       const seconds = time
         .split(":")
         .reduce((acc, cur) => acc * 60 + parseFloat(cur), 0);
-      return { time: seconds, lyric: text };
-    });
+      return { time: seconds, lyric: text.trim() };
+    }).filter((element) => element.lyric.trim() !== "");
   // 检查是否为纯音乐，是则返回空数组
   if (result.length && /纯音乐，请欣赏/.test(result[0].lyric)) {
     console.log("该歌曲为纯音乐");

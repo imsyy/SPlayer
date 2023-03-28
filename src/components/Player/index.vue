@@ -59,6 +59,9 @@
                   :depth="3"
                   v-html="
                     music.getPlaySongLyric[music.getPlaySongLyricIndex].lyric
+                      ? music.getPlaySongLyric[music.getPlaySongLyricIndex]
+                          .lyric
+                      : '暂无歌词'
                   "
                 />
               </Transition>
