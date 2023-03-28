@@ -222,7 +222,7 @@ const lyricsScroll = (index) => {
 
 onMounted(() => {
   nextTick(() => {
-    if (setting.musicFrequency) {
+    if (setting.musicFrequency && music.getPlaylists[0]) {
       $player.crossOrigin = "anonymous";
       musicFrequency.value = new MusicFrequency(
         avBars.value,

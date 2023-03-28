@@ -24,10 +24,18 @@
     </div>
     <div class="control">
       <n-icon
+        v-if="!music.getPersonalFmMode"
         class="prev"
         size="36"
         :component="SkipPreviousRound"
         @click.stop="music.setPlaySongIndex('prev')"
+      />
+      <n-icon
+        v-else
+        class="dislike"
+        size="24"
+        :component="ThumbDownRound"
+        @click="music.setFmDislike(music.getPersonalFmData.id)"
       />
       <div class="play-state">
         <n-icon
@@ -59,6 +67,7 @@ import {
   PauseCircleFilled,
   SkipNextRound,
   SkipPreviousRound,
+  ThumbDownRound,
 } from "@vicons/material";
 import { musicStore } from "@/store";
 const music = musicStore();
@@ -183,19 +192,28 @@ const music = musicStore();
     background-color: #00000050;
     backdrop-filter: blur(20px);
     transition: all 0.5s;
-    .play-state {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
     .n-icon {
       cursor: pointer;
       transition: all 0.3s;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       &:hover {
         transform: scale(1.1);
       }
       &:active {
         transform: scale(1);
+      }
+    }
+    .play-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .n-icon {
+        width: 60px;
+        height: 60px;
       }
     }
   }

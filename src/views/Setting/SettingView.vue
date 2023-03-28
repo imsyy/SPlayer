@@ -26,7 +26,9 @@
       <n-switch v-model:value="bannerShow" :round="false" />
     </n-card>
     <n-card class="set-item">
-      <div class="name">底栏歌词显示</div>
+      <div class="name">
+        底栏歌词显示 <span class="tip">是否在播放时显示歌词</span>
+      </div>
       <n-switch v-model:value="bottomLyricShow" :round="false" />
     </n-card>
     <n-card class="set-item">
