@@ -30,10 +30,9 @@ export default ({ mode }) =>
       // PWA
       VitePWA({
         registerType: "autoUpdate",
-        devOptions: {
-          enabled: true,
-        },
         workbox: {
+          clientsClaim: true,
+          skipWaiting: true,
           cleanupOutdatedCaches: true,
           runtimeCaching: [
             {

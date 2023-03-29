@@ -30,7 +30,7 @@
 </template>
 
 <script setup>
-import { musicStore, userStore } from "@/store";
+import { musicStore, userStore, settingStore } from "@/store";
 import { useRouter } from "vue-router";
 import { getLoginState } from "@/api/login";
 import { userDailySignin, userYunbeiSign } from "@/api/user";
@@ -41,6 +41,7 @@ import packageJson from "@/../package.json";
 
 const music = musicStore();
 const user = userStore();
+const setting = settingStore();
 const router = useRouter();
 const mainContent = ref(null);
 
@@ -74,6 +75,11 @@ const signIn = () => {
         console.log("签到成功！");
         console.log("userDailySignin:", results[0]);
         console.log("userYunbeiSign:", results[1]);
+        $notification["success"]({
+          content: "签到成功",
+          meta: "每日签到及云贝签到成功",
+          duration: 3000,
+        });
       })
       .catch((error) => {
         console.error("签到失败：", error);
@@ -83,10 +89,17 @@ const signIn = () => {
     console.log("今天已经签到过了！");
   }
 };
+// 系统重置
+const cleanAll = () => {
+  $message ? $message.success("重置成功") : alert("重置成功");
+  localStorage.clear();
+  window.location.href = "/";
+};
 
 onMounted(() => {
-  // 挂载主窗口至全局
+  // 挂载至全局
   window.$mainContent = mainContent.value;
+  window.$cleanAll = cleanAll;
 
   // 初始化
   $notification["info"]({
@@ -103,13 +116,18 @@ onMounted(() => {
     "color:#f55e55;font-size:26px;font-weight:bold;",
     "font-size:16px"
   );
+  console.info(
+    "若站点出现异常，可尝试在下方输入 %c$cleanAll()%c 然后按回车来重置",
+    "background: #eaeffd;color:#f55e55;padding: 4px 6px;border-radius:8px;",
+    "background:unset;color:unset;"
+  );
 
   // 检查账号登录状态
   getLoginState()
     .then((res) => {
       if (res.data.profile && user.userLogin) {
         // 签到
-        signIn();
+        if (setting.autoSignIn) signIn();
         user.userLogin = true;
         user.setUserOtherData();
       } else {
@@ -121,7 +139,9 @@ onMounted(() => {
       }
     })
     .catch((err) => {
-      $message.error("遇到错误" + err);
+      $message.error("请求遇到错误");
+      console.error("请求遇到错误" + err);
+      router.push("/500");
       return false;
     });
 

@@ -281,9 +281,12 @@ const songCanplay = () => {
 
 // 歌曲开始播放
 const songPlay = () => {
+  if (!music.getPlaySongData) {
+    $message.error("音乐数据获取失败");
+    return false;
+  }
   music.setPlayState(true);
   // 兼容 mediaSession
-  console.log(music.getPlaySongData.album.picUrl);
   if ("mediaSession" in navigator) {
     navigator.mediaSession.metadata = new MediaMetadata({
       title: music.getPlaySongData.name,

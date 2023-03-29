@@ -200,6 +200,7 @@ const getFilter = (lrcIndex, index) => {
 
 // 点击歌词跳转
 const jumpTime = (time) => {
+  lrcMouseStatus.value = false;
   if ($player) $player.currentTime = time;
 };
 
@@ -220,6 +221,7 @@ const screenfullChange = () => {
       : FullscreenExitRound;
     // 延迟一段时间执行列表滚动
     setTimeout(() => {
+      lrcMouseStatus.value = false;
       lyricsScroll(music.getPlaySongLyricIndex);
     }, 500);
   }
@@ -399,11 +401,12 @@ watch(
         display: none !important;
       }
       .right {
-        padding: 0 5vw;
+        padding: 0 2vw;
         .lrcShow {
           .lrc-all {
             height: 70vh !important;
-            padding-right: 16% !important;
+            // padding-right: 16% !important;
+            margin-right: 0 !important;
           }
           .data,
           .menu {
@@ -463,7 +466,7 @@ watch(
           }
         }
         .lrc-all {
-          padding-right: 20%;
+          margin-right: 20%;
           scrollbar-width: none;
           // max-width: 460px;
           max-width: 52vh;

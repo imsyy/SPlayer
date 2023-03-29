@@ -36,7 +36,9 @@ router.beforeEach((to, from, next) => {
         }
       })
       .catch((err) => {
-        $message.error("遇到错误" + err);
+        $message.error("请求遇到错误");
+        console.error("请求遇到错误" + err);
+        next("/500");
         return false;
       });
   } else {

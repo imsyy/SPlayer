@@ -182,8 +182,8 @@ const useMusicDataStore = defineStore("musicData", {
     setPersonalFmData() {
       getPersonalFm().then((res) => {
         if (res.data[0]) {
-          let data = res.data[0];
-          let fmData = {
+          const data = res.data[0];
+          const fmData = {
             id: data.id,
             name: data.name,
             artist: data.artists,
@@ -200,7 +200,7 @@ const useMusicDataStore = defineStore("musicData", {
             this.persistData.playlists.push(fmData);
             this.persistData.playSongIndex = 0;
           }
-          this.playState = true;
+          // this.playState = true;
         } else {
           $message.error("获取私人 FM 失败");
         }

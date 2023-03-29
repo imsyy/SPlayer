@@ -24,7 +24,7 @@ axios.interceptors.request.use(
   },
   (error) => {
     $loadingBar.error();
-    $message.error("请求失败，请稍后重试");
+    console.error("请求失败，请稍后重试");
     return Promise.reject(error);
   }
 );
@@ -41,23 +41,23 @@ axios.interceptors.response.use(
       const data = error.response.data;
       switch (error.response.status) {
         case 401:
-          $message.error("您未登录");
+          console.error("您未登录");
           break;
         case 301:
-          $message.error("请求发生重定向");
+          console.error("请求发生重定向");
           break;
         case 404:
-          $message.error("请求资源不存在");
+          console.error("请求资源不存在");
           break;
         case 500:
-          $message.error("内部服务器错误");
+          console.error("内部服务器错误");
           break;
         default:
-          $message.error(data.message ? data.message : "请求失败，请稍后重试");
+          console.error(data.message ? data.message : "请求失败，请稍后重试");
           break;
       }
     } else {
-      $message.error("请求失败，请稍后重试");
+      console.error("请求失败，请稍后重试");
     }
     return Promise.reject(error);
   }

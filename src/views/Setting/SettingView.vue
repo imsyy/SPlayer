@@ -12,6 +12,13 @@
     </n-card>
     <n-card class="set-item">
       <div class="name">
+        每日签到
+        <span class="tip">是否自动进行每日签到</span>
+      </div>
+      <n-switch v-model:value="autoSignIn" :round="false" />
+    </n-card>
+    <n-card class="set-item">
+      <div class="name">
         列表点击方式
         <span class="tip">移动端该设置项无效，单击同时生效</span>
       </div>
@@ -133,6 +140,16 @@
         @click="changeMusicFrequency"
       />
     </n-card>
+    <n-h6 prefix="bar"> 其他设置 </n-h6>
+    <n-card class="set-item">
+      <div class="name">
+        系统重置
+        <span class="tip">若程序显示异常或出现问题时可尝试此操作</span>
+      </div>
+      <n-button strong secondary type="error" @click="resetApp">
+        重置
+      </n-button>
+    </n-card>
   </div>
 </template>
 
@@ -155,6 +172,7 @@ const {
   songLevel,
   bannerShow,
   lyricsBlur,
+  autoSignIn,
 } = storeToRefs(setting);
 
 // 深浅模式
@@ -267,6 +285,24 @@ const changeMusicFrequency = () => {
       },
     });
   }
+};
+
+// 系统重置
+const resetApp = () => {
+  const cleanAll = () => {
+    $message ? $message.success("重置成功") : alert("重置成功");
+    localStorage.clear();
+    window.location.href = "/";
+  };
+  $dialog.warning({
+    title: "系统重置",
+    content: "确认重置为默认状态？你的登录状态以及自定义设置都将丢失！",
+    positiveText: "重置",
+    negativeText: "取消",
+    onPositiveClick: () => {
+      $cleanAll ? $cleanAll() : cleanAll();
+    },
+  });
 };
 </script>
 

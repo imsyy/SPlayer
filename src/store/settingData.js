@@ -10,6 +10,8 @@ const useSettingDataStore = defineStore("settingData", {
       themeAuto: true,
       // 轮播图显示
       bannerShow: true,
+      // 自动签到
+      autoSignIn: true,
       // 列表点击方式
       listClickMode: "dblclick",
       // 播放器样式

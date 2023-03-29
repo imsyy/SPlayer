@@ -241,10 +241,6 @@ const routes = [
     },
     component: () => import("@/views/State/404.vue"),
   },
-  {
-    path: "/:pathMatch(.*)",
-    redirect: "/404",
-  },
   // 403
   {
     path: "/403",
@@ -262,6 +258,10 @@ const routes = [
       title: "500",
     },
     component: () => import("@/views/State/500.vue"),
+  },
+  {
+    path: "/:pathMatch(.*)",
+    redirect: "/404",
   },
 ];
 
