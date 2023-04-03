@@ -11,6 +11,6 @@ import ArtistLists from "@/components/DataList/ArtistLists.vue";
 const music = musicStore();
 
 onMounted(() => {
-  if (!music.setUserArtistLists.has) music.setUserArtistLists();
+  if (!music.getUserArtistlists.has) music.setUserArtistLists();
 });
 </script>
