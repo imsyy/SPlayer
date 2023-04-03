@@ -12,7 +12,7 @@
         <template #icon>
           <n-icon :component="BackupRound" />
         </template>
-        上传音乐
+        上传歌曲
       </n-button>
       <input
         ref="upSongRef"
@@ -23,13 +23,22 @@
       />
       <div class="space" v-if="cloudSpace[0]">
         <span>{{ cloudSpace[0] }} G</span>
-        <n-progress
-          type="line"
-          color="#f55e55"
-          class="progress"
-          :show-indicator="false"
-          :percentage="100 / (cloudSpace[1] / cloudSpace[0])"
-        />
+        <n-popover trigger="hover">
+          <template #trigger>
+            <n-progress
+              type="line"
+              color="#f55e55"
+              class="progress"
+              :show-indicator="false"
+              :percentage="100 / (cloudSpace[1] / cloudSpace[0])"
+            />
+          </template>
+          <n-text>
+            已用 {{ (100 / (cloudSpace[1] / cloudSpace[0])).toFixed() }}%，剩余
+            {{ cloudSpace[1] - cloudSpace[0] }} G
+          </n-text>
+        </n-popover>
+
         <span>{{ cloudSpace[1] }} G</span>
       </div>
     </div>
@@ -46,6 +55,7 @@
       v-model:show="upSongModal"
       preset="card"
       title="云盘上传"
+      :auto-focus="false"
       :bordered="false"
       :close-on-esc="false"
       :esc="false"
@@ -58,9 +68,16 @@
         :indicator-placement="'inside'"
         processing
       />
-      <template #footer v-if="upSongType === 'error'">
+      <template #footer>
         <n-space justify="end">
           <n-button @click="closeUpSongModal"> 取消 </n-button>
+          <n-button
+            type="primary"
+            @click="resetUpSongModal"
+            v-if="upSongType === 'error'"
+          >
+            重新上传
+          </n-button>
         </n-space>
       </template>
     </n-modal>
@@ -143,27 +160,40 @@ const upCloudSongData = (e) => {
   if (!files[0]) return false;
   upSongType.value = "success";
   upSongModal.value = true;
-  upCloudSong(files[0], onUploadProgress).then((res) => {
-    console.log(res);
-    if (res.code === 200) {
-      closeUpSongModal();
-      if (!res.privateCloud.simpleSong.al?.name) {
-        $message.warning("上传歌曲详细信息获取失败，可尝试歌曲纠正");
+  upCloudSong(files[0], onUploadProgress)
+    .then((res) => {
+      console.log(res);
+      if (res.code === 200) {
+        closeUpSongModal();
+        if (!res.privateCloud.simpleSong.al?.name) {
+          $message.warning("上传歌曲详细信息获取失败，可尝试歌曲纠正");
+        }
+        $message.success(res.privateCloud.simpleSong?.name + " 上传成功");
+        getCloudData(pagelimit.value, (pageNumber.value - 1) * pagelimit.value);
+      } else {
+        upSongType.value = "error";
+        $message.error("歌曲上传出错，请重试");
+        console.error("歌曲上传出错，请重试");
       }
-      $message.success(res.privateCloud.simpleSong?.name + " 上传成功");
-      getCloudData(pagelimit.value, (pageNumber.value - 1) * pagelimit.value);
-    } else {
-      upSongType.value = "error";
-      $message.error("歌曲上传出错，请重试");
-      console.error("歌曲上传出错，请重试");
-    }
-  });
+    })
+    .catch((err) => {
+      closeUpSongModal();
+      $message.error("歌曲上传出现错误");
+      console.error("歌曲上传出现错误：" + err);
+    });
 };
 
 // 关闭上传弹窗
 const closeUpSongModal = () => {
   upSongModal.value = false;
   upSongCompleted.value = 0;
+  upSongRef.value.value = null;
+};
+
+// 重新上传
+const resetUpSongModal = () => {
+  closeUpSongModal();
+  upSongRef.value.click();
 };
 
 // 每页个数数据变化

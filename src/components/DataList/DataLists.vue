@@ -165,6 +165,10 @@
               <n-text>立即播放</n-text>
             </div>
             <div
+              v-if="
+                !music.getPersonalFmMode &&
+                music.getPlaySongData.id != drawerData.id
+              "
               class="item"
               @click="
                 () => {
@@ -375,7 +379,10 @@ const openRightMenu = (e, data) => {
       {
         key: "nextPlay",
         label: "下一首播放",
-        disabled: music.getPersonalFmMode ? true : false,
+        disabled:
+          music.getPersonalFmMode || music.getPlaySongData.id == data.id
+            ? true
+            : false,
         props: {
           onClick: () => {
             music.addSongToNext(data);

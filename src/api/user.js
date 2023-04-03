@@ -157,7 +157,7 @@ export const upCloudSong = (file, onUploadProgress) => {
   return axios({
     url: "/cloud",
     method: "POST",
-    loadingBar: "Hidden",
+    hiddenBar: true,
     params: {
       time: new Date().getTime(),
     },

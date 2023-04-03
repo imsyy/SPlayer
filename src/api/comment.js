@@ -34,11 +34,35 @@ export const getComment = (id, offset = 0, before = null, type = "music") => {
 export const likeComment = (id, cid, t, type = 0) => {
   return axios({
     method: "GET",
-    loadingBar: "Hidden",
+    hiddenBar: true,
     url: "/comment/like",
     params: {
       id,
       cid,
+      t,
+      type,
+      time: new Date().getTime(),
+    },
+  });
+};
+
+/**
+ * 发送/删除评论
+ * @param {number} id - 对应资源的id
+ * @param {number} commentId - 回复的评论 id（回复评论时必填）
+ * @param {string} content - 要发送的内容
+ * @param {number} t - 是否点赞，0为删除，1为发送，2为回复
+ * @param {number} [type=0] - 对应资源的类型，默认为0（歌曲）
+ */
+export const sendComment = (id, commentId = null, content, t, type = 0) => {
+  return axios({
+    method: "GET",
+    hiddenBar: true,
+    url: "/comment",
+    params: {
+      id,
+      commentId,
+      content,
       t,
       type,
       time: new Date().getTime(),

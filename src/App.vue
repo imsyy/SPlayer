@@ -100,6 +100,7 @@ onMounted(() => {
   // 挂载至全局
   window.$mainContent = mainContent.value;
   window.$cleanAll = cleanAll;
+  window.$signIn = signIn;
 
   // 初始化
   $notification["info"]({

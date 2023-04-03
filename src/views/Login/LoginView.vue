@@ -146,6 +146,8 @@ const saveLoginData = (data) => {
       user.userLogin = true;
       qrText.value = "登录成功";
       $message.success("登录成功");
+      // 自动签到
+      if ($signIn) $signIn();
       clearInterval(qrCheckInterval.value);
       router.go(-1);
     } else {
