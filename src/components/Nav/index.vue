@@ -19,8 +19,22 @@
     </div>
     <div class="center">
       <router-link class="link" to="/">首页</router-link>
-      <router-link class="link" to="/discover">发现</router-link>
-      <router-link class="link" to="/user">我的</router-link>
+      <n-dropdown
+        trigger="hover"
+        size="large"
+        :options="discoverOptions"
+        @select="menuSelect"
+      >
+        <router-link class="link" to="/discover">发现</router-link>
+      </n-dropdown>
+      <n-dropdown
+        trigger="hover"
+        size="large"
+        :options="userOptions"
+        @select="menuSelect"
+      >
+        <router-link class="link" to="/user">我的</router-link>
+      </n-dropdown>
     </div>
     <div class="right">
       <SearchInp />
@@ -49,51 +63,7 @@
         />
       </n-dropdown>
       <!-- 关于本站 -->
-      <n-modal
-        class="s-modal"
-        v-model:show="showAboutModal"
-        preset="card"
-        title="关于本站"
-        :bordered="false"
-      >
-        <div class="copyright">
-          <div class="desc">
-            <n-text class="name">SPlayer</n-text>
-            <n-text class="version" :depth="3">
-              v&nbsp;{{ packageJson.version }}
-            </n-text>
-          </div>
-          <n-blockquote>
-            <n-text class="power">
-              Copyright&nbsp;©&nbsp;2020 - {{ new Date().getFullYear() }}
-              <n-a
-                :href="packageJson.home"
-                target="_blank"
-                v-html="packageJson.author"
-              />
-            </n-text>
-            <n-text class="point" v-html="'·'" />
-            <n-a
-              v-if="icp"
-              class="beian"
-              href="https://beian.miit.gov.cn/"
-              target="_blank"
-              v-html="icp"
-            />
-          </n-blockquote>
-          <n-button
-            class="github"
-            secondary
-            strong
-            @click="jumpUrl(packageJson.github)"
-          >
-            <template #icon>
-              <n-icon :component="GithubOne" />
-            </template>
-            Github
-          </n-button>
-        </div>
-      </n-modal>
+      <AboutSite ref="aboutSiteRef" />
     </div>
   </nav>
 </template>
@@ -111,14 +81,15 @@ import {
   InfoRound,
   HistoryRound,
 } from "@vicons/material";
-import { GithubOne, Copyright } from "@icon-park/vue-next";
 import { userStore, settingStore } from "@/store";
 import { useRouter } from "vue-router";
+import AboutSite from "@/components/DataModel/AboutSite.vue";
 import SearchInp from "@/components/SearchInp/index.vue";
-import packageJson from "@/../package.json";
+
 const router = useRouter();
 const user = userStore();
 const setting = settingStore();
+const aboutSiteRef = ref(null);
 
 // 下拉菜单显隐
 const showDropdown = ref(false);
@@ -129,15 +100,6 @@ const closeDropdown = (event) => {
   } else {
     showDropdown.value = false;
   }
-};
-
-// 关于本站弹窗
-const showAboutModal = ref(false);
-const icp = ref(import.meta.env.VITE_ICP ? import.meta.env.VITE_ICP : null);
-
-// 链接跳转
-const jumpUrl = (url) => {
-  window.open(url);
 };
 
 // 用户数据模块
@@ -203,6 +165,42 @@ const userDataRender = () => {
 };
 
 // 下拉框数据
+const discoverOptions = ref([
+  {
+    label: "歌单",
+    key: "/discover/playlists",
+  },
+  {
+    label: "排行榜",
+    key: "/discover/toplists",
+  },
+  {
+    label: "歌手",
+    key: "/discover/artists",
+  },
+]);
+const userOptions = ref(
+  user.userLogin
+    ? [
+        {
+          label: "我的歌单",
+          key: "/user/playlists",
+        },
+        {
+          label: "收藏的歌单",
+          key: "/user/like",
+        },
+        {
+          label: "收藏的歌手",
+          key: "/user/artists",
+        },
+        {
+          label: "音乐云盘",
+          key: "/user/cloud",
+        },
+      ]
+    : []
+);
 const dropdownOptions = ref([
   {
     key: "header",
@@ -222,42 +220,30 @@ const dropdownOptions = ref([
     },
     key: "changeTheme",
     icon: () => {
-      return h(
-        NIcon,
-        { style: "transform: translateY(-1px)" },
-        {
-          default: () =>
-            setting.getSiteTheme == "light"
-              ? h(DarkModeFilled)
-              : h(WbSunnyFilled),
-        }
-      );
+      return h(NIcon, null, {
+        default: () =>
+          setting.getSiteTheme == "light"
+            ? h(DarkModeFilled)
+            : h(WbSunnyFilled),
+      });
     },
   },
   {
     label: "播放历史",
     key: "history",
     icon: () => {
-      return h(
-        NIcon,
-        { style: "transform: translateY(-1px)" },
-        {
-          default: () => h(HistoryRound),
-        }
-      );
+      return h(NIcon, null, {
+        default: () => h(HistoryRound),
+      });
     },
   },
   {
     label: "全局设置",
     key: "setting",
     icon: () => {
-      return h(
-        NIcon,
-        { style: "transform: translateY(-0.5px)" },
-        {
-          default: () => h(SettingsRound),
-        }
-      );
+      return h(NIcon, null, {
+        default: () => h(SettingsRound),
+      });
     },
   },
   {
@@ -268,31 +254,26 @@ const dropdownOptions = ref([
     },
     key: "user",
     icon: () => {
-      return h(
-        NIcon,
-        { style: "transform: translateY(-0.5px)" },
-        {
-          default: () => (user.userLogin ? h(LogOutFilled) : h(LogInFilled)),
-        }
-      );
+      return h(NIcon, null, {
+        default: () => (user.userLogin ? h(LogOutFilled) : h(LogInFilled)),
+      });
     },
   },
   {
     label: "关于本站",
     key: "about",
     icon: () => {
-      return h(
-        NIcon,
-        { style: "transform: translateY(-2px)" },
-        {
-          default: () => h(InfoRound),
-        }
-      );
+      return h(NIcon, null, {
+        default: () => h(InfoRound),
+      });
     },
   },
 ]);
 
 // 下拉框事件
+const menuSelect = (key) => {
+  router.push(key);
+};
 const dropdownSelect = (key) => {
   showDropdown.value = false;
   switch (key) {
@@ -332,7 +313,7 @@ const dropdownSelect = (key) => {
       break;
     // 关于
     case "about":
-      showAboutModal.value = true;
+      aboutSiteRef.value.openAboutSite();
       break;
     default:
       break;
@@ -438,35 +419,6 @@ nav {
       box-shadow: 0 4px 12px -2px rgb(0 0 0 / 10%);
       cursor: pointer;
     }
-  }
-}
-.copyright {
-  display: flex;
-  flex-direction: column;
-  a {
-    text-decoration: none;
-  }
-  .name {
-    font-size: 30px;
-    font-weight: bold;
-  }
-  .version {
-    margin-left: 6px;
-  }
-  .n-blockquote {
-    @media (max-width: 768px) {
-      display: flex;
-      flex-direction: column;
-      .point {
-        display: none;
-      }
-    }
-    .point {
-      margin: 0 4px;
-    }
-  }
-  .github {
-    margin-top: 8px;
   }
 }
 </style>

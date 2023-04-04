@@ -5,7 +5,7 @@
       :input-props="{ autoComplete: false }"
       round
       clearable
-      placeholder="音乐/视频/电台/用户"
+      placeholder="搜索音乐/视频"
       v-model:value="inputValue"
       @focus="inputFocus"
       @keydown="inputkeydown($event)"

@@ -10,25 +10,27 @@
         />
       </div>
       <div class="data">
-        <span class="name">{{ artistData.name }}</span>
-        <span class="occupation">{{ artistData.occupation }}</span>
+        <n-text class="name">{{ artistData.name }}</n-text>
+        <n-text class="occupation" :depth="3">
+          {{ artistData.occupation }}
+        </n-text>
         <div class="num">
-          <span class="musicSize" @click="tabChange('songs')">
+          <n-text class="musicSize" @click="tabChange('songs')">
             <n-icon :component="MusicNoteFilled" />
             {{ artistData.musicSize }} 首歌
-          </span>
-          <span class="albumSize" @click="tabChange('albums')">
+          </n-text>
+          <n-text class="albumSize" @click="tabChange('albums')">
             <n-icon :component="AlbumFilled" />
             {{ artistData.albumSize }} 张专辑
-          </span>
-          <span class="mvSize" @click="tabChange('videos')">
+          </n-text>
+          <n-text class="mvSize" @click="tabChange('videos')">
             <n-icon :component="VideocamRound" />
             {{ artistData.mvSize }} 个 MV
-          </span>
+          </n-text>
         </div>
-        <span class="desc text-hidden" @click="artistDescShow = true">
+        <n-text class="desc text-hidden" @click="artistDescShow = true">
           {{ artistData.desc }}
-        </span>
+        </n-text>
         <n-modal
           class="s-modal"
           v-model:show="artistDescShow"
@@ -180,7 +182,6 @@ watch(
       }
       .occupation {
         font-size: 18px;
-        opacity: 0.8;
         margin-left: 4px;
       }
       .num {

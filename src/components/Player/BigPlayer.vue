@@ -103,7 +103,7 @@
                   @click="jumpTime(item.time)"
                 >
                   <div
-                    class="lrc-text"
+                    :class="setting.lyricsBlur ? 'lrc-text blur' : 'lrc-text'"
                     :style="{
                       transformOrigin:
                         setting.lyricsPosition === 'center' ? 'center' : null,
@@ -500,7 +500,9 @@ watch(
           }
           &:hover {
             .lrc-text {
-              filter: blur(0) !important;
+              &.blur {
+                filter: blur(0) !important;
+              }
             }
           }
           .placeholder {

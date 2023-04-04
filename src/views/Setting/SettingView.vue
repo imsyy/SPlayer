@@ -125,7 +125,7 @@
     <n-card class="set-item">
       <div class="name">
         歌词模糊
-        <span class="tip">未播放或已播放歌词模糊显示，实验性功能</span>
+        <span class="tip">实验性功能，未播放或已播放歌词模糊显示</span>
       </div>
       <n-switch v-model:value="lyricsBlur" :round="false" />
     </n-card>

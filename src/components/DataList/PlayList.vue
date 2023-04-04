@@ -171,7 +171,7 @@ const changeIndex = (index) => {
       }
     }
     .n-scrollbar-rail {
-      width: 0;
+      width: 4px;
     }
   }
 }

@@ -157,7 +157,7 @@ const openDownloadModel = (data) => {
       downloadModel.value = true;
       getMusicDetailData(data.id);
     } else {
-      $message.error("请开通黑胶会员后使用该功能");
+      $message.error("该歌曲需使用黑胶会员下载");
     }
   } else {
     $message.error("请登录后使用该功能");

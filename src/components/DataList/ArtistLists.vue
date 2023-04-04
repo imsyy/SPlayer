@@ -14,7 +14,7 @@
           class="item"
           v-for="item in listData"
           :key="item"
-          @click="router.push(`/artist?id=${item.id}`)"
+          @click="router.push(`/artist/songs?id=${item.id}&page=1`)"
           @contextmenu="openRightMenu($event, item)"
         >
           <div class="cover">
