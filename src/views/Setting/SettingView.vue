@@ -29,12 +29,17 @@
       />
     </n-card>
     <n-card class="set-item">
-      <div class="name">轮播图显示</div>
+      <div class="name">显示轮播图</div>
       <n-switch v-model:value="bannerShow" :round="false" />
     </n-card>
     <n-card class="set-item">
+      <div class="name">显示搜索历史</div>
+      <n-switch v-model:value="searchHistory" :round="false" />
+    </n-card>
+    <n-card class="set-item">
       <div class="name">
-        底栏歌词显示 <span class="tip">是否在播放时显示歌词</span>
+        显示底栏歌词
+        <span class="tip">是否在播放时显示歌词</span>
       </div>
       <n-switch v-model:value="bottomLyricShow" :round="false" />
     </n-card>
@@ -53,6 +58,13 @@
     <n-card class="set-item">
       <div class="name">显示歌词翻译</div>
       <n-switch v-model:value="showTransl" :round="false" />
+    </n-card>
+    <n-card class="set-item">
+      <div class="name">
+        智能暂停滚动
+        <span class="tip">鼠标移入歌词区域是否暂停滚动</span>
+      </div>
+      <n-switch v-model:value="lrcMousePause" :round="false" />
     </n-card>
     <n-card class="set-item">
       <div class="name">播放器样式</div>
@@ -173,6 +185,8 @@ const {
   bannerShow,
   lyricsBlur,
   autoSignIn,
+  lrcMousePause,
+  searchHistory,
 } = storeToRefs(setting);
 
 // 深浅模式
@@ -243,7 +257,7 @@ const lyricsPositionOptions = [
 // 歌词滚动位置
 const lyricsBlockOptions = [
   {
-    label: "顶部",
+    label: "靠近顶部",
     value: "start",
   },
   {

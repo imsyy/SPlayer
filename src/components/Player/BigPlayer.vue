@@ -31,6 +31,12 @@
             : 'all noLrc'
         "
       >
+        <!-- 提示文本 -->
+        <Transition name="lrc">
+          <div class="tip" v-show="lrcMouseStatus">
+            <n-text>点击选中的歌词以调整播放进度</n-text>
+          </div>
+        </Transition>
         <div class="left">
           <PlayerCover v-if="setting.playerStyle === 'cover'" />
           <PlayerRecord v-else />
@@ -88,9 +94,15 @@
                     ? { textAlign: 'center', paddingRight: '0' }
                     : null
                 "
-                @mouseenter="lrcMouseStatus = true"
+                @mouseenter="
+                  lrcMouseStatus = setting.lrcMousePause ? true : false
+                "
                 @mouseleave="lrcAllLeave"
               >
+                <!-- 提示文本 -->
+                <div class="tip">
+                  <n-text>点击选中的歌词以调整播放进度</n-text>
+                </div>
                 <div class="placeholder"></div>
                 <div
                   :class="
@@ -356,6 +368,7 @@ watch(
     cursor: pointer;
     border-radius: 8px;
     transition: all 0.3s;
+    z-index: 2;
     &:hover {
       background-color: #ffffff20;
       transform: scale(1.05);
@@ -379,6 +392,7 @@ watch(
     flex-direction: row;
     align-items: center;
     transition: all 0.3s ease-in-out;
+    position: relative;
     &.noLrc {
       .left {
         padding-right: 0;
@@ -414,6 +428,22 @@ watch(
             opacity: 1 !important;
           }
         }
+      }
+    }
+    .tip {
+      position: absolute;
+      top: 24px;
+      left: calc(50% - 150px);
+      width: 300px;
+      height: 40px;
+      border-radius: 25px;
+      background-color: #ffffff20;
+      backdrop-filter: blur(20px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      span {
+        color: #ffffffc7;
       }
     }
     .left {

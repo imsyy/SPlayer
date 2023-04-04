@@ -451,6 +451,7 @@ onMounted(() => {
           align-items: center;
           .n-icon {
             margin-right: 2px;
+            transform: translateY(1px);
           }
           .des {
             line-height: normal;

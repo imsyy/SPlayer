@@ -30,7 +30,10 @@
         content-style="padding: 0"
       >
         <n-scrollbar>
-          <div class="history-list" v-if="music.getSearchHistory[0]">
+          <div
+            class="history-list"
+            v-if="music.getSearchHistory[0] && setting.searchHistory"
+          >
             <div class="list-title">
               <n-icon size="16" :component="HistoryRound" />
               <n-text>搜索历史</n-text>
@@ -181,9 +184,10 @@ import {
 import CollapseTransition from "@ivanv/vue-collapse-transition/src/CollapseTransition.vue";
 import debounce from "@/utils/debounce";
 import { useRouter } from "vue-router";
-import { musicStore } from "@/store";
+import { musicStore, settingStore } from "@/store";
 const router = useRouter();
 const music = musicStore();
+const setting = settingStore();
 
 // 输入框内容
 const inputValue = ref(null);

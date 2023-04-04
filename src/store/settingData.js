@@ -8,6 +8,8 @@ const useSettingDataStore = defineStore("settingData", {
       // 全局主题
       theme: "light",
       themeAuto: true,
+      // 搜索历史
+      searchHistory: true,
       // 轮播图显示
       bannerShow: true,
       // 自动签到
@@ -32,6 +34,8 @@ const useSettingDataStore = defineStore("settingData", {
       lyricsBlur: false,
       // 音乐频谱
       musicFrequency: false,
+      // 鼠标移入歌词区域暂停滚动
+      lrcMousePause: true,
     };
   },
   getters: {

@@ -385,7 +385,7 @@ const useMusicDataStore = defineStore("musicData", {
         $message.info("单曲循环");
       } else {
         this.persistData.playSongMode = "normal";
-        $message.info("循环播放");
+        $message.info("列表循环");
       }
     },
     // 上下曲调整
