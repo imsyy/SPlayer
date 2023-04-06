@@ -503,43 +503,48 @@ const useMusicDataStore = defineStore("musicData", {
     setUserPlayLists() {
       const user = userStore();
       if (user.userLogin) {
-        getUserPlaylist(
-          user.getUserData.userId,
-          user.getUserData.subcount.createdPlaylistCount +
+        try {
+          getUserPlaylist(
+            user.getUserData.userId,
+            user.getUserData.subcount.createdPlaylistCount +
             user.getUserData.subcount.subPlaylistCount
-        ).then((res) => {
-          if (res.playlist) {
-            this.userPlayLists = {
-              own: [],
-              like: [],
-            };
-            this.userPlayLists.has = true;
-            res.playlist.forEach((v) => {
-              if (v.creator.userId === user.getUserData.userId) {
-                this.userPlayLists.own.push({
-                  id: v.id,
-                  cover: v.coverImgUrl,
-                  name: v.name,
-                  artist: v.creator,
-                  desc: v.description,
-                  tags: v.tags,
-                  playCount: formatNumber(v.playCount),
-                  trackCount: v.trackCount,
-                });
-              } else {
-                this.userPlayLists.like.push({
-                  id: v.id,
-                  cover: v.coverImgUrl,
-                  name: v.name,
-                  artist: v.creator,
-                  playCount: formatNumber(v.playCount),
-                });
-              }
-            });
-          } else {
-            $message.error("用户歌单为空");
-          }
-        });
+          ).then((res) => {
+            if (res.playlist) {
+              this.userPlayLists = {
+                own: [],
+                like: [],
+              };
+              this.userPlayLists.has = true;
+              res.playlist.forEach((v) => {
+                if (v.creator.userId === user.getUserData.userId) {
+                  this.userPlayLists.own.push({
+                    id: v.id,
+                    cover: v.coverImgUrl,
+                    name: v.name,
+                    artist: v.creator,
+                    desc: v.description,
+                    tags: v.tags,
+                    playCount: formatNumber(v.playCount),
+                    trackCount: v.trackCount,
+                  });
+                } else {
+                  this.userPlayLists.like.push({
+                    id: v.id,
+                    cover: v.coverImgUrl,
+                    name: v.name,
+                    artist: v.creator,
+                    playCount: formatNumber(v.playCount),
+                  });
+                }
+              });
+            } else {
+              $message.error("用户歌单为空");
+            }
+          });
+        } catch (err) {
+          logger.error("获取歌单时出现错误：" + err);
+          $message.error("获取歌单时出现错误，请刷新后重试");
+        }
       } else {
         $message.error("请登录账号后使用");
       }

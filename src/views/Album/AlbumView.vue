@@ -35,7 +35,9 @@
           title="歌单简介"
           :bordered="false"
         >
-          <n-scrollbar v-html="albumDetail.description" />
+          <n-scrollbar>
+            <n-text v-html="albumDetail.description.replace(/\n/g, '<br>')" />
+          </n-scrollbar>
         </n-modal>
       </div>
       <div class="tag" v-if="albumDetail.tags">

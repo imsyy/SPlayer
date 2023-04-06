@@ -61,6 +61,7 @@ export const getPlayListDetail = (id) => {
     url: "/playlist/detail",
     params: {
       id,
+      time: new Date().getTime(),
     },
   });
 };
@@ -79,6 +80,7 @@ export const getAllPlayList = (id, limit = 30, offset = 0) => {
       id,
       limit,
       offset,
+      time: new Date().getTime(),
     },
   });
 };

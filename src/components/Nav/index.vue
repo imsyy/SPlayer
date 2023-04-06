@@ -299,7 +299,7 @@ const dropdownSelect = (key) => {
           class: "s-dialog",
           title: "退出登录",
           content: "确认退出当前用户登录？",
-          positiveText: "退出",
+          positiveText: "退出登录",
           negativeText: "取消",
           onPositiveClick: () => {
             user.userLogOut();

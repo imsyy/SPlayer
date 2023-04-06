@@ -129,6 +129,7 @@ onMounted(() => {
       if (res.data.profile && user.userLogin) {
         // 签到
         if (setting.autoSignIn) signIn();
+        user.setUserData(res.data.profile);
         user.userLogin = true;
         user.setUserOtherData();
       } else {
@@ -140,8 +141,8 @@ onMounted(() => {
       }
     })
     .catch((err) => {
-      $message.error("请求遇到错误");
-      console.error("请求遇到错误" + err);
+      $message.error("请求发生错误");
+      console.error("请求发生错误" + err);
       router.push("/500");
       return false;
     });

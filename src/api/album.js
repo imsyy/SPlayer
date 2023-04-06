@@ -14,6 +14,7 @@ export const getAlbum = (id) => {
     url: "/album",
     params: {
       id,
+      time: new Date().getTime(),
     },
   });
 };
@@ -32,6 +33,7 @@ export const getAlbumNew = (area, limit = 30, offset = 0) => {
       area,
       limit,
       offset,
+      time: new Date().getTime(),
     },
   });
 };

@@ -38,7 +38,9 @@
           title="歌手介绍"
           :bordered="false"
         >
-          <n-scrollbar v-html="artistData.desc.replace(/\n/g, '<br>')" />
+          <n-scrollbar>
+            <n-text v-html="artistData.desc.replace(/\n/g, '<br>')" />
+          </n-scrollbar>
         </n-modal>
       </div>
     </div>

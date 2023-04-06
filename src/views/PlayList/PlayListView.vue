@@ -39,7 +39,11 @@
           title="歌单简介"
           :bordered="false"
         >
-          <n-scrollbar v-html="playListDetail.description" />
+          <n-scrollbar>
+            <n-text
+              v-html="playListDetail.description.replace(/\n/g, '<br>')"
+            />
+          </n-scrollbar>
         </n-modal>
       </div>
       <n-space class="tag" v-if="playListDetail.tags">
@@ -55,7 +59,7 @@
           {{ item }}
         </n-tag>
       </n-space>
-      <!-- <div class="control" v-if="playListControlShow">
+      <!-- <div class="control" v-if="true">
         <n-space>
           <n-button strong secondary round>
             <template #icon>

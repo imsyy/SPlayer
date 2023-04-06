@@ -27,17 +27,18 @@ router.beforeEach((to, from, next) => {
     getLoginState()
       .then((res) => {
         if (res.data.profile && user.userLogin) {
+          user.setUserData(res.data.profile);
           if (user.userLogin && !user.userData.level) user.setUserOtherData();
           next();
         } else {
-          $message.error("请登录账号后使用");
+          $message.error(localStorage.getItem("cookie") ? "登录过期，请重新登录" : "请登录账号后使用");
           user.userLogOut();
           next("/login");
         }
       })
       .catch((err) => {
-        $message.error("请求遇到错误");
-        console.error("请求遇到错误" + err);
+        $message.error("请求发生错误");
+        console.error("请求发生错误" + err);
         next("/500");
         return false;
       });

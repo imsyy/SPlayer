@@ -58,6 +58,13 @@ body,
   }
 }
 
+// Nscrollbar
+.n-scrollbar {
+  .n-scrollbar-rail {
+    right: 0 !important;
+  }
+}
+
 // Dropdown
 .n-dropdown-menu {
   border-radius: 8px !important;
