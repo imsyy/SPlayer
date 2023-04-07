@@ -25,9 +25,11 @@
               :src="item.cover.replace(/^http:/, 'https:') + '?param=464y260'"
               fallback-src="/images/pic/default.png"
             />
-            <n-icon class="play" :component="PlayArrowRound" />
+            <n-icon class="play" size="40">
+              <PlayOne theme="filled" />
+            </n-icon>
             <div class="num">
-              <n-icon :component="OndemandVideoFilled" />
+              <n-icon size="14" :component="Youtube" />
               <span>{{ item.playCount }}</span>
             </div>
             <div class="time">
@@ -61,8 +63,9 @@
     </Transition>
   </div>
 </template>
-  
+
 <script setup>
+import { PlayOne, Youtube } from "@icon-park/vue-next";
 import { PlayArrowRound, OndemandVideoFilled } from "@vicons/material";
 import { useRouter } from "vue-router";
 import AllArtists from "./AllArtists.vue";
@@ -76,7 +79,7 @@ const props = defineProps({
   },
 });
 </script>
-  
+
 <style lang="scss" scoped>
 .videolists {
   .v-enter-active,
@@ -109,7 +112,6 @@ const props = defineProps({
       .play {
         opacity: 0;
         position: absolute;
-        font-size: 5vh;
         color: #fff;
         padding: 0.5vw;
         background-color: #00000010;
@@ -136,7 +138,6 @@ const props = defineProps({
         border-bottom-left-radius: 8px;
         .n-icon {
           margin-right: 4px;
-          transform: translateY(-1px);
         }
       }
       .time {

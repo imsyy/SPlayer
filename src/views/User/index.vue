@@ -1,8 +1,18 @@
 <template>
   <div class="user">
     <div class="title">
-      <span class="key">{{ user.getUserData.nickname }}</span>
-      <span>的音乐库</span>
+      <n-avatar
+        class="avatar"
+        round
+        :src="
+          user.getUserData.avatarUrl
+            ? user.getUserData.avatarUrl
+            : '/images/ico/user-filling.svg'
+        "
+        fallback-src="/images/ico/user-filling.svg"
+      />
+      <n-text class="key">{{ user.getUserData.nickname }}</n-text>
+      <n-text class="tip">的音乐库</n-text>
     </div>
     <n-tabs
       class="main-tab"
@@ -60,10 +70,21 @@ watch(
     margin-top: 30px;
     margin-bottom: 20px;
     font-size: 24px;
+    display: flex;
+    align-items: center;
+    .avatar {
+      width: 80px;
+      height: 80px;
+      margin-right: 16px;
+      box-shadow: 0 6px 8px -2px rgb(0 0 0 / 16%);
+    }
     .key {
       font-size: 40px;
       font-weight: bold;
       margin-right: 8px;
+    }
+    .tip {
+      transform: translateY(8px);
     }
   }
   .content {

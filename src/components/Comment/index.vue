@@ -14,7 +14,8 @@
           class="musicPackage"
           v-if="commentData.user.vipRights?.redVipAnnualCount > 0"
           :src="commentData.user.vipRights.musicPackage.iconUrl"
-          alt="vip"
+          alt="redVipAnnualCount"
+          title="网易音乐人"
         />
       </div>
       <div
@@ -25,6 +26,7 @@
           v-if="commentData.user.vipRights.associator"
           :src="commentData.user.vipRights.associator.iconUrl"
           alt="associator"
+          title="黑胶会员"
         />
       </div>
     </div>
@@ -39,26 +41,24 @@
         </n-text>
         <n-text class="text">{{ commentData.beReplied[0].content }}</n-text>
       </div>
-      <div class="num">
-        <n-text class="time">
-          <n-icon :component="AccessTimeFilled" />
-          {{ getCommentTime(commentData.time) }}
-        </n-text>
-        <n-text class="ip" v-if="commentData.ipLocation.location">
-          <n-icon :component="FmdGoodOutlined" />
-          {{ commentData.ipLocation.location }}
-        </n-text>
-        <n-text
+      <div class="thing">
+        <div class="item">
+          <n-icon size="14" :depth="3" :component="Time" />
+          <n-text :depth="3" v-html="getCommentTime(commentData.time)" />
+        </div>
+        <div class="item" v-if="commentData.ipLocation?.location">
+          <n-icon size="14" :depth="3" :component="Local" />
+          <n-text :depth="3" v-html="commentData.ipLocation.location" />
+        </div>
+        <div
           :class="commentData.liked ? 'like liked' : 'like'"
           @click="toLikeComment"
         >
-          <n-icon
-            :component="
-              commentData.liked ? ThumbUpOffAltRound : ThumbUpAltOutlined
-            "
-          />
+          <n-icon>
+            <ThumbsUp :theme="commentData.liked ? 'filled' : 'outline'" />
+          </n-icon>
           {{ formatNumber(commentData.likedCount) }}
-        </n-text>
+        </div>
       </div>
     </div>
   </n-card>
@@ -66,15 +66,10 @@
 
 <script setup>
 import { getCommentTime, formatNumber } from "@/utils/timeTools.js";
+import { Local, Time, ThumbsUp } from "@icon-park/vue-next";
 import { userStore } from "@/store";
 import { useRouter } from "vue-router";
 import { likeComment } from "@/api/comment";
-import {
-  AccessTimeFilled,
-  FmdGoodOutlined,
-  ThumbUpAltOutlined,
-  ThumbUpOffAltRound,
-} from "@vicons/material";
 
 const user = userStore();
 const router = useRouter();
@@ -200,16 +195,20 @@ const toLikeComment = () => {
           }
         }
       }
-      .num {
+      .thing {
         margin-top: 12px;
         display: flex;
         align-items: center;
-        .time {
+        .item {
           margin-right: 12px;
-          opacity: 0.6;
-        }
-        .ip {
-          opacity: 0.6;
+          font-size: 13px;
+          .n-icon {
+            margin-right: 4px;
+          }
+          .n-text {
+            transform: translateY(0.5px);
+            display: inline-block;
+          }
         }
         .like {
           margin-left: auto;

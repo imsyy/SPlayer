@@ -13,9 +13,9 @@
     >
       <template #prefix>
         <n-icon
-          size="20"
+          size="16"
           :color="inputActive ? '#f55e55' : ''"
-          :component="SearchFilled"
+          :component="Search"
         />
       </template>
     </n-input>
@@ -35,7 +35,7 @@
             v-if="music.getSearchHistory[0] && setting.searchHistory"
           >
             <div class="list-title">
-              <n-icon size="16" :component="HistoryRound" />
+              <n-icon size="16" :component="History" />
               <n-text>搜索历史</n-text>
             </div>
             <n-space>
@@ -49,13 +49,17 @@
               />
             </n-space>
             <div class="del" @click="delHistory">
-              <n-icon size="16" :depth="3" :component="DeleteRound" />
+              <n-icon size="16" :depth="3">
+                <DeleteFour theme="filled" />
+              </n-icon>
               <n-text :depth="3">删除搜索历史</n-text>
             </div>
           </div>
           <div class="hot-list" v-if="searchData.hot[0]">
             <div class="list-title">
-              <n-icon size="16" :component="LocalFireDepartmentRound" />
+              <n-icon size="16">
+                <Fire theme="filled" />
+              </n-icon>
               <n-text>热搜榜</n-text>
             </div>
             <div
@@ -97,17 +101,19 @@
             class="suggest-tip"
             v-if="Object.keys(searchData.suggest).length === 0"
           >
-            <n-icon size="22" :component="SearchOffFilled" />
+            <n-icon size="16" :component="Find" />
             <span>暂无搜索结果</span>
           </div>
           <div class="suggest-all" v-else>
             <div class="loading" v-show="!searchData.suggest.order">
-              <n-icon size="22" :component="ManageSearchFilled" />
+              <n-icon size="16" :component="Find" />
               <span>努力搜索中</span>
             </div>
             <div class="suggest-item" v-if="searchData.suggest.songs">
               <div class="type">
-                <n-icon size="18" :component="MusicNoteFilled" />
+                <n-icon size="18">
+                  <MusicOne theme="filled" />
+                </n-icon>
                 <span class="name">单曲</span>
               </div>
               <span
@@ -121,7 +127,9 @@
             </div>
             <div class="suggest-item" v-if="searchData.suggest.artists">
               <div class="type">
-                <n-icon size="18" :component="MicFilled" />
+                <n-icon size="18">
+                  <Voice theme="filled" />
+                </n-icon>
                 <span class="name">歌手</span>
               </div>
               <span
@@ -134,7 +142,9 @@
             </div>
             <div class="suggest-item" v-if="searchData.suggest.albums">
               <div class="type">
-                <n-icon size="18" :component="AlbumSharp" />
+                <n-icon size="18">
+                  <RecordDisc theme="filled" />
+                </n-icon>
                 <span class="name">专辑</span>
               </div>
               <span
@@ -148,7 +158,9 @@
             </div>
             <div class="suggest-item" v-if="searchData.suggest.playlists">
               <div class="type">
-                <n-icon size="18" :component="PlaylistPlayFilled" />
+                <n-icon size="18">
+                  <Record theme="filled" />
+                </n-icon>
                 <span class="name">歌单</span>
               </div>
               <span
@@ -170,17 +182,16 @@
 <script setup>
 import { getSearchHot, getSearchSuggest } from "@/api/search";
 import {
-  SearchFilled,
-  MusicNoteFilled,
-  MicFilled,
-  AlbumSharp,
-  PlaylistPlayFilled,
-  SearchOffFilled,
-  ManageSearchFilled,
-  LocalFireDepartmentRound,
-  HistoryRound,
-  DeleteRound,
-} from "@vicons/material";
+  Search,
+  MusicOne,
+  Voice,
+  RecordDisc,
+  Record,
+  Find,
+  Fire,
+  History,
+  DeleteFour,
+} from "@icon-park/vue-next";
 import CollapseTransition from "@ivanv/vue-collapse-transition/src/CollapseTransition.vue";
 import debounce from "@/utils/debounce";
 import { useRouter } from "vue-router";
@@ -384,6 +395,9 @@ watch(
             justify-content: center;
             font-size: 13px;
             cursor: pointer;
+            .n-icon {
+              margin-right: 4px;
+            }
           }
         }
         .hot-list {
@@ -433,7 +447,7 @@ watch(
                   margin-bottom: 2px;
                 }
                 .tag {
-                  transform: translateY(-1px);
+                  transform: scale(0.9);
                   margin-left: 6px;
                   height: 18px;
                   color: $mainColor;
@@ -452,6 +466,9 @@ watch(
           flex-direction: row;
           justify-content: center;
           align-items: center;
+          .n-icon {
+            margin-right: 6px;
+          }
         }
         .suggest-all {
           .loading {
@@ -460,7 +477,7 @@ watch(
             justify-content: center;
             align-items: center;
             .n-icon {
-              margin-bottom: 4px;
+              margin-right: 6px;
             }
           }
           .suggest-item {

@@ -169,9 +169,10 @@ onMounted(() => {
       flex-direction: row;
       align-items: center;
       .state {
-        cursor: pointer;
+        margin-right: 2px;
         transform: scale(1);
         transition: all 0.3s;
+        cursor: pointer;
         &:hover {
           transform: scale(1.1);
         }

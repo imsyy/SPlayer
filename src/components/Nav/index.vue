@@ -5,16 +5,8 @@
         <img src="/images/logo/favicon.svg" alt="logo" />
       </div>
       <div class="controls">
-        <n-icon
-          size="26"
-          :component="NavigateBeforeFilled"
-          @click="router.go(-1)"
-        />
-        <n-icon
-          size="26"
-          :component="NavigateNextFilled"
-          @click="router.go(1)"
-        />
+        <n-icon size="22" :component="Left" @click="router.go(-1)" />
+        <n-icon size="22" :component="Right" @click="router.go(1)" />
       </div>
     </div>
     <div class="center">
@@ -71,16 +63,16 @@
 <script setup>
 import { NIcon, NAvatar, NText, NProgress } from "naive-ui";
 import {
-  NavigateBeforeFilled,
-  NavigateNextFilled,
-  LogInFilled,
-  LogOutFilled,
-  SettingsRound,
-  WbSunnyFilled,
-  DarkModeFilled,
-  InfoRound,
-  HistoryRound,
-} from "@vicons/material";
+  Left,
+  Right,
+  Login,
+  Logout,
+  Info,
+  SettingTwo,
+  History,
+  SunOne,
+  Moon,
+} from "@icon-park/vue-next";
 import { userStore, settingStore } from "@/store";
 import { useRouter } from "vue-router";
 import AboutSite from "@/components/DataModel/AboutSite.vue";
@@ -221,10 +213,7 @@ const dropdownOptions = ref([
     key: "changeTheme",
     icon: () => {
       return h(NIcon, null, {
-        default: () =>
-          setting.getSiteTheme == "light"
-            ? h(DarkModeFilled)
-            : h(WbSunnyFilled),
+        default: () => (setting.getSiteTheme == "light" ? h(Moon) : h(SunOne)),
       });
     },
   },
@@ -233,7 +222,7 @@ const dropdownOptions = ref([
     key: "history",
     icon: () => {
       return h(NIcon, null, {
-        default: () => h(HistoryRound),
+        default: () => h(History),
       });
     },
   },
@@ -242,7 +231,7 @@ const dropdownOptions = ref([
     key: "setting",
     icon: () => {
       return h(NIcon, null, {
-        default: () => h(SettingsRound),
+        default: () => h(SettingTwo),
       });
     },
   },
@@ -255,7 +244,7 @@ const dropdownOptions = ref([
     key: "user",
     icon: () => {
       return h(NIcon, null, {
-        default: () => (user.userLogin ? h(LogOutFilled) : h(LogInFilled)),
+        default: () => (user.userLogin ? h(Logout) : h(Login)),
       });
     },
   },
@@ -264,7 +253,7 @@ const dropdownOptions = ref([
     key: "about",
     icon: () => {
       return h(NIcon, null, {
-        default: () => h(InfoRound),
+        default: () => h(Info),
       });
     },
   },

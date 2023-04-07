@@ -1,6 +1,6 @@
 <template>
   <n-modal
-    class="s-modal"
+    class="s-modal downloadModel"
     v-model:show="downloadModel"
     preset="card"
     title="歌曲下载"
@@ -9,6 +9,9 @@
   >
     <template v-if="songData">
       <SmallSongData ref="smallSongDataRef" :songData="songData" notJump />
+      <n-alert v-if="songData.pc" class="tip" type="info" :show-icon="false">
+        当前为云盘歌曲，下载的文件均为最高音质
+      </n-alert>
       <n-radio-group
         class="downloadGroup"
         v-model:value="downloadChoose"
@@ -27,7 +30,7 @@
                 {{ item.size }}
               </n-text>
               <n-text v-else-if="!item.disabled" class="error" :depth="3">
-                文件大小获取失败
+                无法获取
               </n-text>
             </div>
           </n-radio>
@@ -121,6 +124,7 @@ const getMusicDetailData = (id) => {
           artist: res.songs[0].ar,
           name: res.songs[0].name,
           id: res.songs[0].id,
+          pc: res.songs[0]?.pc,
         };
         // 生成音质列表
         generateLists(res);
@@ -231,30 +235,37 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
-.downloadGroup {
-  margin-top: 20px;
-  .text {
-    &.disabled {
-      span {
-        color: var(--n-text-color-disabled);
+.downloadModel {
+  .tip {
+    margin-top: 20px;
+  }
+  .downloadGroup {
+    margin-top: 20px;
+    .text {
+      &.disabled {
+        span {
+          color: var(--n-text-color-disabled);
+        }
       }
-    }
-    .size {
-      font-size: 13px;
-      &::before {
-        content: "-";
-        margin: 0 4px;
+      .size {
+        font-size: 13px;
+        &::before {
+          content: "-";
+          margin: 0 4px;
+        }
+        &::after {
+          content: "Mb";
+          margin-left: 4px;
+        }
       }
-      &::after {
-        content: "Mb";
-        margin-left: 4px;
-      }
-    }
-    .error {
-      font-size: 13px;
-      &::before {
-        content: "-";
-        margin: 0 4px;
+      .error {
+        font-size: 13px;
+        &::before {
+          content: "-";
+          transform: translateY(-1.5px);
+          display: inline-block;
+          margin: 0 4px;
+        }
       }
     }
   }

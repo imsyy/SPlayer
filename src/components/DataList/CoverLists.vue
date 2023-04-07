@@ -23,10 +23,14 @@
               :src="item.cover.replace(/^http:/, 'https:') + '?param=300y300'"
               fallback-src="/images/pic/default.png"
             />
-            <n-icon class="play" :component="PlayArrowRound" />
+            <n-icon class="play" size="40">
+              <PlayOne theme="filled" />
+            </n-icon>
             <div class="description" v-if="listType != 'topList'">
               <div class="num" v-if="listType == 'playList'">
-                <n-icon :component="HeadsetFilled" />
+                <n-icon>
+                  <Headset theme="filled" />
+                </n-icon>
                 <span class="des">{{ item.playCount }}</span>
               </div>
               <div class="num" v-else>
@@ -82,7 +86,7 @@
 </template>
 
 <script setup>
-import { PlayArrowRound, HeadsetFilled } from "@vicons/material";
+import { PlayOne, Headset } from "@icon-park/vue-next";
 import { delPlayList, likePlaylist } from "@/api/playlist";
 import { musicStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
@@ -312,7 +316,6 @@ onMounted(() => {
       .play {
         opacity: 0;
         position: absolute;
-        font-size: 5vh;
         color: #fff;
         padding: 0.5vw;
         background-color: #00000010;
@@ -337,8 +340,7 @@ onMounted(() => {
           flex-direction: row;
           align-items: center;
           .n-icon {
-            margin-right: 2px;
-            transform: translateY(1px);
+            margin-right: 4px;
           }
           .des {
             line-height: normal;

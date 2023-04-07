@@ -97,25 +97,27 @@
           <n-icon
             class="like"
             size="20"
-            :component="
-              music.getSongIsLike(item.id) ? FavoriteRound : FavoriteBorderRound
-            "
             @click.stop="
               music.getSongIsLike(item.id)
                 ? music.changeLikeList(item.id, false)
                 : music.changeLikeList(item.id, true)
             "
-          />
+          >
+            <Like
+              :theme="music.getSongIsLike(item.id) ? 'filled' : 'outline'"
+            />
+          </n-icon>
           <n-icon
             class="download"
             size="20"
-            :component="FileDownloadRound"
             @click.stop="downloadSongRef.openDownloadModel(item)"
-          />
+          >
+            <DownloadFour theme="filled" />
+          </n-icon>
           <n-icon
             class="more"
             size="20"
-            :component="MoreHorizRound"
+            :component="More"
             @click.stop="openDrawer(item)"
           />
         </div>
@@ -161,7 +163,9 @@
                 }
               "
             >
-              <n-icon size="20" :component="PlayArrowRound" />
+              <n-icon size="20">
+                <PlayOne theme="filled" />
+              </n-icon>
               <n-text>立即播放</n-text>
             </div>
             <div
@@ -177,7 +181,9 @@
                 }
               "
             >
-              <n-icon size="20" :component="SlowMotionVideoRound" />
+              <n-icon size="20">
+                <AddMusic theme="filled" />
+              </n-icon>
               <n-text>下一首播放</n-text>
             </div>
             <div
@@ -189,7 +195,9 @@
                 }
               "
             >
-              <n-icon size="20" :component="AddCircleRound" />
+              <n-icon size="20">
+                <ListAdd theme="filled" />
+              </n-icon>
               <n-text>添加到歌单</n-text>
             </div>
             <div
@@ -201,14 +209,18 @@
                 }
               "
             >
-              <n-icon size="20" :component="FileDownloadRound" />
+              <n-icon size="20">
+                <DownloadFour theme="filled" />
+              </n-icon>
               <n-text>歌曲下载</n-text>
             </div>
             <div
               class="item"
               @click="router.push(`/comment?id=${drawerData.id}`)"
             >
-              <n-icon size="20" :component="MessageFilled" />
+              <n-icon size="20">
+                <Comments theme="filled" />
+              </n-icon>
               <n-text>前往评论区</n-text>
             </div>
             <div
@@ -216,7 +228,9 @@
               v-if="drawerData.mv"
               @click="router.push(`/video?id=${drawerData.mv}`)"
             >
-              <n-icon size="20" :component="OndemandVideoRound" />
+              <n-icon size="20">
+                <Video theme="filled" />
+              </n-icon>
               <n-text>观看 MV</n-text>
             </div>
             <div
@@ -228,13 +242,17 @@
                 }
               "
             >
-              <n-icon size="20" :component="InsertLinkRound" />
+              <n-icon size="20">
+                <LinkTwo theme="filled" />
+              </n-icon>
               <n-text>复制歌曲链接</n-text>
             </div>
             <div class="item">
-              <n-icon size="20" :component="AccountCircleRound" />
-              <n-text
-                >歌手：
+              <n-icon size="20">
+                <Voice theme="filled" />
+              </n-icon>
+              <n-text>
+                歌手：
                 <AllArtists
                   class="text-hidden"
                   :artistsData="drawerData.artist"
@@ -245,7 +263,9 @@
               class="item"
               @click="router.push(`/album?id=${drawerData.album.id}`)"
             >
-              <n-icon size="20" :component="AlbumRound" />
+              <n-icon size="20">
+                <RecordDisc theme="filled" />
+              </n-icon>
               <n-text>专辑：{{ drawerData.album.name }}</n-text>
             </div>
             <div
@@ -258,7 +278,9 @@
                 }
               "
             >
-              <n-icon size="20" :component="InsertPageBreakRound" />
+              <n-icon size="20">
+                <FileMusic theme="filled" />
+              </n-icon>
               <n-text>歌曲信息纠正</n-text>
             </div>
             <div
@@ -271,7 +293,9 @@
                 }
               "
             >
-              <n-icon size="20" :component="DeleteRound" />
+              <n-icon size="20">
+                <DeleteFour theme="filled" />
+              </n-icon>
               <n-text>从云盘中删除</n-text>
             </div>
           </div>
@@ -290,21 +314,20 @@
 
 <script setup>
 import {
-  PlayArrowRound,
-  SlowMotionVideoRound,
-  FavoriteBorderRound,
-  FavoriteRound,
-  MoreHorizRound,
-  MessageFilled,
-  InsertLinkRound,
-  AccountCircleRound,
-  AlbumRound,
-  OndemandVideoRound,
-  InsertPageBreakRound,
-  DeleteRound,
-  AddCircleRound,
-  FileDownloadRound,
-} from "@vicons/material";
+  PlayOne,
+  AddMusic,
+  ListAdd,
+  DownloadFour,
+  Comments,
+  Video,
+  LinkTwo,
+  Voice,
+  RecordDisc,
+  FileMusic,
+  DeleteFour,
+  Like,
+  More,
+} from "@icon-park/vue-next";
 import { musicStore, settingStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
 import { setCloudDel } from "@/api/user";

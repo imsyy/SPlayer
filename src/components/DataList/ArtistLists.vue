@@ -24,7 +24,7 @@
               :src="item.cover.replace(/^http:/, 'https:') + '?param=200y200'"
               fallback-src="/images/pic/default.png"
             />
-            <n-icon :component="PersonSearchFilled" />
+            <n-icon size="40" :component="PeopleSearchOne" />
           </div>
           <n-text class="name text-hidden">{{ item.name }}</n-text>
           <n-text class="size" :depth="3" v-if="item.size">
@@ -65,7 +65,7 @@
 </template>
 
 <script setup>
-import { PersonSearchFilled } from "@vicons/material";
+import { PeopleSearchOne } from "@icon-park/vue-next";
 import { likeArtist } from "@/api/artist";
 import { useRouter } from "vue-router";
 import { musicStore, userStore } from "@/store";
@@ -221,7 +221,6 @@ onMounted(() => {
         transform: scale(0.8);
         position: absolute;
         color: #fff;
-        font-size: 5vh;
         transition: all 0.3s;
       }
       &:hover {

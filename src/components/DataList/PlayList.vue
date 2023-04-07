@@ -44,7 +44,8 @@
             <AllArtists class="text-hidden" :artistsData="item.artist" />
             <n-icon
               class="remove"
-              :component="RemoveCircleOutlineFilled"
+              size="18"
+              :component="DeleteFour"
               @click.stop="music.removeSong(index)"
             />
           </div>
@@ -56,7 +57,7 @@
 
 <script setup>
 import { musicStore } from "@/store";
-import { RemoveCircleOutlineFilled } from "@vicons/material";
+import { DeleteFour } from "@icon-park/vue-next";
 import AllArtists from "./AllArtists.vue";
 import CollapseTransition from "@ivanv/vue-collapse-transition/src/CollapseTransition.vue";
 
@@ -156,7 +157,6 @@ const changeIndex = (index) => {
               position: absolute;
               border-radius: 8px;
               right: 0;
-              font-size: 22px;
               opacity: 0;
               transition: all 0.3s;
               color: #999;
