@@ -61,7 +61,6 @@
           </div>
         </div>
         <Pagination
-          :pageNumber="pageNumber"
           :totalCount="commentsCount"
           :showSizePicker="false"
           @pageNumberChange="pageNumberChange"
@@ -167,6 +166,7 @@ const getVideoData = (id) => {
     // 请求后回顶
     if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
   });
+
   // 获取相似视频
   getSimiVideo(id).then((res) => {
     simiVideo.value = [];
@@ -299,6 +299,14 @@ watch(
           .n-icon {
             margin-right: 6px;
             transform: translateY(-1px);
+          }
+        }
+        @media (max-width: 578px) {
+          flex-direction: column;
+          span {
+            &::after {
+              display: none;
+            }
           }
         }
       }

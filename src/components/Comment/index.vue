@@ -12,12 +12,15 @@
         />
         <img
           class="musicPackage"
-          v-if="commentData.user.vipRights?.musicPackage"
+          v-if="commentData.user.vipRights?.redVipAnnualCount > 0"
           :src="commentData.user.vipRights.musicPackage.iconUrl"
           alt="vip"
         />
       </div>
-      <div class="associator" v-if="commentData.user?.redVipLevel">
+      <div
+        class="associator"
+        v-if="commentData.user.vipRights?.redVipLevel > 0"
+      >
         <img
           v-if="commentData.user.vipRights.associator"
           :src="commentData.user.vipRights.associator.iconUrl"
@@ -27,25 +30,25 @@
     </div>
     <div class="review">
       <div class="content">
-        <span class="name">{{ commentData.user.nickname }}：</span>
-        <span class="text">{{ commentData.content }}</span>
+        <n-text class="name">{{ commentData.user.nickname }}：</n-text>
+        <n-text class="text" v-html="commentData.content" />
       </div>
       <div class="beReplied" v-if="commentData.beReplied[0]">
-        <span class="name">
+        <n-text class="name">
           @{{ commentData.beReplied[0].user.nickname }}：
-        </span>
-        <span class="text">{{ commentData.beReplied[0].content }}</span>
+        </n-text>
+        <n-text class="text">{{ commentData.beReplied[0].content }}</n-text>
       </div>
       <div class="num">
-        <span class="time">
+        <n-text class="time">
           <n-icon :component="AccessTimeFilled" />
           {{ getCommentTime(commentData.time) }}
-        </span>
-        <span class="ip" v-if="commentData.ipLocation.location">
+        </n-text>
+        <n-text class="ip" v-if="commentData.ipLocation.location">
           <n-icon :component="FmdGoodOutlined" />
           {{ commentData.ipLocation.location }}
-        </span>
-        <span
+        </n-text>
+        <n-text
           :class="commentData.liked ? 'like liked' : 'like'"
           @click="toLikeComment"
         >
@@ -55,7 +58,7 @@
             "
           />
           {{ formatNumber(commentData.likedCount) }}
-        </span>
+        </n-text>
       </div>
     </div>
   </n-card>
@@ -150,6 +153,17 @@ const toLikeComment = () => {
           height: 16px;
           &:nth-of-type(1) {
             margin-bottom: 6px;
+          }
+        }
+      }
+      @media (max-width: 578px) {
+        min-width: 48px;
+        width: 48px;
+        .avatar {
+          width: 40px;
+          height: 40px;
+          .musicPackage {
+            height: 12px;
           }
         }
       }

@@ -7,8 +7,8 @@
           :src="
             musicDetail.al.picUrl
               ? musicDetail.al.picUrl.replace(/^http:/, 'https:') +
-                '?param=500y500'
-              : null
+                '?param=1024y1024'
+              : '/images/pic/default.png'
           "
           fallback-src="/images/pic/default.png"
         />
@@ -42,7 +42,7 @@
             />
           </div>
         </div>
-        <div class="button">
+        <n-space class="button">
           <n-button
             type="primary"
             strong
@@ -53,6 +53,16 @@
               <n-icon :component="PlayArrowRound" />
             </template>
             播放
+          </n-button>
+          <n-button
+            strong
+            secondary
+            @click="addPlayListRef.openAddToPlaylist(musicId)"
+          >
+            <template #icon>
+              <n-icon :component="PlaylistAddRound" />
+            </template>
+            添加
           </n-button>
           <n-button
             strong
@@ -75,7 +85,7 @@
             </template>
             MV
           </n-button>
-        </div>
+        </n-space>
       </div>
     </div>
     <n-divider />
@@ -83,6 +93,8 @@
       <n-h6 prefix="bar"> 包含这首歌的歌单 </n-h6>
       <CoverLists :listData="simiPlayList" />
     </div>
+    <!-- 添加到歌单 -->
+    <AddPlaylist ref="addPlayListRef" />
   </div>
 </template>
 
@@ -91,13 +103,20 @@ import { getSimiPlayList, getMusicDetail } from "@/api/song";
 import { useRouter } from "vue-router";
 import { musicStore } from "@/store";
 import { getLongTime } from "@/utils/timeTools.js";
-import { PlayArrowRound, MessageFilled, VideocamRound } from "@vicons/material";
+import {
+  PlayArrowRound,
+  MessageFilled,
+  VideocamRound,
+  PlaylistAddRound,
+} from "@vicons/material";
 import { formatNumber } from "@/utils/timeTools.js";
 import AllArtists from "@/components/DataList/AllArtists.vue";
 import CoverLists from "@/components/DataList/CoverLists.vue";
+import AddPlaylist from "@/components/DataModel/AddPlaylist.vue";
 
 const router = useRouter();
 const music = musicStore();
+const addPlayListRef = ref(null);
 
 // 歌曲数据
 const musicId = ref(router.currentRoute.value.query.id);
@@ -175,19 +194,6 @@ watch(
     width: 80vw;
     display: flex;
     flex-direction: row;
-    @media (max-width: 768px) {
-      flex-direction: column;
-      .pic {
-        margin-bottom: 20px;
-      }
-      .right {
-        .intr {
-          .name {
-            font-size: 26px !important;
-          }
-        }
-      }
-    }
     .pic {
       height: auto;
       display: flex;
@@ -238,9 +244,22 @@ watch(
       }
       .button {
         margin-top: 16px;
-        display: flex;
-        button {
-          margin-right: 16px;
+        gap: 12px !important;
+      }
+    }
+    @media (max-width: 768px) {
+      flex-direction: column;
+      .pic {
+        margin-bottom: 20px;
+      }
+      .right {
+        .intr {
+          .name {
+            font-size: 24px;
+          }
+          .alia {
+            font-size: 16px;
+          }
         }
       }
     }

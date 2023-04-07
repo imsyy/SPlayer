@@ -45,6 +45,15 @@ const setting = settingStore();
 const router = useRouter();
 const mainContent = ref(null);
 
+// 公告数据
+const annShow =
+  import.meta.env.VITE_ANN_TITLE && import.meta.env.VITE_ANN_CONTENT
+    ? true
+    : false;
+const annTitle = import.meta.env.VITE_ANN_TITLE;
+const annContene = import.meta.env.VITE_ANN_CONTENT;
+const annDuration = Number(import.meta.env.VITE_ANN_DURATION);
+
 // 空格暂停与播放
 const spacePlayOrPause = (e) => {
   if (e.code === "Space") {
@@ -102,12 +111,14 @@ onMounted(() => {
   window.$cleanAll = cleanAll;
   window.$signIn = signIn;
 
-  // 初始化
-  $notification["info"]({
-    content: "项目即将完成",
-    meta: "页面完善中",
-    duration: 2000,
-  });
+  // 公告
+  if (annShow) {
+    $notification["info"]({
+      content: annTitle,
+      meta: annContene,
+      duration: annDuration,
+    });
+  }
 
   // 版权声明
   const logoText = "SPlayer";

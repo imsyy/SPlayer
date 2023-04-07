@@ -1,12 +1,14 @@
 <template>
   <div class="comment">
-    <n-card
-      class="goback"
-      v-if="music.getPlaySongData && music.getPlaySongData.id != songId"
-      @click="router.push(`/comment?id=${music.getPlaySongData.id}&page=1`)"
-      content-style="padding: 6px"
-      >前往当前歌曲评论
-    </n-card>
+    <Transition name="up">
+      <n-card
+        v-if="music.getPlaySongData && music.getPlaySongData.id != songId"
+        class="goback"
+        @click="router.push(`/comment?id=${music.getPlaySongData.id}&page=1`)"
+        content-style="padding: 6px"
+        >前往当前播放歌曲
+      </n-card>
+    </Transition>
     <div class="title" v-if="songId">
       <span class="key">全部评论</span>
       <n-card class="song">
@@ -151,6 +153,15 @@ watch(
 
 <style lang="scss" scoped>
 .comment {
+  .up-enter-active,
+  .up-leave-active {
+    transition: all 0.3s ease;
+  }
+
+  .up-enter-from,
+  .up-leave-to {
+    transform: translateY(-34px);
+  }
   .goback {
     cursor: pointer;
     position: absolute;

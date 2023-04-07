@@ -29,6 +29,7 @@
         </div>
       </div>
     </n-space>
+    <n-text v-else>歌单列表加载中</n-text>
   </n-modal>
 </template>
 
