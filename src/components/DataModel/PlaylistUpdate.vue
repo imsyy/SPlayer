@@ -52,10 +52,11 @@
 <script setup>
 import { playlistUpdate } from "@/api/playlist";
 import { formRules } from "@/utils/formRules.js";
-import { musicStore } from "@/store";
+import { musicStore, userStore } from "@/store";
 
 const { textRule } = formRules();
 const music = musicStore();
+const user = userStore();
 
 // 更新歌单数据
 const playlistUpdateId = ref(null);
@@ -86,7 +87,7 @@ const toUpdatePlayList = (e) => {
         if (res.code === 200) {
           $message.success("编辑成功");
           closeUpdateModel();
-          music.setUserPlayLists();
+          user.setUserPlayLists();
         } else {
           $message.error("编辑失败，请重试");
         }

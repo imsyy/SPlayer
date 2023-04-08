@@ -1,16 +1,16 @@
 <template>
   <div class="artists">
-    <ArtistLists :listData="music.getUserArtistlists.list" />
+    <ArtistLists :listData="user.getUserArtistlists.list" />
   </div>
 </template>
 
 <script setup>
-import { musicStore } from "@/store";
+import { userStore } from "@/store";
 import ArtistLists from "@/components/DataList/ArtistLists.vue";
 
-const music = musicStore();
+const user = userStore();
 
 onMounted(() => {
-  if (!music.getUserArtistlists.has) music.setUserArtistLists();
+  if (!user.getUserArtistlists.has) user.setUserArtistLists();
 });
 </script>

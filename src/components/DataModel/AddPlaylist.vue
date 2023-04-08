@@ -7,10 +7,10 @@
     :bordered="false"
     :on-after-leave="closeAddToPlaylist"
   >
-    <n-space vertical class="list" v-if="music.getUserPlayLists.own[0]">
+    <n-space vertical class="list" v-if="user.getUserPlayLists.own[0]">
       <div
         class="item"
-        v-for="item in music.getUserPlayLists.own"
+        v-for="item in user.getUserPlayLists.own"
         :key="item"
         @click="addToPlayList(item.id, addToPlaylistId)"
       >
@@ -35,9 +35,8 @@
 
 <script setup>
 import { addSongToPlayList } from "@/api/playlist";
-import { musicStore, userStore } from "@/store";
+import { userStore } from "@/store";
 
-const music = musicStore();
 const user = userStore();
 
 // 收藏到歌单数据
@@ -52,7 +51,7 @@ const addToPlayList = (pid, tracks) => {
     if (res.status === 200) {
       $message.success("添加歌曲至歌单成功");
       closeAddToPlaylist();
-      music.setUserPlayLists();
+      user.setUserPlayLists();
     } else {
       $message.error("添加失败，请重试");
     }
@@ -65,7 +64,7 @@ const openAddToPlaylist = (id) => {
     $message.error("请登录账号后使用");
     return false;
   }
-  if (!music.getUserPlayLists.has) music.setUserPlayLists();
+  if (!user.getUserPlayLists.has) user.setUserPlayLists();
   addToPlaylistModel.value = true;
   addToPlaylistId.value = id;
   console.log("开启", addToPlaylistModel.value, addToPlaylistId.value);

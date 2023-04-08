@@ -7,39 +7,39 @@
     :bordered="false"
     :on-after-leave="closeDownloadModel"
   >
-    <template v-if="songData">
-      <SmallSongData ref="smallSongDataRef" :songData="songData" notJump />
-      <n-alert v-if="songData.pc" class="tip" type="info" :show-icon="false">
-        当前为云盘歌曲，下载的文件均为最高音质
-      </n-alert>
-      <n-radio-group
-        class="downloadGroup"
-        v-model:value="downloadChoose"
-        name="downloadGroup"
-      >
-        <n-space vertical>
-          <n-radio
-            v-for="item in downloadLevel"
-            :key="item"
-            :value="item.value"
-            :disabled="item.disabled"
-          >
-            <div :class="item.disabled ? 'text disabled' : 'text'">
-              <n-text class="name">{{ item.label }}</n-text>
-              <n-text v-if="item.size" class="size" :depth="3">
-                {{ item.size }}
-              </n-text>
-              <n-text v-else-if="!item.disabled" class="error" :depth="3">
-                无法获取
-              </n-text>
-            </div>
-          </n-radio>
-        </n-space>
-      </n-radio-group>
-    </template>
-    <template v-else>
-      <n-text>正在获取歌曲下载数据</n-text>
-    </template>
+    <Transition mode="out-in">
+      <div v-if="songData">
+        <SmallSongData ref="smallSongDataRef" :songData="songData" notJump />
+        <n-alert v-if="songData.pc" class="tip" type="info" :show-icon="false">
+          当前为云盘歌曲，下载的文件均为最高音质
+        </n-alert>
+        <n-radio-group
+          class="downloadGroup"
+          v-model:value="downloadChoose"
+          name="downloadGroup"
+        >
+          <n-space vertical>
+            <n-radio
+              v-for="item in downloadLevel"
+              :key="item"
+              :value="item.value"
+              :disabled="item.disabled"
+            >
+              <div :class="item.disabled ? 'text disabled' : 'text'">
+                <n-text class="name">{{ item.label }}</n-text>
+                <n-text v-if="item.size" class="size" :depth="3">
+                  {{ item.size }}
+                </n-text>
+                <n-text v-else-if="!item.disabled" class="error" :depth="3">
+                  无法获取
+                </n-text>
+              </div>
+            </n-radio>
+          </n-space>
+        </n-radio-group>
+      </div>
+      <n-text v-else>正在获取歌曲下载数据</n-text>
+    </Transition>
     <template #footer>
       <n-space justify="end">
         <n-button @click="closeDownloadModel"> 取消 </n-button>
@@ -236,6 +236,15 @@ defineExpose({
 
 <style lang="scss" scoped>
 .downloadModel {
+  .v-enter-active,
+  .v-leave-active {
+    transition: opacity 0.3s ease;
+  }
+
+  .v-enter-from,
+  .v-leave-to {
+    opacity: 0;
+  }
   .tip {
     margin-top: 20px;
   }

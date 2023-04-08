@@ -1,16 +1,16 @@
 <template>
   <div class="like">
-    <CoverLists :listData="music.getUserPlayLists.like" :showMore="true" />
+    <CoverLists :listData="user.getUserPlayLists.like" :showMore="true" />
   </div>
 </template>
 
 <script setup>
-import { musicStore } from "@/store";
+import { userStore } from "@/store";
 import CoverLists from "@/components/DataList/CoverLists.vue";
 
-const music = musicStore();
+const user = userStore();
 
 onMounted(() => {
-  if (!music.getUserPlayLists.has) music.setUserPlayLists();
+  if (!user.getUserPlayLists.has) user.setUserPlayLists();
 });
 </script>

@@ -44,19 +44,16 @@
         </template>
       </n-modal>
     </div>
-    <CoverLists :listData="music.getUserPlayLists.own" :showMore="true" />
+    <CoverLists :listData="user.getUserPlayLists.own" :showMore="true" />
   </div>
 </template>
 
 <script setup>
 import { createPlaylist } from "@/api/playlist";
 import { AddCircleRound } from "@vicons/material";
-import { useRouter } from "vue-router";
-import { musicStore, userStore } from "@/store";
+import { userStore } from "@/store";
 import CoverLists from "@/components/DataList/CoverLists.vue";
 
-const router = useRouter();
-const music = musicStore();
 const user = userStore();
 
 // 新建歌单数据
@@ -71,7 +68,7 @@ const createPlaylistBtn = (name, privacy = false) => {
       if (res.code === 200) {
         createClose();
         $message.success("歌单新建成功");
-        music.setUserPlayLists();
+        user.setUserPlayLists();
       } else {
         $message.error("歌单新建失败，请重试");
       }
@@ -89,7 +86,7 @@ const createClose = () => {
 };
 
 onMounted(() => {
-  if (!music.getUserPlayLists.has) music.setUserPlayLists();
+  if (!user.getUserPlayLists.has) user.setUserPlayLists();
 });
 </script>
 

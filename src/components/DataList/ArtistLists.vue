@@ -68,9 +68,8 @@
 import { PeopleSearchOne } from "@icon-park/vue-next";
 import { likeArtist } from "@/api/artist";
 import { useRouter } from "vue-router";
-import { musicStore, userStore } from "@/store";
+import { userStore } from "@/store";
 
-const music = musicStore();
 const user = userStore();
 const router = useRouter();
 const props = defineProps({
@@ -111,7 +110,7 @@ const openRightMenu = (e, data) => {
       {
         key: "like",
         label: isLikeOrDislike(data.id) ? "收藏歌手" : "取消收藏歌手",
-        show: user.userLogin && music.getUserArtistlists.has ? true : false,
+        show: user.userLogin && user.getUserArtistlists.has ? true : false,
         props: {
           onClick: () => {
             toLikeArtist(data);
@@ -158,7 +157,7 @@ const toLikeArtist = (data) => {
       $message.success(
         `${data.name}${type == 1 ? "收藏成功" : "取消收藏成功"}`
       );
-      music.setUserArtistLists();
+      user.setUserArtistLists();
     } else {
       $message.error(`${data.name}${type == 1 ? "收藏失败" : "取消收藏失败"}`);
     }
@@ -167,8 +166,8 @@ const toLikeArtist = (data) => {
 
 // 判断收藏还是取消
 const isLikeOrDislike = (id) => {
-  if (music.getUserArtistlists.list[0]) {
-    const index = music.getUserArtistlists.list.findIndex(
+  if (user.getUserArtistlists.list[0]) {
+    const index = user.getUserArtistlists.list.findIndex(
       (item) => item.id === id
     );
     if (index !== -1) {
@@ -181,8 +180,7 @@ const isLikeOrDislike = (id) => {
 };
 
 onMounted(() => {
-  if (user.userLogin && !music.getUserArtistlists.has)
-    music.setUserArtistLists();
+  if (user.userLogin && !user.getUserArtistlists.has) user.setUserArtistLists();
 });
 </script>
 

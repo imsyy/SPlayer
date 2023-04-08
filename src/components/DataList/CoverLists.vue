@@ -167,7 +167,7 @@ const openRightMenu = (e, data) => {
         label: isLikeOrDislike(data.id) ? "收藏歌单" : "取消收藏歌单",
         show:
           user.userLogin &&
-          music.getUserPlayLists.has &&
+          user.getUserPlayLists.has &&
           router.currentRoute.value.name != "playlists"
             ? true
             : false,
@@ -241,7 +241,7 @@ const toDelPlayList = (data) => {
       delPlayList(data.id).then((res) => {
         if (res.code === 200) {
           $message.success("删除成功");
-          music.setUserPlayLists();
+          user.setUserPlayLists();
         }
       });
     },
@@ -250,8 +250,8 @@ const toDelPlayList = (data) => {
 
 // 判断收藏还是取消
 const isLikeOrDislike = (id) => {
-  if (music.getUserPlayLists.like[0]) {
-    const index = music.getUserPlayLists.like.findIndex(
+  if (user.getUserPlayLists.like[0]) {
+    const index = user.getUserPlayLists.like.findIndex(
       (item) => item.id === id
     );
     if (index !== -1) {
@@ -269,7 +269,7 @@ const toLikePlaylist = (id) => {
   likePlaylist(type, id).then((res) => {
     if (res.code === 200) {
       $message.success(`歌单${type == 1 ? "收藏成功" : "取消收藏成功"}`);
-      music.setUserPlayLists();
+      user.setUserPlayLists();
     } else {
       $message.error(`歌单${type == 1 ? "收藏失败" : "取消收藏失败"}`);
     }
@@ -279,7 +279,7 @@ const toLikePlaylist = (id) => {
 onMounted(() => {
   if (router.currentRoute.value.name === "playlists" && !music.catList.sub)
     music.setCatList();
-  if (user.userLogin && !music.getUserPlayLists.has) music.setUserPlayLists();
+  if (user.userLogin && !user.getUserPlayLists.has) user.setUserPlayLists();
 });
 </script>
 

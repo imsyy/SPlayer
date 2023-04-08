@@ -394,15 +394,9 @@ const songTimeSliderUpdate = (val) => {
     $player.currentTime = (music.getPlaySongTime.duration / 100) * val;
 };
 
-// 进度条弹出提示
-// const sliderTooltip = (val) => {
-//   if ($player && music.getPlaySongTime && music.getPlaySongTime.duration)
-//     return getSongPlayingTime((music.getPlaySongTime.duration / 100) * val);
-// };
-
 // 歌曲播放失败事件
 const songError = () => {
-  // $message.error("播放失败，请重试");
+  console.error("歌曲播放失败");
   if (music.getPlaylists[0]) getPlaySongData(music.getPlaySongData.id);
   if (music.getPlayState) songInOrOut("play");
 };
