@@ -19,7 +19,7 @@ export const getComment = (id, offset = 0, before = null, type = "music") => {
       id,
       offset,
       before,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -41,7 +41,7 @@ export const likeComment = (id, cid, t, type = 0) => {
       cid,
       t,
       type,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -65,7 +65,7 @@ export const sendComment = (id, commentId = null, content, t, type = 0) => {
       content,
       t,
       type,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };

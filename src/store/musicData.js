@@ -13,6 +13,8 @@ import {
 } from "@/api/user";
 import { getPlayListCatlist } from "@/api/playlist";
 import { userStore } from "@/store";
+import { NIcon } from "naive-ui";
+import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
 import lyricFormat from "@/utils/lyricFormat";
 
 const useMusicDataStore = defineStore("musicData", {
@@ -180,39 +182,50 @@ const useMusicDataStore = defineStore("musicData", {
     },
     // 当处于私人fm模式时更改歌单
     setPersonalFmData() {
-      getPersonalFm().then((res) => {
-        if (res.data[0]) {
-          const data = res.data[2] || res.data[0];
-          const fmData = {
-            id: data.id,
-            name: data.name,
-            artist: data.artists,
-            album: data.album,
-            alia: data.alias,
-            time: getSongTime(data.duration),
-            fee: data.fee,
-            pc: data.pc ? data.pc : null,
-            mv: data.mvid,
-          };
-          this.persistData.personalFmData = fmData;
-          if (this.persistData.personalFmMode) {
-            this.persistData.playlists = [];
-            this.persistData.playlists.push(fmData);
-            this.persistData.playSongIndex = 0;
+      try {
+        const songName = this.getPersonalFmData?.name;
+        getPersonalFm().then((res) => {
+          if (res.data[0]) {
+            const data = res.data[2] || res.data[0];
+            const fmData = {
+              id: data.id,
+              name: data.name,
+              artist: data.artists,
+              album: data.album,
+              alia: data.alias,
+              time: getSongTime(data.duration),
+              fee: data.fee,
+              pc: data.pc ? data.pc : null,
+              mv: data.mvid,
+            };
+            if (songName && songName == fmData.name) {
+              this.setFmDislike(fmData.id, false);
+            } else {
+              this.persistData.personalFmData = fmData;
+              if (this.persistData.personalFmMode) {
+                this.persistData.playSongLink = null;
+                this.persistData.playlists = [];
+                this.persistData.playlists.push(fmData);
+                this.persistData.playSongIndex = 0;
+                this.setPlayState(true);
+              }
+            }
+          } else {
+            $message.error("获取私人 FM 失败");
           }
-          this.setPlayState(true);
-        } else {
-          $message.error("获取私人 FM 失败");
-        }
-      });
+        });
+      } catch (err) {
+        console.error("获取私人 FM 失败：" + err);
+        $message.error("获取私人 FM 失败");
+      }
     },
     // 私人fm垃圾桶
-    setFmDislike(id) {
+    setFmDislike(id, tip = true) {
       const user = userStore();
       if (user.userLogin) {
         setFmTrash(id).then((res) => {
           if (res.code == 200) {
-            $message.success("已将该歌曲移除至垃圾桶");
+            if (tip) $message.success("已将该歌曲移除至垃圾桶");
             this.persistData.personalFmMode = true;
             this.setPlaySongIndex("next");
           } else {
@@ -363,9 +376,8 @@ const useMusicDataStore = defineStore("musicData", {
         );
       }
       // 计算当前歌词播放索引
-      this.persistData.playSongLyricIndex;
-      let index = this.persistData.playSongLyric.findIndex(
-        (v) => v.time > value.currentTime
+      const index = this.persistData.playSongLyric.findIndex(
+        (v) => v.time >= value.currentTime
       );
       if (index === -1) {
         // 如果没有找到合适的歌词，则返回最后一句歌词
@@ -379,20 +391,25 @@ const useMusicDataStore = defineStore("musicData", {
     setPlaySongMode() {
       if (this.persistData.playSongMode === "normal") {
         this.persistData.playSongMode = "random";
-        $message.info("随机播放");
+        $message.info("随机播放", {
+          icon: () => h(NIcon, null, { default: () => h(ShuffleOne) }),
+        });
       } else if (this.persistData.playSongMode === "random") {
         this.persistData.playSongMode = "single";
-        $message.info("单曲循环");
+        $message.info("单曲循环", {
+          icon: () => h(NIcon, null, { default: () => h(PlayOnce) }),
+        });
       } else {
         this.persistData.playSongMode = "normal";
-        $message.info("列表循环");
+        $message.info("列表循环", {
+          icon: () => h(NIcon, null, { default: () => h(PlayCycle) }),
+        });
       }
     },
     // 上下曲调整
     setPlaySongIndex(type) {
       this.playState = false;
       if (this.persistData.personalFmMode) {
-        this.persistData.playSongLink = null;
         this.setPersonalFmData();
       } else {
         let listLength = this.persistData.playlists.length;

@@ -15,7 +15,7 @@ export const checkMusicCanUse = (id) => {
     url: "/check/music",
     params: {
       id,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -33,7 +33,7 @@ export const getMusicUrl = (id, level = "exhigh") => {
     params: {
       id,
       level,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -107,7 +107,7 @@ export const getSongDownload = (id, br = 999000) => {
     params: {
       id,
       br,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };

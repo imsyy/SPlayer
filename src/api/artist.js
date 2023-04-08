@@ -56,7 +56,7 @@ export const getArtistSongs = (id) => {
     url: "/artists",
     params: {
       id,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -82,7 +82,7 @@ export const getArtistAllSongs = (
       limit,
       offset,
       order,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -136,7 +136,7 @@ export const likeArtist = (t, id) => {
     params: {
       t,
       id,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };

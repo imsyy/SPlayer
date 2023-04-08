@@ -61,7 +61,7 @@ export const getPlayListDetail = (id) => {
     url: "/playlist/detail",
     params: {
       id,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -80,7 +80,7 @@ export const getAllPlayList = (id, limit = 30, offset = 0) => {
       id,
       limit,
       offset,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -97,7 +97,7 @@ export const createPlaylist = (name, privacy = false) => {
     params: {
       name,
       privacy,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -112,7 +112,7 @@ export const delPlayList = (id) => {
     url: "/playlist/delete",
     params: {
       id,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -133,7 +133,7 @@ export const playlistUpdate = (id, name, desc = null, tags = null) => {
       name,
       desc,
       tags,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -152,7 +152,7 @@ export const addSongToPlayList = (pid, tracks, op = "add") => {
       op,
       pid,
       tracks,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -169,7 +169,7 @@ export const likePlaylist = (t, id) => {
     params: {
       t,
       id,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };

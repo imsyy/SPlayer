@@ -13,7 +13,7 @@ export const getQrKey = () => {
     hiddenBar: true,
     url: "/login/qr/key",
     params: {
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -31,7 +31,7 @@ export const qrCreate = (key, qrimg = true) => {
     params: {
       key,
       qrimg,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -47,7 +47,7 @@ export const checkQr = (key) => {
     url: "/login/qr/check",
     params: {
       key,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -65,7 +65,7 @@ export const toLogin = (phone, captcha) => {
     params: {
       phone,
       captcha,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -80,7 +80,7 @@ export const sentCaptcha = (phone) => {
     url: "/captcha/sent",
     params: {
       phone,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -98,7 +98,7 @@ export const verifyCaptcha = (phone, captcha) => {
     params: {
       phone,
       captcha,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -110,7 +110,19 @@ export const getLoginState = () => {
     hiddenBar: true,
     url: "/login/status",
     params: {
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
+    },
+  });
+};
+
+// 刷新登录
+export const refreshLogin = () => {
+  return axios({
+    method: "GET",
+    hiddenBar: true,
+    url: "/login/refresh",
+    params: {
+      timestamp: new Date().getTime(),
     },
   });
 };

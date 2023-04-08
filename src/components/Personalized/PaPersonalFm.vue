@@ -22,8 +22,9 @@
         <span
           class="name text-hidden"
           @click="router.push(`/song?id=${music.getPersonalFmData.id}`)"
-          >{{ music.getPersonalFmData.name }}</span
         >
+          {{ music.getPersonalFmData.name }}
+        </span>
         <AllArtists
           class="text-hidden"
           :artistsData="music.getPersonalFmData.artist"

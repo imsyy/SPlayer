@@ -22,7 +22,7 @@ export const getDailySongs = () => {
     method: "GET",
     url: "/recommend/songs",
     params: {
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -35,7 +35,7 @@ export const getDailySongsHistory = () => {
     method: "GET",
     url: "/history/recommend/songs",
     params: {
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -50,7 +50,7 @@ export const getDailySongsHistoryDetail = (date) => {
     url: "/history/recommend/songs/detail",
     params: {
       date,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -64,7 +64,7 @@ export const getPersonalFm = () => {
     hiddenBar: true,
     url: "/personal_fm",
     params: {
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -80,7 +80,7 @@ export const setFmTrash = (id) => {
     url: "/fm_trash",
     params: {
       id,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };

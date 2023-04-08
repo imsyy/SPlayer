@@ -12,7 +12,7 @@ export const getUserLevel = () => {
     method: "GET",
     url: "/user/level",
     params: {
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -25,7 +25,7 @@ export const getUserSubcount = () => {
     method: "GET",
     url: "/user/subcount",
     params: {
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -44,7 +44,7 @@ export const getUserPlaylist = (uid, limit = 30, offset = 0) => {
       uid,
       limit,
       offset,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -57,7 +57,7 @@ export const getUserArtistlist = () => {
     method: "GET",
     url: "/artist/sublist",
     params: {
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -73,7 +73,7 @@ export const getLikelist = (uid) => {
     url: "/likelist",
     params: {
       uid,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -91,7 +91,7 @@ export const setLikeSong = (id, like = true) => {
     params: {
       id,
       like,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -108,7 +108,7 @@ export const getCloud = (limit = 30, offset = 0) => {
     params: {
       limit,
       offset,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -123,7 +123,7 @@ export const setCloudDel = (id) => {
     url: "/user/cloud/del",
     params: {
       id,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -142,7 +142,7 @@ export const setCloudMatch = (uid, sid, asid) => {
       uid,
       sid,
       asid,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -159,7 +159,7 @@ export const upCloudSong = (file, onUploadProgress) => {
     method: "POST",
     hiddenBar: true,
     params: {
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
     data: formData,
     headers: {
@@ -178,7 +178,7 @@ export const userLogOut = () => {
     method: "GET",
     url: "/logout",
     params: {
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -193,7 +193,7 @@ export const userDailySignin = (type = 0) => {
     url: "/daily_signin",
     params: {
       type,
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };
@@ -206,7 +206,7 @@ export const userYunbeiSign = () => {
     method: "GET",
     url: "/yunbei/sign",
     params: {
-      time: new Date().getTime(),
+      timestamp: new Date().getTime(),
     },
   });
 };

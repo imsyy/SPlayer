@@ -32,7 +32,7 @@
 <script setup>
 import { musicStore, userStore, settingStore } from "@/store";
 import { useRouter } from "vue-router";
-import { getLoginState } from "@/api/login";
+import { getLoginState, refreshLogin } from "@/api/login";
 import { userDailySignin, userYunbeiSign } from "@/api/user";
 import Provider from "@/components/Provider/index.vue";
 import Nav from "@/components/Nav/index.vue";
@@ -68,18 +68,36 @@ const spacePlayOrPause = (e) => {
   }
 };
 
+// 刷新登录
+const toRefreshLogin = () => {
+  const today = Date.now();
+  const threeDays = 3 * 24 * 60 * 60 * 1000;
+  const lastRefreshDate = new Date(
+    localStorage.getItem("lastRefreshDate")
+  ).getTime();
+  if (today - lastRefreshDate >= threeDays || !lastRefreshDate) {
+    refreshLogin().then((res) => {
+      if (res.code === 200) {
+        localStorage.setItem(
+          "lastRefreshDate",
+          new Date(today).toLocaleDateString()
+        );
+        console.log("刷新登录成功");
+      } else {
+        console.error("刷新登录失败");
+      }
+    });
+  }
+};
+
 // 用户签到
 const signIn = () => {
-  // 获取当前日期
   const today = new Date().toLocaleDateString();
-  // 从 localStorage 中获取上一次签到日期
   const lastSignInDate = localStorage.getItem("lastSignInDate");
-  // 如果上一次签到日期不等于当前日期，说明今天还没有签到
   if (lastSignInDate !== today) {
     const signInPromises = [userDailySignin(0), userYunbeiSign()];
     Promise.all(signInPromises)
       .then((results) => {
-        // 更新上一次签到日期为今天
         localStorage.setItem("lastSignInDate", today);
         console.log("签到成功！");
         console.log("userDailySignin:", results[0]);
@@ -98,6 +116,7 @@ const signIn = () => {
     console.log("今天已经签到过了！");
   }
 };
+
 // 系统重置
 const cleanAll = () => {
   $message ? $message.success("重置成功") : alert("重置成功");
@@ -140,8 +159,11 @@ onMounted(() => {
       if (res.data.profile && user.userLogin) {
         // 签到
         if (setting.autoSignIn) signIn();
-        user.setUserData(res.data.profile);
+        // 刷新登录
+        toRefreshLogin();
+        // 保存登录信息
         user.userLogin = true;
+        user.setUserData(res.data.profile);
         user.setUserOtherData();
       } else {
         user.userLogOut();
