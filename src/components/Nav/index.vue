@@ -133,17 +133,17 @@ const userDataRender = () => {
             {
               default: () =>
                 user.userLogin
-                  ? user.getUserData.level
+                  ? Object.keys(user.getUserOtherData).length
                     ? h(
                         NProgress,
                         {
                           height: 4,
                           type: "line",
-                          percentage: user.getUserData.level.progress * 100,
+                          percentage: user.getUserOtherData.level.progress * 100,
                           color: "#f55e55",
                         },
                         {
-                          default: () => "Lv." + user.getUserData.level.level,
+                          default: () => "Lv." + user.getUserOtherData.level.level,
                         }
                       )
                     : "等级信息获取失败"

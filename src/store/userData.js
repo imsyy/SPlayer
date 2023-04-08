@@ -15,8 +15,10 @@ const useUserDataStore = defineStore("userData", {
       userLogin: false,
       // 用户 cookie
       cookie: null,
-      // 用户数据
+      // 用户基础数据
       userData: {},
+      // 用户详情数据
+      userOtherData: {},
       // 用户歌单
       userPlayLists: {
         has: false,
@@ -35,9 +37,13 @@ const useUserDataStore = defineStore("userData", {
     getCookie(state) {
       return state.cookie;
     },
-    // 获取用户数据
+    // 获取用户基础数据
     getUserData(state) {
       return state.userData;
+    },
+    // 获取用户详情数据
+    getUserOtherData(state) {
+      return state.userOtherData;
     },
     // 获取用户歌单
     getUserPlayLists(state) {
@@ -57,24 +63,21 @@ const useUserDataStore = defineStore("userData", {
     // 更改用户数据
     setUserData(value) {
       this.userData = value;
-      if (!this.userData.level) this.setUserOtherData();
     },
     // 更改用户等级信息
     setUserOtherData() {
       if (this.userLogin) {
-        getUserLevel()
+        const getOtherData = [getUserLevel(), getUserSubcount()];
+        Promise.all(getOtherData)
           .then((res) => {
-            this.userData.level = res.data;
+            console.log(res);
+            this.userOtherData.level = res[0].data;
+            this.userOtherData.subcount = res[1];
+            this.setUserPlayLists();
           })
           .catch((err) => {
-            $message.error("获取用户等级出错 " + err);
-          });
-        getUserSubcount()
-          .then((res) => {
-            this.userData.subcount = res;
-          })
-          .catch((err) => {
-            $message.error("获取用户详情失败 " + err);
+            console.error("获取用户详情失败：" + err);
+            $message.error("获取用户详情失败，请刷新后重试");
           });
       }
     },
@@ -83,6 +86,7 @@ const useUserDataStore = defineStore("userData", {
       this.userLogin = false;
       this.cookie = null;
       this.userData = {};
+      this.userOtherData = {};
       localStorage.removeItem("cookie");
       userLogOut();
     },
@@ -90,43 +94,46 @@ const useUserDataStore = defineStore("userData", {
     setUserPlayLists() {
       if (this.userLogin) {
         try {
-          getUserPlaylist(
-            this.getUserData.userId,
-            this.getUserData.subcount.createdPlaylistCount +
-            this.getUserData.subcount.subPlaylistCount
-          ).then((res) => {
-            if (res.playlist) {
-              this.userPlayLists = {
-                own: [],
-                like: [],
-              };
-              this.userPlayLists.has = true;
-              res.playlist.forEach((v) => {
-                if (v.creator.userId === this.getUserData.userId) {
-                  this.userPlayLists.own.push({
-                    id: v.id,
-                    cover: v.coverImgUrl,
-                    name: v.name,
-                    artist: v.creator,
-                    desc: v.description,
-                    tags: v.tags,
-                    playCount: formatNumber(v.playCount),
-                    trackCount: v.trackCount,
-                  });
-                } else {
-                  this.userPlayLists.like.push({
-                    id: v.id,
-                    cover: v.coverImgUrl,
-                    name: v.name,
-                    artist: v.creator,
-                    playCount: formatNumber(v.playCount),
-                  });
-                }
-              });
-            } else {
-              $message.error("用户歌单为空");
-            }
-          });
+          if (!Object.keys(this.userOtherData).length) {
+            this.setUserOtherData();
+          } else {
+            const number =
+              this.userOtherData.subcount.createdPlaylistCount +
+              this.userOtherData.subcount.subPlaylistCount;
+            getUserPlaylist(this.getUserData.userId, number).then((res) => {
+              if (res.playlist) {
+                this.userPlayLists = {
+                  own: [],
+                  like: [],
+                };
+                this.userPlayLists.has = true;
+                res.playlist.forEach((v) => {
+                  if (v.creator.userId === this.getUserData.userId) {
+                    this.userPlayLists.own.push({
+                      id: v.id,
+                      cover: v.coverImgUrl,
+                      name: v.name,
+                      artist: v.creator,
+                      desc: v.description,
+                      tags: v.tags,
+                      playCount: formatNumber(v.playCount),
+                      trackCount: v.trackCount,
+                    });
+                  } else {
+                    this.userPlayLists.like.push({
+                      id: v.id,
+                      cover: v.coverImgUrl,
+                      name: v.name,
+                      artist: v.creator,
+                      playCount: formatNumber(v.playCount),
+                    });
+                  }
+                });
+              } else {
+                $message.error("用户歌单为空");
+              }
+            });
+          }
         } catch (err) {
           console.error("获取用户歌单时出现错误：" + err);
           $message.error("获取用户歌单时出现错误，请刷新后重试");
@@ -165,7 +172,7 @@ const useUserDataStore = defineStore("userData", {
   persist: [
     {
       storage: localStorage,
-      paths: ["userLogin", "cookie", "userData"],
+      paths: ["userLogin", "cookie", "userData", "userOtherData"],
     },
   ],
 });
