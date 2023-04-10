@@ -5,7 +5,7 @@
  */
 const lyricFormat = (lrc) => {
   // 匹配时间轴和歌词文本的正则表达式
-  const regex = /^\[(.*?)\]\s*(.+?)\s*$/;
+  const regex = /^\[([^\]]+)\]\s*(.+?)\s*$/;
   // 将歌词字符串按行分割为数组
   const lines = lrc.split("\n");
   // 对每一行进行转换
@@ -15,9 +15,11 @@ const lyricFormat = (lrc) => {
     // 转换时间轴和歌词文本为对象
     .map((line) => {
       const [, time, text] = line.match(regex);
-      const seconds = time
-        .split(":")
-        .reduce((acc, cur) => acc * 60 + parseFloat(cur), 0);
+      const parts = time.split(":");
+      let seconds = parseInt(parts[0]) * 60 + parseFloat(parts[1]);
+      if (parts.length > 2) {
+        seconds += parseFloat(parts[2]) / 1000;
+      }
       return { time: seconds, lyric: text.trim() };
     }).filter((element) => element.lyric.trim() !== "");
   // 检查是否为纯音乐，是则返回空数组
@@ -27,5 +29,6 @@ const lyricFormat = (lrc) => {
   }
   return result;
 };
+
 
 export default lyricFormat;
