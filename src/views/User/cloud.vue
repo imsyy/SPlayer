@@ -69,13 +69,9 @@
         processing
       />
       <template #footer>
-        <n-space justify="end">
+        <n-space justify="end" v-if="upSongType === 'error'">
           <n-button @click="closeUpSongModal"> 取消 </n-button>
-          <n-button
-            type="primary"
-            @click="resetUpSongModal"
-            v-if="upSongType === 'error'"
-          >
+          <n-button type="primary" @click="resetUpSongModal">
             重新上传
           </n-button>
         </n-space>
@@ -177,6 +173,7 @@ const upCloudSongData = (e) => {
       }
     })
     .catch((err) => {
+      upSongType.value = "error";
       closeUpSongModal();
       $message.error("歌曲上传出现错误");
       console.error("歌曲上传出现错误：" + err);
