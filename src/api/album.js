@@ -48,3 +48,20 @@ export const getToplist = (detail = true) => {
     url: `/toplist${detail ? "/detail" : null}`,
   });
 };
+
+/**
+ * 收藏/取消收藏专辑
+ * @param {number} t - 操作类型，1为收藏，2为取消收藏
+ * @param {number} id - 专辑id
+ */
+export const likeAlbum = (t, id) => {
+  return axios({
+    method: "GET",
+    url: "/album/sub",
+    params: {
+      t,
+      id,
+      timestamp: new Date().getTime(),
+    },
+  });
+};

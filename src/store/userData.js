@@ -5,6 +5,7 @@ import {
   getUserSubcount,
   getUserPlaylist,
   getUserArtistlist,
+  getUserAlbum,
 } from "@/api/user";
 import { formatNumber } from "@/utils/timeTools.js";
 
@@ -24,6 +25,11 @@ const useUserDataStore = defineStore("userData", {
         has: false,
         own: [], // 创建歌单
         like: [], // 收藏歌单
+      },
+      // 用户专辑
+      userAlbum: {
+        has: false,
+        list: [],
       },
       // 用户收藏歌手
       userArtistLists: {
@@ -52,6 +58,10 @@ const useUserDataStore = defineStore("userData", {
     // 获取用户收藏歌手
     getUserArtistlists(state) {
       return state.userArtistLists;
+    },
+    // 获取用户收藏专辑
+    getUserAlbum(state) {
+      return state.userAlbum;
     },
   },
   actions: {
@@ -143,26 +153,57 @@ const useUserDataStore = defineStore("userData", {
       }
     },
     // 更改用户收藏歌手
-    setUserArtistLists() {
+    setUserArtistLists(callback) {
       if (this.userLogin) {
-        getUserArtistlist().then((res) => {
-          if (res.data) {
-            this.userArtistLists = {
-              list: [],
-            };
-            this.userArtistLists.has = true;
-            res.data.forEach((v) => {
-              this.userArtistLists.list.push({
-                id: v.id,
-                name: v.name,
-                cover: v.img1v1Url,
-                size: v.musicSize,
+        getUserArtistlist()
+          .then((res) => {
+            if (res.data) {
+              this.userArtistLists = {
+                list: [],
+              };
+              this.userArtistLists.has = true;
+              res.data.forEach((v) => {
+                this.userArtistLists.list.push({
+                  id: v.id,
+                  name: v.name,
+                  cover: v.img1v1Url,
+                  size: v.musicSize,
+                });
               });
-            });
-          } else {
-            $message.error("用户收藏歌手为空");
+              if (typeof callback === "function") {
+                callback();
+              }
+            } else {
+              $message.error("用户收藏歌手为空");
+            }
+          })
+          .catch((err) => {
+            console.error("用户收藏歌手获取失败：" + err);
+            $message.error("用户收藏歌手获取失败，请刷新后重试");
+          });
+      } else {
+        $message.error("请登录账号后使用");
+      }
+    },
+    // 更改用户收藏专辑
+    async setUserAlbum() {
+      if (this.userLogin) {
+        try {
+          let offset = 0;
+          let totalCount = null;
+          this.userAlbum.list = [];
+          while (totalCount === null || offset < totalCount) {
+            const { count, data } = await getUserAlbum(30, offset);
+            console.log(count, data);
+            this.userAlbum.list = this.userAlbum.list.concat(data);
+            totalCount = count;
+            offset += 30;
           }
-        });
+          this.userAlbum.has = true;
+        } catch (err) {
+          console.error("用户收藏专辑获取失败：" + err);
+          $message.error("用户收藏专辑获取失败，请刷新后重试");
+        }
       } else {
         $message.error("请登录账号后使用");
       }

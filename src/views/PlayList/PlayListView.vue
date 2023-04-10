@@ -102,7 +102,7 @@
     </div>
   </div>
   <div class="title" v-else-if="!playListId">
-    <span class="key">未提供所需数据</span>
+    <span class="key">参数不完整</span>
     <br />
     <n-button strong secondary @click="router.go(-1)" style="margin-top: 20px">
       返回上一级

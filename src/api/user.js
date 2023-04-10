@@ -50,6 +50,23 @@ export const getUserPlaylist = (uid, limit = 30, offset = 0) => {
 };
 
 /**
+ * 获取用户的专辑列表
+ * @param {number} [limit=30] - 返回数量，默认30
+ * @param {number} [offset=0] - 偏移数量，默认0
+ */
+export const getUserAlbum = (limit = 30, offset = 0) => {
+  return axios({
+    method: "GET",
+    url: "/album/sublist",
+    params: {
+      limit,
+      offset,
+      timestamp: new Date().getTime(),
+    },
+  });
+};
+
+/**
  * 获取用户收藏的歌手列表
  */
 export const getUserArtistlist = () => {

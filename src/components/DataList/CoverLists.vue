@@ -88,6 +88,7 @@
 <script setup>
 import { PlayOne, Headset } from "@icon-park/vue-next";
 import { delPlayList, likePlaylist } from "@/api/playlist";
+import { likeAlbum } from "@/api/album";
 import { musicStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
 import AllArtists from "./AllArtists.vue";
@@ -163,31 +164,51 @@ const openRightMenu = (e, data) => {
         },
       },
       {
-        key: "like",
+        key: "likePlaylist",
         label: isLikeOrDislike(data.id) ? "收藏歌单" : "取消收藏歌单",
         show:
           user.userLogin &&
           user.getUserPlayLists.has &&
+          props.listType === "playList" &&
           router.currentRoute.value.name != "playlists"
             ? true
             : false,
         props: {
           onClick: () => {
-            toLikePlaylist(data.id);
+            toChangeLike(data.id);
+          },
+        },
+      },
+      {
+        key: "likeAlbum",
+        label: isLikeOrDislike(data.id) ? "收藏专辑" : "取消收藏专辑",
+        show:
+          user.userLogin && user.getUserAlbum.has && props.listType === "album"
+            ? true
+            : false,
+        props: {
+          onClick: () => {
+            toChangeLike(data.id);
           },
         },
       },
       {
         key: "copy",
-        label: "复制歌单链接",
+        label: `复制${props.listType === "playList" ? "歌单" : "专辑"}链接`,
         props: {
           onClick: () => {
             if (navigator.clipboard) {
               try {
                 navigator.clipboard.writeText(
-                  `https://music.163.com/#/playlist?id=${data.id}`
+                  `https://music.163.com/#/${
+                    props.listType === "playList" ? "playlist" : "album"
+                  }?id=${data.id}`
                 );
-                $message.success("歌单链接复制成功");
+                $message.success(
+                  `${
+                    props.listType === "playList" ? "歌单" : "专辑"
+                  }链接复制成功`
+                );
               } catch (err) {
                 $message.error("复制失败：", err);
               }
@@ -211,7 +232,7 @@ const onClickoutside = () => {
 
 // 链接跳转
 const toLink = (id) => {
-  if (props.listType == "playList" || props.listType == "topList") {
+  if (props.listType === "playList" || props.listType === "topList") {
     router.push({
       path: "/playlist",
       query: {
@@ -219,7 +240,7 @@ const toLink = (id) => {
         page: 1,
       },
     });
-  } else if (props.listType == "album") {
+  } else if (props.listType === "album") {
     router.push({
       path: "/album",
       query: {
@@ -250,36 +271,54 @@ const toDelPlayList = (data) => {
 
 // 判断收藏还是取消
 const isLikeOrDislike = (id) => {
-  if (user.getUserPlayLists.like[0]) {
-    const index = user.getUserPlayLists.like.findIndex(
-      (item) => item.id === id
-    );
-    if (index !== -1) {
-      return false;
+  const listType = props.listType;
+  const playlists = user.getUserPlayLists.like;
+  const albums = user.getUserAlbum.list;
+  if (listType === "playList" && playlists.length) {
+    return !playlists.some((item) => item.id === id);
+  }
+  if (listType === "album" && albums.length) {
+    return !albums.some((item) => item.id === id);
+  }
+  return true;
+};
+
+// 收藏/取消收藏
+const toChangeLike = async (id) => {
+  const listType = props.listType;
+  const type = isLikeOrDislike(id) ? 1 : 2;
+  const likeFn = listType === "playList" ? likePlaylist : likeAlbum;
+  const likeMsg = listType === "playList" ? "歌单" : "专辑";
+  try {
+    const res = await likeFn(type, id);
+    if (res.code === 200) {
+      $message.success(`${likeMsg}${type == 1 ? "收藏成功" : "取消收藏成功"}`);
+      listType === "playList" ? user.setUserPlayLists() : user.setUserAlbum();
+    } else {
+      $message.error(`${likeMsg}${type == 1 ? "收藏失败" : "取消收藏失败"}`);
     }
-    return true;
-  } else {
-    return true;
+  } catch (err) {
+    $message.error(`${likeMsg}${type == 1 ? "收藏失败" : "取消收藏失败"}`);
+    console.error(
+      `${likeMsg}${type == 1 ? "收藏失败：" : "取消收藏失败："}` + err
+    );
   }
 };
 
-// 收藏/取消收藏歌单
-const toLikePlaylist = (id) => {
-  const type = isLikeOrDislike(id) ? 1 : 2;
-  likePlaylist(type, id).then((res) => {
-    if (res.code === 200) {
-      $message.success(`歌单${type == 1 ? "收藏成功" : "取消收藏成功"}`);
-      user.setUserPlayLists();
-    } else {
-      $message.error(`歌单${type == 1 ? "收藏失败" : "取消收藏失败"}`);
-    }
-  });
-};
-
 onMounted(() => {
-  if (router.currentRoute.value.name === "playlists" && !music.catList.sub)
+  if (router.currentRoute.value.name === "playlists" && !music.catList.sub) {
     music.setCatList();
-  if (user.userLogin && !user.getUserPlayLists.has) user.setUserPlayLists();
+  }
+  if (
+    user.userLogin &&
+    !user.getUserPlayLists.has &&
+    props.listType === "playList"
+  ) {
+    user.setUserPlayLists();
+  }
+  if (user.userLogin && !user.getUserAlbum.has && props.listType === "album") {
+    user.setUserAlbum();
+  }
 });
 </script>
 
