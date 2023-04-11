@@ -84,22 +84,27 @@ const routes = [
     children: [
       {
         path: "playlists",
-        name: "playlists",
+        name: "user-playlists",
         component: () => import("@/views/User/playlists.vue"),
       },
       {
         path: "like",
-        name: "like",
+        name: "user-like",
         component: () => import("@/views/User/like.vue"),
       },
       {
+        path: "album",
+        name: "user-album",
+        component: () => import("@/views/User/album.vue"),
+      },
+      {
         path: "artists",
-        name: "artists",
+        name: "user-artists",
         component: () => import("@/views/User/artists.vue"),
       },
       {
         path: "cloud",
-        name: "cloud",
+        name: "user-cloud",
         component: () => import("@/views/User/cloud.vue"),
       },
     ],

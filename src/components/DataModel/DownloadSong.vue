@@ -203,7 +203,7 @@ const getSongSize = (data, type) => {
 const openDownloadModel = (data) => {
   if (user.userLogin) {
     if (
-      router.currentRoute.value.name === "cloud" ||
+      router.currentRoute.value.name === "user-cloud" ||
       user.userData?.vipType ||
       data?.fee === 0 ||
       data?.pc

@@ -58,7 +58,7 @@ const annDuration = Number(import.meta.env.VITE_ANN_DURATION);
 const spacePlayOrPause = (e) => {
   if (e.code === "Space") {
     console.log(e.target.tagName);
-    if (router.currentRoute.value.name == "video") return false;
+    if (router.currentRoute.value.name === "video") return false;
     if (e.target.tagName === "BODY") {
       e.preventDefault();
       music.setPlayState(!music.getPlayState);

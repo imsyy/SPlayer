@@ -110,7 +110,7 @@ const openRightMenu = (e, data) => {
       {
         key: "like",
         label: isLikeOrDislike(data.id) ? "收藏歌手" : "取消收藏歌手",
-        show: user.userLogin && user.getUserArtistlists.has ? true : false,
+        show: user.userLogin && user.getUserArtistLists.has ? true : false,
         props: {
           onClick: () => {
             toLikeArtist(data);
@@ -166,21 +166,19 @@ const toLikeArtist = (data) => {
 
 // 判断收藏还是取消
 const isLikeOrDislike = (id) => {
-  if (user.getUserArtistlists.list[0]) {
-    const index = user.getUserArtistlists.list.findIndex(
-      (item) => item.id === id
-    );
-    if (index !== -1) {
-      return false;
-    }
-    return true;
-  } else {
+  if (!user.getUserArtistLists.list[0]) {
     return true;
   }
+  return !user.getUserArtistLists.list.some((item) => item.id === id);
 };
 
 onMounted(() => {
-  if (user.userLogin && !user.getUserArtistlists.has) user.setUserArtistLists();
+  if (
+    user.userLogin &&
+    !user.getUserArtistLists.has &&
+    !user.getUserArtistLists.isLoading
+  )
+    user.setUserArtistLists();
 });
 </script>
 

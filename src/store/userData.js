@@ -7,7 +7,7 @@ import {
   getUserArtistlist,
   getUserAlbum,
 } from "@/api/user";
-import { formatNumber } from "@/utils/timeTools.js";
+import { formatNumber, getLongTime } from "@/utils/timeTools.js";
 
 const useUserDataStore = defineStore("userData", {
   state: () => {
@@ -22,17 +22,20 @@ const useUserDataStore = defineStore("userData", {
       userOtherData: {},
       // 用户歌单
       userPlayLists: {
+        isLoading: false,
         has: false,
         own: [], // 创建歌单
         like: [], // 收藏歌单
       },
       // 用户专辑
       userAlbum: {
+        isLoading: false,
         has: false,
         list: [],
       },
       // 用户收藏歌手
       userArtistLists: {
+        isLoading: false,
         has: false,
         list: [],
       },
@@ -56,11 +59,11 @@ const useUserDataStore = defineStore("userData", {
       return state.userPlayLists;
     },
     // 获取用户收藏歌手
-    getUserArtistlists(state) {
+    getUserArtistLists(state) {
       return state.userArtistLists;
     },
     // 获取用户收藏专辑
-    getUserAlbum(state) {
+    getUserAlbumLists(state) {
       return state.userAlbum;
     },
   },
@@ -101,50 +104,54 @@ const useUserDataStore = defineStore("userData", {
       userLogOut();
     },
     // 更改用户歌单
-    setUserPlayLists() {
+    async setUserPlayLists() {
       if (this.userLogin) {
         try {
           if (!Object.keys(this.userOtherData).length) {
             this.setUserOtherData();
           } else {
+            this.userPlayLists.isLoading = true;
+            const { userId } = this.userData;
+            const { subcount } = this.userOtherData;
             const number =
-              this.userOtherData.subcount.createdPlaylistCount +
-              this.userOtherData.subcount.subPlaylistCount;
-            getUserPlaylist(this.getUserData.userId, number).then((res) => {
-              if (res.playlist) {
-                this.userPlayLists = {
-                  own: [],
-                  like: [],
-                };
-                this.userPlayLists.has = true;
-                res.playlist.forEach((v) => {
-                  if (v.creator.userId === this.getUserData.userId) {
-                    this.userPlayLists.own.push({
-                      id: v.id,
-                      cover: v.coverImgUrl,
-                      name: v.name,
-                      artist: v.creator,
-                      desc: v.description,
-                      tags: v.tags,
-                      playCount: formatNumber(v.playCount),
-                      trackCount: v.trackCount,
-                    });
-                  } else {
-                    this.userPlayLists.like.push({
-                      id: v.id,
-                      cover: v.coverImgUrl,
-                      name: v.name,
-                      artist: v.creator,
-                      playCount: formatNumber(v.playCount),
-                    });
-                  }
-                });
-              } else {
-                $message.error("用户歌单为空");
-              }
-            });
+              subcount.createdPlaylistCount + subcount.subPlaylistCount;
+            const res = await getUserPlaylist(userId, number);
+            if (res.playlist) {
+              this.userPlayLists = {
+                has: true,
+                own: [],
+                like: [],
+              };
+              res.playlist.forEach((v) => {
+                if (v.creator.userId === this.getUserData.userId) {
+                  this.userPlayLists.own.push({
+                    id: v.id,
+                    cover: v.coverImgUrl,
+                    name: v.name,
+                    artist: v.creator,
+                    desc: v.description,
+                    tags: v.tags,
+                    playCount: formatNumber(v.playCount),
+                    trackCount: v.trackCount,
+                  });
+                } else {
+                  this.userPlayLists.like.push({
+                    id: v.id,
+                    cover: v.coverImgUrl,
+                    name: v.name,
+                    artist: v.creator,
+                    playCount: formatNumber(v.playCount),
+                  });
+                }
+              });
+              this.userPlayLists.isLoading = false;
+            } else {
+              this.userPlayLists.isLoading = false;
+              $message.error("用户歌单为空");
+            }
           }
         } catch (err) {
+          this.userPlayLists.isLoading = false;
           console.error("获取用户歌单时出现错误：" + err);
           $message.error("获取用户歌单时出现错误，请刷新后重试");
         }
@@ -153,54 +160,66 @@ const useUserDataStore = defineStore("userData", {
       }
     },
     // 更改用户收藏歌手
-    setUserArtistLists(callback) {
+    async setUserArtistLists(callback) {
       if (this.userLogin) {
-        getUserArtistlist()
-          .then((res) => {
-            if (res.data) {
-              this.userArtistLists = {
-                list: [],
-              };
-              this.userArtistLists.has = true;
-              res.data.forEach((v) => {
-                this.userArtistLists.list.push({
-                  id: v.id,
-                  name: v.name,
-                  cover: v.img1v1Url,
-                  size: v.musicSize,
-                });
+        try {
+          this.userArtistLists.isLoading = true;
+          const res = await getUserArtistlist();
+          if (res.data) {
+            this.userArtistLists.list = [];
+            this.userArtistLists.has = true;
+            res.data.forEach((v) => {
+              this.userArtistLists.list.push({
+                id: v.id,
+                name: v.name,
+                cover: v.img1v1Url,
+                size: v.musicSize,
               });
-              if (typeof callback === "function") {
-                callback();
-              }
-            } else {
-              $message.error("用户收藏歌手为空");
+            });
+            if (typeof callback === "function") {
+              callback();
             }
-          })
-          .catch((err) => {
-            console.error("用户收藏歌手获取失败：" + err);
-            $message.error("用户收藏歌手获取失败，请刷新后重试");
-          });
+            this.userArtistLists.isLoading = false;
+          } else {
+            this.userArtistLists.isLoading = false;
+            $message.error("用户收藏歌手为空");
+          }
+        } catch (err) {
+          this.userArtistLists.isLoading = false;
+          console.error("用户收藏歌手获取失败：" + err);
+          $message.error("用户收藏歌手获取失败，请刷新后重试");
+        }
       } else {
         $message.error("请登录账号后使用");
       }
     },
     // 更改用户收藏专辑
-    async setUserAlbum() {
+    async setUserAlbumLists() {
       if (this.userLogin) {
         try {
           let offset = 0;
           let totalCount = null;
+          this.userAlbum.isLoading = true;
           this.userAlbum.list = [];
           while (totalCount === null || offset < totalCount) {
-            const { count, data } = await getUserAlbum(30, offset);
-            console.log(count, data);
-            this.userAlbum.list = this.userAlbum.list.concat(data);
-            totalCount = count;
+            const res = await getUserAlbum(30, offset);
+            res.data.forEach((v) => {
+              this.userAlbum.list.push({
+                id: v.id,
+                cover: v.picUrl,
+                name: v.name,
+                artist: v.artists,
+                time: getLongTime(v.subTime),
+              });
+            });
+            totalCount = res.count;
             offset += 30;
+            console.log(totalCount, offset, this.userAlbum.list);
           }
+          this.userAlbum.isLoading = false;
           this.userAlbum.has = true;
         } catch (err) {
+          this.userAlbum.isLoading = false;
           console.error("用户收藏专辑获取失败：" + err);
           $message.error("用户收藏专辑获取失败，请刷新后重试");
         }

@@ -123,6 +123,8 @@ const playerOptions = {
     pip: "画中画",
     enterFullscreen: "开启全屏",
     exitFullscreen: "退出全屏",
+    mute: "音量",
+    unmute: "静音",
   },
   tooltips: {
     controls: true,
@@ -327,7 +329,7 @@ watch(
   .simiVideo {
     width: 20vw;
     min-width: 200px;
-    max-width: 400px;
+    max-width: 300px;
     margin-left: 30px;
     @media (max-width: 990px) {
       max-width: 100%;

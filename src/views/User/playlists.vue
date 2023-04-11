@@ -44,7 +44,7 @@
         </template>
       </n-modal>
     </div>
-    <CoverLists :listData="user.getUserPlayLists.own" :showMore="true" />
+    <CoverLists :listData="user.getUserPlayLists.own" />
   </div>
 </template>
 
@@ -86,7 +86,8 @@ const createClose = () => {
 };
 
 onMounted(() => {
-  if (!user.getUserPlayLists.has) user.setUserPlayLists();
+  if (!user.getUserPlayLists.has && !user.getUserPlayLists.isLoading)
+    user.setUserPlayLists();
 });
 </script>
 

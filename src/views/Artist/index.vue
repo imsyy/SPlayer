@@ -31,7 +31,7 @@
         <n-text class="desc text-hidden" @click="artistDescShow = true">
           {{ artistData.desc }}
         </n-text>
-        <n-space class="button">
+        <n-space class="button" v-if="user.userLogin">
           <!-- <n-button type="primary" strong secondary>
             <template #icon>
               <n-icon :component="PlayArrowRound" />
@@ -173,8 +173,8 @@ const tabChange = (value) => {
 
 // 判断收藏还是取消
 const isLikeOrDislike = (id) => {
-  if (user.getUserArtistlists.list[0]) {
-    const index = user.getUserArtistlists.list.findIndex(
+  if (user.getUserArtistLists.list[0]) {
+    const index = user.getUserArtistLists.list.findIndex(
       (item) => item.id === Number(id)
     );
     if (index !== -1) {
@@ -206,7 +206,11 @@ const toLikeArtist = (data) => {
 onMounted(() => {
   getArtistDetailData(artistId.value);
   artistLikeBtn.value = isLikeOrDislike(artistId.value);
-  if (user.userLogin && !user.getUserArtistlists.has) {
+  if (
+    user.userLogin &&
+    !user.getUserArtistLists.has &&
+    !user.getUserArtistLists.isLoading
+  ) {
     user.setUserArtistLists(() => {
       console.log("执行回调", artistId.value, isLikeOrDislike(artistId.value));
       artistLikeBtn.value = isLikeOrDislike(artistId.value);

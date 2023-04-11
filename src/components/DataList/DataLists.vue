@@ -269,7 +269,7 @@
               <n-text>专辑：{{ drawerData.album.name }}</n-text>
             </div>
             <div
-              v-if="router.currentRoute.value.name == 'cloud'"
+              v-if="router.currentRoute.value.name === 'user-cloud'"
               class="item"
               @click="
                 () => {
@@ -284,7 +284,7 @@
               <n-text>歌曲信息纠正</n-text>
             </div>
             <div
-              v-if="router.currentRoute.value.name == 'cloud'"
+              v-if="router.currentRoute.value.name === 'user-cloud'"
               class="item"
               @click="
                 () => {
@@ -327,10 +327,12 @@ import {
   DeleteFour,
   Like,
   More,
+  Search,
 } from "@icon-park/vue-next";
 import { musicStore, settingStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
 import { setCloudDel } from "@/api/user";
+import { NIcon } from "naive-ui";
 import AllArtists from "./AllArtists.vue";
 import AddPlaylist from "@/components/DataModel/AddPlaylist.vue";
 import CloudMatch from "@/components/DataModel/CloudMatch.vue";
@@ -384,6 +386,19 @@ const copySongData = (id, url = true) => {
   }
 };
 
+// 图标渲染
+const renderIcon = (icon) => {
+  return () => {
+    return h(
+      NIcon,
+      { depth: 2, style: { transform: "translateX(2px)" } },
+      {
+        default: () => h(icon, { theme: "filled" }),
+      }
+    );
+  };
+};
+
 // 打开右键菜单
 const openRightMenu = (e, data) => {
   e.preventDefault();
@@ -393,6 +408,7 @@ const openRightMenu = (e, data) => {
       {
         key: "play",
         label: "立即播放",
+        icon: renderIcon(PlayOne),
         props: {
           onClick: () => {
             playSong(props.listData, data);
@@ -402,7 +418,8 @@ const openRightMenu = (e, data) => {
       {
         key: "nextPlay",
         label: "下一首播放",
-        disabled:
+        icon: renderIcon(AddMusic),
+        show:
           music.getPersonalFmMode || music.getPlaySongData.id == data.id
             ? true
             : false,
@@ -415,6 +432,7 @@ const openRightMenu = (e, data) => {
       {
         key: "add",
         label: "添加到歌单",
+        icon: renderIcon(ListAdd),
         show: user.userLogin ? true : false,
         props: {
           onClick: () => {
@@ -423,8 +441,19 @@ const openRightMenu = (e, data) => {
         },
       },
       {
+        key: "download",
+        label: "歌曲下载",
+        icon: renderIcon(DownloadFour),
+        props: {
+          onClick: () => {
+            downloadSongRef.value.openDownloadModel(data);
+          },
+        },
+      },
+      {
         key: "comment",
         label: "前往评论区",
+        icon: renderIcon(Comments),
         props: {
           onClick: () => {
             router.push(`/comment?id=${data.id}`);
@@ -434,6 +463,7 @@ const openRightMenu = (e, data) => {
       {
         key: "mv",
         label: "观看 MV",
+        icon: renderIcon(Video),
         show: data.mv && data.mv != 0 ? true : false,
         props: {
           onClick: () => {
@@ -444,12 +474,13 @@ const openRightMenu = (e, data) => {
       {
         key: "line1",
         type: "divider",
-        show: router.currentRoute.value.name == "cloud" ? true : false,
+        show: router.currentRoute.value.name === "user-cloud" ? true : false,
       },
       {
         key: "delete",
         label: "从云盘中删除",
-        show: router.currentRoute.value.name == "cloud" ? true : false,
+        icon: renderIcon(DeleteFour),
+        show: router.currentRoute.value.name === "user-cloud" ? true : false,
         props: {
           onClick: () => {
             delCloudSong(data);
@@ -459,7 +490,8 @@ const openRightMenu = (e, data) => {
       {
         key: "match",
         label: "歌曲信息纠正",
-        show: router.currentRoute.value.name == "cloud" ? true : false,
+        icon: renderIcon(FileMusic),
+        show: router.currentRoute.value.name === "user-cloud" ? true : false,
         props: {
           onClick: () => {
             cloudMatchRef.value.openCloudMatch(data);
@@ -473,6 +505,7 @@ const openRightMenu = (e, data) => {
       {
         key: "search",
         label: "同名搜索",
+        icon: renderIcon(Search),
         props: {
           onClick: () => {
             router.push({
@@ -488,6 +521,7 @@ const openRightMenu = (e, data) => {
       {
         key: "copyId",
         label: "复制歌曲 ID",
+        icon: renderIcon(FileMusic),
         props: {
           onClick: () => {
             copySongData(data.id, false);
@@ -496,21 +530,13 @@ const openRightMenu = (e, data) => {
       },
       {
         key: "copy",
-        label: "复制链接",
+        label: "复制歌曲链接",
+        icon: renderIcon(LinkTwo),
         props: {
           onClick: () => {
             copySongData(data.id);
           },
         },
-      },
-      {
-        key: "line2",
-        type: "divider",
-      },
-      {
-        label: data.name,
-        key: "name",
-        disabled: true,
       },
     ];
     rightMenuShow.value = true;
@@ -560,7 +586,7 @@ const playSong = (data, song) => {
   music.setPersonalFmMode(false);
   if (router.currentRoute.value.name !== "history") music.setPlaylists(data);
   // 检查是否为云盘歌曲
-  if (router.currentRoute.value.name === "cloud") {
+  if (router.currentRoute.value.name === "user-cloud") {
     music.setPlayListMode("cloud");
   } else {
     music.setPlayListMode("list");

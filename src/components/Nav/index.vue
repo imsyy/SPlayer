@@ -13,7 +13,6 @@
       <router-link class="link" to="/">首页</router-link>
       <n-dropdown
         trigger="hover"
-        size="large"
         :options="discoverOptions"
         @select="menuSelect"
       >
@@ -21,7 +20,6 @@
       </n-dropdown>
       <n-dropdown
         trigger="hover"
-        size="large"
         :options="userOptions"
         @select="menuSelect"
       >
@@ -139,11 +137,13 @@ const userDataRender = () => {
                         {
                           height: 4,
                           type: "line",
-                          percentage: user.getUserOtherData.level.progress * 100,
+                          percentage:
+                            user.getUserOtherData.level.progress * 100,
                           color: "#f55e55",
                         },
                         {
-                          default: () => "Lv." + user.getUserOtherData.level.level,
+                          default: () =>
+                            "Lv." + user.getUserOtherData.level.level,
                         }
                       )
                     : "等级信息获取失败"
@@ -183,6 +183,10 @@ const userOptions = ref(
           key: "/user/like",
         },
         {
+          label: "收藏的专辑",
+          key: "/user/album",
+        },
+        {
           label: "收藏的歌手",
           key: "/user/artists",
         },
@@ -191,7 +195,12 @@ const userOptions = ref(
           key: "/user/cloud",
         },
       ]
-    : []
+    : [
+        {
+          label: "登录账号",
+          key: "/login",
+        },
+      ]
 );
 const dropdownOptions = ref([
   {
@@ -205,56 +214,85 @@ const dropdownOptions = ref([
   },
   {
     label: () => {
-      return h(NText, null, {
-        default: () =>
-          setting.getSiteTheme == "light" ? "深色模式" : "浅色模式",
-      });
+      return h(
+        NText,
+        { style: { transform: "translateX(2px)" } },
+        {
+          default: () =>
+            setting.getSiteTheme == "light" ? "深色模式" : "浅色模式",
+        }
+      );
     },
     key: "changeTheme",
     icon: () => {
-      return h(NIcon, null, {
-        default: () => (setting.getSiteTheme == "light" ? h(Moon) : h(SunOne)),
-      });
+      return h(
+        NIcon,
+        { style: { transform: "translateX(2px)" } },
+        {
+          default: () =>
+            setting.getSiteTheme == "light" ? h(Moon) : h(SunOne),
+        }
+      );
     },
   },
   {
     label: "播放历史",
     key: "history",
     icon: () => {
-      return h(NIcon, null, {
-        default: () => h(History),
-      });
+      return h(
+        NIcon,
+        { style: { transform: "translateX(2px)" } },
+        {
+          default: () => h(History),
+        }
+      );
     },
   },
   {
     label: "全局设置",
     key: "setting",
     icon: () => {
-      return h(NIcon, null, {
-        default: () => h(SettingTwo),
-      });
+      return h(
+        NIcon,
+        { style: { transform: "translateX(2px)" } },
+        {
+          default: () => h(SettingTwo),
+        }
+      );
     },
   },
   {
     label: () => {
-      return h(NText, null, {
-        default: () => (user.userLogin ? "退出登录" : "登录账号"),
-      });
+      return h(
+        NText,
+        { style: { transform: "translateX(2px)" } },
+        {
+          default: () => (user.userLogin ? "退出登录" : "登录账号"),
+        }
+      );
     },
     key: "user",
     icon: () => {
-      return h(NIcon, null, {
-        default: () => (user.userLogin ? h(Logout) : h(Login)),
-      });
+      return h(
+        NIcon,
+        { style: { transform: "translateX(2px)" } },
+        {
+          default: () => (user.userLogin ? h(Logout) : h(Login)),
+        }
+      );
     },
   },
   {
     label: "关于本站",
     key: "about",
     icon: () => {
-      return h(NIcon, null, {
-        default: () => h(Info),
-      });
+      return h(
+        NIcon,
+        { style: { transform: "translateX(2px)" } },
+        {
+          default: () => h(Info),
+        }
+      );
     },
   },
 ]);

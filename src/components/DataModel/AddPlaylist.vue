@@ -64,7 +64,9 @@ const openAddToPlaylist = (id) => {
     $message.error("请登录账号后使用");
     return false;
   }
-  if (!user.getUserPlayLists.has) user.setUserPlayLists();
+  if (!user.getUserPlayLists.has && !user.getUserPlayLists.isLoading) {
+    user.setUserPlayLists();
+  }
   addToPlaylistModel.value = true;
   addToPlaylistId.value = id;
   console.log("开启", addToPlaylistModel.value, addToPlaylistId.value);

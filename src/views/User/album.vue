@@ -1,6 +1,6 @@
 <template>
-  <div class="like">
-    <CoverLists :listData="user.getUserPlayLists.like" />
+  <div class="album">
+    <CoverLists :listData="user.getUserAlbumLists.list" listType="album" />
   </div>
 </template>
 
@@ -11,7 +11,7 @@ import CoverLists from "@/components/DataList/CoverLists.vue";
 const user = userStore();
 
 onMounted(() => {
-  if (!user.getUserPlayLists.has && !user.getUserPlayLists.isLoading)
-    user.setUserPlayLists();
+  if (!user.getUserAlbumLists.has && !user.getUserAlbumLists.isLoading)
+    user.setUserAlbumLists();
 });
 </script>

@@ -22,6 +22,7 @@
     >
       <n-tab name="playlists"> 我的歌单 </n-tab>
       <n-tab name="like"> 收藏的歌单 </n-tab>
+      <n-tab name="album"> 收藏的专辑 </n-tab>
       <n-tab name="artists"> 收藏的歌手 </n-tab>
       <n-tab name="cloud"> 音乐云盘 </n-tab>
     </n-tabs>

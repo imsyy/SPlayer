@@ -27,7 +27,7 @@
               <PlayOne theme="filled" />
             </n-icon>
             <div class="description" v-if="listType != 'topList'">
-              <div class="num" v-if="listType == 'playList'">
+              <div class="num" v-if="listType == 'playlist'">
                 <n-icon>
                   <Headset theme="filled" />
                 </n-icon>
@@ -40,7 +40,7 @@
           </div>
           <div class="title">
             <span class="name text-hidden">{{ item.name }}</span>
-            <span v-if="listType == 'playList' && item.artist" class="by">
+            <span v-if="listType == 'playlist' && item.artist" class="by">
               By {{ item.artist.nickname }}
             </span>
             <span v-else-if="listType == 'topList' && item.update" class="by">
@@ -106,7 +106,7 @@ const props = defineProps({
   // 列表类型
   listType: {
     type: String,
-    default: "playList",
+    default: "playlist",
   },
   // 自定义列数
   columns: {
@@ -146,7 +146,8 @@ const openRightMenu = (e, data) => {
       {
         key: "update",
         label: "编辑歌单",
-        show: router.currentRoute.value.name === "playlists" ? true : false,
+        show:
+          router.currentRoute.value.name === "user-playlists" ? true : false,
         props: {
           onClick: () => {
             playlistUpdateRef.value.openUpdateModel(data);
@@ -156,7 +157,8 @@ const openRightMenu = (e, data) => {
       {
         key: "del",
         label: "删除歌单",
-        show: router.currentRoute.value.name === "playlists" ? true : false,
+        show:
+          router.currentRoute.value.name === "user-playlists" ? true : false,
         props: {
           onClick: () => {
             toDelPlayList(data);
@@ -169,8 +171,8 @@ const openRightMenu = (e, data) => {
         show:
           user.userLogin &&
           user.getUserPlayLists.has &&
-          props.listType === "playList" &&
-          router.currentRoute.value.name != "playlists"
+          props.listType === "playlist" &&
+          router.currentRoute.value.name !== "user-playlists"
             ? true
             : false,
         props: {
@@ -183,7 +185,9 @@ const openRightMenu = (e, data) => {
         key: "likeAlbum",
         label: isLikeOrDislike(data.id) ? "收藏专辑" : "取消收藏专辑",
         show:
-          user.userLogin && user.getUserAlbum.has && props.listType === "album"
+          user.userLogin &&
+          user.getUserAlbumLists.has &&
+          props.listType === "album"
             ? true
             : false,
         props: {
@@ -194,19 +198,19 @@ const openRightMenu = (e, data) => {
       },
       {
         key: "copy",
-        label: `复制${props.listType === "playList" ? "歌单" : "专辑"}链接`,
+        label: `复制${props.listType === "playlist" ? "歌单" : "专辑"}链接`,
         props: {
           onClick: () => {
             if (navigator.clipboard) {
               try {
                 navigator.clipboard.writeText(
                   `https://music.163.com/#/${
-                    props.listType === "playList" ? "playlist" : "album"
+                    props.listType === "playlist" ? "playlist" : "album"
                   }?id=${data.id}`
                 );
                 $message.success(
                   `${
-                    props.listType === "playList" ? "歌单" : "专辑"
+                    props.listType === "playlist" ? "歌单" : "专辑"
                   }链接复制成功`
                 );
               } catch (err) {
@@ -232,7 +236,7 @@ const onClickoutside = () => {
 
 // 链接跳转
 const toLink = (id) => {
-  if (props.listType === "playList" || props.listType === "topList") {
+  if (props.listType === "playlist" || props.listType === "topList") {
     router.push({
       path: "/playlist",
       query: {
@@ -273,8 +277,8 @@ const toDelPlayList = (data) => {
 const isLikeOrDislike = (id) => {
   const listType = props.listType;
   const playlists = user.getUserPlayLists.like;
-  const albums = user.getUserAlbum.list;
-  if (listType === "playList" && playlists.length) {
+  const albums = user.getUserAlbumLists.list;
+  if (listType === "playlist" && playlists.length) {
     return !playlists.some((item) => item.id === id);
   }
   if (listType === "album" && albums.length) {
@@ -287,13 +291,15 @@ const isLikeOrDislike = (id) => {
 const toChangeLike = async (id) => {
   const listType = props.listType;
   const type = isLikeOrDislike(id) ? 1 : 2;
-  const likeFn = listType === "playList" ? likePlaylist : likeAlbum;
-  const likeMsg = listType === "playList" ? "歌单" : "专辑";
+  const likeFn = listType === "playlist" ? likePlaylist : likeAlbum;
+  const likeMsg = listType === "playlist" ? "歌单" : "专辑";
   try {
     const res = await likeFn(type, id);
     if (res.code === 200) {
       $message.success(`${likeMsg}${type == 1 ? "收藏成功" : "取消收藏成功"}`);
-      listType === "playList" ? user.setUserPlayLists() : user.setUserAlbum();
+      listType === "playlist"
+        ? user.setUserPlayLists()
+        : user.setUserAlbumLists();
     } else {
       $message.error(`${likeMsg}${type == 1 ? "收藏失败" : "取消收藏失败"}`);
     }
@@ -306,18 +312,27 @@ const toChangeLike = async (id) => {
 };
 
 onMounted(() => {
-  if (router.currentRoute.value.name === "playlists" && !music.catList.sub) {
+  if (
+    router.currentRoute.value.name === "user-playlists" &&
+    !music.catList.sub
+  ) {
     music.setCatList();
   }
   if (
     user.userLogin &&
     !user.getUserPlayLists.has &&
-    props.listType === "playList"
+    !user.getUserPlayLists.isLoading &&
+    props.listType === "playlist"
   ) {
     user.setUserPlayLists();
   }
-  if (user.userLogin && !user.getUserAlbum.has && props.listType === "album") {
-    user.setUserAlbum();
+  if (
+    user.userLogin &&
+    !user.getUserAlbumLists.has &&
+    !user.getUserAlbumLists.isLoading &&
+    props.listType === "album"
+  ) {
+    user.setUserAlbumLists();
   }
 });
 </script>
