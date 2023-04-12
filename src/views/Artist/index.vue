@@ -146,6 +146,7 @@ const getArtistDetailData = (id) => {
           musicSize: res.data.artist.musicSize,
           mvSize: res.data.artist.mvSize,
         };
+        $setSiteTitle(res.data.artist.name + " - 歌手");
         // 请求后回顶
         if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
       })

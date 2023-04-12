@@ -36,6 +36,7 @@ const getDailySongsData = () => {
 };
 
 onMounted(() => {
+  $setSiteTitle("每日推荐");
   if (music.getDailySongs.length === 0) getDailySongsData();
 });
 </script>

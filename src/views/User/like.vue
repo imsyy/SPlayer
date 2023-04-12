@@ -11,6 +11,7 @@ import CoverLists from "@/components/DataList/CoverLists.vue";
 const user = userStore();
 
 onMounted(() => {
+  $setSiteTitle("音乐库 - 收藏的歌单");
   if (!user.getUserPlayLists.has && !user.getUserPlayLists.isLoading)
     user.setUserPlayLists();
 });

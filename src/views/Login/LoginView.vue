@@ -288,6 +288,7 @@ const tabChange = (val) => {
 };
 
 onMounted(() => {
+  $setSiteTitle("登录");
   // 获取二维码登录 key
   getQrKeyData();
 });

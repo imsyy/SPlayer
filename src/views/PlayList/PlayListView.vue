@@ -7,7 +7,7 @@
           :src="
             playListDetail.coverImgUrl
               ? playListDetail.coverImgUrl.replace(/^http:/, 'https:') +
-                '?param=500y500'
+                '?param=1024y1024'
               : null
           "
           fallback-src="/images/pic/default.png"
@@ -155,6 +155,7 @@ const getPlayListDetailData = (id) => {
       totalCount.value = res.playlist.trackCount;
       // 歌单信息
       playListDetail.value = res.playlist;
+      $setSiteTitle(res.playlist.name + " - 歌单");
     } else {
       $message.error("获取歌单信息失败");
     }

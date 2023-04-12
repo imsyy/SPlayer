@@ -134,6 +134,7 @@ const pageNumberChange = (val) => {
 };
 
 onMounted(() => {
+  $setSiteTitle("全部评论");
   // 获取评论数据
   if (songId.value) getCommentData(songId.value, (pageNumber.value - 1) * 20);
 });

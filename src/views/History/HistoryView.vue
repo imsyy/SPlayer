@@ -32,6 +32,10 @@ import DataLists from "@/components/DataList/DataLists.vue";
 
 const music = musicStore();
 const router = useRouter();
+
+onMounted(() => {
+  $setSiteTitle("播放历史");
+});
 </script>
 
 <style lang="scss" scoped>

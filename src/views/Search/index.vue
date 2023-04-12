@@ -71,6 +71,10 @@ const tabChange = (value) => {
     },
   });
 };
+
+onMounted(() => {
+  $setSiteTitle(searchKeywords.value + "的搜索结果");
+});
 </script>
 
 <style lang="scss" scoped>

@@ -318,6 +318,10 @@ const resetApp = () => {
     },
   });
 };
+
+onMounted(() => {
+  $setSiteTitle("全局设置");
+});
 </script>
 
 <style lang="scss" scoped>

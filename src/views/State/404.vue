@@ -14,6 +14,10 @@
 <script setup>
 import { useRouter } from "vue-router";
 const router = useRouter();
+
+onMounted(() => {
+  $setSiteTitle("404");
+});
 </script>
 
 <style lang="scss" scoped>

@@ -1,67 +1,70 @@
 <template>
-  <n-card class="comment" hoverable>
-    <div class="user">
-      <div class="avatar">
-        <img
-          class="avatarImg"
-          :src="
-            commentData.user.avatarUrl.replace(/^http:/, 'https:') +
-            '?param=50y50'
-          "
-          alt="avatar"
-        />
-        <img
-          class="musicPackage"
-          v-if="commentData.user.vipRights?.redVipAnnualCount > 0"
-          :src="commentData.user.vipRights.musicPackage.iconUrl"
-          alt="redVipAnnualCount"
-          title="网易音乐人"
-        />
-      </div>
-      <div
-        class="associator"
-        v-if="commentData.user.vipRights?.redVipLevel > 0"
-      >
-        <img
-          v-if="commentData.user.vipRights.associator"
-          :src="commentData.user.vipRights.associator.iconUrl"
-          alt="associator"
-          title="黑胶会员"
-        />
-      </div>
-    </div>
-    <div class="review">
-      <div class="content">
-        <n-text class="name">{{ commentData.user.nickname }}：</n-text>
-        <n-text class="text" v-html="commentData.content" />
-      </div>
-      <div class="beReplied" v-if="commentData.beReplied[0]">
-        <n-text class="name">
-          @{{ commentData.beReplied[0].user.nickname }}：
-        </n-text>
-        <n-text class="text">{{ commentData.beReplied[0].content }}</n-text>
-      </div>
-      <div class="thing">
-        <div class="item">
-          <n-icon size="14" :depth="3" :component="Time" />
-          <n-text :depth="3" v-html="getCommentTime(commentData.time)" />
-        </div>
-        <div class="item" v-if="commentData.ipLocation?.location">
-          <n-icon size="14" :depth="3" :component="Local" />
-          <n-text :depth="3" v-html="commentData.ipLocation.location" />
+  <Transition mode="out-in">
+    <n-card v-if="Object.keys(commentData).length" class="comment" hoverable>
+      <div class="user">
+        <div class="avatar">
+          <img
+            class="avatarImg"
+            :src="
+              commentData.user.avatarUrl.replace(/^http:/, 'https:') +
+              '?param=50y50'
+            "
+            alt="avatar"
+          />
+          <img
+            class="musicPackage"
+            v-if="commentData.user.vipRights?.redVipAnnualCount > 0"
+            :src="commentData.user.vipRights.musicPackage.iconUrl"
+            alt="redVipAnnualCount"
+            title="网易音乐人"
+          />
         </div>
         <div
-          :class="commentData.liked ? 'like liked' : 'like'"
-          @click="toLikeComment"
+          class="associator"
+          v-if="commentData.user.vipRights?.redVipLevel > 0"
         >
-          <n-icon>
-            <ThumbsUp :theme="commentData.liked ? 'filled' : 'outline'" />
-          </n-icon>
-          {{ formatNumber(commentData.likedCount) }}
+          <img
+            v-if="commentData.user.vipRights.associator"
+            :src="commentData.user.vipRights.associator.iconUrl"
+            alt="associator"
+            title="黑胶会员"
+          />
         </div>
       </div>
-    </div>
-  </n-card>
+      <div class="review">
+        <div class="content">
+          <n-text class="name">{{ commentData.user.nickname }}：</n-text>
+          <n-text class="text" v-html="commentData.content" />
+        </div>
+        <div class="beReplied" v-if="commentData.beReplied[0]">
+          <n-text class="name">
+            @{{ commentData.beReplied[0].user.nickname }}：
+          </n-text>
+          <n-text class="text">{{ commentData.beReplied[0].content }}</n-text>
+        </div>
+        <div class="thing">
+          <div class="item">
+            <n-icon size="14" :depth="3" :component="Time" />
+            <n-text :depth="3" v-html="getCommentTime(commentData.time)" />
+          </div>
+          <div class="item" v-if="commentData.ipLocation?.location">
+            <n-icon size="14" :depth="3" :component="Local" />
+            <n-text :depth="3" v-html="commentData.ipLocation.location" />
+          </div>
+          <div
+            :class="commentData.liked ? 'like liked' : 'like'"
+            @click="toLikeComment"
+          >
+            <n-icon>
+              <ThumbsUp :theme="commentData.liked ? 'filled' : 'outline'" />
+            </n-icon>
+            {{ formatNumber(commentData.likedCount) }}
+          </div>
+        </div>
+      </div>
+    </n-card>
+    <n-skeleton v-else class="skeleton" />
+  </Transition>
 </template>
 
 <script setup>
@@ -77,7 +80,7 @@ const props = defineProps({
   // 评论 数据
   commentData: {
     type: Object,
-    default: [],
+    default: {},
   },
 });
 
@@ -105,6 +108,15 @@ const toLikeComment = () => {
 </script>
 
 <style lang="scss" scoped>
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
 .comment {
   margin-bottom: 12px;
   border-radius: 8px;
@@ -234,5 +246,11 @@ const toLikeComment = () => {
       }
     }
   }
+}
+.skeleton {
+  width: 100%;
+  height: 120px;
+  border-radius: 8px;
+  margin-bottom: 12px;
 }
 </style>

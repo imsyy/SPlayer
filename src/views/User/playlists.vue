@@ -86,6 +86,7 @@ const createClose = () => {
 };
 
 onMounted(() => {
+  $setSiteTitle("音乐库 - 我的歌单");
   if (!user.getUserPlayLists.has && !user.getUserPlayLists.isLoading)
     user.setUserPlayLists();
 });

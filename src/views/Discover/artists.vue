@@ -200,6 +200,7 @@ watch(
 );
 
 onMounted(() => {
+  $setSiteTitle("发现 - 歌手");
   // 获取歌手数据
   getArtistListData(
     artistType[artistTypeNamesChoose.value],

@@ -59,9 +59,11 @@ export const getPlayListDetail = (id) => {
   return axios({
     method: "GET",
     url: "/playlist/detail",
+    withCredentials: false,
     params: {
       id,
       timestamp: new Date().getTime(),
+      cookie: "not",
     },
   });
 };

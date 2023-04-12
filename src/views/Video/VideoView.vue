@@ -142,6 +142,7 @@ const commentsCount = ref(0);
 const getVideoData = (id) => {
   getVideoDetail(id).then((res) => {
     videoData.value = res.data;
+    $setSiteTitle(res.data.name + " - " + res.data.artists[0].name + " - 视频");
     const requests = res.data.brs.map((v) => {
       return getVideoUrl(id, v.br);
     });

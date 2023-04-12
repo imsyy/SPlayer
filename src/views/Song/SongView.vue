@@ -131,6 +131,9 @@ const getMusicDetailData = (id) => {
     console.log(res);
     if (res.songs[0]) {
       musicDetail.value = res.songs[0];
+      $setSiteTitle(
+        res.songs[0].name + " - " + res.songs[0].ar[0].name + " - 单曲"
+      );
       // 获取相似数据
       getSimiData(id);
     } else {
