@@ -63,7 +63,6 @@ export const getPlayListDetail = (id) => {
     params: {
       id,
       timestamp: new Date().getTime(),
-      cookie: "not",
     },
   });
 };
