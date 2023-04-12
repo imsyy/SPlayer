@@ -7,7 +7,7 @@
           :src="
             albumDetail.picUrl
               ? albumDetail.picUrl.replace(/^http:/, 'https:') +
-                '?param=500y500'
+                '?param=1024y1024'
               : null
           "
           fallback-src="/images/pic/default.png"
@@ -109,6 +109,7 @@ const getAlbumData = (id) => {
     console.log(res);
     // 专辑信息
     albumDetail.value = res.album;
+    $setSiteTitle(res.album.name + " - 专辑");
     // 专辑歌曲
     if (res.songs) {
       albumData.value = [];

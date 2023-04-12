@@ -313,6 +313,7 @@ watch(
 );
 
 onMounted(() => {
+  $setSiteTitle("发现 - 歌单");
   // 获取歌单分类
   if (!music.catList.sub || !music.highqualityCatList[0])
     music.setCatList(true);

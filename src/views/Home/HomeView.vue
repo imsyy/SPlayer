@@ -28,6 +28,10 @@ import PaDailySongs from "@/components/Personalized/PaDailySongs.vue";
 import PaPersonalFm from "@/components/Personalized/PaPersonalFm.vue";
 
 const setting = settingStore();
+
+onMounted(() => {
+  $setSiteTitle("SPlayer");
+});
 </script>
 
 <style lang="scss" scoped>

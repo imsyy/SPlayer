@@ -68,6 +68,20 @@ const spacePlayOrPause = (e) => {
   }
 };
 
+// 更改页面标题
+const setSiteTitle = (val) => {
+  const title = val
+    ? val === "SPlayer"
+      ? val
+      : val + " - SPlayer"
+    : user.siteTitle;
+  user.setSiteTitle(title);
+  sessionStorage.setItem("siteTitle", title);
+  if (!music.getPlayState) {
+    window.document.title = title;
+  }
+};
+
 // 刷新登录
 const toRefreshLogin = () => {
   const today = Date.now();
@@ -129,6 +143,7 @@ onMounted(() => {
   window.$mainContent = mainContent.value;
   window.$cleanAll = cleanAll;
   window.$signIn = signIn;
+  window.$setSiteTitle = setSiteTitle;
 
   // 公告
   if (annShow) {

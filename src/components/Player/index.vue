@@ -332,7 +332,14 @@ const songPlay = () => {
   // 写入播放历史
   music.setPlayHistory(music.getPlaySongData);
   // 更改页面标题
-  window.document.title = music.getPlaySongData.name + " - SPlayer";
+  // $setSiteTitle(
+  //   music.getPlaySongData.name + " - " + music.getPlaySongData.artist[0].name
+  // );
+  window.document.title =
+    music.getPlaySongData.name +
+    " - " +
+    music.getPlaySongData.artist[0].name +
+    " - SPlayer";
 };
 
 // 音乐渐入渐出
@@ -385,7 +392,8 @@ const songPause = () => {
   console.log("音乐暂停");
   if (!$player.ended) music.setPlayState(false);
   // 更改页面标题
-  window.document.title = "SPlayer";
+  // window.document.title = "SPlayer";
+  $setSiteTitle();
 };
 
 // 歌曲进度条更新
@@ -397,6 +405,7 @@ const songTimeSliderUpdate = (val) => {
 // 歌曲播放失败事件
 const songError = () => {
   console.error("歌曲播放失败");
+  $message.error("歌曲播放失败，请重试");
   if (music.getPlaylists[0]) getPlaySongData(music.getPlaySongData.id);
   if (music.getPlayState) songInOrOut("play");
 };

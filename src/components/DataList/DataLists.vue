@@ -421,8 +421,8 @@ const openRightMenu = (e, data) => {
         icon: renderIcon(AddMusic),
         show:
           music.getPersonalFmMode || music.getPlaySongData.id == data.id
-            ? true
-            : false,
+            ? false
+            : true,
         props: {
           onClick: () => {
             music.addSongToNext(data);

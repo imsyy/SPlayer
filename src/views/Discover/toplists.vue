@@ -97,6 +97,7 @@ const getToplistData = () => {
 };
 
 onMounted(() => {
+  $setSiteTitle("发现 - 排行榜");
   getToplistData();
 });
 </script>

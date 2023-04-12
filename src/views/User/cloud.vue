@@ -232,6 +232,7 @@ watch(
 );
 
 onMounted(() => {
+  $setSiteTitle("音乐库 - 音乐云盘");
   getCloudData(pagelimit.value, (pageNumber.value - 1) * pagelimit.value);
 });
 </script>

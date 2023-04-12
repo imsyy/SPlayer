@@ -149,6 +149,7 @@ const changeArea = (area) => {
 };
 
 onMounted(() => {
+  $setSiteTitle("全部新碟");
   getAlbumNewData(
     albumAreaChoose.value,
     pagelimit.value,
