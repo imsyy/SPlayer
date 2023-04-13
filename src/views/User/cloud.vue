@@ -225,7 +225,7 @@ watch(
   () => router.currentRoute.value,
   (val) => {
     pageNumber.value = Number(val.query.page ? val.query.page : 1);
-    if (val.name == "cloud") {
+    if (val.name == "user-cloud") {
       getCloudData(pagelimit.value, (pageNumber.value - 1) * pagelimit.value);
     }
   }

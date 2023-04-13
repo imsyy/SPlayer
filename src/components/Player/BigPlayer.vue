@@ -26,7 +26,7 @@
       />
       <div
         :class="
-          music.getPlaySongLyric[0] && music.getPlaySongLyric.length > 4
+          music.getPlaySongLyric.lrc[0] && music.getPlaySongLyric.lrc.length > 4
             ? 'all'
             : 'all noLrc'
         "
@@ -50,7 +50,7 @@
             <div
               class="lrcShow"
               v-if="
-                music.getPlaySongLyric[0] && music.getPlaySongLyric.length > 4
+                music.getPlaySongLyric.lrc[0] && music.getPlaySongLyric.lrc.length > 4
               "
             >
               <div class="data" v-show="setting.playerStyle === 'record'">
@@ -82,72 +82,13 @@
                   </span>
                 </div>
               </div>
-              <div
-                :class="
-                  setting.playerStyle === 'cover'
-                    ? 'lrc-all cover'
-                    : 'lrc-all record'
-                "
-                v-if="music.getPlaySongLyric[0]"
-                :style="
-                  setting.lyricsPosition === 'center'
-                    ? { textAlign: 'center', paddingRight: '0' }
-                    : null
-                "
+              <RollingLyrics
                 @mouseenter="
                   lrcMouseStatus = setting.lrcMousePause ? true : false
                 "
                 @mouseleave="lrcAllLeave"
-              >
-                <!-- 提示文本 -->
-                <div class="tip">
-                  <n-text>点击选中的歌词以调整播放进度</n-text>
-                </div>
-                <div class="placeholder"></div>
-                <div
-                  :class="
-                    music.getPlaySongLyricIndex == index ? 'lrc on' : 'lrc'
-                  "
-                  :style="{ marginBottom: setting.lyricsFontSize - 1.6 + 'vh' }"
-                  v-for="(item, index) in music.getPlaySongLyric"
-                  :key="item"
-                  :id="'lrc' + index"
-                  @click="jumpTime(item.time)"
-                >
-                  <div
-                    :class="setting.lyricsBlur ? 'lrc-text blur' : 'lrc-text'"
-                    :style="{
-                      transformOrigin:
-                        setting.lyricsPosition === 'center' ? 'center' : null,
-                      filter: setting.lyricsBlur
-                        ? `blur(${getFilter(
-                            music.getPlaySongLyricIndex,
-                            index
-                          )}px)`
-                        : null,
-                    }"
-                  >
-                    <span
-                      class="lyric"
-                      :style="{ fontSize: setting.lyricsFontSize + 'vh' }"
-                    >
-                      {{ item.lyric }}
-                    </span>
-                    <span
-                      v-show="
-                        music.getPlaySongTransl &&
-                        setting.getShowTransl &&
-                        item.lyricFy
-                      "
-                      :style="{ fontSize: setting.lyricsFontSize - 0.4 + 'vh' }"
-                      class="lyric-fy"
-                    >
-                      {{ item.lyricFy }}</span
-                    >
-                  </div>
-                </div>
-                <div class="placeholder"></div>
-              </div>
+                @lrcTextClick="lrcTextClick"
+              />
               <div
                 :class="menuShow ? 'menu show' : 'menu'"
                 v-show="setting.playerStyle === 'record'"
@@ -188,6 +129,7 @@ import { useRouter } from "vue-router";
 import MusicFrequency from "@/utils/MusicFrequency.js";
 import PlayerRecord from "./PlayerRecord.vue";
 import PlayerCover from "./PlayerCover.vue";
+import RollingLyrics from "./RollingLyrics.vue";
 import screenfull from "screenfull";
 
 const router = useRouter();
@@ -201,19 +143,10 @@ const menuShow = ref(false);
 const avBars = ref(null);
 const musicFrequency = ref(null);
 
-// 歌词模糊数值
-const getFilter = (lrcIndex, index) => {
-  if (lrcIndex >= index) {
-    return lrcIndex - index;
-  } else {
-    return index - lrcIndex;
-  }
-};
-
-// 点击歌词跳转
-const jumpTime = (time) => {
-  lrcMouseStatus.value = false;
+// 歌词文本点击事件
+const lrcTextClick = (time) => {
   if ($player) $player.currentTime = time;
+  lrcMouseStatus.value = false;
 };
 
 // 鼠标移出歌词区域
