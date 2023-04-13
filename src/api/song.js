@@ -54,6 +54,21 @@ export const getMusicLyric = (id) => {
 };
 
 /**
+ * 获取指定音乐的逐字歌词
+ * @param {number} id - 要获取逐字歌词的音乐ID
+ */
+export const getMusicNewLyric = (id) => {
+  return axios({
+    method: "GET",
+    hiddenBar: true,
+    url: "/lyric/new",
+    params: {
+      id,
+    },
+  });
+};
+
+/**
  * 获取指定音乐的详情。
  * @param {string} ids - 要获取详情的音乐ID，多个ID用逗号分隔
  */

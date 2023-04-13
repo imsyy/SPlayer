@@ -1,7 +1,7 @@
 <template>
   <!-- 歌词滚动 -->
   <div
-    v-if="music.getPlaySongLyric[0]"
+    v-if="music.getPlaySongLyric.lrc[0]"
     :class="
       setting.playerStyle === 'cover' ? 'lrc-all cover' : 'lrc-all record'
     "
@@ -11,11 +11,11 @@
         : null
     "
   >
-    <div class="placeholder"></div>
+    <div class="placeholder" id="lrc-1"></div>
     <div
+      v-for="(item, index) in music.getPlaySongLyric.lrc"
       :class="music.getPlaySongLyricIndex == index ? 'lrc on' : 'lrc'"
       :style="{ marginBottom: setting.lyricsFontSize - 1.6 + 'vh' }"
-      v-for="(item, index) in music.getPlaySongLyric"
       :key="item"
       :id="'lrc' + index"
       @click="lrcTextClick(item.time)"
@@ -34,16 +34,16 @@
           class="lyric"
           :style="{ fontSize: setting.lyricsFontSize + 'vh' }"
         >
-          {{ item.lyric }}
+          {{ item.content }}
         </span>
         <span
           v-show="
-            music.getPlaySongTransl && setting.getShowTransl && item.lyricFy
+            music.getPlaySongLyric.hasTran && setting.getShowTransl && item.tran
           "
           :style="{ fontSize: setting.lyricsFontSize - 0.4 + 'vh' }"
           class="lyric-fy"
         >
-          {{ item.lyricFy }}</span
+          {{ item.tran }}</span
         >
       </div>
     </div>

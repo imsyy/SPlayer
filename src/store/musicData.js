@@ -6,7 +6,7 @@ import { getPlayListCatlist } from "@/api/playlist";
 import { userStore } from "@/store";
 import { NIcon } from "naive-ui";
 import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
-import lyricFormat from "@/utils/lyricFormat";
+import parseLyric from "@/utils/parseLyric";
 
 const useMusicDataStore = defineStore("musicData", {
   state: () => {
@@ -21,12 +21,14 @@ const useMusicDataStore = defineStore("musicData", {
       playState: false,
       // 当前歌曲播放链接
       playSongLink: null,
-      // 当前歌曲歌词
-      playSongLyric: [],
+      // 当前歌曲歌词数据
+      playSongLyric: {
+        lrc: [],
+        yrc: [],
+        hasTran: false,
+      },
       // 当前歌曲歌词播放索引
       playSongLyricIndex: 0,
-      // 当前歌曲是否拥有翻译
-      playSongTransl: false,
       // 每日推荐
       dailySongsData: [],
       // 歌单分类
@@ -79,10 +81,6 @@ const useMusicDataStore = defineStore("musicData", {
     // 获取私人FM模式数据
     getPersonalFmData(state) {
       return state.persistData.personalFmData;
-    },
-    // 获取是否拥有翻译
-    getPlaySongTransl(state) {
-      return state.playSongTransl;
     },
     // 获取每日推荐
     getDailySongs(state) {
@@ -308,25 +306,14 @@ const useMusicDataStore = defineStore("musicData", {
     // 歌词处理
     setPlaySongLyric(value) {
       if (value.lrc) {
-        this.playSongLyric = lyricFormat(value.lrc.lyric);
-        if (value.tlyric && value.tlyric.lyric) {
-          console.log("歌词有翻译");
-          this.playSongTransl = true;
-          let playSongLyric = this.playSongLyric;
-          let playSongLyricFy = lyricFormat(value.tlyric.lyric);
-          playSongLyric.forEach((v) => {
-            playSongLyricFy.forEach((x) => {
-              if (v.time === x.time) {
-                v.lyricFy = x.lyric;
-              }
-            });
-          });
-          this.playSongLyric = playSongLyric;
-        } else {
-          this.playSongTransl = false;
+        try {
+          this.playSongLyric = parseLyric(value);
+        } catch (err) {
+          $message.error("歌词处理出错");
+          console.error("歌词处理出错：" + err);
         }
       } else {
-        console.log("无歌词");
+        console.log("该歌曲暂无歌词");
         this.playSongLyric = [];
       }
     },
@@ -348,15 +335,15 @@ const useMusicDataStore = defineStore("musicData", {
         );
       }
       // 计算当前歌词播放索引
-      const index = this.playSongLyric.findIndex(
+      const index = this.playSongLyric.lrc.findIndex(
         (v) => v.time >= value.currentTime
       );
       if (index === -1) {
         // 如果没有找到合适的歌词，则返回最后一句歌词
-        this.playSongLyricIndex =
-          this.playSongLyric.length - 1;
+        this.playSongLyricIndex = this.playSongLyric.lrc.length - 1;
       } else {
-        this.playSongLyricIndex = (index ? index : index + 1) - 1;
+        // this.playSongLyricIndex = (index ? index : index + 1) - 1;
+        this.playSongLyricIndex = index - 1;
       }
     },
     // 设置当前播放模式

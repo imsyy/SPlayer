@@ -26,7 +26,7 @@
       />
       <div
         :class="
-          music.getPlaySongLyric[0] && music.getPlaySongLyric.length > 4
+          music.getPlaySongLyric.lrc[0] && music.getPlaySongLyric.lrc.length > 4
             ? 'all'
             : 'all noLrc'
         "
@@ -50,7 +50,7 @@
             <div
               class="lrcShow"
               v-if="
-                music.getPlaySongLyric[0] && music.getPlaySongLyric.length > 4
+                music.getPlaySongLyric.lrc[0] && music.getPlaySongLyric.lrc.length > 4
               "
             >
               <div class="data" v-show="setting.playerStyle === 'record'">
