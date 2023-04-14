@@ -26,6 +26,8 @@ const useMusicDataStore = defineStore("musicData", {
         lrc: [],
         yrc: [],
         hasTran: false,
+        hasTran: false,
+        hasYrc: false,
       },
       // 当前歌曲歌词播放索引
       playSongLyricIndex: 0,
