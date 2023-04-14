@@ -18,7 +18,7 @@ const parseLyric = (data) => {
     lrc: [], // 歌词数组 {time:时间,content:歌词}
     yrc: [], // 逐字歌词数据
     // 是否具有翻译
-    hasTran: ytlrc ? (ytlrc.lyric ? true : false) : false,
+    hasTran: tlyric ? (tlyric.lyric ? true : false) : false,
     // 是否具有音译
     hasRoma: romalrc ? (romalrc.lyric ? true : false) : false,
     // 是否具有逐字歌词
@@ -43,7 +43,7 @@ const parseLyric = (data) => {
         for (let num in tranLrcData) {
           // 翻译文本对齐
           let objNum = result["yrc"].findIndex(
-            (o) => o.startTime == tranLrcData[num].time
+            (o) => o.time == tranLrcData[num].time
           );
           if (objNum != -1)
             result["yrc"][objNum]["tran"] = tranLrcData[num].content;
@@ -133,7 +133,7 @@ const parseYrc = (lyrics) => {
     const line = lines[i];
     // 创建一个空对象，用于存放当前句的信息
     let parsedLine = {
-      startTime: undefined, // 开始时间
+      time: undefined, // 开始时间
       endTime: undefined, // 结束时间
       content: undefined, // 歌词内容
     };
@@ -142,11 +142,11 @@ const parseYrc = (lyrics) => {
       .substring(line.indexOf("[") + 1, line.indexOf("]"))
       .split(",");
     // 将开始时间转换为秒
-    parsedLine.startTime = Number(timeInfo[0]) / 1000;
+    parsedLine.time = Number(timeInfo[0]) / 1000;
     // 将结束时间转换为秒
     parsedLine.endTime = Number(timeInfo[1]) / 1000;
     // 若时间信息不合法，将跳过该句
-    if (isNaN(parsedLine.startTime) || isNaN(parsedLine.endTime)) {
+    if (isNaN(parsedLine.time) || isNaN(parsedLine.endTime)) {
       continue;
     }
     // 寻找歌词内容
@@ -165,7 +165,7 @@ const parseYrc = (lyrics) => {
       }
       // 创建一个对象，用于存放当前字或词的信息，并添加到当前句的歌词内容中
       let contentObj = {
-        startTime: undefined, // 开始时间
+        time: undefined, // 开始时间
         duration: undefined, // 持续时间
         content: "", // 字或词的文本内容
       };
@@ -176,7 +176,7 @@ const parseYrc = (lyrics) => {
       }
       let timeArray = time[0].slice(1, -1).split(",");
       // 将开始时间转换为秒
-      contentObj.startTime = Number(timeArray[0]) / 1000;
+      contentObj.time = Number(timeArray[0]) / 1000;
       // 将持续时间转换为秒
       contentObj.duration = Number(timeArray[1]) / 1000;
       // 获取字或词的文本内容

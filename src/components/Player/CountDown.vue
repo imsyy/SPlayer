@@ -52,7 +52,6 @@ watch(
 .countdown {
   animation: breathe 5s ease-in-out infinite;
   .point {
-    font-size: 26px;
     margin-right: 4px;
     transition: all 0.3s;
     &.hidden {

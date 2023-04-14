@@ -11,10 +11,13 @@
         : null
     "
   >
-    <div class="placeholder" id="lrc-1">
-      <CountDown />
+    <div
+      class="placeholder"
+      :id="music.getPlaySongLyric.hasYrc ? 'yrc-1' : 'lrc-1'"
+    >
+      <CountDown :style="{ fontSize: setting.lyricsFontSize + 'vh' }" />
     </div>
-    <template v-if="true || !music.getPlaySongLyric.hasYrc">
+    <template v-if="!music.getPlaySongLyric.hasYrc">
       <div
         v-for="(item, index) in music.getPlaySongLyric.lrc"
         :class="music.getPlaySongLyricIndex == index ? 'lrc on' : 'lrc'"
@@ -54,7 +57,45 @@
       </div>
     </template>
     <template v-else>
-      {{ music.getPlaySongLyric.yrc }}
+      <div
+        v-for="(item, index) in music.getPlaySongLyric.yrc"
+        :class="music.getPlaySongLyricIndex == index ? 'yrc on' : 'yrc'"
+        :key="item"
+        :id="'yrc' + index"
+        @click="lrcTextClick(item.time)"
+      >
+        <div class="yrc-text">
+          <div class="lyric">
+            <span
+              v-for="(v, i) in item.content"
+              :key="i"
+              :style="{
+                '--dur': v.duration + 's',
+                fontSize: setting.lyricsFontSize + 'vh',
+              }"
+              :class="
+                music.getPlaySongLyricIndex == index &&
+                music.getPlaySongTime.currentTime >= v.time
+                  ? 'text fill'
+                  : 'text'
+              "
+            >
+              {{ v.content }}
+            </span>
+          </div>
+          <span
+            v-show="
+              music.getPlaySongLyric.hasTran &&
+              setting.getShowTransl &&
+              item.tran
+            "
+            :style="{ fontSize: setting.lyricsFontSize - 0.4 + 'vh' }"
+            class="lyric-fy"
+          >
+            {{ item.tran }}</span
+          >
+        </div>
+      </div>
     </template>
     <div class="placeholder"></div>
   </div>
@@ -139,7 +180,8 @@ const lrcTextClick = (time) => {
       padding: 0 0 0.8vh 3vh;
     }
   }
-  .lrc {
+  .lrc,
+  .yrc {
     opacity: 0.4;
     transition: all 0.3s;
     // display: flex;
@@ -152,7 +194,8 @@ const lrcTextClick = (time) => {
     transition: all 0.3s;
     transform-origin: left center;
     cursor: pointer;
-    .lrc-text {
+    .lrc-text,
+    .yrc-text {
       display: flex;
       flex-direction: column;
       transition: all 0.35s ease-in-out;
@@ -160,13 +203,30 @@ const lrcTextClick = (time) => {
       transform-origin: left center;
       .lyric {
         transition: all 0.3s;
-        // font-size: 2.4vh;
+        .text {
+          transition: all 0.3s;
+          color: #ffffff66;
+          &.fill {
+            text-shadow: 0px 0px 30px #ffffff40;
+            background-image: linear-gradient(to right, #fff 0%, #fff 0%);
+            background-repeat: no-repeat;
+            background-size: 0% 100%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: #ffffff66;
+            animation: toRight var(--dur) forwards ease-in-out;
+          }
+          @keyframes toRight {
+            to {
+              background-size: 100% 100%;
+            }
+          }
+        }
       }
       .lyric-fy {
         margin-top: 2px;
         transition: all 0.3s;
         opacity: 0.8;
-        // font-size: 2vh;
       }
     }
     &.on {
@@ -176,6 +236,12 @@ const lrcTextClick = (time) => {
         .lyric {
           font-weight: bold;
           text-shadow: 0px 0px 30px #ffffff40;
+        }
+      }
+      .yrc-text {
+        transform: scale(1.05);
+        .lyric {
+          font-weight: bold;
         }
       }
     }
