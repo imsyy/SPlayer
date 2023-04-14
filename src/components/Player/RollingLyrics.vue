@@ -11,48 +11,58 @@
         : null
     "
   >
-    <div class="placeholder" id="lrc-1"></div>
-    <div
-      v-for="(item, index) in music.getPlaySongLyric.lrc"
-      :class="music.getPlaySongLyricIndex == index ? 'lrc on' : 'lrc'"
-      :style="{ marginBottom: setting.lyricsFontSize - 1.6 + 'vh' }"
-      :key="item"
-      :id="'lrc' + index"
-      @click="lrcTextClick(item.time)"
-    >
-      <div
-        :class="setting.lyricsBlur ? 'lrc-text blur' : 'lrc-text'"
-        :style="{
-          transformOrigin:
-            setting.lyricsPosition === 'center' ? 'center' : null,
-          filter: setting.lyricsBlur
-            ? `blur(${getFilter(music.getPlaySongLyricIndex, index)}px)`
-            : null,
-        }"
-      >
-        <span
-          class="lyric"
-          :style="{ fontSize: setting.lyricsFontSize + 'vh' }"
-        >
-          {{ item.content }}
-        </span>
-        <span
-          v-show="
-            music.getPlaySongLyric.hasTran && setting.getShowTransl && item.tran
-          "
-          :style="{ fontSize: setting.lyricsFontSize - 0.4 + 'vh' }"
-          class="lyric-fy"
-        >
-          {{ item.tran }}</span
-        >
-      </div>
+    <div class="placeholder" id="lrc-1">
+      <CountDown />
     </div>
+    <template v-if="true || !music.getPlaySongLyric.hasYrc">
+      <div
+        v-for="(item, index) in music.getPlaySongLyric.lrc"
+        :class="music.getPlaySongLyricIndex == index ? 'lrc on' : 'lrc'"
+        :style="{ marginBottom: setting.lyricsFontSize - 1.6 + 'vh' }"
+        :key="item"
+        :id="'lrc' + index"
+        @click="lrcTextClick(item.time)"
+      >
+        <div
+          :class="setting.lyricsBlur ? 'lrc-text blur' : 'lrc-text'"
+          :style="{
+            transformOrigin:
+              setting.lyricsPosition === 'center' ? 'center' : null,
+            filter: setting.lyricsBlur
+              ? `blur(${getFilter(music.getPlaySongLyricIndex, index)}px)`
+              : null,
+          }"
+        >
+          <span
+            class="lyric"
+            :style="{ fontSize: setting.lyricsFontSize + 'vh' }"
+          >
+            {{ item.content }}
+          </span>
+          <span
+            v-show="
+              music.getPlaySongLyric.hasTran &&
+              setting.getShowTransl &&
+              item.tran
+            "
+            :style="{ fontSize: setting.lyricsFontSize - 0.4 + 'vh' }"
+            class="lyric-fy"
+          >
+            {{ item.tran }}</span
+          >
+        </div>
+      </div>
+    </template>
+    <template v-else>
+      {{ music.getPlaySongLyric.yrc }}
+    </template>
     <div class="placeholder"></div>
   </div>
 </template>
 
 <script setup>
 import { musicStore, settingStore } from "@/store";
+import CountDown from "./CountDown.vue";
 
 const music = musicStore();
 const setting = settingStore();
@@ -123,6 +133,11 @@ const lrcTextClick = (time) => {
   .placeholder {
     width: 100%;
     height: 50%;
+    &:nth-of-type(1) {
+      display: flex;
+      align-items: flex-end;
+      padding: 0 0 0.8vh 3vh;
+    }
   }
   .lrc {
     opacity: 0.4;
@@ -132,7 +147,7 @@ const lrcTextClick = (time) => {
     // margin-bottom: 4px;
     // padding: 12px 20px;
     margin-bottom: 0.8vh;
-    padding: 1.8vh 3vh;
+    padding: 1.8vh 4vh 1.8vh 3vh;
     border-radius: 8px;
     transition: all 0.3s;
     transform-origin: left center;

@@ -5,19 +5,24 @@
  */
 const parseLyric = (data) => {
   // 初始化数据
-  const lyrics = data.lrc ? data.lrc.lyric : null;
+  const { lrc, tlyric, romalrc, yrc, ytlrc } = data;
+  const lyrics = lrc ? lrc.lyric : null;
   const otherLyrics = {
-    tran: data.tlyric ? data.tlyric.lyric : null,
-    roma: data.romalrc ? data.romalrc.lyric : null,
-    yrc: data.yrc ? data.yrc.lyric : null,
-    ytlrc: data.ytlrc ? data.ytlrc.lyric : null,
+    tran: tlyric ? tlyric.lyric : null,
+    roma: romalrc ? romalrc.lyric : null,
+    yrc: yrc ? yrc.lyric : null,
+    ytlrc: ytlrc ? ytlrc.lyric : null,
   };
   // 初始化输出结果
   let result = {
     lrc: [], // 歌词数组 {time:时间,content:歌词}
     yrc: [], // 逐字歌词数据
     // 是否具有翻译
-    hasTran: data.tlyric ? (data.tlyric.lyric ? true : false) : false,
+    hasTran: ytlrc ? (ytlrc.lyric ? true : false) : false,
+    // 是否具有音译
+    hasRoma: romalrc ? (romalrc.lyric ? true : false) : false,
+    // 是否具有逐字歌词
+    hasYrc: yrc ? (yrc.lyric ? true : false) : false,
   };
   // 普通歌词数据
   let lrcData = Lrcsplit(lyrics);
@@ -26,29 +31,36 @@ const parseLyric = (data) => {
   // 循环遍历 otherLyrics 参数对象
   for (let i in otherLyrics) {
     const element = otherLyrics[i];
-    if (element == null) continue;
-    // 若存在翻译
-    if (i == "ytlrc" && element != null) {
-      tranLrcData = Lrcsplit(element);
-      for (let num in tranLrcData) {
-        // 翻译文本对齐
-        let objNum = result["yrc"].findIndex(
-          (o) => o.time == tranLrcData[num].time
-        );
-        if (objNum != -1) result["yrc"][objNum][i] = tranLrcData[num].content;
+    if (element !== null) {
+      // 若存在逐字歌词
+      if (i == "yrc" && otherLyrics[i] != null) {
+        result[i] = parseYrc(otherLyrics[i]);
+        continue;
       }
-    }
-    // 若存在歌词
-    if (i == "yrc" && otherLyrics[i] != null) {
-      result[i] = parseYrc(otherLyrics[i]);
-      continue;
-    }
-    // 若存在其他翻译
-    tranLrcData = Lrcsplit(element);
-    for (let num in tranLrcData) {
-      // 翻译文本对齐
-      let objNum = lrcData.findIndex((o) => o.time == tranLrcData[num].time);
-      if (objNum != -1) lrcData[objNum][i] = tranLrcData[num].content;
+      // 若存在翻译
+      if (i == "ytlrc" && element != null) {
+        tranLrcData = Lrcsplit(element);
+        for (let num in tranLrcData) {
+          // 翻译文本对齐
+          let objNum = result["yrc"].findIndex(
+            (o) => o.startTime == tranLrcData[num].time
+          );
+          if (objNum != -1)
+            result["yrc"][objNum]["tran"] = tranLrcData[num].content;
+        }
+      }
+      // 若存在其他翻译
+      tranLrcData = Lrcsplit(element);
+      if (tranLrcData[0]) {
+        console.log(`歌曲存在 ${i} 翻译`, tranLrcData);
+        for (let num in tranLrcData) {
+          // 翻译文本对齐
+          let objNum = lrcData.findIndex(
+            (o) => o.time == tranLrcData[num].time
+          );
+          if (objNum != -1) lrcData[objNum][i] = tranLrcData[num].content;
+        }
+      }
     }
   }
   // 将歌词按时间排序
@@ -155,7 +167,7 @@ const parseYrc = (lyrics) => {
       let contentObj = {
         startTime: undefined, // 开始时间
         duration: undefined, // 持续时间
-        text: "", // 字或词的文本内容
+        content: "", // 字或词的文本内容
       };
       // 提取时间和文本信息，并转换为秒
       let time = splitc.match(/\([1-9]\d*,[1-9]\d*,\d*\)/);
@@ -168,12 +180,13 @@ const parseYrc = (lyrics) => {
       // 将持续时间转换为秒
       contentObj.duration = Number(timeArray[1]) / 1000;
       // 获取字或词的文本内容
-      contentObj.text = splitc.slice(time[0].length);
+      contentObj.content = splitc.slice(time[0].length);
       contentArray.push(contentObj);
     }
     parsedLine.content = contentArray;
     parsedLyrics.push(parsedLine);
   }
+
   return parsedLyrics;
 };
 
