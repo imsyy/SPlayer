@@ -337,16 +337,10 @@ const useMusicDataStore = defineStore("musicData", {
         );
       }
       // 计算当前歌词播放索引
-      const index = this.playSongLyric.lrc.findIndex(
-        (v) => v.time >= value.currentTime
-      );
-      if (index === -1) {
-        // 如果没有找到合适的歌词，则返回最后一句歌词
-        this.playSongLyricIndex = this.playSongLyric.lrc.length - 1;
-      } else {
-        // this.playSongLyricIndex = (index ? index : index + 1) - 1;
-        this.playSongLyricIndex = index - 1;
-      }
+      const lrcType = this.playSongLyric.hasYrc;
+      const lyrics = lrcType ? this.playSongLyric.yrc : this.playSongLyric.lrc;
+      const index = lyrics.findIndex((v) => v.time >= value.currentTime);
+      this.playSongLyricIndex = index === -1 ? lyrics.length - 1 : index - 1;
     },
     // 设置当前播放模式
     setPlaySongMode() {

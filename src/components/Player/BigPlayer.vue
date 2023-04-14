@@ -50,7 +50,8 @@
             <div
               class="lrcShow"
               v-if="
-                music.getPlaySongLyric.lrc[0] && music.getPlaySongLyric.lrc.length > 4
+                music.getPlaySongLyric.lrc[0] &&
+                music.getPlaySongLyric.lrc.length > 4
               "
             >
               <div class="data" v-show="setting.playerStyle === 'record'">
@@ -186,8 +187,9 @@ const toComment = () => {
 // 歌词滚动
 const lyricsScroll = (index) => {
   const type = setting.lyricsBlock;
+  const lrcType = music.getPlaySongLyric.hasYrc ? "yrc" : "lrc";
   const el = document.getElementById(
-    `lrc${type === "center" ? index : index - 2}`
+    `${lrcType}${type === "center" ? index : index - 2}`
   );
   if (el && !lrcMouseStatus.value) {
     el.scrollIntoView({
