@@ -189,14 +189,18 @@ const lyricsScroll = (index) => {
   const type = setting.lyricsBlock;
   const lrcType =
     !music.getPlaySongLyric.hasYrc || !setting.showYrc ? "lrc" : "yrc";
-  const el = document.getElementById(
-    `${lrcType}${type === "center" ? index : index - 1}`
-  );
-  console.log(type, lrcType, index);
+  const el = document.getElementById(lrcType + index);
   if (el && !lrcMouseStatus.value) {
-    el.scrollIntoView({
+    const container = el.parentElement;
+    const containerHeight = container.clientHeight;
+    // 调整滚动的距离
+    const scrollDistance =
+      el.offsetTop -
+      container.offsetTop -
+      (type === "center" ? containerHeight / 2 - el.offsetHeight / 2 : 100);
+    container.scrollTo({
+      top: scrollDistance,
       behavior: "smooth",
-      block: type,
     });
   }
 };

@@ -85,7 +85,7 @@
               v-for="(v, i) in item.content"
               :key="i"
               :style="{
-                '--dur': v.duration - 0.2 + 's',
+                '--dur': v.duration - 0.1 + 's',
               }"
               :class="
                 music.getPlaySongLyricIndex == index &&
@@ -195,6 +195,10 @@ const lrcTextClick = (time) => {
       hsla(0, 0%, 100%, 0.6) 85%,
       hsla(0, 0%, 100%, 0)
     );
+    .placeholder {
+      width: 100%;
+      height: 16% !important;
+    }
   }
   &:hover {
     .lrc-text {
