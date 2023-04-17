@@ -1,6 +1,10 @@
 <template>
   <Transition mode="out-in">
-    <div class="countdown" v-if="remainingPoint <= 2">
+    <div
+      class="countdown"
+      :style="{ animationPlayState: music.getPlayState ? 'running' : 'paused' }"
+      v-if="remainingPoint <= 2"
+    >
       <span class="point" :class="remainingPoint > 2 ? 'hidden' : null">●</span>
       <span class="point" :class="remainingPoint > 1 ? 'hidden' : null">●</span>
       <span class="point" :class="remainingPoint > 0 ? 'hidden' : null">●</span>
@@ -16,7 +20,11 @@ const music = musicStore();
 // 剩余点数
 const remainingPoint = ref(0);
 // 总时长
-const totalDuration = ref(music.getPlaySongLyric?.lrc[0].time);
+const totalDuration = ref(
+  music.getPlaySongLyric.hasYrc
+    ? music.getPlaySongLyric?.yrc[0].time
+    : music.getPlaySongLyric?.lrc[0].time
+);
 
 // 监听歌曲时长变化
 watch(
@@ -32,7 +40,9 @@ watch(
 watch(
   () => music.getPlaySongLyric?.lrc,
   (val) => {
-    totalDuration.value = val[0].time;
+    totalDuration.value = music.getPlaySongLyric.hasYrc
+      ? music.getPlaySongLyric?.yrc[0].time
+      : val[0].time;
     remainingPoint.value = 0;
   }
 );

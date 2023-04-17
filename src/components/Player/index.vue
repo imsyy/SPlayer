@@ -52,6 +52,24 @@
                 />
                 <n-text
                   v-else-if="
+                    setting.showYrc &&
+                    music.getPlaySongLyricIndex != -1 &&
+                    music.getPlaySongLyric.hasYrc
+                  "
+                  class="lrc text-hidden"
+                >
+                  <n-text
+                    v-for="item in music.getPlaySongLyric.yrc[
+                      music.getPlaySongLyricIndex
+                    ].content"
+                    :key="item"
+                    :depth="3"
+                  >
+                    {{ item.content }}
+                  </n-text>
+                </n-text>
+                <n-text
+                  v-else-if="
                     music.getPlaySongLyricIndex != -1 &&
                     music.getPlaySongLyric.lrc[0]
                   "

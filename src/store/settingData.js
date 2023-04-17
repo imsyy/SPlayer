@@ -20,6 +20,8 @@ const useSettingDataStore = defineStore("settingData", {
       playerStyle: "cover",
       // 底栏歌词显示
       bottomLyricShow: true,
+      // 是否显示逐字歌词
+      showYrc: true,
       // 是否显示歌词翻译
       showTransl: true,
       // 歌曲音质
@@ -29,7 +31,7 @@ const useSettingDataStore = defineStore("settingData", {
       // 歌词滚动位置
       lyricsBlock: "center",
       // 歌词大小
-      lyricsFontSize: 2.8,
+      lyricsFontSize: 3.6,
       // 歌词模糊
       lyricsBlur: false,
       // 音乐频谱
