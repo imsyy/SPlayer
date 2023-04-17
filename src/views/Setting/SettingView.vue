@@ -61,6 +61,13 @@
     </n-card>
     <n-card class="set-item">
       <div class="name">
+        显示逐字歌词
+        <span class="tip">是否在歌曲具有逐字歌词时显示，实验性功能</span>
+      </div>
+      <n-switch v-model:value="showYrc" :round="false" />
+    </n-card>
+    <n-card class="set-item">
+      <div class="name">
         智能暂停滚动
         <span class="tip">鼠标移入歌词区域是否暂停滚动</span>
       </div>
@@ -85,13 +92,13 @@
       <n-slider
         v-model:value="lyricsFontSize"
         :tooltip="false"
-        :max="3.4"
-        :min="2.2"
+        :max="4"
+        :min="3"
         :step="0.01"
         :marks="{
-          2.2: '最小',
-          2.8: '默认',
-          3.4: '最大',
+          3: '最小',
+          3.6: '默认',
+          4: '最大',
         }"
       />
       <div :class="lyricsBlur ? 'more blur' : 'more'">
@@ -137,14 +144,14 @@
     <n-card class="set-item">
       <div class="name">
         歌词模糊
-        <span class="tip">实验性功能，未播放或已播放歌词模糊显示</span>
+        <span class="tip">未播放或已播放歌词模糊显示，实验性功能</span>
       </div>
       <n-switch v-model:value="lyricsBlur" :round="false" />
     </n-card>
     <n-card class="set-item">
       <div class="name">
         显示音乐频谱
-        <span class="tip">实验性功能，可能会导致一些意想不到的后果</span>
+        <span class="tip">可能会导致一些意想不到的后果，实验性功能</span>
       </div>
       <n-switch
         v-model:value="musicFrequency"
@@ -187,6 +194,7 @@ const {
   autoSignIn,
   lrcMousePause,
   searchHistory,
+  showYrc,
 } = storeToRefs(setting);
 
 // 深浅模式

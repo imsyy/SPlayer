@@ -3,7 +3,7 @@ import { getSongTime, getSongPlayingTime } from "@/utils/timeTools.js";
 import { getPersonalFm, setFmTrash } from "@/api/home";
 import { getLikelist, setLikeSong } from "@/api/user";
 import { getPlayListCatlist } from "@/api/playlist";
-import { userStore } from "@/store";
+import { userStore, settingStore } from "@/store";
 import { NIcon } from "naive-ui";
 import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
 import parseLyric from "@/utils/parseLyric";
@@ -337,8 +337,9 @@ const useMusicDataStore = defineStore("musicData", {
         );
       }
       // 计算当前歌词播放索引
-      const lrcType = this.playSongLyric.hasYrc;
-      const lyrics = lrcType ? this.playSongLyric.yrc : this.playSongLyric.lrc;
+      const setting = settingStore();
+      const lrcType = !this.playSongLyric.hasYrc || !setting.showYrc;
+      const lyrics = lrcType ? this.playSongLyric.lrc : this.playSongLyric.yrc;
       const index = lyrics.findIndex((v) => v.time >= value.currentTime);
       this.playSongLyricIndex = index === -1 ? lyrics.length - 1 : index - 1;
     },

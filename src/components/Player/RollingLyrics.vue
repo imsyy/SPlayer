@@ -2,9 +2,10 @@
   <!-- 歌词滚动 -->
   <div
     v-if="music.getPlaySongLyric.lrc[0]"
-    :class="
-      setting.playerStyle === 'cover' ? 'lrc-all cover' : 'lrc-all record'
-    "
+    :class="[
+      setting.playerStyle === 'cover' ? 'lrc-all cover' : 'lrc-all record',
+      setting.lyricsBlock === 'center' ? 'center' : 'top',
+    ]"
     :style="
       setting.lyricsPosition === 'center'
         ? { textAlign: 'center', paddingRight: '0' }
@@ -13,11 +14,13 @@
   >
     <div
       class="placeholder"
-      :id="music.getPlaySongLyric.hasYrc ? 'yrc-1' : 'lrc-1'"
+      :id="
+        !music.getPlaySongLyric.hasYrc || !setting.showYrc ? 'lrc-1' : 'yrc-1'
+      "
     >
       <CountDown :style="{ fontSize: setting.lyricsFontSize + 'vh' }" />
     </div>
-    <template v-if="!music.getPlaySongLyric.hasYrc">
+    <template v-if="!music.getPlaySongLyric.hasYrc || !setting.showYrc">
       <div
         v-for="(item, index) in music.getPlaySongLyric.lrc"
         :class="music.getPlaySongLyricIndex == index ? 'lrc on' : 'lrc'"
@@ -48,7 +51,7 @@
               setting.getShowTransl &&
               item.tran
             "
-            :style="{ fontSize: setting.lyricsFontSize - 0.4 + 'vh' }"
+            :style="{ fontSize: setting.lyricsFontSize - 1 + 'vh' }"
             class="lyric-fy"
           >
             {{ item.tran }}</span
@@ -64,18 +67,29 @@
         :id="'yrc' + index"
         @click="lrcTextClick(item.time)"
       >
-        <div class="yrc-text">
-          <div class="lyric">
+        <div
+          :class="setting.lyricsBlur ? 'yrc-text blur' : 'yrc-text'"
+          :style="{
+            transformOrigin:
+              setting.lyricsPosition === 'center' ? 'center' : null,
+            filter: setting.lyricsBlur
+              ? `blur(${getFilter(music.getPlaySongLyricIndex, index)}px)`
+              : null,
+          }"
+        >
+          <div
+            class="lyric"
+            :style="{ fontSize: setting.lyricsFontSize + 'vh' }"
+          >
             <span
               v-for="(v, i) in item.content"
               :key="i"
               :style="{
-                '--dur': v.duration + 's',
-                fontSize: setting.lyricsFontSize + 'vh',
+                '--dur': v.duration - 0.1 + 's',
               }"
               :class="
                 music.getPlaySongLyricIndex == index &&
-                music.getPlaySongTime.currentTime >= v.time
+                music.getPlaySongTime.currentTime + 0.2 > v.time
                   ? 'text fill'
                   : 'text'
               "
@@ -89,7 +103,7 @@
               setting.getShowTransl &&
               item.tran
             "
-            :style="{ fontSize: setting.lyricsFontSize - 0.4 + 'vh' }"
+            :style="{ fontSize: setting.lyricsFontSize - 1 + 'vh' }"
             class="lyric-fy"
           >
             {{ item.tran }}</span
@@ -133,24 +147,6 @@ const lrcTextClick = (time) => {
   // max-width: 460px;
   max-width: 52vh;
   overflow: auto;
-  mask: linear-gradient(
-    180deg,
-    hsla(0, 0%, 100%, 0) 0,
-    hsla(0, 0%, 100%, 0.6) 15%,
-    #fff 25%,
-    #fff 75%,
-    hsla(0, 0%, 100%, 0.6) 85%,
-    hsla(0, 0%, 100%, 0)
-  );
-  -webkit-mask: linear-gradient(
-    180deg,
-    hsla(0, 0%, 100%, 0) 0,
-    hsla(0, 0%, 100%, 0.6) 15%,
-    #fff 25%,
-    #fff 75%,
-    hsla(0, 0%, 100%, 0.6) 85%,
-    hsla(0, 0%, 100%, 0)
-  );
   &::-webkit-scrollbar {
     display: none;
   }
@@ -159,6 +155,50 @@ const lrcTextClick = (time) => {
   }
   &.record {
     height: 60vh;
+  }
+  &.center {
+    mask: linear-gradient(
+      180deg,
+      hsla(0, 0%, 100%, 0) 0,
+      hsla(0, 0%, 100%, 0.6) 15%,
+      #fff 25%,
+      #fff 75%,
+      hsla(0, 0%, 100%, 0.6) 85%,
+      hsla(0, 0%, 100%, 0)
+    );
+    -webkit-mask: linear-gradient(
+      180deg,
+      hsla(0, 0%, 100%, 0) 0,
+      hsla(0, 0%, 100%, 0.6) 15%,
+      #fff 25%,
+      #fff 75%,
+      hsla(0, 0%, 100%, 0.6) 85%,
+      hsla(0, 0%, 100%, 0)
+    );
+  }
+  &.top {
+    mask: linear-gradient(
+      180deg,
+      hsla(0, 0%, 100%, 0) 0,
+      hsla(0, 0%, 100%, 0.6) 5%,
+      #fff 10%,
+      #fff 75%,
+      hsla(0, 0%, 100%, 0.6) 85%,
+      hsla(0, 0%, 100%, 0)
+    );
+    -webkit-mask: linear-gradient(
+      180deg,
+      hsla(0, 0%, 100%, 0) 0,
+      hsla(0, 0%, 100%, 0.6) 5%,
+      #fff 10%,
+      #fff 75%,
+      hsla(0, 0%, 100%, 0.6) 85%,
+      hsla(0, 0%, 100%, 0)
+    );
+    .placeholder {
+      width: 100%;
+      height: 16% !important;
+    }
   }
   &:hover {
     .lrc-text {
@@ -184,15 +224,11 @@ const lrcTextClick = (time) => {
   .yrc {
     opacity: 0.4;
     transition: all 0.3s;
-    // display: flex;
-    // flex-direction: column;
-    // margin-bottom: 4px;
-    // padding: 12px 20px;
     margin-bottom: 0.8vh;
     padding: 1.8vh 4vh 1.8vh 3vh;
     border-radius: 8px;
     transition: all 0.3s;
-    transform-origin: left center;
+    transform-origin: left bottom;
     cursor: pointer;
     .lrc-text,
     .yrc-text {
@@ -200,8 +236,9 @@ const lrcTextClick = (time) => {
       flex-direction: column;
       transition: all 0.35s ease-in-out;
       transform: scale(0.95);
-      transform-origin: left center;
+      transform-origin: left bottom;
       .lyric {
+        font-weight: bold;
         transition: all 0.3s;
         .text {
           transition: all 0.3s;
@@ -214,7 +251,7 @@ const lrcTextClick = (time) => {
             background-clip: text;
             -webkit-background-clip: text;
             color: #ffffff66;
-            animation: toRight var(--dur) forwards ease-in-out;
+            animation: toRight var(--dur) forwards linear;
           }
           @keyframes toRight {
             to {
@@ -224,9 +261,9 @@ const lrcTextClick = (time) => {
         }
       }
       .lyric-fy {
-        margin-top: 2px;
+        margin-top: 4px;
         transition: all 0.3s;
-        opacity: 0.8;
+        opacity: 0.6;
       }
     }
     &.on {
@@ -234,7 +271,6 @@ const lrcTextClick = (time) => {
       .lrc-text {
         transform: scale(1.05);
         .lyric {
-          font-weight: bold;
           text-shadow: 0px 0px 30px #ffffff40;
         }
       }
@@ -253,6 +289,9 @@ const lrcTextClick = (time) => {
     &:active {
       transform: scale(0.95);
     }
+  }
+  .yrc {
+    opacity: 0.6;
   }
 }
 </style>
