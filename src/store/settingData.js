@@ -38,6 +38,8 @@ const useSettingDataStore = defineStore("settingData", {
       musicFrequency: false,
       // 鼠标移入歌词区域暂停滚动
       lrcMousePause: true,
+      // 是否使用网易云解灰
+      useUnmServer: true,
     };
   },
   getters: {

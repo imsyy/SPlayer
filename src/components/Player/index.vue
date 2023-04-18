@@ -220,7 +220,12 @@
 </template>
 
 <script setup>
-import { checkMusicCanUse, getMusicUrl, getMusicNewLyric } from "@/api/song";
+import {
+  checkMusicCanUse,
+  getMusicUrl,
+  getMusicNumUrl,
+  getMusicNewLyric,
+} from "@/api/song";
 import { NIcon } from "naive-ui";
 import {
   KeyboardArrowUpFilled,
@@ -255,33 +260,71 @@ const music = musicStore();
 const { persistData } = storeToRefs(music);
 const addPlayListRef = ref(null);
 
+// 重试次数
+const testNumber = ref(0);
+
+// UNM 是否存在
+const useUnmServerHas = import.meta.env.VITE_UNM_API ? true : false;
+
 // 音频标签
 const player = ref(null);
 
 // 获取歌曲播放数据
-const getPlaySongData = (id, level = setting.songLevel) => {
-  checkMusicCanUse(id).then((res) => {
-    if (res.success) {
-      console.log("音乐可用");
-      // 获取音乐地址
-      getMusicUrl(id, level).then((res) => {
-        if (res.data[0].fee == 1) {
-          $message.warning("当前歌曲为 VIP 专享，仅可试听");
-        }
-        music.setPlaySongLink(res.data[0].url.replace(/^http:/, "https:"));
-      });
-      // 获取歌词
-      getMusicNewLyric(id).then((res) => {
-        music.setPlaySongLyric(res);
-      });
-    } else {
-      console.log("无法播放");
-      if (music.getPlayState && $player) {
-        $message.error("当前歌曲无法播放，已跳至下一首");
-        music.setPlaySongIndex("next");
-      }
+const getPlaySongData = (data, level = setting.songLevel) => {
+  try {
+    const { id, fee } = data;
+    // VIP 歌曲或需要购买专辑
+    if (useUnmServerHas && setting.useUnmServer && (fee === 1 || fee === 4)) {
+      getMusicNumUrlData(id);
     }
-  });
+    // 免费或无版权
+    else {
+      checkMusicCanUse(id).then((res) => {
+        if (res.success) {
+          console.log("当前歌曲可用");
+          if (fee === 1 || fee === 4)
+            $message.info("当前歌曲为 VIP 专享，仅可试听");
+          // 获取音乐地址
+          getMusicUrl(id, level).then((res) => {
+            music.setPlaySongLink(res.data[0].url.replace(/^http:/, "https:"));
+          });
+        } else {
+          if (useUnmServerHas && setting.useUnmServer) {
+            getMusicNumUrlData(id);
+          } else {
+            $message.warning("当前歌曲播放失败，跳至下一首");
+            music.setPlaySongIndex("next");
+          }
+        }
+      });
+    }
+    // 获取歌词
+    getMusicNewLyric(id).then((res) => {
+      music.setPlaySongLyric(res);
+    });
+  } catch (err) {
+    console.log("当前歌曲所有音源匹配失败：" + err);
+    if (music.getPlayState && $player) {
+      $message.warning("当前歌曲所有音源匹配失败，跳至下一首");
+      music.setPlaySongIndex("next");
+    }
+  }
+};
+
+// 网易云解灰
+const getMusicNumUrlData = (id) => {
+  getMusicNumUrl(id)
+    .then((res) => {
+      if (res.code === 200) {
+        console.log("替换成功：" + res.data.url.replace(/^http:/, ""));
+        music.setPlaySongLink(res.data.url.replace(/^http:/, ""));
+      }
+    })
+    .catch((err) => {
+      console.log("解灰失败：" + err);
+      $message.warning("当前歌曲解灰失败，跳至下一首");
+      music.setPlaySongIndex("next");
+    });
 };
 
 // 歌曲进度更新事件
@@ -302,6 +345,7 @@ const songCanplay = () => {
 
 // 歌曲开始播放
 const songPlay = () => {
+  testNumber.value = 0;
   if (!music.getPlaySongData) {
     $message.error("音乐数据获取失败");
     return false;
@@ -426,8 +470,13 @@ const songTimeSliderUpdate = (val) => {
 // 歌曲播放失败事件
 const songError = () => {
   console.error("歌曲播放失败");
-  $message.error("歌曲播放失败，请重试");
-  if (music.getPlaylists[0]) getPlaySongData(music.getPlaySongData.id);
+  $message.error("歌曲播放失败");
+  if (testNumber.value < 4) {
+    if (music.getPlaylists[0]) getPlaySongData(music.getPlaySongData);
+    testNumber.value++;
+  } else {
+    $message.error("歌曲重试次数过多，请刷新后重试");
+  }
   if (music.getPlayState) songInOrOut("play");
 };
 
@@ -444,7 +493,7 @@ const volumeMute = () => {
 onMounted(() => {
   // 获取音乐数据
   if (music.getPlaylists[0] && music.getPlaySongData)
-    getPlaySongData(music.getPlaySongData.id);
+    getPlaySongData(music.getPlaySongData);
   // 挂载播放器
   window.$player = player.value;
   // 恢复上次播放进度
@@ -460,7 +509,7 @@ watch(
   () => music.getPlaySongData,
   (val) => {
     debounce(() => {
-      getPlaySongData(val.id);
+      getPlaySongData(val);
     }, 500);
   }
 );
