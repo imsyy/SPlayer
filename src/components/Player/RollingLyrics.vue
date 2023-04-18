@@ -85,11 +85,11 @@
               v-for="(v, i) in item.content"
               :key="i"
               :style="{
-                '--dur': v.duration - 0.1 + 's',
+                '--dur': v.duration - 0.15 + 's',
               }"
               :class="
                 music.getPlaySongLyricIndex == index &&
-                music.getPlaySongTime.currentTime + 0.2 > v.time
+                music.getPlaySongTime.currentTime + 0.15 >= v.time
                   ? 'text fill'
                   : 'text'
               "
@@ -196,8 +196,9 @@ const lrcTextClick = (time) => {
       hsla(0, 0%, 100%, 0)
     );
     .placeholder {
-      width: 100%;
-      height: 16% !important;
+      &:nth-of-type(1) {
+        height: 16%;
+      }
     }
   }
   &:hover {
@@ -241,7 +242,7 @@ const lrcTextClick = (time) => {
         font-weight: bold;
         transition: all 0.3s;
         .text {
-          transition: all 0.3s;
+          transition: all var(--dur);
           color: #ffffff66;
           &.fill {
             text-shadow: 0px 0px 30px #ffffff40;

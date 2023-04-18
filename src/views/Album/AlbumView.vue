@@ -55,7 +55,12 @@
     <div class="right">
       <div class="meta">
         <span class="name">{{ albumDetail.name }}</span>
-        <span class="creator">{{ albumDetail.artist.name }}</span>
+        <span
+          class="creator"
+          @click="router.push(`/artist/songs?id=${albumDetail.artist.id}`)"
+        >
+          {{ albumDetail.artist.name }}
+        </span>
         <div class="time">
           <div class="createTime">
             <span class="num">发行时间：</span>
@@ -228,6 +233,12 @@ watch(
         margin-top: 6px;
         font-size: 16px;
         opacity: 0.8;
+        cursor: pointer;
+        transition: all 0.3s;
+        &:hover {
+          opacity: 1;
+          color: $mainColor;
+        }
       }
       .time {
         margin-top: 8px;

@@ -1,5 +1,5 @@
 <template>
-  <Transition mode="out-in">
+  <Transition mode="out-in" appear>
     <div
       class="countdown"
       :style="{ animationPlayState: music.getPlayState ? 'running' : 'paused' }"

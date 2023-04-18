@@ -41,7 +41,7 @@ const getSearchDataList = (keywords, limit = 30, offset = 0, type = 1) => {
       totalCount.value = res.result.songCount;
       // const ids = res.result.songs.map((obj) => obj.id);
       // getMusicDetail(ids.join(",")).then((res) => {});
-      console.log(res);
+      // console.log(res);
       searchData.value = [];
       res.result.songs.forEach((v, i) => {
         searchData.value.push({

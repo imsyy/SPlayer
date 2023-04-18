@@ -18,6 +18,10 @@
       <n-switch v-model:value="autoSignIn" :round="false" />
     </n-card>
     <n-card class="set-item">
+      <div class="name">显示轮播图</div>
+      <n-switch v-model:value="bannerShow" :round="false" />
+    </n-card>
+    <n-card class="set-item">
       <div class="name">
         列表点击方式
         <span class="tip">移动端该设置项无效，单击同时生效</span>
@@ -27,10 +31,6 @@
         v-model:value="listClickMode"
         :options="listClickModeOptions"
       />
-    </n-card>
-    <n-card class="set-item">
-      <div class="name">显示轮播图</div>
-      <n-switch v-model:value="bannerShow" :round="false" />
     </n-card>
     <n-card class="set-item">
       <div class="name">显示搜索历史</div>
@@ -52,6 +52,23 @@
         class="set"
         v-model:value="songLevel"
         :options="songLevelOptions"
+      />
+    </n-card>
+    <n-card class="set-item">
+      <div class="name">
+        替换无法播放的歌曲链接
+        <span class="tip">
+          {{
+            useUnmServerShow
+              ? "是否使用 UNM 替换无法播放的歌曲链接"
+              : "请配置 UNM-Server 后使用解灰功能"
+          }}
+        </span>
+      </div>
+      <n-switch
+        v-model:value="useUnmServer"
+        :round="false"
+        :disabled="!useUnmServerShow"
       />
     </n-card>
     <n-h6 prefix="bar"> 歌词设置 </n-h6>
@@ -195,7 +212,11 @@ const {
   lrcMousePause,
   searchHistory,
   showYrc,
+  useUnmServer,
 } = storeToRefs(setting);
+
+// 某些开关是否显示
+const useUnmServerShow = import.meta.env.VITE_UNM_API ? true : false;
 
 // 深浅模式
 const darkOptions = [

@@ -27,7 +27,7 @@
           block
           strong
           secondary
-          v-if="playListDetail?.description.length > 70"
+          v-if="playListDetail?.description?.length > 70"
           @click="playListDescShow = true"
         >
           全部简介
@@ -329,6 +329,12 @@ watch(
         margin-top: 6px;
         font-size: 16px;
         opacity: 0.8;
+        cursor: pointer;
+        transition: all 0.3s;
+        &:hover {
+          opacity: 1;
+          color: $mainColor;
+        }
       }
       .time {
         margin-top: 8px;

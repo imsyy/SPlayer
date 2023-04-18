@@ -39,6 +39,24 @@ export const getMusicUrl = (id, level = "exhigh") => {
 };
 
 /**
+ * 网易云解灰
+ * @param {number} id - 要替换播放链接的音乐ID
+ */
+export const getMusicNumUrl = async (id) => {
+  const url = `${import.meta.env.VITE_UNM_API}match?id=${id}`;
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    return Promise.reject(new Error());
+  }
+  return await response.json();
+};
+
+/**
  * 获取指定音乐的歌词
  * @param {number} id - 要获取歌词的音乐ID
  */
