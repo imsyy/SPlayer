@@ -260,6 +260,9 @@ const music = musicStore();
 const { persistData } = storeToRefs(music);
 const addPlayListRef = ref(null);
 
+// 重试次数
+const testNumber = ref(0);
+
 // UNM 是否存在
 const useUnmServerHas = import.meta.env.VITE_UNM_API ? true : false;
 
@@ -279,6 +282,8 @@ const getPlaySongData = (data, level = setting.songLevel) => {
       checkMusicCanUse(id).then((res) => {
         if (res.success) {
           console.log("当前歌曲可用");
+          if (fee === 1 || fee === 4)
+            $message.info("当前歌曲为 VIP 专享，仅可试听");
           // 获取音乐地址
           getMusicUrl(id, level).then((res) => {
             music.setPlaySongLink(res.data[0].url.replace(/^http:/, "https:"));
@@ -340,6 +345,7 @@ const songCanplay = () => {
 
 // 歌曲开始播放
 const songPlay = () => {
+  testNumber.value = 0;
   if (!music.getPlaySongData) {
     $message.error("音乐数据获取失败");
     return false;
@@ -465,7 +471,12 @@ const songTimeSliderUpdate = (val) => {
 const songError = () => {
   console.error("歌曲播放失败");
   $message.error("歌曲播放失败");
-  if (music.getPlaylists[0]) getPlaySongData(music.getPlaySongData);
+  if (testNumber.value < 4) {
+    if (music.getPlaylists[0]) getPlaySongData(music.getPlaySongData);
+    testNumber.value++;
+  } else {
+    $message.error("歌曲重试次数过多，请刷新后重试");
+  }
   if (music.getPlayState) songInOrOut("play");
 };
 

@@ -55,6 +55,7 @@ const tabValue = ref(router.currentRoute.value.path.split("/")[2]);
 watch(
   () => router.currentRoute.value,
   (val) => {
+    $setSiteTitle(val.query.keywords + "的搜索结果");
     searchKeywords.value = val.query.keywords;
     tabValue.value = val.path.split("/")[2];
   }

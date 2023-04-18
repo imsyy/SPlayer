@@ -18,7 +18,8 @@
 - 支持扫码登录
 - 支持手机号登录（目前暂时无法使用）
 - 自动进行每日签到及云贝签到
-- 支持 [UnblockNeteaseMusic](https://github.com/UnblockNeteaseMusic/server)，自动使用替换变灰歌曲 
+- 支持 [UnblockNeteaseMusic](https://github.com/UnblockNeteaseMusic/server)，自动替换变灰歌曲
+  - 由于酷我音源不支持 `https`，故网页端替换可能不全面
 - 下载歌曲（最高支持 Hi-Res）
 - 新建歌单及歌单编辑
 - 收藏 / 取消收藏歌单或歌手
