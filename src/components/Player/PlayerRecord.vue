@@ -190,6 +190,7 @@ const music = musicStore();
     height: 68%;
     border-radius: 50%;
     background-color: #00000050;
+    -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
     transition: all 0.5s;
     .n-icon {

@@ -94,7 +94,7 @@
 </template>
 
 <script setup>
-import { userStore } from "@/store";
+import { userStore, musicStore } from "@/store";
 import {
   getLoginState,
   getQrKey,
@@ -110,6 +110,7 @@ import QrcodeVue from "qrcode.vue";
 
 const router = useRouter();
 const user = userStore();
+const music = musicStore();
 const { numberRule, mobileRule } = formRules();
 
 // 二维码数据
@@ -266,7 +267,7 @@ const phoneLogin = (e) => {
             phoneFormData._value.captcha
           ).then((res) => {
             console.log(res);
-            // 网易接口抽风，等好了再写
+            // 暂时不支持，等支持了再写
           });
         }
       });
@@ -289,11 +290,15 @@ const tabChange = (val) => {
 
 onMounted(() => {
   $setSiteTitle("登录");
+  // 隐藏控制条
+  music.setPlayBarState(false);
   // 获取二维码登录 key
   getQrKeyData();
 });
 
 onBeforeUnmount(() => {
+  // 恢复控制条
+  music.setPlayBarState(true);
   // 清除定时器
   clearInterval(qrCheckInterval.value);
   clearInterval(captchaTimeOut.value);

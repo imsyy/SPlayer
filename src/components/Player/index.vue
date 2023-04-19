@@ -272,9 +272,15 @@ const player = ref(null);
 // 获取歌曲播放数据
 const getPlaySongData = (data, level = setting.songLevel) => {
   try {
-    const { id, fee } = data;
+    const { id, fee, pc } = data;
     // VIP 歌曲或需要购买专辑
-    if (useUnmServerHas && setting.useUnmServer && (fee === 1 || fee === 4)) {
+    if (
+      useUnmServerHas &&
+      setting.useUnmServer &&
+      !pc &&
+      (fee === 1 || fee === 4)
+    ) {
+      console.log("网易云解灰");
       getMusicNumUrlData(id);
     }
     // 免费或无版权
@@ -282,7 +288,7 @@ const getPlaySongData = (data, level = setting.songLevel) => {
       checkMusicCanUse(id).then((res) => {
         if (res.success) {
           console.log("当前歌曲可用");
-          if (fee === 1 || fee === 4)
+          if (!pc && (fee === 1 || fee === 4))
             $message.info("当前歌曲为 VIP 专享，仅可试听");
           // 获取音乐地址
           getMusicUrl(id, level).then((res) => {
