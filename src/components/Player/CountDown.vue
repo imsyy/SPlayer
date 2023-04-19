@@ -3,7 +3,7 @@
     <div
       class="countdown"
       :style="{ animationPlayState: music.getPlayState ? 'running' : 'paused' }"
-      v-if="remainingPoint <= 2"
+      v-if="remainingPoint <= 2 && totalDuration > 3"
     >
       <span class="point" :class="remainingPoint > 2 ? 'hidden' : null">●</span>
       <span class="point" :class="remainingPoint > 1 ? 'hidden' : null">●</span>

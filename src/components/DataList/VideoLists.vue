@@ -115,6 +115,7 @@ const props = defineProps({
         color: #fff;
         padding: 0.5vw;
         background-color: #00000010;
+        -webkit-backdrop-filter: blur(10px);
         backdrop-filter: blur(10px);
         border-radius: 50%;
         transform: scale(0.8);
@@ -126,6 +127,7 @@ const props = defineProps({
         color: #fff;
         background-color: #00000030;
         font-size: 12px;
+        -webkit-backdrop-filter: blur(4px);
         backdrop-filter: blur(4px);
         padding: 4px 8px;
         transition: all 0.3s;

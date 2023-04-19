@@ -44,7 +44,9 @@ export const getMusicUrl = (id, level = "exhigh") => {
  */
 export const getMusicNumUrl = async (id) => {
   const server =
-    process.env.NODE_ENV === "development" ? "kuwo,qq,pyncmd" : "qq,pyncmd";
+    process.env.NODE_ENV === "development"
+      ? "kuwo,qq,pyncmd,kugou"
+      : "qq,pyncmd,kugou";
   const url = `${import.meta.env.VITE_UNM_API}match?id=${id}&server=${server}`;
   const response = await fetch(url, {
     method: "GET",

@@ -12,18 +12,35 @@
       "
     >
       <div class="gray" />
-      <n-icon
-        class="close"
-        size="40"
-        :component="KeyboardArrowDownFilled"
-        @click="music.setBigPlayerState(false)"
-      />
-      <n-icon
-        class="screenfull"
-        size="36"
-        :component="screenfullIcon"
-        @click="screenfullChange"
-      />
+      <div class="icon-menu">
+        <div class="menu-left">
+          <div class="icon">
+            <n-icon
+              class="setting"
+              size="30"
+              :component="SettingsRound"
+              @click="router.push('/setting/player')"
+            />
+          </div>
+        </div>
+        <div class="menu-right">
+          <div class="icon">
+            <n-icon
+              class="screenfull"
+              :component="screenfullIcon"
+              @click="screenfullChange"
+            />
+          </div>
+          <div class="icon">
+            <n-icon
+              class="close"
+              :component="KeyboardArrowDownFilled"
+              @click="music.setBigPlayerState(false)"
+            />
+          </div>
+        </div>
+      </div>
+
       <div
         :class="
           music.getPlaySongLyric.lrc[0] && music.getPlaySongLyric.lrc.length > 4
@@ -124,6 +141,7 @@ import {
   MessageFilled,
   FullscreenRound,
   FullscreenExitRound,
+  SettingsRound,
 } from "@vicons/material";
 import { musicStore, settingStore } from "@/store";
 import { useRouter } from "vue-router";
@@ -296,11 +314,63 @@ watch(
     width: 100%;
     height: 100%;
     background-color: #00000060;
+    -webkit-backdrop-filter: blur(80px);
     backdrop-filter: blur(80px);
     z-index: -1;
   }
+  .icon-menu {
+    padding: 20px;
+    width: 100%;
+    height: 80px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 2;
+    box-sizing: border-box;
+    .menu-left,
+    .menu-right {
+      display: flex;
+      align-items: center;
+      .icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        opacity: 0.3;
+        border-radius: 8px;
+        transition: all 0.3s;
+        cursor: pointer;
+        &:hover {
+          background-color: #ffffff20;
+          transform: scale(1.05);
+          opacity: 1;
+        }
+        &:active {
+          transform: scale(1);
+        }
+        .screenfull,
+        .setting {
+          @media (max-width: 768px) {
+            display: none;
+          }
+        }
+      }
+    }
+    .menu-right {
+      .icon {
+        margin-left: 12px;
+      }
+    }
+  }
+  /*
   .close,
-  .screenfull {
+  .screenfull,
+  .setting {
     position: absolute;
     top: 24px;
     right: 24px;
@@ -326,6 +396,9 @@ watch(
       display: none;
     }
   }
+  .setting {
+    left: 24px;
+  }*/
   .all {
     width: 100%;
     height: 100%;
@@ -379,6 +452,7 @@ watch(
       height: 40px;
       border-radius: 25px;
       background-color: #ffffff20;
+      -webkit-backdrop-filter: blur(20px);
       backdrop-filter: blur(20px);
       display: flex;
       align-items: center;

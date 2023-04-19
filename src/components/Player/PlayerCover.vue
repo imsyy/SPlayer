@@ -149,8 +149,6 @@ const router = useRouter();
 const music = musicStore();
 const user = userStore();
 
-const canvas = ref(null);
-
 // 歌曲进度条更新
 const songTimeSliderUpdate = (val) => {
   if ($player && music.getPlaySongTime && music.getPlaySongTime.duration)

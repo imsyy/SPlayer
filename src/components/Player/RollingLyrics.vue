@@ -214,16 +214,19 @@ const lrcTextClick = (time) => {
   }
   .placeholder {
     width: 100%;
-    height: 50%;
     &:nth-of-type(1) {
+      height: 50%;
       display: flex;
       align-items: flex-end;
       padding: 0 0 0.8vh 3vh;
     }
+    &:nth-last-of-type(1) {
+      height: 80%;
+    }
   }
   .lrc,
   .yrc {
-    opacity: 0.4;
+    opacity: 0.2;
     transition: all 0.3s;
     margin-bottom: 0.8vh;
     padding: 1.8vh 4vh 1.8vh 3vh;
@@ -285,6 +288,7 @@ const lrcTextClick = (time) => {
     &:hover {
       @media (min-width: 768px) {
         background-color: #ffffff20;
+        opacity: 1;
       }
     }
     &:active {
