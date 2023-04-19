@@ -373,6 +373,7 @@ onMounted(() => {
         color: #fff;
         padding: 0.5vw;
         background-color: #00000010;
+        -webkit-backdrop-filter: blur(10px);
         backdrop-filter: blur(10px);
         border-radius: 50%;
         transform: scale(0.8);
@@ -385,6 +386,7 @@ onMounted(() => {
         color: #fff;
         background-color: #00000030;
         font-size: 12px;
+        -webkit-backdrop-filter: blur(4px);
         backdrop-filter: blur(4px);
         padding: 6px;
         border-top-left-radius: 8px;

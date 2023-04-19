@@ -403,7 +403,7 @@ const useMusicDataStore = defineStore("musicData", {
       try {
         if (
           value.id !==
-          this.persistData.playlists[this.persistData.playSongIndex].id
+          this.persistData.playlists[this.persistData.playSongIndex]?.id
         ) {
           console.log("播放歌曲与上一次不一致");
           this.playSongLink = null;
