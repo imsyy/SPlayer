@@ -19,7 +19,12 @@
               class="setting"
               size="30"
               :component="SettingsRound"
-              @click="router.push('/setting/player')"
+              @click="
+                () => {
+                  music.setBigPlayerState(false);
+                  router.push('/setting/player');
+                }
+              "
             />
           </div>
         </div>
