@@ -328,6 +328,14 @@ watch(
     }
   }
 );
+
+// 监听播放列表显隐
+watch(
+  () => music.showPlayList,
+  (val) => {
+    if (val) inputActive.value = false;
+  }
+);
 </script>
 
 <style lang="scss" scoped>
@@ -339,10 +347,16 @@ watch(
   .input {
     width: 200px;
     transition: all 0.3s;
+    @media (max-width: 450px) {
+      width: 40px;
+    }
     &.focus {
       width: 280px;
       :deep(input) {
         color: $mainColor;
+      }
+      @media (max-width: 450px) {
+        width: 60vw;
       }
     }
   }
@@ -353,10 +367,34 @@ watch(
     border-radius: 8px;
     width: 280px;
     z-index: 3;
+
+    @media (max-width: 450px) {
+      padding-top: 12px;
+      position: fixed;
+      width: 100%;
+      top: 58px;
+      right: 0;
+      left: 0;
+      border-radius: 0 0 8px 8px;
+      &::after {
+        position: absolute;
+        right: 0;
+        top: 0;
+        content: "收起";
+        padding: 4px 12px;
+        font-size: 12px;
+        background-color: #efefef;
+        border-radius: 0 0 0 14px;
+      }
+    }
     :deep(.n-scrollbar) {
       max-height: 80vh;
+      @media (max-width: 450px) {
+        max-height: calc(100vh - 130px);
+        min-height: calc(100vh - 130px);
+      }
       .n-scrollbar-rail {
-        width: 0;
+        width: 4px;
       }
       .n-scrollbar-content {
         padding: 12px;

@@ -10,7 +10,12 @@
         :native-scrollbar="false"
         embedded
       >
-        <main ref="mainContent" class="main">
+        <main
+          ref="mainContent"
+          class="main"
+          id="main"
+          :class="[music.showPlayList ? 'playlist' : null]"
+        >
           <n-back-top
             :bottom="music.getPlaylists[0] && music.showPlayBar ? 100 : 40"
             style="transition: all 0.3s"
@@ -223,6 +228,14 @@ onMounted(() => {
   .main {
     max-width: 1400px;
     margin: 0 auto;
+    div:nth-of-type(2) {
+      transition: all 0.3s;
+    }
+    &.playlist {
+      div:nth-of-type(2) {
+        transform: scale(0.98);
+      }
+    }
   }
 }
 

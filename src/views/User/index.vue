@@ -6,7 +6,7 @@
         round
         :src="
           user.getUserData.avatarUrl
-            ? user.getUserData.avatarUrl
+            ? user.getUserData.avatarUrl.replace(/^http:/, 'https:')
             : '/images/ico/user-filling.svg'
         "
         fallback-src="/images/ico/user-filling.svg"
