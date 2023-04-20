@@ -12,50 +12,57 @@
     @mask-click="music.showPlayList = false"
   >
     <n-drawer-content title="播放列表" :native-scrollbar="false" closable>
-      <n-card
-        hoverable
-        :class="
-          index === music.persistData.playSongIndex ? 'songs play' : 'songs'
-        "
-        :id="'playlist' + index"
-        :content-style="{
-          padding: '8px',
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-        }"
-        v-for="(item, index) in music.getPlaylists"
-        :key="item"
-        @click="changeIndex(index)"
-      >
-        <div class="left">
-          <div v-if="index !== music.persistData.playSongIndex" class="num">
-            {{ index + 1 }}
-          </div>
-          <div v-else class="bar">
-            <div
-              v-for="item in 3"
-              :key="item"
-              class="line"
-              :style="{
-                animationDelay: `0.${item * item}s`,
-                animationPlayState: music.getPlayState ? 'running' : 'paused',
-                height: `${Math.floor(Math.random() * 7) + 10}px`,
-              }"
-            />
-          </div>
+      <Transition mode="out-in">
+        <div v-if="music.getPlaylists[0]">
+          <n-card
+            hoverable
+            :class="
+              index === music.persistData.playSongIndex ? 'songs play' : 'songs'
+            "
+            :id="'playlist' + index"
+            :content-style="{
+              padding: '8px',
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+            }"
+            v-for="(item, index) in music.getPlaylists"
+            :key="item"
+            @click="changeIndex(index)"
+          >
+            <div class="left">
+              <div v-if="index !== music.persistData.playSongIndex" class="num">
+                {{ index + 1 }}
+              </div>
+              <div v-else class="bar">
+                <div
+                  v-for="item in 3"
+                  :key="item"
+                  class="line"
+                  :style="{
+                    animationDelay: `0.${item * item}s`,
+                    animationPlayState: music.getPlayState
+                      ? 'running'
+                      : 'paused',
+                    height: `${Math.floor(Math.random() * 7) + 10}px`,
+                  }"
+                />
+              </div>
+            </div>
+            <div class="right">
+              <div class="name text-hidden">{{ item.name }}</div>
+              <AllArtists class="text-hidden" :artistsData="item.artist" />
+              <n-icon
+                class="remove"
+                size="18"
+                :component="DeleteFour"
+                @click.stop="music.removeSong(index)"
+              />
+            </div>
+          </n-card>
         </div>
-        <div class="right">
-          <div class="name text-hidden">{{ item.name }}</div>
-          <AllArtists class="text-hidden" :artistsData="item.artist" />
-          <n-icon
-            class="remove"
-            size="18"
-            :component="DeleteFour"
-            @click.stop="music.removeSong(index)"
-          />
-        </div>
-      </n-card>
+        <n-text v-else>暂无歌曲，请前往列表添加</n-text>
+      </Transition>
     </n-drawer-content>
   </n-drawer>
 </template>
@@ -113,6 +120,15 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .playlist-drawer {
+  .v-enter-active,
+  .v-leave-active {
+    transition: opacity 0.3s ease;
+  }
+
+  .v-enter-from,
+  .v-leave-to {
+    opacity: 0;
+  }
   .songs {
     border-radius: 8px;
     cursor: pointer;
