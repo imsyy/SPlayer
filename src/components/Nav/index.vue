@@ -18,11 +18,7 @@
       >
         <router-link class="link" to="/discover">发现</router-link>
       </n-dropdown>
-      <n-dropdown
-        trigger="hover"
-        :options="userOptions"
-        @select="menuSelect"
-      >
+      <n-dropdown trigger="hover" :options="userOptions" @select="menuSelect">
         <router-link class="link" to="/user">我的</router-link>
       </n-dropdown>
     </div>
@@ -44,7 +40,8 @@
           size="small"
           :src="
             user.getUserData.avatarUrl
-              ? user.getUserData.avatarUrl
+              ? user.getUserData.avatarUrl.replace(/^http:/, 'https:') +
+                '?param=60y60'
               : '/images/ico/user-filling.svg'
           "
           :img-props="{ class: 'avatarImg' }"
@@ -109,7 +106,8 @@ const userDataRender = () => {
         round: true,
         style: "margin-right: 12px",
         src: user.userLogin
-          ? user.getUserData.avatarUrl
+          ? user.getUserData.avatarUrl.replace(/^http:/, "https:") +
+            "?param=60y60"
           : "/images/ico/user-filling.svg",
         fallbackSrc: "/images/ico/user-filling.svg",
       }),

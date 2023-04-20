@@ -3,7 +3,11 @@
     <div
       class="countdown"
       :style="{ animationPlayState: music.getPlayState ? 'running' : 'paused' }"
-      v-if="remainingPoint <= 2 && totalDuration > 3"
+      v-if="
+        remainingPoint <= 2 &&
+        totalDuration > 3 &&
+        music.getPlaySongLyric.lrc[0]
+      "
     >
       <span class="point" :class="remainingPoint > 2 ? 'hidden' : null">●</span>
       <span class="point" :class="remainingPoint > 1 ? 'hidden' : null">●</span>
@@ -30,9 +34,11 @@ const totalDuration = ref(
 watch(
   () => music.getPlaySongTime.currentTime,
   (val) => {
-    const remainingTime = totalDuration.value - val - 0.5;
-    const progress = 1 - remainingTime / totalDuration.value;
-    remainingPoint.value = Number(Math.floor(3 * progress));
+    if (music.getPlaySongLyric.lrc[0]) {
+      const remainingTime = totalDuration.value - val - 0.5;
+      const progress = 1 - remainingTime / totalDuration.value;
+      remainingPoint.value = Number(Math.floor(3 * progress));
+    }
   }
 );
 
@@ -40,10 +46,12 @@ watch(
 watch(
   () => music.getPlaySongLyric?.lrc,
   (val) => {
-    totalDuration.value = music.getPlaySongLyric.hasYrc
-      ? music.getPlaySongLyric?.yrc[0].time
-      : val[0].time;
-    remainingPoint.value = 0;
+    if (music.getPlaySongLyric.lrc[0]) {
+      totalDuration.value = music.getPlaySongLyric.hasYrc
+        ? music.getPlaySongLyric?.yrc[0].time
+        : val[0].time;
+      remainingPoint.value = 0;
+    }
   }
 );
 </script>

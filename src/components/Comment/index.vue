@@ -14,7 +14,12 @@
           <img
             class="musicPackage"
             v-if="commentData.user.vipRights?.redVipAnnualCount > 0"
-            :src="commentData.user.vipRights.musicPackage.iconUrl"
+            :src="
+              commentData.user.vipRights.musicPackage.iconUrl.replace(
+                /^http:/,
+                'https:'
+              )
+            "
             alt="redVipAnnualCount"
             title="网易音乐人"
           />
@@ -25,7 +30,12 @@
         >
           <img
             v-if="commentData.user.vipRights.associator"
-            :src="commentData.user.vipRights.associator.iconUrl"
+            :src="
+              commentData.user.vipRights.associator.iconUrl.replace(
+                /^http:/,
+                'https:'
+              )
+            "
             alt="associator"
             title="黑胶会员"
           />

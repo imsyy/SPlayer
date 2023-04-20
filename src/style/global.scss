@@ -47,21 +47,7 @@ body,
   }
   .n-card-header {
     .n-card-header__main {
-      // font-weight: bold;
       font-size: 18px;
-      // position: relative;
-      // padding-left: 6px;
-      // display: flex;
-      // align-items: center;
-      // &::before {
-      //   content: "";
-      //   position: absolute;
-      //   left: -4px;
-      //   width: 4px;
-      //   height: 80%;
-      //   border-radius: 4px;
-      //   background-color: $mainColor;
-      // }
     }
   }
   .n-card__content {
@@ -73,10 +59,13 @@ body,
     line-height: 32px;
   }
 }
-.n-modal-body-wrapper {
-  .n-modal-mask {
-    -webkit-backdrop-filter: blur(16px);
-    backdrop-filter: blur(16px);
+.n-modal-container {
+  z-index: 2006 !important;
+  .n-modal-body-wrapper {
+    .n-modal-mask {
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+    }
   }
 }
 
@@ -110,6 +99,18 @@ body,
 // Nalert
 .n-alert {
   border-radius: 8px !important;
+}
+
+// Drawer
+.n-drawer-container {
+  .n-drawer {
+    border-radius: 8px 0 0 8px;
+    transition: all 0.3s;
+    @media (max-width: 450px) {
+      width: 100% !important;
+      border-radius: 0;
+    }
+  }
 }
 
 // 文本超出隐藏

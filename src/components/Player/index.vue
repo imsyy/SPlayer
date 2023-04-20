@@ -168,10 +168,8 @@
             @click="music.setPlaySongMode()"
           />
         </div>
-        <div class="playlist">
-          <PlayList />
+        <div :class="music.showPlayList ? 'playlist open' : 'playlist'">
           <n-icon
-            class="next"
             size="30"
             :component="PlaylistPlayRound"
             @click.stop="music.showPlayList = !music.showPlayList"
@@ -215,7 +213,11 @@
       :src="music.getPlaySongLink"
     ></audio>
   </n-card>
+  <!-- 播放列表 -->
+  <PlayListDrawer ref="PlayListDrawerRef" />
+  <!-- 添加到歌单 -->
   <AddPlaylist ref="addPlayListRef" />
+  <!-- 播放器 -->
   <BigPlayer />
 </template>
 
@@ -249,8 +251,8 @@ import { storeToRefs } from "pinia";
 import { musicStore, settingStore } from "@/store";
 import { useRouter } from "vue-router";
 import AddPlaylist from "@/components/DataModel/AddPlaylist.vue";
+import PlayListDrawer from "@/components/DataModel/PlayListDrawer.vue";
 import AllArtists from "@/components/DataList/AllArtists.vue";
-import PlayList from "@/components/DataList/PlayList.vue";
 import BigPlayer from "./BigPlayer.vue";
 import debounce from "@/utils/debounce";
 
@@ -259,6 +261,7 @@ const setting = settingStore();
 const music = musicStore();
 const { persistData } = storeToRefs(music);
 const addPlayListRef = ref(null);
+const PlayListDrawerRef = ref(null);
 
 // 重试次数
 const testNumber = ref(0);
@@ -562,7 +565,7 @@ watch(
   bottom: -90px;
   left: 0;
   transition: all 0.3s;
-  z-index: 2;
+  z-index: 2004;
   &.show {
     bottom: 0;
   }
@@ -606,23 +609,6 @@ watch(
     align-items: center;
     max-width: 1400px;
     margin: 0 auto;
-    @media (max-width: 620px) {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      .data {
-        .time {
-          display: none;
-        }
-      }
-      .control {
-        margin-left: auto;
-        .prev,
-        .next {
-          display: none;
-        }
-      }
-    }
     .data {
       display: flex;
       flex-direction: row;
@@ -794,6 +780,12 @@ watch(
         display: flex;
         align-items: center;
         justify-content: center;
+        &.open {
+          .n-icon {
+            background-color: $mainColor;
+            color: var(--n-color-embedded);
+          }
+        }
       }
       .volume {
         display: flex;
@@ -807,6 +799,26 @@ watch(
         .volmePg {
           --n-handle-size: 12px;
           --n-rail-height: 3px;
+        }
+      }
+    }
+    @media (max-width: 620px) {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      .data {
+        .time {
+          display: none;
+        }
+      }
+      .control {
+        margin-left: auto;
+        .prev,
+        .next {
+          display: none;
+        }
+        .play-state {
+          margin: 0;
         }
       }
     }

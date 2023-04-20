@@ -181,6 +181,7 @@ const lrcAllLeave = () => {
 };
 
 // 全屏切换
+const timeOut = ref(null);
 const screenfullIcon = shallowRef(FullscreenRound);
 const screenfullChange = () => {
   if (screenfull.isEnabled) {
@@ -189,7 +190,7 @@ const screenfullChange = () => {
       ? FullscreenRound
       : FullscreenExitRound;
     // 延迟一段时间执行列表滚动
-    setTimeout(() => {
+    timeOut.value = setTimeout(() => {
       lrcMouseStatus.value = false;
       lyricsScroll(music.getPlaySongLyricIndex);
     }, 500);
@@ -248,6 +249,10 @@ onMounted(() => {
   });
 });
 
+onBeforeUnmount(() => {
+  clearTimeout(timeOut.value);
+});
+
 // 监听页面是否打开
 watch(
   () => music.showBigPlayer,
@@ -256,6 +261,7 @@ watch(
       console.log("开启播放器", music.getPlaySongLyricIndex);
       nextTick(() => {
         lyricsScroll(music.getPlaySongLyricIndex);
+        music.showPlayList = false;
       });
     }
   }

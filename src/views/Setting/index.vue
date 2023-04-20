@@ -49,6 +49,7 @@ watch(
 
 onMounted(() => {
   $setSiteTitle("全局设置");
+  if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
 });
 </script>
 
