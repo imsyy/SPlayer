@@ -43,13 +43,13 @@
               @click.stop="jumpLink(item.id, 1)"
             />
             <n-tag
-              v-if="item.fee == 1"
+              v-if="item.fee == 1 || item.fee == 4"
               class="vip"
               round
               :bordered="false"
               size="small"
             >
-              VIP
+              {{ item.fee == 1 ? "VIP" : "数字专辑" }}
             </n-tag>
             <n-tag
               v-if="item.pc"

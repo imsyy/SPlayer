@@ -169,8 +169,9 @@ const discoverOptions = ref([
     key: "/discover/artists",
   },
 ]);
-const userOptions = ref(
-  user.userLogin
+const userOptions = ref([]);
+const changeUserOptions = (val) => {
+  userOptions.value = val
     ? [
         {
           label: "我的歌单",
@@ -198,8 +199,8 @@ const userOptions = ref(
           label: "登录账号",
           key: "/login",
         },
-      ]
-);
+      ];
+};
 const dropdownOptions = ref([
   {
     key: "header",
@@ -344,6 +345,18 @@ const dropdownSelect = (key) => {
       break;
   }
 };
+
+// 监听登录状态变化
+watch(
+  () => user.userLogin,
+  (val) => {
+    changeUserOptions(val);
+  }
+);
+
+onMounted(() => {
+  changeUserOptions(user.userLogin);
+});
 </script>
 
 <style lang="scss" scoped>
