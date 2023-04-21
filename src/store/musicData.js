@@ -281,7 +281,7 @@ const useMusicDataStore = defineStore("musicData", {
     },
     // 添加歌单至播放列表
     setPlaylists(value) {
-      this.persistData.playlists = value;
+      this.persistData.playlists = value.slice();
       console.log(`已添加${value.length}首歌曲至播放列表`);
     },
     // 更改每日推荐数据
@@ -387,8 +387,9 @@ const useMusicDataStore = defineStore("musicData", {
           this.persistData.playSongIndex = listLength - 1;
         } else if (this.persistData.playSongIndex >= listLength) {
           this.persistData.playSongIndex = 0;
+          $player.currentTime = 0;
         }
-        if (listMode !== "single") {
+        if (listMode !== "single" && listLength > 1) {
           this.playSongLink = null;
         }
         this.playState = true;
@@ -449,9 +450,17 @@ const useMusicDataStore = defineStore("musicData", {
       const name = this.persistData.playlists[index].name;
       if (index < this.persistData.playSongIndex) {
         this.persistData.playSongIndex--;
+      } else if (index === this.persistData.playSongIndex) {
+        // 如果删除的是当前播放歌曲，则将播放链接置为null
+        this.playSongLink = null;
       }
       $message.success(name + " 已从播放列表中移除");
       this.persistData.playlists.splice(index, 1);
+      // 检查当前播放歌曲的索引是否超出了列表范围
+      if (this.persistData.playSongIndex >= this.persistData.playlists.length) {
+        this.persistData.playSongIndex = 0;
+        this.playSongLink = null;
+      }
     },
     // 获取歌单分类
     setCatList(highquality = false) {

@@ -312,8 +312,8 @@ const getPlaySongData = (data, level = setting.songLevel) => {
       music.setPlaySongLyric(res);
     });
   } catch (err) {
-    console.log("当前歌曲所有音源匹配失败：" + err);
-    if (music.getPlayState && $player) {
+    if (music.getPlaylists[0] && music.getPlayState && $player) {
+      console.log("当前歌曲所有音源匹配失败：" + err);
       $message.warning("当前歌曲所有音源匹配失败，跳至下一首");
       music.setPlaySongIndex("next");
     }
@@ -360,8 +360,11 @@ const songPlay = () => {
     return false;
   }
   music.setPlayState(true);
-  // 兼容 mediaSession
-  if ("mediaSession" in navigator) {
+  // mediaSession
+  if (
+    "mediaSession" in navigator &&
+    Object.keys(music.getPlaySongData).length
+  ) {
     navigator.mediaSession.metadata = new MediaMetadata({
       title: music.getPlaySongData.name,
       artist: music.getPlaySongData.artist[0].name,
@@ -382,8 +385,8 @@ const songPlay = () => {
         {
           src:
             music.getPlaySongData.album.picUrl.replace(/^http:/, "https:") +
-            "?param=192y192",
-          sizes: "192x192",
+            "?param=512x512",
+          sizes: "512x512",
         },
       ],
     });
