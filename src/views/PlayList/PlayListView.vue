@@ -126,12 +126,13 @@ import { getPlayListDetail, getAllPlayList } from "@/api/playlist";
 import { useRouter } from "vue-router";
 import { userStore, musicStore } from "@/store";
 import { getSongTime, getLongTime } from "@/utils/timeTools.js";
-import { EditNoteRound, DeleteRound } from "@vicons/material";
+// import { EditNoteRound, DeleteRound } from "@vicons/material";
 import DataLists from "@/components/DataList/DataLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
+
 const router = useRouter();
-const user = userStore();
-const music = musicStore();
+// const user = userStore();
+// const music = musicStore();
 
 // 歌单数据
 const playListId = ref(router.currentRoute.value.query.id);
@@ -178,6 +179,7 @@ const getAllPlayListData = (id, limit = 30, offset = 0) => {
           alia: v.alia,
           time: getSongTime(v.dt),
           fee: v.fee,
+          sourceId: id,
           pc: v.pc ? v.pc : null,
           mv: v.mv ? v.mv : null,
         });

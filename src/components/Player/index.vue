@@ -201,6 +201,7 @@
         </div>
       </div>
     </div>
+    <!-- 全局播放器 -->
     <audio
       ref="player"
       :autoplay="music.getPlayState"
@@ -208,6 +209,7 @@
       @play="songPlay"
       @pause="songPause"
       @canplay="songCanplay"
+      @loadeddata="songReady"
       @error="songError"
       @ended="music.setPlaySongIndex('next')"
       :src="music.getPlaySongLink"
@@ -227,6 +229,7 @@ import {
   getMusicUrl,
   getMusicNumUrl,
   getMusicNewLyric,
+  songScrobble,
 } from "@/api/song";
 import { NIcon } from "naive-ui";
 import {
@@ -343,23 +346,45 @@ const songUpdate = (e) => {
   music.setPlaySongTime({ currentTime, duration });
 };
 
-// 歌曲缓冲完毕
+// 歌曲缓冲完成
 const songCanplay = () => {
-  console.log("缓冲完毕", music.getPlayState);
+  console.log("缓冲完成", music.getPlayState);
   if (music.getPlayState && $player) {
     music.setPlayState(true);
     songInOrOut("play");
   }
 };
 
+// 歌曲首次缓冲
+const songReady = () => {
+  const songId = music.getPlaySongData?.id;
+  const sourceId = music.getPlaySongData?.sourceId
+    ? music.getPlaySongData.sourceId
+    : 0;
+  console.log("首次缓冲完成：" + songId + " / 来源：" + sourceId);
+  // 听歌打卡
+  songScrobble(songId, sourceId).catch((err) => {
+    console.error("歌曲打卡失败：" + err);
+  });
+};
+
 // 歌曲开始播放
 const songPlay = () => {
   testNumber.value = 0;
-  if (!music.getPlaySongData) {
+  if (!Object.keys(music.getPlaySongData).length) {
     $message.error("音乐数据获取失败");
     return false;
   }
   music.setPlayState(true);
+  const songName = music.getPlaySongData.name;
+  const songArtist = music.getPlaySongData.artist[0].name;
+  $message.info(songName + " - " + songArtist, {
+    icon: () =>
+      h(NIcon, null, {
+        default: () => h(MusicNoteFilled),
+      }),
+  });
+  console.log("开始播放：" + songName + " - " + songArtist);
   // mediaSession
   if (
     "mediaSession" in navigator &&
@@ -397,21 +422,9 @@ const songPlay = () => {
       music.setPlaySongIndex("prev");
     });
   }
-  $message.info(
-    music.getPlaySongData.name + " - " + music.getPlaySongData.artist[0].name,
-    {
-      icon: () =>
-        h(NIcon, null, {
-          default: () => h(MusicNoteFilled),
-        }),
-    }
-  );
   // 写入播放历史
   music.setPlayHistory(music.getPlaySongData);
-  // 更改页面标题
-  // $setSiteTitle(
-  //   music.getPlaySongData.name + " - " + music.getPlaySongData.artist[0].name
-  // );
+  // 播放时页面标题
   window.document.title =
     music.getPlaySongData.name +
     " - " +
@@ -469,7 +482,6 @@ const songPause = () => {
   console.log("音乐暂停");
   if (!$player.ended) music.setPlayState(false);
   // 更改页面标题
-  // window.document.title = "SPlayer";
   $setSiteTitle();
 };
 

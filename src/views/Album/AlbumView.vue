@@ -128,6 +128,7 @@ const getAlbumData = (id) => {
           alia: v.alia,
           time: getSongTime(v.dt),
           fee: v.fee,
+          sourceId: id,
           pc: v.pc ? v.pc : null,
           mv: v.mv ? v.mv : null,
         });
