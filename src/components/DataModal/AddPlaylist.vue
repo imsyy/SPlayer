@@ -3,14 +3,31 @@
     class="add-playlist s-modal"
     v-model:show="addToPlaylistModel"
     preset="card"
-    title="添加到歌单"
     :bordered="false"
     :on-after-leave="closeAddToPlaylist"
   >
+    <template #header>
+      添加到歌单
+      <n-tag
+        round
+        class="tag"
+        type="primary"
+        :style="{
+          marginLeft: '12px',
+          fontSize: '13px',
+          transform: 'translateY(-2px)',
+          cursor: 'pointer',
+        }"
+        :bordered="false"
+        @click="createPlaylistRef.openCreatePlaylist()"
+      >
+        新建歌单
+      </n-tag>
+    </template>
     <n-space vertical class="list" v-if="user.getUserPlayLists.own[0]">
       <div
         class="item"
-        v-for="item in user.getUserPlayLists.own"
+        v-for="item in user.getUserPlayLists.own.slice(1)"
         :key="item"
         @click="addToPlayList(item.id, addToPlaylistId)"
       >
@@ -31,13 +48,17 @@
     </n-space>
     <n-text v-else>歌单列表加载中</n-text>
   </n-modal>
+  <!-- 新建歌单 -->
+  <CreatePlaylist ref="createPlaylistRef" />
 </template>
 
 <script setup>
 import { addSongToPlayList } from "@/api/playlist";
 import { userStore } from "@/store";
+import CreatePlaylist from "./CreatePlaylist.vue";
 
 const user = userStore();
+const createPlaylistRef = ref(null);
 
 // 收藏到歌单数据
 const addToPlaylistModel = ref(false);

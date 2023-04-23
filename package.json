@@ -14,6 +14,7 @@
     "@ivanv/vue-collapse-transition": "^1.0.2",
     "artplayer": "^4.5.12",
     "axios": "^1.2.0",
+    "colorthief": "^2.4.0",
     "pinia": "^2.0.26",
     "pinia-plugin-persistedstate": "^3.0.1",
     "plyr": "^3.7.3",

@@ -148,3 +148,21 @@ export const getSongDownload = (id, br = 999000) => {
     },
   });
 };
+
+/**
+ * 听歌打卡
+ * @param {number} id - 音乐ID
+ * @param {number} sourceid - 来源ID
+ */
+export const songScrobble = (id, sourceid = 0, time = 0) => {
+  return axios({
+    method: "GET",
+    url: "/scrobble",
+    params: {
+      id,
+      sourceid,
+      time,
+      timestamp: new Date().getTime(),
+    },
+  });
+};

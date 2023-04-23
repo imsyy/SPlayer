@@ -32,6 +32,7 @@
               marginLeft: '12px',
               fontSize: '12px',
               transform: 'translateY(-2px)',
+              cursor: 'pointer',
             }"
             :bordered="false"
             @click="changeTagName('全部歌单')"

@@ -201,6 +201,7 @@
         </div>
       </div>
     </div>
+    <!-- 全局播放器 -->
     <audio
       ref="player"
       :autoplay="music.getPlayState"
@@ -208,6 +209,7 @@
       @play="songPlay"
       @pause="songPause"
       @canplay="songCanplay"
+      @loadeddata="songReady"
       @error="songError"
       @ended="music.setPlaySongIndex('next')"
       :src="music.getPlaySongLink"
@@ -227,6 +229,7 @@ import {
   getMusicUrl,
   getMusicNumUrl,
   getMusicNewLyric,
+  songScrobble,
 } from "@/api/song";
 import { NIcon } from "naive-ui";
 import {
@@ -248,17 +251,20 @@ import {
 } from "@vicons/material";
 import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
 import { storeToRefs } from "pinia";
-import { musicStore, settingStore } from "@/store";
+import { musicStore, settingStore, userStore, siteStore } from "@/store";
 import { useRouter } from "vue-router";
-import AddPlaylist from "@/components/DataModel/AddPlaylist.vue";
-import PlayListDrawer from "@/components/DataModel/PlayListDrawer.vue";
+import AddPlaylist from "@/components/DataModal/AddPlaylist.vue";
+import PlayListDrawer from "@/components/DataModal/PlayListDrawer.vue";
 import AllArtists from "@/components/DataList/AllArtists.vue";
+import ColorThief from "colorthief";
 import BigPlayer from "./BigPlayer.vue";
 import debounce from "@/utils/debounce";
 
 const router = useRouter();
 const setting = settingStore();
 const music = musicStore();
+const user = userStore();
+const site = siteStore();
 const { persistData } = storeToRefs(music);
 const addPlayListRef = ref(null);
 const PlayListDrawerRef = ref(null);
@@ -343,23 +349,47 @@ const songUpdate = (e) => {
   music.setPlaySongTime({ currentTime, duration });
 };
 
-// 歌曲缓冲完毕
+// 歌曲缓冲完成
 const songCanplay = () => {
-  console.log("缓冲完毕", music.getPlayState);
+  console.log("缓冲完成", music.getPlayState);
   if (music.getPlayState && $player) {
     music.setPlayState(true);
     songInOrOut("play");
   }
 };
 
+// 歌曲首次缓冲
+const songReady = () => {
+  const songId = music.getPlaySongData?.id;
+  const sourceId = music.getPlaySongData?.sourceId
+    ? music.getPlaySongData.sourceId
+    : 0;
+  console.log("首次缓冲完成：" + songId + " / 来源：" + sourceId);
+  // 听歌打卡
+  if (user.userLogin) {
+    songScrobble(songId, sourceId).catch((err) => {
+      console.error("歌曲打卡失败：" + err);
+    });
+  }
+};
+
 // 歌曲开始播放
 const songPlay = () => {
   testNumber.value = 0;
-  if (!music.getPlaySongData) {
+  if (!Object.keys(music.getPlaySongData).length) {
     $message.error("音乐数据获取失败");
     return false;
   }
   music.setPlayState(true);
+  const songName = music.getPlaySongData.name;
+  const songArtist = music.getPlaySongData.artist[0].name;
+  $message.info(songName + " - " + songArtist, {
+    icon: () =>
+      h(NIcon, null, {
+        default: () => h(MusicNoteFilled),
+      }),
+  });
+  console.log("开始播放：" + songName + " - " + songArtist);
   // mediaSession
   if (
     "mediaSession" in navigator &&
@@ -397,21 +427,9 @@ const songPlay = () => {
       music.setPlaySongIndex("prev");
     });
   }
-  $message.info(
-    music.getPlaySongData.name + " - " + music.getPlaySongData.artist[0].name,
-    {
-      icon: () =>
-        h(NIcon, null, {
-          default: () => h(MusicNoteFilled),
-        }),
-    }
-  );
   // 写入播放历史
   music.setPlayHistory(music.getPlaySongData);
-  // 更改页面标题
-  // $setSiteTitle(
-  //   music.getPlaySongData.name + " - " + music.getPlaySongData.artist[0].name
-  // );
+  // 播放时页面标题
   window.document.title =
     music.getPlaySongData.name +
     " - " +
@@ -469,7 +487,6 @@ const songPause = () => {
   console.log("音乐暂停");
   if (!$player.ended) music.setPlayState(false);
   // 更改页面标题
-  // window.document.title = "SPlayer";
   $setSiteTitle();
 };
 
@@ -502,10 +519,33 @@ const volumeMute = () => {
   }
 };
 
+// 获取封面图主色
+const getPicColor = (url) => {
+  const imgUrl = url.replace(/^http:/, "https:") + "?param=50y50";
+  const img = new Image();
+  fetch(imgUrl)
+    .then((res) => res.blob())
+    .then((blob) => {
+      img.src = URL.createObjectURL(blob);
+      img.addEventListener("load", async () => {
+        const colorThief = new ColorThief();
+        const color = await colorThief.getColor(img);
+        console.log(`当前封面主色：rgb(${color.join(",")})`);
+        site.songPicColor = `rgb(${color.join(",")})`;
+      });
+    })
+    .catch((err) => {
+      console.error("图像处理出错：" + err);
+      site.songPicColor = "rgb(128,128,128)";
+    });
+};
+
 onMounted(() => {
   // 获取音乐数据
-  if (music.getPlaylists[0] && music.getPlaySongData)
+  if (music.getPlaylists[0] && music.getPlaySongData) {
     getPlaySongData(music.getPlaySongData);
+    getPicColor(music.getPlaySongData.album.picUrl);
+  }
   // 挂载播放器
   window.$player = player.value;
   // 恢复上次播放进度
@@ -522,6 +562,7 @@ watch(
   (val) => {
     debounce(() => {
       getPlaySongData(val);
+      getPicColor(val.album.picUrl);
     }, 500);
   }
 );
@@ -539,9 +580,7 @@ watch(
   () => music.getPlayState,
   (val) => {
     nextTick(() => {
-      // $player ? (val ? $player.play() : $player.pause()) : null;
       if ($player) {
-        // val ? $player.play() : $player.pause();
         val ? songInOrOut("play") : songInOrOut("pause");
       } else {
         $message.error("播放器初始化失败，请重试");
@@ -549,16 +588,6 @@ watch(
     });
   }
 );
-
-// 监听歌曲进度更新
-// watch(
-//   () => music.getPlaySongTime,
-//   (val) => {
-//     if (val.barMoveDistance) {
-//       songTimeVal.value = val.barMoveDistance;
-//     }
-//   }
-// );
 </script>
 
 <style lang="scss" scoped>

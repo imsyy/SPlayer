@@ -112,7 +112,7 @@ import {
 import { formatNumber } from "@/utils/timeTools.js";
 import AllArtists from "@/components/DataList/AllArtists.vue";
 import CoverLists from "@/components/DataList/CoverLists.vue";
-import AddPlaylist from "@/components/DataModel/AddPlaylist.vue";
+import AddPlaylist from "@/components/DataModal/AddPlaylist.vue";
 
 const router = useRouter();
 const music = musicStore();

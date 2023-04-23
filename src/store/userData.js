@@ -12,8 +12,6 @@ import { formatNumber, getLongTime } from "@/utils/timeTools.js";
 const useUserDataStore = defineStore("userData", {
   state: () => {
     return {
-      // 站点标题
-      siteTitle: "SPlayer",
       // 用户登录状态
       userLogin: false,
       // 用户 cookie
@@ -70,10 +68,6 @@ const useUserDataStore = defineStore("userData", {
     },
   },
   actions: {
-    // 更改站点标题
-    setSiteTitle(value) {
-      this.siteTitle = value;
-    },
     // 更改 cookie
     setCookie(value) {
       window.localStorage.setItem("cookie", value);

@@ -35,7 +35,7 @@
 </template>
 
 <script setup>
-import { musicStore, userStore, settingStore } from "@/store";
+import { musicStore, userStore, settingStore, siteStore } from "@/store";
 import { useRouter } from "vue-router";
 import { getLoginState, refreshLogin } from "@/api/login";
 import { userDailySignin, userYunbeiSign } from "@/api/user";
@@ -47,6 +47,7 @@ import packageJson from "@/../package.json";
 const music = musicStore();
 const user = userStore();
 const setting = settingStore();
+const site = siteStore();
 const router = useRouter();
 const mainContent = ref(null);
 
@@ -79,8 +80,8 @@ const setSiteTitle = (val) => {
     ? val === "SPlayer"
       ? val
       : val + " - SPlayer"
-    : user.siteTitle;
-  user.setSiteTitle(title);
+    : site.siteTitle;
+  site.siteTitle = title;
   sessionStorage.setItem("siteTitle", title);
   if (!music.getPlayState) {
     window.document.title = title;

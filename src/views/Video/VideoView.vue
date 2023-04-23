@@ -301,7 +301,6 @@ watch(
           }
           .n-icon {
             margin-right: 6px;
-            transform: translateY(-1px);
           }
         }
         @media (max-width: 578px) {

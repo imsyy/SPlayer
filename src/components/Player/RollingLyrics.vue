@@ -202,7 +202,8 @@ const lrcTextClick = (time) => {
     }
   }
   &:hover {
-    .lrc-text {
+    .lrc-text,
+    .yrc-text {
       &.blur {
         filter: blur(0) !important;
       }
@@ -288,7 +289,7 @@ const lrcTextClick = (time) => {
     &:hover {
       @media (min-width: 768px) {
         background-color: #ffffff20;
-        opacity: 1;
+        opacity: 0.8;
       }
     }
     &:active {

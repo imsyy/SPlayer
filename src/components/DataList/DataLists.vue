@@ -334,9 +334,9 @@ import { useRouter } from "vue-router";
 import { setCloudDel } from "@/api/user";
 import { NIcon } from "naive-ui";
 import AllArtists from "./AllArtists.vue";
-import AddPlaylist from "@/components/DataModel/AddPlaylist.vue";
-import CloudMatch from "@/components/DataModel/CloudMatch.vue";
-import DownloadSong from "@/components/DataModel/DownloadSong.vue";
+import AddPlaylist from "@/components/DataModal/AddPlaylist.vue";
+import CloudMatch from "@/components/DataModal/CloudMatch.vue";
+import DownloadSong from "@/components/DataModal/DownloadSong.vue";
 import SmallSongData from "./SmallSongData.vue";
 
 const router = useRouter();
@@ -387,13 +387,13 @@ const copySongData = (id, url = true) => {
 };
 
 // 图标渲染
-const renderIcon = (icon) => {
+const renderIcon = (icon, filled = true) => {
   return () => {
     return h(
       NIcon,
       { depth: 2, style: { transform: "translateX(2px)" } },
       {
-        default: () => h(icon, { theme: "filled" }),
+        default: () => h(icon, { theme: filled ? "filled" : "outline" }),
       }
     );
   };
@@ -453,7 +453,7 @@ const openRightMenu = (e, data) => {
       {
         key: "comment",
         label: "前往评论区",
-        icon: renderIcon(Comments),
+        icon: renderIcon(Comments, false),
         props: {
           onClick: () => {
             router.push(`/comment?id=${data.id}`);
@@ -463,7 +463,7 @@ const openRightMenu = (e, data) => {
       {
         key: "mv",
         label: "观看 MV",
-        icon: renderIcon(Video),
+        icon: renderIcon(Video, false),
         show: data.mv && data.mv != 0 ? true : false,
         props: {
           onClick: () => {
@@ -505,7 +505,7 @@ const openRightMenu = (e, data) => {
       {
         key: "search",
         label: "同名搜索",
-        icon: renderIcon(Search),
+        icon: renderIcon(Search, false),
         props: {
           onClick: () => {
             router.push({
@@ -521,7 +521,7 @@ const openRightMenu = (e, data) => {
       {
         key: "copyId",
         label: "复制歌曲 ID",
-        icon: renderIcon(FileMusic),
+        icon: renderIcon(FileMusic, false),
         props: {
           onClick: () => {
             copySongData(data.id, false);

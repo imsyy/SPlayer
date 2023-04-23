@@ -70,7 +70,7 @@ import {
 } from "@icon-park/vue-next";
 import { userStore, settingStore } from "@/store";
 import { useRouter } from "vue-router";
-import AboutSite from "@/components/DataModel/AboutSite.vue";
+import AboutSite from "@/components/DataModal/AboutSite.vue";
 import SearchInp from "@/components/SearchInp/index.vue";
 
 const router = useRouter();

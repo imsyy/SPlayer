@@ -1,11 +1,29 @@
 <template>
   <div class="set-player">
     <n-card class="set-item">
-      <div class="name">播放器样式</div>
+      <div class="name">
+        播放器样式
+        <span class="tip">播放器左侧功能区样式</span>
+      </div>
       <n-select
         class="set"
         v-model:value="playerStyle"
         :options="playerStyleOptions"
+      />
+    </n-card>
+    <n-card class="set-item">
+      <div class="name">
+        播放背景样式
+        <span class="tip">{{
+          backgroundImageShow === "blur"
+            ? "将专辑封面模糊显示"
+            : "提取专辑主色作为背景颜色"
+        }}</span>
+      </div>
+      <n-select
+        class="set"
+        v-model:value="backgroundImageShow"
+        :options="backgroundImageShowOptions"
       />
     </n-card>
     <n-card class="set-item">
@@ -140,6 +158,7 @@ const {
   lrcMousePause,
   showYrc,
   useUnmServer,
+  backgroundImageShow,
 } = storeToRefs(setting);
 
 // UNM 开关显示
@@ -178,6 +197,18 @@ const playerStyleOptions = [
   {
     label: "唱片模式",
     value: "record",
+  },
+];
+
+// 播放背景类型
+const backgroundImageShowOptions = [
+  {
+    label: "封面主色",
+    value: "solid",
+  },
+  {
+    label: "封面模糊",
+    value: "blur",
   },
 ];
 

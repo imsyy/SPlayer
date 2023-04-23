@@ -3,15 +3,18 @@
     <div
       v-show="music.showBigPlayer"
       class="bplayer"
-      :style="
-        music.getPlaySongData
+      :style="[
+        music.getPlaySongData && setting.backgroundImageShow === 'blur'
           ? 'background-image: url(' +
             music.getPlaySongData.album.picUrl.replace(/^http:/, 'https:') +
             '?param=50y50)'
-          : ''
-      "
+          : '',
+        `backgroundColor: ${site.songPicColor}`,
+      ]"
     >
-      <div class="gray" />
+      <div
+        :class="setting.backgroundImageShow === 'blur' ? 'gray blur' : 'gray'"
+      />
       <div class="icon-menu">
         <div class="menu-left">
           <div class="icon">
@@ -45,7 +48,6 @@
           </div>
         </div>
       </div>
-
       <div
         :class="
           music.getPlaySongLyric.lrc[0] && music.getPlaySongLyric.lrc.length > 4
@@ -148,7 +150,7 @@ import {
   FullscreenExitRound,
   SettingsRound,
 } from "@vicons/material";
-import { musicStore, settingStore } from "@/store";
+import { musicStore, settingStore, siteStore } from "@/store";
 import { useRouter } from "vue-router";
 import MusicFrequency from "@/utils/MusicFrequency.js";
 import PlayerRecord from "./PlayerRecord.vue";
@@ -158,6 +160,7 @@ import screenfull from "screenfull";
 
 const router = useRouter();
 const music = musicStore();
+const site = siteStore();
 const setting = settingStore();
 
 // 工具栏显隐
@@ -229,6 +232,20 @@ const lyricsScroll = (index) => {
   }
 };
 
+// 改变 PWA 应用标题栏颜色
+const changePwaColor = () => {
+  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+  if (music.showBigPlayer) {
+    themeColorMeta.setAttribute("content", site.songPicColor);
+  } else {
+    if (setting.getSiteTheme == "light") {
+      themeColorMeta.setAttribute("content", "#ffffff");
+    } else if (setting.getSiteTheme == "dark") {
+      themeColorMeta.setAttribute("content", "#18181c");
+    }
+  }
+};
+
 onMounted(() => {
   nextTick(() => {
     if (setting.musicFrequency) {
@@ -257,6 +274,7 @@ onBeforeUnmount(() => {
 watch(
   () => music.showBigPlayer,
   (val) => {
+    changePwaColor();
     if (val) {
       console.log("开启播放器", music.getPlaySongLyricIndex);
       nextTick(() => {
@@ -271,6 +289,12 @@ watch(
 watch(
   () => music.getPlaySongLyricIndex,
   (val) => lyricsScroll(val)
+);
+
+// 监听主题色改变
+watch(
+  () => site.songPicColor,
+  () => changePwaColor()
 );
 </script>
 
@@ -324,10 +348,13 @@ watch(
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #00000060;
+    background-color: #00000030;
     -webkit-backdrop-filter: blur(80px);
     backdrop-filter: blur(80px);
     z-index: -1;
+    &.blur {
+      background-color: #00000060;
+    }
   }
   .icon-menu {
     padding: 20px;
@@ -494,7 +521,7 @@ watch(
         justify-content: center;
         flex-direction: column;
         .data {
-          padding: 0 20px;
+          padding: 0 3vh;
           margin-bottom: 8px;
           .name {
             font-size: 3vh;
@@ -523,7 +550,7 @@ watch(
         }
         .menu {
           opacity: 0;
-          padding: 0 20px;
+          padding: 0 3vh;
           margin-top: 20px;
           display: flex;
           flex-direction: row;

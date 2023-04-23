@@ -126,12 +126,13 @@ import { getPlayListDetail, getAllPlayList } from "@/api/playlist";
 import { useRouter } from "vue-router";
 import { userStore, musicStore } from "@/store";
 import { getSongTime, getLongTime } from "@/utils/timeTools.js";
-import { EditNoteRound, DeleteRound } from "@vicons/material";
+// import { EditNoteRound, DeleteRound } from "@vicons/material";
 import DataLists from "@/components/DataList/DataLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
+
 const router = useRouter();
-const user = userStore();
-const music = musicStore();
+// const user = userStore();
+// const music = musicStore();
 
 // 歌单数据
 const playListId = ref(router.currentRoute.value.query.id);
@@ -148,18 +149,23 @@ const totalCount = ref(0);
 
 // 获取歌单信息
 const getPlayListDetailData = (id) => {
-  getPlayListDetail(id).then((res) => {
-    console.log(res);
-    if (res.playlist) {
-      // 歌单总数
-      totalCount.value = res.playlist.trackCount;
-      // 歌单信息
-      playListDetail.value = res.playlist;
-      $setSiteTitle(res.playlist.name + " - 歌单");
-    } else {
+  getPlayListDetail(id)
+    .then((res) => {
+      console.log(res);
+      if (res.playlist) {
+        // 歌单总数
+        totalCount.value = res.playlist.trackCount;
+        // 歌单信息
+        playListDetail.value = res.playlist;
+        $setSiteTitle(res.playlist.name + " - 歌单");
+      } else {
+        $message.error("获取歌单信息失败");
+      }
+    })
+    .catch((err) => {
+      console.error("获取歌单信息失败：" + err);
       $message.error("获取歌单信息失败");
-    }
-  });
+    });
 };
 
 // 获取歌单所有歌曲
@@ -178,6 +184,7 @@ const getAllPlayListData = (id, limit = 30, offset = 0) => {
           alia: v.alia,
           time: getSongTime(v.dt),
           fee: v.fee,
+          sourceId: id,
           pc: v.pc ? v.pc : null,
           mv: v.mv ? v.mv : null,
         });
