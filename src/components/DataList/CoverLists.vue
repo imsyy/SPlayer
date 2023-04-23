@@ -92,7 +92,7 @@ import { likeAlbum } from "@/api/album";
 import { musicStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
 import AllArtists from "./AllArtists.vue";
-import PlaylistUpdate from "@/components/DataModel/PlaylistUpdate.vue";
+import PlaylistUpdate from "@/components/DataModal/PlaylistUpdate.vue";
 
 const router = useRouter();
 const music = musicStore();

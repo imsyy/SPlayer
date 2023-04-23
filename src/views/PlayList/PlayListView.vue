@@ -149,18 +149,23 @@ const totalCount = ref(0);
 
 // 获取歌单信息
 const getPlayListDetailData = (id) => {
-  getPlayListDetail(id).then((res) => {
-    console.log(res);
-    if (res.playlist) {
-      // 歌单总数
-      totalCount.value = res.playlist.trackCount;
-      // 歌单信息
-      playListDetail.value = res.playlist;
-      $setSiteTitle(res.playlist.name + " - 歌单");
-    } else {
+  getPlayListDetail(id)
+    .then((res) => {
+      console.log(res);
+      if (res.playlist) {
+        // 歌单总数
+        totalCount.value = res.playlist.trackCount;
+        // 歌单信息
+        playListDetail.value = res.playlist;
+        $setSiteTitle(res.playlist.name + " - 歌单");
+      } else {
+        $message.error("获取歌单信息失败");
+      }
+    })
+    .catch((err) => {
+      console.error("获取歌单信息失败：" + err);
       $message.error("获取歌单信息失败");
-    }
-  });
+    });
 };
 
 // 获取歌单所有歌曲

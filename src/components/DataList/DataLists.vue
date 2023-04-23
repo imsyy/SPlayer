@@ -334,9 +334,9 @@ import { useRouter } from "vue-router";
 import { setCloudDel } from "@/api/user";
 import { NIcon } from "naive-ui";
 import AllArtists from "./AllArtists.vue";
-import AddPlaylist from "@/components/DataModel/AddPlaylist.vue";
-import CloudMatch from "@/components/DataModel/CloudMatch.vue";
-import DownloadSong from "@/components/DataModel/DownloadSong.vue";
+import AddPlaylist from "@/components/DataModal/AddPlaylist.vue";
+import CloudMatch from "@/components/DataModal/CloudMatch.vue";
+import DownloadSong from "@/components/DataModal/DownloadSong.vue";
 import SmallSongData from "./SmallSongData.vue";
 
 const router = useRouter();

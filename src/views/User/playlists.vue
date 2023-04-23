@@ -7,83 +7,28 @@
         strong
         secondary
         round
-        @click="createModelShow = true"
+        @click="createPlaylistRef.openCreatePlaylist()"
       >
         <template #icon>
           <n-icon :component="AddCircleRound" />
         </template>
         新建歌单
       </n-button>
-      <n-modal
-        class="s-modal"
-        v-model:show="createModelShow"
-        preset="card"
-        title="新建歌单"
-        :bordered="false"
-        :on-after-leave="createClose"
-      >
-        <n-input
-          style="margin-bottom: 12px"
-          v-model:value="createName"
-          type="text"
-          placeholder="请输入新歌单标题"
-        />
-        <n-checkbox v-model:checked="createPrivacy">
-          设置为隐私歌单
-        </n-checkbox>
-        <template #footer>
-          <n-space justify="end">
-            <n-button @click="createClose"> 取消 </n-button>
-            <n-button
-              type="primary"
-              @click="createPlaylistBtn(createName, createPrivacy)"
-            >
-              新建
-            </n-button>
-          </n-space>
-        </template>
-      </n-modal>
+      <!-- 新建歌单 -->
+      <CreatePlaylist ref="createPlaylistRef" />
     </div>
     <CoverLists :listData="user.getUserPlayLists.own" />
   </div>
 </template>
 
 <script setup>
-import { createPlaylist } from "@/api/playlist";
 import { AddCircleRound } from "@vicons/material";
 import { userStore } from "@/store";
 import CoverLists from "@/components/DataList/CoverLists.vue";
+import CreatePlaylist from "@/components/DataModal/CreatePlaylist.vue";
 
 const user = userStore();
-
-// 新建歌单数据
-const createModelShow = ref(false);
-const createPrivacy = ref(false);
-const createName = ref(null);
-
-// 新建歌单
-const createPlaylistBtn = (name, privacy = false) => {
-  if (createName.value) {
-    createPlaylist(name, privacy ? "10" : null).then((res) => {
-      if (res.code === 200) {
-        createClose();
-        $message.success("歌单新建成功");
-        user.setUserPlayLists();
-      } else {
-        $message.error("歌单新建失败，请重试");
-      }
-    });
-  } else {
-    $message.info("请输入歌单名称");
-  }
-};
-
-// 取消新建歌单
-const createClose = () => {
-  createName.value = null;
-  createPrivacy.value = false;
-  createModelShow.value = false;
-};
+const createPlaylistRef = ref(null);
 
 onMounted(() => {
   $setSiteTitle("音乐库 - 我的歌单");

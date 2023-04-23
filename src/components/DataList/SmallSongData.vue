@@ -105,6 +105,7 @@ onMounted(() => {
   .pic {
     margin-right: 12px;
     border-radius: 8px;
+    min-width: 48px;
   }
   .name {
     line-height: 1.6;
