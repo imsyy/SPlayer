@@ -46,13 +46,18 @@ import { settingStore } from "@/store";
 const setting = settingStore();
 const osThemeRef = useOsTheme();
 
+// 标题栏元素
+const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+
 // 明暗切换
 const theme = ref(null);
 const changeTheme = () => {
   if (setting.getSiteTheme == "light") {
     theme.value = null;
+    themeColorMeta.setAttribute("content", "#ffffff");
   } else if (setting.getSiteTheme == "dark") {
     theme.value = darkTheme;
+    themeColorMeta.setAttribute("content", "#18181c");
   }
 };
 

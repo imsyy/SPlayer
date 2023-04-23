@@ -40,6 +40,8 @@ const useSettingDataStore = defineStore("settingData", {
       lrcMousePause: true,
       // 是否使用网易云解灰
       useUnmServer: true,
+      // 播放背景是否显示图片
+      backgroundImageShow: "blur",
     };
   },
   getters: {
