@@ -251,7 +251,7 @@ import {
 } from "@vicons/material";
 import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
 import { storeToRefs } from "pinia";
-import { musicStore, settingStore } from "@/store";
+import { musicStore, settingStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
 import AddPlaylist from "@/components/DataModal/AddPlaylist.vue";
 import PlayListDrawer from "@/components/DataModal/PlayListDrawer.vue";
@@ -262,6 +262,7 @@ import debounce from "@/utils/debounce";
 const router = useRouter();
 const setting = settingStore();
 const music = musicStore();
+const user = userStore();
 const { persistData } = storeToRefs(music);
 const addPlayListRef = ref(null);
 const PlayListDrawerRef = ref(null);
@@ -363,9 +364,11 @@ const songReady = () => {
     : 0;
   console.log("首次缓冲完成：" + songId + " / 来源：" + sourceId);
   // 听歌打卡
-  songScrobble(songId, sourceId).catch((err) => {
-    console.error("歌曲打卡失败：" + err);
-  });
+  if (user.userLogin) {
+    songScrobble(songId, sourceId).catch((err) => {
+      console.error("歌曲打卡失败：" + err);
+    });
+  }
 };
 
 // 歌曲开始播放
