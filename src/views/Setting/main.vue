@@ -121,5 +121,15 @@ const songLevelOptions = [
     value: "hires",
     disabled: user.userData?.vipType ? false : true,
   },
+  {
+    label: "鲸云臻音",
+    value: "jyeffect",
+    disabled: user.userData?.vipType ? false : true,
+  },
+  {
+    label: "鲸云母带",
+    value: "jymaster",
+    disabled: user.userData?.vipType ? false : true,
+  },
 ];
 </script>

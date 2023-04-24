@@ -562,7 +562,7 @@ watch(
   (val) => {
     debounce(() => {
       getPlaySongData(val);
-      getPicColor(val.album.picUrl);
+      getPicColor(val?.album.picUrl);
     }, 500);
   }
 );

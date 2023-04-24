@@ -77,6 +77,7 @@ const router = useRouter();
 const user = userStore();
 const setting = settingStore();
 const aboutSiteRef = ref(null);
+const timeOut = ref(null);
 
 // 下拉菜单显隐
 const showDropdown = ref(false);
@@ -330,6 +331,10 @@ const dropdownSelect = (key) => {
           onPositiveClick: () => {
             user.userLogOut();
             $message.success("已退出登录");
+            // 刷新页面
+            timeOut.value = setTimeout(() => {
+              document.location.reload();
+            }, 1000);
           },
         });
       } else {
@@ -356,6 +361,10 @@ watch(
 
 onMounted(() => {
   changeUserOptions(user.userLogin);
+});
+
+onBeforeUnmount(() => {
+  clearTimeout(timeOut.value);
 });
 </script>
 

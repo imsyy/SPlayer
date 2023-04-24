@@ -141,7 +141,7 @@ const signIn = () => {
 const cleanAll = () => {
   $message ? $message.success("重置成功") : alert("重置成功");
   localStorage.clear();
-  window.location.href = "/";
+  document.location.reload();
 };
 
 onMounted(() => {
@@ -191,6 +191,7 @@ onMounted(() => {
         if (music.getPlayListMode === "cloud") {
           $message.info("登录已失效，请重新登录");
           music.setPlaylists([]);
+          music.setPlayListMode("list");
         }
       }
     })

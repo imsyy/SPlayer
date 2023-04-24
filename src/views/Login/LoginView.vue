@@ -139,6 +139,7 @@ const loginStateMessage = ref(null);
 
 // 储存登录信息
 const saveLoginData = (data) => {
+  data.cookie = data.cookie.replaceAll(" HTTPOnly", "");
   user.setCookie(data.cookie);
   // 验证用户登录信息
   getLoginState().then((res) => {
