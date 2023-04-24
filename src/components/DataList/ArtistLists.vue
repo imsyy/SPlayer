@@ -75,7 +75,7 @@ const router = useRouter();
 const props = defineProps({
   // 列表数据
   listData: {
-    type: Object,
+    type: Array,
     default: [],
   },
   // 折叠栅格

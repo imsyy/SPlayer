@@ -42,6 +42,8 @@ const useSettingDataStore = defineStore("settingData", {
       useUnmServer: true,
       // 播放背景是否显示图片
       backgroundImageShow: "blur",
+      // 是否显示前奏等待
+      countDownShow: true,
     };
   },
   getters: {

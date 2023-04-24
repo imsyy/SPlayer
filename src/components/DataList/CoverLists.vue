@@ -100,7 +100,7 @@ const user = userStore();
 const props = defineProps({
   // 列表数据
   listData: {
-    type: Object,
+    type: Array,
     default: [],
   },
   // 列表类型

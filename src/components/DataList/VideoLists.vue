@@ -66,7 +66,6 @@
 
 <script setup>
 import { PlayOne, Youtube } from "@icon-park/vue-next";
-import { PlayArrowRound, OndemandVideoFilled } from "@vicons/material";
 import { useRouter } from "vue-router";
 import AllArtists from "./AllArtists.vue";
 
@@ -74,7 +73,7 @@ const router = useRouter();
 const props = defineProps({
   // 列表数据
   listData: {
-    type: Object,
+    type: Array,
     default: [],
   },
 });

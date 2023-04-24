@@ -31,7 +31,7 @@ const router = useRouter();
 const props = defineProps({
   // 歌手数据
   artistsData: {
-    type: Object,
+    type: Array,
     default: [],
   },
 });

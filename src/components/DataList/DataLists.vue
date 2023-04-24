@@ -2,12 +2,11 @@
   <Transition mode="out-in">
     <div class="datalists" v-if="listData[0]">
       <n-card
-        hoverable
+        v-for="item in listData"
+        :key="item"
         :class="
-          music.getPlaySongData
-            ? music.getPlaySongData.id == item.id
-              ? 'songs play'
-              : 'songs'
+          music.getPlaySongData && music.getPlaySongData.id == item.id
+            ? 'songs play'
             : 'songs'
         "
         :content-style="{
@@ -17,8 +16,7 @@
           alignItems: 'center',
           justifyContent: 'space-between',
         }"
-        v-for="item in listData"
-        :key="item"
+        hoverable
         @dblclick="
           setting.listClickMode === 'dblclick' ? playSong(listData, item) : null
         "
@@ -350,7 +348,7 @@ const downloadSongRef = ref(null);
 const props = defineProps({
   // 列表数据
   listData: {
-    type: Object,
+    type: Array,
     default: [],
   },
   // 专辑隐藏

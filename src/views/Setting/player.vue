@@ -49,6 +49,13 @@
     </n-card>
     <n-card class="set-item">
       <div class="name">
+        显示前奏等待
+        <span class="tip">部分歌曲前奏可能存在显示错误</span>
+      </div>
+      <n-switch v-model:value="countDownShow" :round="false" />
+    </n-card>
+    <n-card class="set-item">
+      <div class="name">
         显示逐字歌词
         <span class="tip">是否在歌曲具有逐字歌词时显示，实验性功能</span>
       </div>
@@ -159,6 +166,7 @@ const {
   showYrc,
   useUnmServer,
   backgroundImageShow,
+  countDownShow,
 } = storeToRefs(setting);
 
 // UNM 开关显示

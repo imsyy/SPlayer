@@ -40,7 +40,7 @@
             全部歌单
           </n-tag>
         </template>
-        <n-scrollbar style="max-height: 80vh">
+        <n-scrollbar>
           <div class="all-cat" v-if="music.catList?.sub[0]">
             <n-list>
               <n-list-item

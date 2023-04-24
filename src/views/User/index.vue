@@ -11,8 +11,10 @@
         "
         fallback-src="/images/ico/user-filling.svg"
       />
-      <n-text class="key">{{ user.getUserData.nickname }}</n-text>
-      <n-text class="tip">的音乐库</n-text>
+      <div class="text">
+        <n-text class="key">{{ user.getUserData.nickname }}</n-text>
+        <n-text class="tip">的音乐库</n-text>
+      </div>
     </div>
     <n-tabs
       class="main-tab"
@@ -76,16 +78,33 @@ watch(
     .avatar {
       width: 80px;
       height: 80px;
+      min-width: 80px;
       margin-right: 16px;
       box-shadow: 0 6px 8px -2px rgb(0 0 0 / 16%);
     }
-    .key {
-      font-size: 40px;
-      font-weight: bold;
-      margin-right: 8px;
-    }
-    .tip {
-      transform: translateY(8px);
+    .text {
+      display: flex;
+      align-items: center;
+      .key {
+        font-size: 40px;
+        font-weight: bold;
+        margin-right: 8px;
+      }
+      .tip {
+        transform: translateY(8px);
+      }
+      @media (max-width: 620px) {
+        flex-direction: column;
+        align-items: flex-start;
+        .key {
+          font-size: 30px;
+          margin-right: 0;
+        }
+        .tip {
+          font-size: 18px;
+          transform: translateY(0);
+        }
+      }
     }
   }
   .content {
