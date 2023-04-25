@@ -18,7 +18,10 @@
         !music.getPlaySongLyric.hasYrc || !setting.showYrc ? 'lrc-1' : 'yrc-1'
       "
     >
-      <CountDown :style="{ fontSize: setting.lyricsFontSize + 'vh' }" />
+      <CountDown
+        v-if="setting.countDownShow"
+        :style="{ fontSize: setting.lyricsFontSize + 'vh' }"
+      />
     </div>
     <template v-if="!music.getPlaySongLyric.hasYrc || !setting.showYrc">
       <div

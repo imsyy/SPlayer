@@ -73,8 +73,8 @@ watch(
     font-size: 16px;
     transition: all 0.3s;
     &:hover {
-      background-color: $mainSecondaryColor;
-      color: $mainColor;
+      background-color: var(--main-second-color);
+      color: var(--main-color);
     }
     &:active {
       transform: scale(0.95);

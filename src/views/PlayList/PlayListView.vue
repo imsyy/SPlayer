@@ -101,11 +101,13 @@
       />
     </div>
   </div>
-  <div class="title" v-else-if="!playListId">
-    <span class="key">参数不完整</span>
+  <div class="title" v-else-if="!playListId || !loadingState">
+    <span class="key">{{
+      loadingState ? "参数不完整" : "歌单信息加载失败"
+    }}</span>
     <br />
     <n-button strong secondary @click="router.go(-1)" style="margin-top: 20px">
-      返回上一级
+      返回上一页
     </n-button>
   </div>
   <div class="loading" v-else>
@@ -124,7 +126,7 @@
 <script setup>
 import { getPlayListDetail, getAllPlayList } from "@/api/playlist";
 import { useRouter } from "vue-router";
-import { userStore, musicStore } from "@/store";
+// import { userStore, musicStore } from "@/store";
 import { getSongTime, getLongTime } from "@/utils/timeTools.js";
 // import { EditNoteRound, DeleteRound } from "@vicons/material";
 import DataLists from "@/components/DataList/DataLists.vue";
@@ -140,6 +142,7 @@ const playListDetail = ref(null);
 const playListData = ref([]);
 const playListDescShow = ref(false);
 const pagelimit = ref(30);
+const loadingState = ref(true);
 const pageNumber = ref(
   router.currentRoute.value.query.page
     ? Number(router.currentRoute.value.query.page)
@@ -152,19 +155,16 @@ const getPlayListDetailData = (id) => {
   getPlayListDetail(id)
     .then((res) => {
       console.log(res);
-      if (res.playlist) {
-        // 歌单总数
-        totalCount.value = res.playlist.trackCount;
-        // 歌单信息
-        playListDetail.value = res.playlist;
-        $setSiteTitle(res.playlist.name + " - 歌单");
-      } else {
-        $message.error("获取歌单信息失败");
-      }
+      // 歌单总数
+      totalCount.value = res.playlist.trackCount;
+      // 歌单信息
+      playListDetail.value = res.playlist;
+      $setSiteTitle(res.playlist.name + " - 歌单");
     })
     .catch((err) => {
+      $setSiteTitle("歌单详情");
+      loadingState.value = false;
       console.error("获取歌单信息失败：" + err);
-      $message.error("获取歌单信息失败");
     });
 };
 
@@ -312,8 +312,8 @@ watch(
         cursor: pointer;
         transition: all 0.3s;
         &:hover {
-          background-color: $mainSecondaryColor;
-          color: $mainColor;
+          background-color: var(--main-second-color);
+          color: var(--main-color);
         }
         &:active {
           transform: scale(0.95);
@@ -340,7 +340,7 @@ watch(
         transition: all 0.3s;
         &:hover {
           opacity: 1;
-          color: $mainColor;
+          color: var(--main-color);
         }
       }
       .time {

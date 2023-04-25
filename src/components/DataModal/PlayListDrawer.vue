@@ -100,7 +100,7 @@ watch(
               behavior: "smooth",
               block: "center",
             });
-          }, 300);
+          }, 500);
         }
       } else {
         clearTimeout(timeOut.value);
@@ -150,20 +150,20 @@ onBeforeUnmount(() => {
       }
     }
     &.play {
-      background-color: $mainSecondaryColor;
-      border-color: $mainColor;
+      background-color: var(--main-second-color);
+      border-color: var(--main-color);
       a,
       span,
       div,
       .n-icon {
-        color: $mainColor;
+        color: var(--main-color);
       }
       :deep(span) {
-        color: $mainColor;
+        color: var(--main-color);
       }
       .right {
         .remove {
-          color: $mainColor;
+          color: var(--main-color);
           &:hover {
             background-color: var(--n-action-color);
           }
@@ -186,7 +186,7 @@ onBeforeUnmount(() => {
         .line {
           width: 3px;
           height: 16px;
-          background-color: $mainColor;
+          background-color: var(--main-color);
           border-radius: 4px;
           transition: all 0.3s;
           animation: lineMove 1s ease-in-out infinite;
@@ -229,7 +229,7 @@ onBeforeUnmount(() => {
         color: #999;
         padding: 6px;
         &:hover {
-          color: $mainColor;
+          color: var(--main-color);
           background-color: var(--n-border-color);
         }
       }

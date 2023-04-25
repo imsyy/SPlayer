@@ -240,7 +240,7 @@ watch(
             cursor: pointer;
             transition: all 0.3s;
             &:hover {
-              color: $mainColor;
+              color: var(--main-color);
             }
           }
         }

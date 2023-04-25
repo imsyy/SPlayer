@@ -27,7 +27,7 @@
           <template #trigger>
             <n-progress
               type="line"
-              color="#f55e55"
+              :color="setting.themeData.primaryColor"
               class="progress"
               :show-indicator="false"
               :percentage="100 / (cloudSpace[1] / cloudSpace[0])"
@@ -83,12 +83,14 @@
 <script setup>
 import { getCloud, upCloudSong } from "@/api/user";
 import { useRouter } from "vue-router";
+import { settingStore } from "@/store";
 import { getSongTime } from "@/utils/timeTools.js";
 import { BackupRound } from "@vicons/material";
 import DataLists from "@/components/DataList/DataLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
 
 const router = useRouter();
+const setting = settingStore();
 
 // 云盘数据
 const cloudSpace = ref([]);

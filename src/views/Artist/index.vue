@@ -308,13 +308,13 @@ watch(
           cursor: pointer;
           transition: all 0.3s;
           .n-icon {
-            color: $mainColor;
+            color: var(--main-color);
             transform: translateY(-1px);
             font-size: 16px;
             margin-right: 4px;
           }
           &:hover {
-            color: $mainColor;
+            color: var(--main-color);
           }
         }
       }

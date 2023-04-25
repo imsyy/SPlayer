@@ -248,7 +248,7 @@ watch(
 
 <style lang="scss" scoped>
 .video {
-  --plyr-color-main: #f55e55;
+  --plyr-color-main: var(--main-color);
   --plyr-control-radius: 8px;
 
   display: flex;
@@ -297,7 +297,7 @@ watch(
             }
           }
           &:hover {
-            color: $mainColor;
+            color: var(--main-color);
           }
           .n-icon {
             margin-right: 6px;

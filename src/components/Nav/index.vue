@@ -77,6 +77,7 @@ const router = useRouter();
 const user = userStore();
 const setting = settingStore();
 const aboutSiteRef = ref(null);
+const timeOut = ref(null);
 
 // 下拉菜单显隐
 const showDropdown = ref(false);
@@ -137,7 +138,7 @@ const userDataRender = () => {
                           type: "line",
                           percentage:
                             user.getUserOtherData.level.progress * 100,
-                          color: "#f55e55",
+                          color: setting.themeData.primaryColor,
                         },
                         {
                           default: () =>
@@ -330,6 +331,10 @@ const dropdownSelect = (key) => {
           onPositiveClick: () => {
             user.userLogOut();
             $message.success("已退出登录");
+            // 刷新页面
+            timeOut.value = setTimeout(() => {
+              document.location.reload();
+            }, 1000);
           },
         });
       } else {
@@ -356,6 +361,10 @@ watch(
 
 onMounted(() => {
   changeUserOptions(user.userLogin);
+});
+
+onBeforeUnmount(() => {
+  clearTimeout(timeOut.value);
 });
 </script>
 
@@ -429,7 +438,7 @@ nav {
       transition: all 0.3s;
       cursor: pointer;
       &:hover {
-        background-color: $mainColor;
+        background-color: var(--main-color);
         color: var(--n-color);
       }
       &:active {
@@ -438,7 +447,7 @@ nav {
     }
 
     .router-link-active {
-      background-color: $mainColor;
+      background-color: var(--main-color);
       color: var(--n-color);
     }
   }

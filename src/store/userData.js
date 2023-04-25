@@ -101,6 +101,7 @@ const useUserDataStore = defineStore("userData", {
       this.userData = {};
       this.userOtherData = {};
       localStorage.removeItem("cookie");
+      // 调用退出登录接口
       userLogOut();
     },
     // 更改用户歌单

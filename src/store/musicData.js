@@ -276,7 +276,6 @@ const useMusicDataStore = defineStore("musicData", {
     },
     // 更改播放列表模式
     setPlayListMode(value) {
-      console.log(value);
       this.persistData.playListMode = value;
     },
     // 添加歌单至播放列表

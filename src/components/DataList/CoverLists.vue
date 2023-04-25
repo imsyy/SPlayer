@@ -100,7 +100,7 @@ const user = userStore();
 const props = defineProps({
   // 列表数据
   listData: {
-    type: Object,
+    type: Array,
     default: [],
   },
   // 列表类型
@@ -433,7 +433,7 @@ onMounted(() => {
         cursor: pointer;
         &:hover {
           opacity: 1;
-          color: $mainColor;
+          color: var(--main-color);
         }
       }
       .by {
@@ -443,7 +443,7 @@ onMounted(() => {
         cursor: pointer;
         &:hover {
           opacity: 1;
-          color: $mainColor;
+          color: var(--main-color);
         }
       }
       .artists {

@@ -196,7 +196,7 @@ const toLikeComment = () => {
           cursor: pointer;
           transition: all 0.3s;
           &:hover {
-            color: $mainColor;
+            color: var(--main-color);
           }
         }
       }
@@ -213,7 +213,7 @@ const toLikeComment = () => {
           cursor: pointer;
           transition: all 0.3s;
           &:hover {
-            color: $mainColor;
+            color: var(--main-color);
           }
         }
       }
@@ -238,14 +238,14 @@ const toLikeComment = () => {
           transition: all 0.3s;
           opacity: 0.6;
           &:hover {
-            color: $mainColor;
+            color: var(--main-color);
             opacity: 1;
           }
           &:active {
             transform: scale(0.95);
           }
           &.liked {
-            color: $mainColor;
+            color: var(--main-color);
             opacity: 1;
           }
         }

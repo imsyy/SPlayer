@@ -14,7 +14,7 @@
       <template #prefix>
         <n-icon
           size="16"
-          :color="inputActive ? '#f55e55' : ''"
+          :class="inputActive ? 'active' : ''"
           :component="Search"
         />
       </template>
@@ -353,10 +353,18 @@ watch(
     &.focus {
       width: 280px;
       :deep(input) {
-        color: $mainColor;
+        color: var(--main-color);
       }
       @media (max-width: 450px) {
         width: 60vw;
+      }
+    }
+    :deep(.n-input__prefix) {
+      .n-icon {
+        transition: color 0.3s;
+        &.active {
+          color: var(--main-color);
+        }
       }
     }
   }
@@ -369,13 +377,13 @@ watch(
     z-index: 3;
 
     @media (max-width: 450px) {
-      padding-top: 12px;
       position: fixed;
       width: 100%;
       top: 58px;
       right: 0;
       left: 0;
       border-radius: 0 0 8px 8px;
+      z-index: 2006;
       &::after {
         position: absolute;
         right: 0;
@@ -390,126 +398,119 @@ watch(
     :deep(.n-scrollbar) {
       max-height: 80vh;
       @media (max-width: 450px) {
-        max-height: calc(100vh - 130px);
-        min-height: calc(100vh - 130px);
+        max-height: calc(100vh - 60px);
+        min-height: calc(100vh - 60px);
+        box-sizing: border-box;
       }
       .n-scrollbar-rail {
         width: 4px;
       }
-      .n-scrollbar-content {
-        padding: 12px;
-        .list-title {
-          color: $mainColor;
-          display: flex;
-          align-items: center;
-          margin-bottom: 8px;
-          .n-text {
-            margin-left: 4px;
-            font-size: 14px;
-            color: $mainColor;
-            line-height: 0;
-          }
-        }
-        .history-list {
-          margin-bottom: 18px;
-          .n-space {
-            margin: 12px 0;
-            .n-tag {
-              font-size: 13px;
-              cursor: pointer;
-              transition: all 0.3s;
-              &:hover {
-                background-color: $mainSecondaryColor;
-                color: $mainColor;
-              }
-              &:active {
-                transform: scale(0.95);
-              }
-            }
-          }
-          .del {
+      .n-scrollbar-container {
+        padding-top: 8px;
+        .n-scrollbar-content {
+          padding: 12px;
+          .list-title {
+            color: var(--main-color);
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            cursor: pointer;
-            .n-icon {
-              margin-right: 4px;
-            }
-          }
-        }
-        .hot-list {
-          margin-top: 6px;
-          .hot-item {
-            display: flex;
-            flex-direction: row;
             align-items: center;
             margin-bottom: 8px;
-            cursor: pointer;
-            border-radius: 8px;
-            padding: 6px;
-            transition: all 0.3s;
-
-            &:nth-last-of-type(1) {
-              margin-bottom: 0;
+            .n-text {
+              margin-left: 4px;
+              font-size: 14px;
+              color: var(--main-color);
+              line-height: 0;
             }
-
-            &:hover {
-              background-color: var(--n-border-color);
-            }
-            .num {
-              width: 30px;
-              height: 30px;
-              min-width: 30px;
-              text-align: center;
-              line-height: 30px;
-              font-size: 16px;
-              font-weight: bold;
-              margin-right: 8px;
-              &.hot {
-                color: #ff5656;
+          }
+          .history-list {
+            margin-bottom: 18px;
+            .n-space {
+              margin: 12px 0;
+              .n-tag {
+                font-size: 13px;
+                cursor: pointer;
+                transition: all 0.3s;
+                &:hover {
+                  background-color: var(--main-second-color);
+                  color: var(--main-color);
+                }
+                &:active {
+                  transform: scale(0.95);
+                }
               }
             }
-            .title {
+            .del {
               display: flex;
-              flex-direction: column;
-              .name {
-                font-size: 16px;
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                img {
-                  height: 16px;
-                  width: auto;
-                  margin-left: 6px;
-                  margin-bottom: 2px;
-                }
-                .tag {
-                  transform: scale(0.9);
-                  margin-left: 6px;
-                  height: 18px;
-                  color: $mainColor;
-                  background-color: $mainSecondaryColor;
-                  border-color: $mainColor;
-                }
-              }
-              .tip {
-                font-size: 12px;
+              align-items: center;
+              justify-content: center;
+              font-size: 13px;
+              cursor: pointer;
+              .n-icon {
+                margin-right: 4px;
               }
             }
           }
-        }
-        .suggest-tip {
-          display: flex;
-          flex-direction: row;
-          justify-content: center;
-          align-items: center;
-          .n-icon {
-            margin-right: 6px;
+          .hot-list {
+            margin-top: 6px;
+            .hot-item {
+              display: flex;
+              flex-direction: row;
+              align-items: center;
+              margin-bottom: 8px;
+              cursor: pointer;
+              border-radius: 8px;
+              padding: 6px;
+              transition: all 0.3s;
+
+              &:nth-last-of-type(1) {
+                margin-bottom: 0;
+              }
+
+              &:hover {
+                background-color: var(--n-border-color);
+              }
+              .num {
+                width: 30px;
+                height: 30px;
+                min-width: 30px;
+                text-align: center;
+                line-height: 30px;
+                font-size: 16px;
+                font-weight: bold;
+                margin-right: 8px;
+                &.hot {
+                  color: var(--main-color);
+                }
+              }
+              .title {
+                display: flex;
+                flex-direction: column;
+                .name {
+                  font-size: 16px;
+                  display: flex;
+                  flex-direction: row;
+                  align-items: center;
+                  img {
+                    height: 16px;
+                    width: auto;
+                    margin-left: 6px;
+                    margin-bottom: 2px;
+                  }
+                  .tag {
+                    transform: scale(0.9);
+                    margin-left: 6px;
+                    height: 18px;
+                    color: var(--main-color);
+                    background-color: var(--main-second-color);
+                    border-color: var(--main-color);
+                  }
+                }
+                .tip {
+                  font-size: 12px;
+                }
+              }
+            }
           }
-        }
-        .suggest-all {
-          .loading {
+          .suggest-tip {
             display: flex;
             flex-direction: row;
             justify-content: center;
@@ -518,32 +519,43 @@ watch(
               margin-right: 6px;
             }
           }
-          .suggest-item {
-            margin-bottom: 12px;
-            &:nth-last-of-type(1) {
-              margin-bottom: 0;
-            }
-            .type {
-              color: #ff5656;
+          .suggest-all {
+            .loading {
               display: flex;
               flex-direction: row;
+              justify-content: center;
               align-items: center;
-              margin-bottom: 4px;
               .n-icon {
-                margin-bottom: 2px;
-              }
-              .name {
-                margin-left: 4px;
+                margin-right: 6px;
               }
             }
-            .names {
-              display: block;
-              padding: 14px 18px 14px 22px;
-              cursor: pointer;
-              transition: all 0.3s;
-              border-radius: 8px;
-              &:hover {
-                background-color: var(--n-border-color);
+            .suggest-item {
+              margin-bottom: 12px;
+              &:nth-last-of-type(1) {
+                margin-bottom: 0;
+              }
+              .type {
+                color: var(--main-color);
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                margin-bottom: 4px;
+                .n-icon {
+                  margin-bottom: 2px;
+                }
+                .name {
+                  margin-left: 4px;
+                }
+              }
+              .names {
+                display: block;
+                padding: 14px 18px 14px 22px;
+                cursor: pointer;
+                transition: all 0.3s;
+                border-radius: 8px;
+                &:hover {
+                  background-color: var(--n-border-color);
+                }
               }
             }
           }

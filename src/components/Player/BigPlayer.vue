@@ -224,7 +224,7 @@ const lyricsScroll = (index) => {
     const scrollDistance =
       el.offsetTop -
       container.offsetTop -
-      (type === "center" ? containerHeight / 2 - el.offsetHeight / 2 : 100);
+      (type === "center" ? containerHeight / 2 - el.offsetHeight / 2 : 80);
     container.scrollTo({
       top: scrollDistance,
       behavior: "smooth",
@@ -405,38 +405,6 @@ watch(
       }
     }
   }
-  /*
-  .close,
-  .screenfull,
-  .setting {
-    position: absolute;
-    top: 24px;
-    right: 24px;
-    opacity: 0.3;
-    color: #fff;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.3s;
-    z-index: 2;
-    &:hover {
-      background-color: #ffffff20;
-      transform: scale(1.05);
-      opacity: 1;
-    }
-    &:active {
-      transform: scale(1);
-    }
-  }
-  .screenfull {
-    right: 80px;
-    padding: 2px;
-    @media (max-width: 768px) {
-      display: none;
-    }
-  }
-  .setting {
-    left: 24px;
-  }*/
   .all {
     width: 100%;
     height: 100%;

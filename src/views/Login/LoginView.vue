@@ -32,7 +32,7 @@
             :size="180"
             level="H"
             background="#00000000"
-            foreground="#f55e55"
+            :foreground="setting.themeData.primaryColor"
           />
         </n-card>
         <span class="tip">{{ qrText }}</span>
@@ -94,7 +94,7 @@
 </template>
 
 <script setup>
-import { userStore, musicStore } from "@/store";
+import { userStore, musicStore, settingStore } from "@/store";
 import {
   getLoginState,
   getQrKey,
@@ -111,6 +111,7 @@ import QrcodeVue from "qrcode.vue";
 const router = useRouter();
 const user = userStore();
 const music = musicStore();
+const setting = settingStore();
 const { numberRule, mobileRule } = formRules();
 
 // 二维码数据
@@ -139,6 +140,7 @@ const loginStateMessage = ref(null);
 
 // 储存登录信息
 const saveLoginData = (data) => {
+  data.cookie = data.cookie.replaceAll(" HTTPOnly", "");
   user.setCookie(data.cookie);
   // 验证用户登录信息
   getLoginState().then((res) => {
