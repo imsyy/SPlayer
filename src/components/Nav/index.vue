@@ -138,7 +138,7 @@ const userDataRender = () => {
                           type: "line",
                           percentage:
                             user.getUserOtherData.level.progress * 100,
-                          color: "#f55e55",
+                          color: setting.themeData.primaryColor,
                         },
                         {
                           default: () =>
@@ -438,7 +438,7 @@ nav {
       transition: all 0.3s;
       cursor: pointer;
       &:hover {
-        background-color: $mainColor;
+        background-color: var(--main-color);
         color: var(--n-color);
       }
       &:active {
@@ -447,7 +447,7 @@ nav {
     }
 
     .router-link-active {
-      background-color: $mainColor;
+      background-color: var(--main-color);
       color: var(--n-color);
     }
   }

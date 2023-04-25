@@ -21,6 +21,7 @@ const resetApp = () => {
     window.location.href = "/";
   };
   $dialog.warning({
+    class: "s-dialog",
     title: "系统重置",
     content: "确认重置为默认状态？你的登录状态以及自定义设置都将丢失！",
     positiveText: "重置",

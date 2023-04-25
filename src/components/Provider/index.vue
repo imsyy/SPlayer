@@ -43,14 +43,15 @@ import {
   useNotification,
 } from "naive-ui";
 import { settingStore } from "@/store";
+import themeColorData from "./themeColor.json";
+
 const setting = settingStore();
 const osThemeRef = useOsTheme();
-
-// 标题栏元素
-const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+const themeOverrides = ref(null);
 
 // 明暗切换
 const theme = ref(null);
+const themeColorMeta = document.querySelector('meta[name="theme-color"]');
 const changeTheme = () => {
   if (setting.getSiteTheme == "light") {
     theme.value = null;
@@ -61,38 +62,24 @@ const changeTheme = () => {
   }
 };
 
-onMounted(() => {
-  changeTheme();
-});
-
-// 监听明暗变化
-watch(
-  () => setting.getSiteTheme,
-  () => {
-    changeTheme();
-  }
-);
-
-// 监听系统明暗变化
-watch(
-  () => osThemeRef.value,
-  (value) => {
-    if (setting.themeAuto) {
-      value == "dark"
-        ? setting.setSiteTheme("dark")
-        : setting.setSiteTheme("light");
-    }
-  }
-);
-
 // 配置主题色
-const themeOverrides = {
-  common: {
-    primaryColor: "#f55e55",
-    primaryColorHover: "#F57B74",
-    primaryColorSuppl: "#F57B74",
-    primaryColorPressed: "#F64B41",
-  },
+const changeThemeColor = (val) => {
+  const color = themeColorData[val];
+  console.log("当前主题色：" + val, color);
+  themeOverrides.value = {
+    common: color,
+  };
+  setting.themeData = color;
+  setCssVariable("--main-color", color.primaryColor);
+  setCssVariable("--main-second-color", color.primaryColor + "1f");
+  setCssVariable("--main-boxshadow-color", color.primaryColor + "26");
+  setCssVariable("--main-boxshadow-hover-color", color.primaryColor + "05");
+};
+
+// 修改全局颜色
+const setCssVariable = (name, value) => {
+  document.documentElement.style.setProperty(name, value);
+  // document.body.style.setProperty(name, value);
 };
 
 // 挂载 naive 组件的方法
@@ -107,12 +94,37 @@ const NaiveProviderContent = defineComponent({
   setup() {
     setupNaiveTools();
   },
-  render() {
-    return h("div", {
-      class: {
-        tools: true,
-      },
-    });
-  },
+  render() {},
+});
+
+// 监听明暗变化
+watch(
+  () => setting.getSiteTheme,
+  () => {
+    changeTheme();
+  }
+);
+
+// 监听系统明暗变化
+watch(
+  () => osThemeRef.value,
+  (val) => {
+    if (setting.themeAuto) {
+      val == "dark"
+        ? setting.setSiteTheme("dark")
+        : setting.setSiteTheme("light");
+    }
+  }
+);
+
+// 监听主题色变化
+watch(
+  () => setting.themeType,
+  (val) => changeThemeColor(val)
+);
+
+onMounted(() => {
+  changeTheme();
+  changeThemeColor(setting.themeType);
 });
 </script>

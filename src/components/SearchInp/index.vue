@@ -14,7 +14,7 @@
       <template #prefix>
         <n-icon
           size="16"
-          :color="inputActive ? '#f55e55' : ''"
+          :class="inputActive ? 'active' : ''"
           :component="Search"
         />
       </template>
@@ -353,10 +353,18 @@ watch(
     &.focus {
       width: 280px;
       :deep(input) {
-        color: $mainColor;
+        color: var(--main-color);
       }
       @media (max-width: 450px) {
         width: 60vw;
+      }
+    }
+    :deep(.n-input__prefix) {
+      .n-icon {
+        transition: color 0.3s;
+        &.active {
+          color: var(--main-color);
+        }
       }
     }
   }
@@ -402,14 +410,14 @@ watch(
         .n-scrollbar-content {
           padding: 12px;
           .list-title {
-            color: $mainColor;
+            color: var(--main-color);
             display: flex;
             align-items: center;
             margin-bottom: 8px;
             .n-text {
               margin-left: 4px;
               font-size: 14px;
-              color: $mainColor;
+              color: var(--main-color);
               line-height: 0;
             }
           }
@@ -422,8 +430,8 @@ watch(
                 cursor: pointer;
                 transition: all 0.3s;
                 &:hover {
-                  background-color: $mainSecondaryColor;
-                  color: $mainColor;
+                  background-color: var(--main-second-color);
+                  color: var(--main-color);
                 }
                 &:active {
                   transform: scale(0.95);
@@ -470,7 +478,7 @@ watch(
                 font-weight: bold;
                 margin-right: 8px;
                 &.hot {
-                  color: #ff5656;
+                  color: var(--main-color);
                 }
               }
               .title {
@@ -491,9 +499,9 @@ watch(
                     transform: scale(0.9);
                     margin-left: 6px;
                     height: 18px;
-                    color: $mainColor;
-                    background-color: $mainSecondaryColor;
-                    border-color: $mainColor;
+                    color: var(--main-color);
+                    background-color: var(--main-second-color);
+                    border-color: var(--main-color);
                   }
                 }
                 .tip {
@@ -527,7 +535,7 @@ watch(
                 margin-bottom: 0;
               }
               .type {
-                color: #ff5656;
+                color: var(--main-color);
                 display: flex;
                 flex-direction: row;
                 align-items: center;

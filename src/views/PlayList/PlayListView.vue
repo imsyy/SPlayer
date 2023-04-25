@@ -312,8 +312,8 @@ watch(
         cursor: pointer;
         transition: all 0.3s;
         &:hover {
-          background-color: $mainSecondaryColor;
-          color: $mainColor;
+          background-color: var(--main-second-color);
+          color: var(--main-color);
         }
         &:active {
           transform: scale(0.95);
@@ -340,7 +340,7 @@ watch(
         transition: all 0.3s;
         &:hover {
           opacity: 1;
-          color: $mainColor;
+          color: var(--main-color);
         }
       }
       .time {

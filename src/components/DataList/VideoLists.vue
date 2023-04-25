@@ -176,7 +176,7 @@ const props = defineProps({
         cursor: pointer;
         &:hover {
           opacity: 1;
-          color: $mainColor;
+          color: var(--main-color);
         }
       }
       .by {
@@ -186,7 +186,7 @@ const props = defineProps({
         cursor: pointer;
         &:hover {
           opacity: 1;
-          color: $mainColor;
+          color: var(--main-color);
         }
       }
       .artists {

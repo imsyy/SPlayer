@@ -158,6 +158,7 @@ export const songScrobble = (id, sourceid = 0, time = 0) => {
   return axios({
     method: "GET",
     url: "/scrobble",
+    hiddenBar: true,
     params: {
       id,
       sourceid,

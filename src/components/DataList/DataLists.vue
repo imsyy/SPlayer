@@ -635,9 +635,9 @@ const jumpLink = (id, type) => {
     transition: all 0.3s;
     cursor: pointer;
     &:hover {
-      border-color: $mainColor;
-      box-shadow: 0 1px 2px -2px #f55e5526, 0 3px 6px 0 #f55e5530,
-        0 5px 12px 4px #f55e5505;
+      border-color: var(--main-color);
+      box-shadow: 0 1px 2px -2px var(--main-boxshadow-color),
+        0 3px 6px 0 var(--main-boxshadow-color), 0 5px 12px 4px var(--main-boxshadow-hover-color);
       .action {
         .like,
         .download {
@@ -650,18 +650,18 @@ const jumpLink = (id, type) => {
     //   transform: scale(0.99);
     // }
     &.play {
-      background-color: $mainSecondaryColor;
-      border-color: $mainColor;
+      background-color: var(--main-second-color);
+      border-color: var(--main-color);
       a,
       span,
       .n-icon {
-        color: $mainColor;
+        color: var(--main-color);
       }
       .artists {
         :deep(.artist) {
           .name,
           .line {
-            color: $mainColor;
+            color: var(--main-color);
           }
         }
       }
@@ -701,7 +701,7 @@ const jumpLink = (id, type) => {
           font-weight: bold;
           transition: all 0.3s;
           &:hover {
-            color: $mainColor;
+            color: var(--main-color);
           }
         }
         .n-tag {
@@ -710,8 +710,8 @@ const jumpLink = (id, type) => {
           height: 18px;
         }
         .vip {
-          color: $mainColor;
-          background-color: $mainSecondaryColor;
+          color: var(--main-color);
+          background-color: var(--main-second-color);
         }
         .mv {
           cursor: pointer;
@@ -742,7 +742,7 @@ const jumpLink = (id, type) => {
       .n-text {
         transition: all 0.3s;
         &:hover {
-          color: $mainColor;
+          color: var(--main-color);
         }
       }
     }
@@ -768,7 +768,7 @@ const jumpLink = (id, type) => {
         cursor: pointer;
         opacity: 0;
         transform: scale(0.8);
-        color: $mainColor;
+        color: var(--main-color);
         transition: all 0.3s;
         &:hover {
           transform: scale(1.1);

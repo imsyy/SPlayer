@@ -250,6 +250,7 @@ onMounted(() => {
 .scale-enter-from,
 .scale-leave-to {
   opacity: 0;
-  transform: scale(0.98);
+  // transform: scale(0.98);
+  transform: translateX(10px);
 }
 </style>

@@ -242,7 +242,7 @@ onMounted(() => {
       transition: all 0.3s;
       cursor: pointer;
       &:hover {
-        color: $mainColor;
+        color: var(--main-color);
       }
     }
   }

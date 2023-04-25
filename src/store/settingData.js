@@ -8,6 +8,8 @@ const useSettingDataStore = defineStore("settingData", {
       // 全局主题
       theme: "light",
       themeAuto: true,
+      themeType: "red",
+      themeData: {},
       // 搜索历史
       searchHistory: true,
       // 轮播图显示

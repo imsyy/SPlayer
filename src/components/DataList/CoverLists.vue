@@ -433,7 +433,7 @@ onMounted(() => {
         cursor: pointer;
         &:hover {
           opacity: 1;
-          color: $mainColor;
+          color: var(--main-color);
         }
       }
       .by {
@@ -443,7 +443,7 @@ onMounted(() => {
         cursor: pointer;
         &:hover {
           opacity: 1;
-          color: $mainColor;
+          color: var(--main-color);
         }
       }
       .artists {

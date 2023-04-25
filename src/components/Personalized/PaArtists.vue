@@ -92,7 +92,7 @@ onMounted(() => {
         margin-left: 6px;
       }
       &:hover {
-        color: $mainColor;
+        color: var(--main-color);
       }
     }
   }

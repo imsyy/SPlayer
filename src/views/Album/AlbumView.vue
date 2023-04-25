@@ -238,7 +238,7 @@ watch(
         transition: all 0.3s;
         &:hover {
           opacity: 1;
-          color: $mainColor;
+          color: var(--main-color);
         }
       }
       .time {

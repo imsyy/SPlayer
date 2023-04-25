@@ -691,7 +691,7 @@ watch(
           cursor: pointer;
           transition: all 0.3s;
           &:hover {
-            color: $mainColor;
+            color: var(--main-color);
           }
         }
         .artisrOrLrc {
@@ -717,7 +717,7 @@ watch(
       .next,
       .prev,
       .dislike {
-        color: $mainColor;
+        color: var(--main-color);
         cursor: pointer;
         padding: 4px;
         border-radius: 50%;
@@ -725,7 +725,7 @@ watch(
         transition: all 0.3s;
         &:hover {
           color: var(--n-color-embedded);
-          background-color: $mainColor;
+          background-color: var(--main-color);
         }
         &:active {
           transform: scale(0.9);
@@ -737,7 +737,7 @@ watch(
       .play-state {
         width: 46px;
         height: 46px;
-        color: $mainColor;
+        color: var(--main-color);
         margin: 0 12px;
         cursor: pointer;
         transform: scale(1);
@@ -757,7 +757,7 @@ watch(
       flex-direction: row;
       align-items: center;
       justify-content: flex-end;
-      color: $mainColor;
+      color: var(--main-color);
       @media (max-width: 640px) {
         .volume,
         .like,
@@ -778,7 +778,7 @@ watch(
         cursor: pointer;
         transition: all 0.3s;
         &:hover {
-          background-color: $mainColor;
+          background-color: var(--main-color);
           color: var(--n-color-embedded);
         }
         &:active {
@@ -814,7 +814,7 @@ watch(
         justify-content: center;
         &.open {
           .n-icon {
-            background-color: $mainColor;
+            background-color: var(--main-color);
             color: var(--n-color-embedded);
           }
         }
