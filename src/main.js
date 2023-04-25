@@ -30,7 +30,7 @@ navigator.serviceWorker.addEventListener("onupdatefound", () => {
 // 更新完成提醒
 navigator.serviceWorker.addEventListener("controllerchange", () => {
   console.info("站点已更新，刷新后生效");
-  pwaMessage.destroy();
+  if (pwaMessage) pwaMessage?.destroy();
   $message.info("站点已更新，刷新后生效", {
     closable: true,
     duration: 0,
