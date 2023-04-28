@@ -26,6 +26,8 @@ const useSettingDataStore = defineStore("settingData", {
       showYrc: true,
       // 是否显示歌词翻译
       showTransl: true,
+      // 是否显示歌词音译
+      showRoma: true,
       // 歌曲音质
       songLevel: "exhigh",
       // 歌词位置
@@ -52,10 +54,6 @@ const useSettingDataStore = defineStore("settingData", {
     // 获取明暗模式
     getSiteTheme(state) {
       return state.theme;
-    },
-    // 获取是否开启翻译
-    getShowTransl(state) {
-      return state.showTransl;
     },
   },
   actions: {

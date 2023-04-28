@@ -50,14 +50,25 @@
           </span>
           <span
             v-show="
-              music.getPlaySongLyric.hasTran &&
-              setting.getShowTransl &&
+              music.getPlaySongLyric.hasLrcTran &&
+              setting.showTransl &&
               item.tran
             "
             :style="{ fontSize: setting.lyricsFontSize - 1 + 'vh' }"
             class="lyric-fy"
           >
             {{ item.tran }}</span
+          >
+          <span
+            v-show="
+              music.getPlaySongLyric.hasLrcRoma &&
+              setting.showRoma &&
+              item.roma
+            "
+            :style="{ fontSize: setting.lyricsFontSize - 1.5 + 'vh' }"
+            class="lyric-roma"
+          >
+            {{ item.roma }}</span
           >
         </div>
       </div>
@@ -88,11 +99,11 @@
               v-for="(v, i) in item.content"
               :key="i"
               :style="{
-                '--dur': v.duration - 0.15 + 's',
+                '--dur': `${Math.max(v.duration - 0.15, 0.1)}s`,
               }"
               :class="
-                music.getPlaySongLyricIndex == index &&
-                music.getPlaySongTime.currentTime + 0.15 >= v.time
+                music.getPlaySongLyricIndex === index &&
+                music.getPlaySongTime.currentTime + 0.15 > v.time
                   ? 'text fill'
                   : 'text'
               "
@@ -102,15 +113,26 @@
           </div>
           <span
             v-show="
-              music.getPlaySongLyric.hasTran &&
-              setting.getShowTransl &&
+              music.getPlaySongLyric.hasYrcTran &&
+              setting.showTransl &&
               item.tran
             "
             :style="{ fontSize: setting.lyricsFontSize - 1 + 'vh' }"
             class="lyric-fy"
           >
-            {{ item.tran }}</span
+            {{ item.tran }}
+          </span>
+          <span
+            v-show="
+              music.getPlaySongLyric.hasYrcRoma &&
+              setting.showRoma &&
+              item.roma
+            "
+            :style="{ fontSize: setting.lyricsFontSize - 1.5 + 'vh' }"
+            class="lyric-roma"
           >
+            {{ item.roma }}
+          </span>
         </div>
       </div>
     </template>
@@ -268,7 +290,8 @@ const lrcTextClick = (time) => {
           }
         }
       }
-      .lyric-fy {
+      .lyric-fy,
+      .lyric-roma {
         margin-top: 4px;
         transition: all 0.3s;
         opacity: 0.6;

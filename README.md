@@ -131,6 +131,8 @@ npm build
 
 - [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi)
 - [YesPlayMusic](https://github.com/qier222/YesPlayMusic)
+- [UnblockNeteaseMusic](https://github.com/UnblockNeteaseMusic/server)
+- [BlurLyric](https://github.com/Project-And-Factory/BlurLyric)
 - [Vue-mmPlayer](https://github.com/maomao1996/Vue-mmPlayer)
 
 ## 📜 开源许可

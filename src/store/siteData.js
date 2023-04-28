@@ -7,6 +7,8 @@ const useSiteDataStore = defineStore("siteData", {
       siteTitle: "SPlayer",
       // 封面主题色
       songPicColor: "rgb(128,128,128)",
+      // 搜索框激活状态
+      searchInputActive: false,
     };
   },
   getters: {},

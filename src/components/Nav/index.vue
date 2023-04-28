@@ -4,7 +4,7 @@
       <div class="logo" @click="router.push('/')">
         <img src="/images/logo/favicon.svg" alt="logo" />
       </div>
-      <div class="controls">
+      <div :class="site.searchInputActive ? 'controls hidden' : 'controls'">
         <n-icon size="22" :component="Left" @click="router.go(-1)" />
         <n-icon size="22" :component="Right" @click="router.go(1)" />
       </div>
@@ -68,13 +68,14 @@ import {
   SunOne,
   Moon,
 } from "@icon-park/vue-next";
-import { userStore, settingStore } from "@/store";
+import { userStore, settingStore, siteStore } from "@/store";
 import { useRouter } from "vue-router";
 import AboutSite from "@/components/DataModal/AboutSite.vue";
 import SearchInp from "@/components/SearchInp/index.vue";
 
 const router = useRouter();
 const user = userStore();
+const site = siteStore();
 const setting = settingStore();
 const aboutSiteRef = ref(null);
 const timeOut = ref(null);
@@ -361,6 +362,7 @@ watch(
 
 onMounted(() => {
   changeUserOptions(user.userLogin);
+  console.log(router);
 });
 
 onBeforeUnmount(() => {
@@ -402,7 +404,10 @@ nav {
       flex-direction: row;
       align-items: center;
       @media (max-width: 520px) {
-        display: none;
+        &.hidden{
+          display: none;
+        }
+        
       }
       .n-icon {
         margin: 0 4px;

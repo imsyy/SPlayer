@@ -120,9 +120,9 @@
               >
                 <n-icon
                   v-if="music.getPlaySongTransl"
-                  :class="setting.getShowTransl ? 'open' : ''"
+                  :class="setting.showTransl ? 'open' : ''"
                   :component="GTranslateFilled"
-                  @click="setting.setShowTransl(!setting.getShowTransl)"
+                  @click="setting.setShowTransl(!setting.showTransl)"
                 />
                 <n-icon
                   class="open"

@@ -5,7 +5,7 @@
       :style="{ animationPlayState: music.getPlayState ? 'running' : 'paused' }"
       v-if="
         remainingPoint <= 2 &&
-        totalDuration > 3 &&
+        totalDuration > 1 &&
         music.getPlaySongLyric.lrc[0]
       "
     >

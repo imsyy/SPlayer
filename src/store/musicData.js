@@ -232,22 +232,22 @@ const useMusicDataStore = defineStore("musicData", {
             setLikeSong(id, like).then((res) => {
               if (res.code == 200) {
                 list.push(id);
-                $message.info("成功喜欢歌曲");
+                $message.info("已添加到我喜欢的音乐");
               } else {
-                $message.error("喜欢歌曲时发生错误");
+                $message.error("喜欢音乐时发生错误");
               }
             });
           } else {
-            $message.info("我喜欢的列表中已存在该歌曲");
+            $message.info("我喜欢的音乐中已存在该歌曲");
           }
         } else {
           if (exists) {
             setLikeSong(id, like).then((res) => {
               if (res.code == 200) {
                 list.splice(list.indexOf(id), 1);
-                $message.info("成功取消喜欢歌曲");
+                $message.info("已从我喜欢的音乐中移除");
               } else {
-                $message.error("取消喜欢歌曲时发生错误");
+                $message.error("取消喜欢音乐时发生错误");
               }
             });
           } else {

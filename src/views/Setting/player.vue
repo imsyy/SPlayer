@@ -44,8 +44,18 @@
       />
     </n-card>
     <n-card class="set-item">
-      <div class="name">显示歌词翻译</div>
+      <div class="name">
+        显示歌词翻译
+        <span class="tip">是否在具有翻译歌词时显示</span>
+      </div>
       <n-switch v-model:value="showTransl" :round="false" />
+    </n-card>
+    <n-card class="set-item">
+      <div class="name">
+        显示歌词音译
+        <span class="tip">是否在具有音译歌词时显示</span>
+      </div>
+      <n-switch v-model:value="showRoma" :round="false" />
     </n-card>
     <n-card class="set-item">
       <div class="name">
@@ -164,6 +174,7 @@ const {
   lyricsBlur,
   lrcMousePause,
   showYrc,
+  showRoma,
   useUnmServer,
   backgroundImageShow,
   countDownShow,
@@ -226,7 +237,7 @@ const changeMusicFrequency = () => {
     $dialog.warning({
       class: "s-dialog",
       title: "实验性功能",
-      content: "确认开启音乐频谱？将于刷新后生效",
+      content: "确认开启音乐频谱？将在重启应用后生效",
       positiveText: "开启",
       negativeText: "取消",
       onMaskClick: () => {
@@ -234,7 +245,6 @@ const changeMusicFrequency = () => {
       },
       onPositiveClick: () => {
         musicFrequency.value = true;
-        location.reload();
       },
       onNegativeClick: () => {
         musicFrequency.value = false;
