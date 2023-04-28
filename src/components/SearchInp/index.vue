@@ -1,8 +1,9 @@
 <template>
   <div class="searchInp">
     <n-input
-      :class="inputActive ? 'input focus' : 'input'"
+      :class="site.searchInputActive ? 'input focus' : 'input'"
       :input-props="{ autoComplete: false }"
+      ref="searchInpRef"
       round
       clearable
       placeholder="搜索音乐/视频"
@@ -14,7 +15,7 @@
       <template #prefix>
         <n-icon
           size="16"
-          :class="inputActive ? 'active' : ''"
+          :class="site.searchInputActive ? 'active' : ''"
           :component="Search"
         />
       </template>
@@ -23,7 +24,7 @@
       <n-card
         class="list"
         v-show="
-          inputActive &&
+          site.searchInputActive &&
           !inputValue &&
           (music.getSearchHistory[0] || searchData.hot[0])
         "
@@ -93,7 +94,7 @@
     <CollapseTransition easing="ease-in-out">
       <n-card
         class="list"
-        v-show="inputActive && inputValue && searchData.suggest"
+        v-show="site.searchInputActive && inputValue && searchData.suggest"
         content-style="padding: 0"
       >
         <n-scrollbar>
@@ -195,20 +196,21 @@ import {
 import CollapseTransition from "@ivanv/vue-collapse-transition/src/CollapseTransition.vue";
 import debounce from "@/utils/debounce";
 import { useRouter } from "vue-router";
-import { musicStore, settingStore } from "@/store";
+import { musicStore, settingStore, siteStore } from "@/store";
+
 const router = useRouter();
 const music = musicStore();
 const setting = settingStore();
+const site = siteStore();
 
 // 输入框内容
 const inputValue = ref(null);
-
-// 输入框激活状态
-const inputActive = ref(false);
+const searchInpRef = ref(null);
 
 // 输入框激活事件
 const inputFocus = () => {
-  inputActive.value = true;
+  searchInpRef.value?.focus();
+  site.searchInputActive = true;
   music.showPlayList = false;
   getSearchHotData();
 };
@@ -274,7 +276,8 @@ const toSearch = (val, type) => {
 const inputkeydown = (e) => {
   if (e.key === "Enter" && inputValue.value != null) {
     console.log("执行搜索" + inputValue.value.trim());
-    inputActive.value = false;
+    searchInpRef.value?.blur();
+    site.searchInputActive = false;
     // 写入搜索历史
     music.setSearchHistory(inputValue.value.trim());
     router.push({
@@ -306,13 +309,15 @@ onMounted(() => {
   getSearchHotData();
   // 搜索框失焦
   document.addEventListener("click", () => {
-    inputActive.value = false;
+    searchInpRef.value?.blur();
+    site.searchInputActive = false;
   });
 });
 
 onUnmounted(() => {
   document.removeEventListener("click", () => {
-    inputActive.value = false;
+    searchInpRef.value?.blur();
+    site.searchInputActive = false;
   });
 });
 
@@ -333,7 +338,10 @@ watch(
 watch(
   () => music.showPlayList,
   (val) => {
-    if (val) inputActive.value = false;
+    if (val) {
+      searchInpRef.value?.blur();
+      site.searchInputActive = false;
+    }
   }
 );
 </script>
