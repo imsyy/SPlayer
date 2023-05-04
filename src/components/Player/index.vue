@@ -254,7 +254,6 @@ import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
 import { storeToRefs } from "pinia";
 import { musicStore, settingStore, userStore, siteStore } from "@/store";
 import { useRouter } from "vue-router";
-import { checkLogin } from "@/utils/auth";
 import AddPlaylist from "@/components/DataModal/AddPlaylist.vue";
 import PlayListDrawer from "@/components/DataModal/PlayListDrawer.vue";
 import AllArtists from "@/components/DataList/AllArtists.vue";
@@ -368,7 +367,7 @@ const songReady = () => {
     : 0;
   console.log("首次缓冲完成：" + songId + " / 来源：" + sourceId);
   // 听歌打卡
-  if (checkLogin()) {
+  if (user.userLogin) {
     songScrobble(songId, sourceId).catch((err) => {
       console.error("歌曲打卡失败：" + err);
     });
