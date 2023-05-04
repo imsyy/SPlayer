@@ -272,7 +272,7 @@ const lrcTextClick = (time) => {
           transition: all var(--dur);
           color: #ffffff66;
           &.fill {
-            text-shadow: 0px 0px 30px #ffffff40;
+            text-shadow: 0 0 40px rgb(255 255 255 / 40%);
             background-image: linear-gradient(to right, #fff 0%, #fff 0%);
             background-repeat: no-repeat;
             background-size: 0% 100%;
@@ -300,7 +300,7 @@ const lrcTextClick = (time) => {
       .lrc-text {
         transform: scale(1.05);
         .lyric {
-          text-shadow: 0px 0px 30px #ffffff40;
+          text-shadow: 0 0 40px rgb(255 255 255 / 40%);
         }
       }
       .yrc-text {

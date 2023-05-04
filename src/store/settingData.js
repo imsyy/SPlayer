@@ -48,6 +48,8 @@ const useSettingDataStore = defineStore("settingData", {
       backgroundImageShow: "blur",
       // 是否显示前奏等待
       countDownShow: true,
+      // 是否显示歌词设置
+      showLyricSetting: true,
     };
   },
   getters: {

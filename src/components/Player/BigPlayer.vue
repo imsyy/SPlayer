@@ -17,7 +17,7 @@
       />
       <div class="icon-menu">
         <div class="menu-left">
-          <div class="icon">
+          <div v-if="setting.showLyricSetting" class="icon">
             <n-icon
               class="setting"
               size="30"

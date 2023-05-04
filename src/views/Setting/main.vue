@@ -12,7 +12,12 @@
           主题色选择
           <span class="tip">更换全站主题色，即时生效</span>
         </div>
-        <n-button strong secondary @click="changeThemeColor(null, true)">
+        <n-button
+          v-if="themeType !== 'red'"
+          strong
+          secondary
+          @click="changeThemeColor(null, true)"
+        >
           恢复默认
         </n-button>
       </div>
@@ -27,7 +32,7 @@
           v-for="item in themeColorData"
           :key="item"
           :style="{ '--color': item.primaryColor }"
-          :class="item.label === setting.themeType ? 'item check' : 'item'"
+          :class="item.label === themeType ? 'item check' : 'item'"
           @click="changeThemeColor(item)"
         >
           <n-text v-html="item.name" />
@@ -86,6 +91,13 @@
         :options="songLevelOptions"
       />
     </n-card>
+    <n-card class="set-item">
+      <div class="name">
+        播放页快捷设置
+        <span class="tip">是否在播放页面显示快捷设置</span>
+      </div>
+      <n-switch v-model:value="showLyricSetting" :round="false" />
+    </n-card>
   </div>
 </template>
 
@@ -106,6 +118,7 @@ const {
   autoSignIn,
   searchHistory,
   themeType,
+  showLyricSetting,
 } = storeToRefs(setting);
 
 // 深浅模式
@@ -180,12 +193,12 @@ const changeThemeColor = (data, reset = false) => {
       negativeText: "取消",
       onPositiveClick: () => {
         $message.success("主题色已重置");
-        setting.themeType = "red";
+        themeType.value = "red";
       },
     });
   } else {
     $message.success("主题色更换为" + data.name);
-    setting.themeType = data.label;
+    themeType.value = data.label;
   }
 };
 </script>
