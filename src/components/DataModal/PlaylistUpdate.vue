@@ -1,11 +1,11 @@
 <template>
   <n-modal
     class="s-modal"
-    v-model:show="playlistUpdateModel"
+    v-model:show="playlistUpdateModal"
     preset="card"
     title="歌单编辑"
     :bordered="false"
-    :on-after-leave="closeUpdateModel"
+    :on-after-leave="closeUpdateModal"
   >
     <n-form
       ref="playlistUpdateRef"
@@ -42,7 +42,7 @@
     </n-form>
     <template #footer>
       <n-space justify="end">
-        <n-button @click="closeUpdateModel"> 取消 </n-button>
+        <n-button @click="closeUpdateModal"> 取消 </n-button>
         <n-button type="primary" @click="toUpdatePlayList"> 编辑 </n-button>
       </n-space>
     </template>
@@ -61,7 +61,7 @@ const user = userStore();
 // 更新歌单数据
 const playlistUpdateId = ref(null);
 const playlistUpdateRef = ref(null);
-const playlistUpdateModel = ref(false);
+const playlistUpdateModal = ref(false);
 const playlistUpdateRules = {
   name: textRule,
 };
@@ -86,7 +86,7 @@ const toUpdatePlayList = (e) => {
         console.log(res);
         if (res.code === 200) {
           $message.success("编辑成功");
-          closeUpdateModel();
+          closeUpdateModal();
           user.setUserPlayLists();
         } else {
           $message.error("编辑失败，请重试");
@@ -113,24 +113,24 @@ const openSelect = () => {
 };
 
 // 开启编辑歌单
-const openUpdateModel = (data) => {
+const openUpdateModal = (data) => {
   playlistUpdateValue.value = {
     name: data.name,
     desc: data.desc,
     tags: data.tags,
   };
   playlistUpdateId.value = data.id;
-  playlistUpdateModel.value = true;
+  playlistUpdateModal.value = true;
 };
 
 // 关闭更新歌单弹窗
-const closeUpdateModel = () => {
-  playlistUpdateModel.value = false;
+const closeUpdateModal = () => {
+  playlistUpdateModal.value = false;
   playlistUpdateId.value = null;
 };
 
 // 暴露方法
 defineExpose({
-  openUpdateModel,
+  openUpdateModal,
 });
 </script>

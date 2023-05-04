@@ -1,11 +1,11 @@
 <template>
   <n-modal
-    class="s-modal downloadModel"
-    v-model:show="downloadModel"
+    class="s-modal downloadModal"
+    v-model:show="downloadModal"
     preset="card"
     title="歌曲下载"
     :bordered="false"
-    :on-after-leave="closeDownloadModel"
+    :on-after-leave="closeDownloadModal"
   >
     <Transition mode="out-in">
       <div v-if="songData">
@@ -42,7 +42,7 @@
     </Transition>
     <template #footer>
       <n-space justify="end">
-        <n-button @click="closeDownloadModel"> 取消 </n-button>
+        <n-button @click="closeDownloadModal"> 取消 </n-button>
         <n-button
           :disabled="!downloadChoose"
           :loading="downloadStatus"
@@ -75,7 +75,7 @@ const router = useRouter();
 const songId = ref(null);
 const songData = ref(null);
 const downloadStatus = ref(false);
-const downloadModel = ref(false);
+const downloadModal = ref(false);
 const downloadChoose = ref(null);
 const downloadLevel = ref(null);
 
@@ -98,7 +98,7 @@ const toSongDownload = (id, br, name) => {
             document.body.appendChild(a);
             a.click();
             a.remove();
-            closeDownloadModel();
+            closeDownloadModal();
             downloadStatus.value = false;
             $message.success(name + " 下载完成");
           });
@@ -108,7 +108,7 @@ const toSongDownload = (id, br, name) => {
       }
     })
     .catch((err) => {
-      closeDownloadModel();
+      closeDownloadModal();
       console.error("下载出现错误：" + err);
       $message.error("下载出现错误，请重试");
     });
@@ -133,7 +133,7 @@ const getMusicDetailData = (id) => {
       }
     })
     .catch((err) => {
-      closeDownloadModel();
+      closeDownloadModal();
       console.error("歌曲信息获取出现错误：" + err);
       $message.error("歌曲信息获取出现错误，请重试");
     });
@@ -200,7 +200,7 @@ const getSongSize = (data, type) => {
 };
 
 // 开启歌曲下载
-const openDownloadModel = (data) => {
+const openDownloadModal = (data) => {
   if (user.userLogin) {
     if (
       router.currentRoute.value.name === "user-cloud" ||
@@ -209,7 +209,7 @@ const openDownloadModel = (data) => {
       data?.pc
     ) {
       songId.value = data.id;
-      downloadModel.value = true;
+      downloadModal.value = true;
       getMusicDetailData(data.id);
     } else {
       $message.error("该歌曲需使用黑胶会员下载");
@@ -220,22 +220,22 @@ const openDownloadModel = (data) => {
 };
 
 // 关闭歌曲下载
-const closeDownloadModel = () => {
+const closeDownloadModal = () => {
   songId.value = null;
   songData.value = null;
   downloadStatus.value = false;
-  downloadModel.value = false;
+  downloadModal.value = false;
   downloadChoose.value = null;
 };
 
 // 暴露方法
 defineExpose({
-  openDownloadModel,
+  openDownloadModal,
 });
 </script>
 
 <style lang="scss" scoped>
-.downloadModel {
+.downloadModal {
   .v-enter-active,
   .v-leave-active {
     transition: opacity 0.3s ease;

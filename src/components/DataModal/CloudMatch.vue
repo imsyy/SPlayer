@@ -1,7 +1,7 @@
 <template>
   <n-modal
     class="s-modal"
-    v-model:show="cloudMatchModel"
+    v-model:show="cloudMatchModal"
     preset="card"
     title="歌曲信息纠正"
     :bordered="false"
@@ -65,7 +65,7 @@ const user = userStore();
 // 歌曲信息纠正数据
 const cloudDataLoad = inject("cloudDataLoad", null);
 const smallSongDataRef = ref(null);
-const cloudMatchModel = ref(false);
+const cloudMatchModal = ref(false);
 const cloudMatchBeforeData = ref(null);
 const cloudMatchId = ref(null);
 const cloudMatchValue = ref({
@@ -102,7 +102,7 @@ const setCloudMatchBtn = (data) => {
 const openCloudMatch = (data) => {
   cloudMatchValue.value.sid = data.id;
   cloudMatchBeforeData.value = data;
-  cloudMatchModel.value = true;
+  cloudMatchModal.value = true;
 };
 
 // 关闭歌曲纠正
@@ -110,7 +110,7 @@ const closeCloudMatch = () => {
   cloudMatchBeforeData.value = null;
   cloudMatchId.value = null;
   cloudMatchValue.value.asid = null;
-  cloudMatchModel.value = false;
+  cloudMatchModal.value = false;
 };
 
 // 暴露方法

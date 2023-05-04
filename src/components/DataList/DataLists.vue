@@ -108,7 +108,7 @@
           <n-icon
             class="download"
             size="20"
-            @click.stop="downloadSongRef.openDownloadModel(item)"
+            @click.stop="downloadSongRef.openDownloadModal(item)"
           >
             <DownloadFour theme="filled" />
           </n-icon>
@@ -202,7 +202,7 @@
               class="item"
               @click="
                 () => {
-                  downloadSongRef.openDownloadModel(drawerData);
+                  downloadSongRef.openDownloadModal(drawerData);
                   drawerShow = false;
                 }
               "
@@ -444,7 +444,7 @@ const openRightMenu = (e, data) => {
         icon: renderIcon(DownloadFour),
         props: {
           onClick: () => {
-            downloadSongRef.value.openDownloadModel(data);
+            downloadSongRef.value.openDownloadModal(data);
           },
         },
       },

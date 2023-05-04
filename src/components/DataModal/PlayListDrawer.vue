@@ -2,7 +2,7 @@
   <n-drawer
     class="playlist-drawer"
     v-model:show="playListShow"
-    :z-index="2000"
+    :z-index="1"
     :width="400"
     :trap-focus="false"
     :block-scroll="false"
@@ -11,7 +11,15 @@
     @after-leave="music.showPlayList = false"
     @mask-click="music.showPlayList = false"
   >
-    <n-drawer-content title="播放列表" :native-scrollbar="false" closable>
+    <n-drawer-content :native-scrollbar="false" closable>
+      <template #header>
+        <div class="text">
+          <n-text class="name">播放列表</n-text>
+          <n-text class="num" :depth="3" v-if="music.getPlaylists.length > 0">
+            {{ music.getPlaylists.length }} 首
+          </n-text>
+        </div>
+      </template>
       <Transition mode="out-in">
         <div v-if="music.getPlaylists[0]">
           <n-card
@@ -31,9 +39,13 @@
             @click="changeIndex(index)"
           >
             <div class="left">
-              <div v-if="index !== music.persistData.playSongIndex" class="num">
+              <n-text
+                v-if="index !== music.persistData.playSongIndex"
+                :depth="3"
+                class="num"
+              >
                 {{ index + 1 }}
-              </div>
+              </n-text>
               <div v-else class="bar">
                 <div
                   v-for="item in 3"
@@ -128,6 +140,17 @@ onBeforeUnmount(() => {
   .v-enter-from,
   .v-leave-to {
     opacity: 0;
+  }
+  .text {
+    display: flex;
+    align-items: center;
+    .num {
+      font-size: 14px;
+      &::before {
+        content: "-";
+        margin: 0 6px;
+      }
+    }
   }
   .songs {
     border-radius: 8px;

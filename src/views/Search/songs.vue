@@ -13,7 +13,7 @@
 
 <script setup>
 import { getSearchData } from "@/api/search";
-import { getMusicDetail } from "@/api/song";
+// import { getMusicDetail } from "@/api/song";
 import { useRouter } from "vue-router";
 import { getSongTime } from "@/utils/timeTools.js";
 import DataLists from "@/components/DataList/DataLists.vue";

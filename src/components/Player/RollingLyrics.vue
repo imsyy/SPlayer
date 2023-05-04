@@ -23,6 +23,7 @@
         :style="{ fontSize: setting.lyricsFontSize + 'vh' }"
       />
     </div>
+    <!-- 普通歌词 -->
     <template v-if="!music.getPlaySongLyric.hasYrc || !setting.showYrc">
       <div
         v-for="(item, index) in music.getPlaySongLyric.lrc"
@@ -61,9 +62,7 @@
           >
           <span
             v-show="
-              music.getPlaySongLyric.hasLrcRoma &&
-              setting.showRoma &&
-              item.roma
+              music.getPlaySongLyric.hasLrcRoma && setting.showRoma && item.roma
             "
             :style="{ fontSize: setting.lyricsFontSize - 1.5 + 'vh' }"
             class="lyric-roma"
@@ -73,6 +72,7 @@
         </div>
       </div>
     </template>
+    <!-- 逐字歌词 -->
     <template v-else>
       <div
         v-for="(item, index) in music.getPlaySongLyric.yrc"
@@ -124,9 +124,7 @@
           </span>
           <span
             v-show="
-              music.getPlaySongLyric.hasYrcRoma &&
-              setting.showRoma &&
-              item.roma
+              music.getPlaySongLyric.hasYrcRoma && setting.showRoma && item.roma
             "
             :style="{ fontSize: setting.lyricsFontSize - 1.5 + 'vh' }"
             class="lyric-roma"

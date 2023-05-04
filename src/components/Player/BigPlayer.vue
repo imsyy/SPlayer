@@ -22,12 +22,7 @@
               class="setting"
               size="30"
               :component="SettingsRound"
-              @click="
-                () => {
-                  music.setBigPlayerState(false);
-                  router.push('/setting/player');
-                }
-              "
+              @click="LyricSettingRef.openLyricSetting()"
             />
           </div>
         </div>
@@ -134,9 +129,12 @@
           </Transition>
         </div>
       </div>
+      <!-- 音乐频谱 -->
       <div class="canvas">
         <canvas v-if="setting.musicFrequency" class="avBars" ref="avBars" />
       </div>
+      <!-- 歌词设置 -->
+      <LyricSetting ref="LyricSettingRef" />
     </div>
   </Transition>
 </template>
@@ -156,6 +154,7 @@ import MusicFrequency from "@/utils/MusicFrequency.js";
 import PlayerRecord from "./PlayerRecord.vue";
 import PlayerCover from "./PlayerCover.vue";
 import RollingLyrics from "./RollingLyrics.vue";
+import LyricSetting from "@/components/DataModal/LyricSetting.vue";
 import screenfull from "screenfull";
 
 const router = useRouter();
@@ -169,6 +168,9 @@ const menuShow = ref(false);
 // 音乐频谱
 const avBars = ref(null);
 const musicFrequency = ref(null);
+
+// 歌词设置弹窗
+const LyricSettingRef = ref(null);
 
 // 歌词文本点击事件
 const lrcTextClick = (time) => {

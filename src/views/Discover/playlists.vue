@@ -8,7 +8,7 @@
         class="cat"
         icon-placement="right"
         round
-        @click="catModelShow = true"
+        @click="catModalShow = true"
       >
         <template #icon>
           <n-icon class="up" :component="ChevronRightRound" />
@@ -17,7 +17,7 @@
       </n-button>
       <n-modal
         class="s-modal"
-        v-model:show="catModelShow"
+        v-model:show="catModalShow"
         preset="card"
         title="歌单分类"
         :bordered="false"
@@ -135,7 +135,7 @@ const router = useRouter();
 const music = musicStore();
 
 // 分类数据
-const catModelShow = ref(false);
+const catModalShow = ref(false);
 const catName = ref(
   router.currentRoute.value.query.cat
     ? router.currentRoute.value.query.cat
@@ -255,7 +255,7 @@ const changeTagName = (name) => {
       page: 1,
     },
   });
-  catModelShow.value = false;
+  catModalShow.value = false;
 };
 
 // 排序方式变化

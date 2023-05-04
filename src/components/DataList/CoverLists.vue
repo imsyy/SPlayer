@@ -150,7 +150,7 @@ const openRightMenu = (e, data) => {
           router.currentRoute.value.name === "user-playlists" ? true : false,
         props: {
           onClick: () => {
-            playlistUpdateRef.value.openUpdateModel(data);
+            playlistUpdateRef.value.openUpdateModal(data);
           },
         },
       },
