@@ -14,7 +14,10 @@
           ref="mainContent"
           class="main"
           id="main"
-          :class="[music.showPlayList ? 'playlist' : null]"
+          :class="{
+            playlist: music.showPlayList,
+            search: site.searchInputActive,
+          }"
         >
           <n-back-top
             :bottom="music.getPlaylists[0] && music.showPlayBar ? 100 : 40"
@@ -232,10 +235,28 @@ onMounted(() => {
     margin: 0 auto;
     div:nth-of-type(2) {
       transition: all 0.3s;
+      &::after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        transition: all 0.3s;
+        pointer-events: none;
+      }
     }
     &.playlist {
       div:nth-of-type(2) {
         transform: scale(0.98);
+      }
+    }
+    &.search {
+      div:nth-of-type(2) {
+        &::after {
+          pointer-events: all;
+          background-color: #00000040;
+        }
       }
     }
   }

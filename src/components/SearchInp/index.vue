@@ -366,6 +366,12 @@ watch(
       @media (max-width: 450px) {
         width: 60vw;
       }
+      @media (max-width: 380px) {
+        width: 54vw;
+      }
+      @media (max-width: 320px) {
+        width: 50vw;
+      }
     }
     :deep(.n-input__prefix) {
       .n-icon {

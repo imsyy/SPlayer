@@ -4,10 +4,12 @@
       <div class="logo" @click="router.push('/')">
         <img src="/images/logo/favicon.svg" alt="logo" />
       </div>
-      <div :class="site.searchInputActive ? 'controls hidden' : 'controls'">
-        <n-icon size="22" :component="Left" @click="router.go(-1)" />
-        <n-icon size="22" :component="Right" @click="router.go(1)" />
-      </div>
+      <Transition name="fade" mode="out-in">
+        <div v-show="!site.searchInputActive" class="controls">
+          <n-icon size="22" :component="Left" @click="router.go(-1)" />
+          <n-icon size="22" :component="Right" @click="router.go(1)" />
+        </div>
+      </Transition>
     </div>
     <div class="center">
       <router-link class="link" to="/">首页</router-link>
@@ -24,6 +26,14 @@
     </div>
     <div class="right">
       <SearchInp />
+      <!-- 移动端菜单 -->
+      <n-dropdown trigger="click" :options="mbMenuOptions" @select="menuSelect">
+        <n-button class="mb-menu" circle>
+          <template #icon>
+            <n-icon :component="HamburgerButton" />
+          </template>
+        </n-button>
+      </n-dropdown>
       <!-- 下拉菜单 -->
       <n-dropdown
         class="dropdown"
@@ -67,6 +77,10 @@ import {
   History,
   SunOne,
   Moon,
+  HamburgerButton,
+  HomeTwo,
+  FindOne,
+  Me,
 } from "@icon-park/vue-next";
 import { userStore, settingStore, siteStore } from "@/store";
 import { useRouter } from "vue-router";
@@ -89,6 +103,19 @@ const closeDropdown = (event) => {
   } else {
     showDropdown.value = false;
   }
+};
+
+// 图标渲染
+const renderIcon = (icon) => {
+  return () => {
+    return h(
+      NIcon,
+      { style: { transform: "translateX(2px)" } },
+      {
+        default: () => icon,
+      }
+    );
+  };
 };
 
 // 用户数据模块
@@ -239,28 +266,12 @@ const dropdownOptions = ref([
   {
     label: "播放历史",
     key: "history",
-    icon: () => {
-      return h(
-        NIcon,
-        { style: { transform: "translateX(2px)" } },
-        {
-          default: () => h(History),
-        }
-      );
-    },
+    icon: renderIcon(h(History)),
   },
   {
     label: "全局设置",
     key: "setting",
-    icon: () => {
-      return h(
-        NIcon,
-        { style: { transform: "translateX(2px)" } },
-        {
-          default: () => h(SettingTwo),
-        }
-      );
-    },
+    icon: renderIcon(h(SettingTwo)),
   },
   {
     label: () => {
@@ -286,19 +297,30 @@ const dropdownOptions = ref([
   {
     label: "关于本站",
     key: "about",
-    icon: () => {
-      return h(
-        NIcon,
-        { style: { transform: "translateX(2px)" } },
-        {
-          default: () => h(Info),
-        }
-      );
-    },
+    icon: renderIcon(h(Info)),
   },
 ]);
 
-// 下拉框事件
+// 移动端菜单
+const mbMenuOptions = ref([
+  {
+    label: "首页",
+    key: "/",
+    icon: renderIcon(h(HomeTwo)),
+  },
+  {
+    label: "发现",
+    key: "/discover",
+    icon: renderIcon(h(FindOne)),
+  },
+  {
+    label: "我的",
+    key: "/user",
+    icon: renderIcon(h(Me)),
+  },
+]);
+
+// 下拉框点击事件
 const menuSelect = (key) => {
   router.push(key);
 };
@@ -379,6 +401,17 @@ nav {
   align-items: center;
   max-width: 1400px;
   margin: 0 auto;
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 0.5s ease;
+  }
+  .fade-enter-active {
+    transition-delay: 0.5s;
+  }
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 0;
+  }
   .left {
     flex: 1;
     max-width: 300px;
@@ -392,30 +425,35 @@ nav {
       width: 30px;
       height: 30px;
       margin-right: 12px;
+      transition: all 0.3s;
       cursor: pointer;
       img {
         width: 100%;
         height: 100%;
+      }
+      @media (min-width: 640px) {
+        &:hover {
+          transform: scale(1.15);
+        }
+      }
+      &:active {
+        transform: scale(1);
       }
     }
     .controls {
       display: flex;
       flex-direction: row;
       align-items: center;
-      @media (max-width: 520px) {
-        &.hidden{
-          display: none;
-        }
-        
-      }
       .n-icon {
         margin: 0 4px;
         border-radius: 8px;
         padding: 4px;
         cursor: pointer;
         transition: all 0.3s;
-        &:hover {
-          background-color: var(--n-border-color);
+        @media (min-width: 640px) {
+          &:hover {
+            background-color: var(--n-border-color);
+          }
         }
         &:active {
           transform: scale(0.95);
@@ -462,6 +500,10 @@ nav {
     flex-direction: row;
     align-items: center;
     justify-content: flex-end;
+    @media (max-width: 520px) {
+      position: absolute;
+      right: 12px;
+    }
     .avatar {
       width: 30px;
       min-width: 30px;
@@ -469,6 +511,13 @@ nav {
       margin-left: 12px;
       box-shadow: 0 4px 12px -2px rgb(0 0 0 / 10%);
       cursor: pointer;
+    }
+    .mb-menu {
+      margin-left: 12px;
+      display: none;
+      @media (max-width: 768px) {
+        display: flex;
+      }
     }
   }
 }

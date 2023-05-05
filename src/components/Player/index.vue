@@ -562,6 +562,9 @@ onMounted(() => {
 watch(
   () => music.getPlaySongData,
   (val) => {
+    // 清除播放地址
+    music.setPlaySongLink(null);
+    // 防抖
     debounce(() => {
       if (val === undefined) {
         window.document.title =
@@ -788,9 +791,11 @@ watch(
         border-radius: 8px;
         cursor: pointer;
         transition: all 0.3s;
-        &:hover {
-          background-color: var(--main-color);
-          color: var(--n-color-embedded);
+        @media (min-width: 640px) {
+          &:hover {
+            background-color: var(--main-color);
+            color: var(--n-color-embedded);
+          }
         }
         &:active {
           transform: scale(0.95);

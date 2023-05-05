@@ -116,7 +116,6 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  console.log("销毁");
   window.removeEventListener("resize", getBannerHeight);
 });
 </script>

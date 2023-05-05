@@ -300,6 +300,7 @@ watch(
       : false;
     if (val.name == "dsc-playlists") {
       if (hqPLayListOpen.value) {
+        playlistsData.value = [];
         getHqPlaylistData(catName.value);
       } else {
         pageNumber.value = val.query.page ? Number(val.query.page) : 1;

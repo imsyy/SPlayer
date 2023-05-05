@@ -75,7 +75,7 @@ export const formatNumber = (num) => {
   if (n === 0 || n < 10000) {
     return n;
   }
-  return (n / 10000).toFixed(1) + "万";
+  return (n / 10000).toFixed(0) + "万";
 };
 
 /**

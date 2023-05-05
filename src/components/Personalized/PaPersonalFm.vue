@@ -190,8 +190,10 @@ onMounted(() => {
         border-radius: 8px;
         transform: scale(1);
         transition: all 0.3s;
-        &:hover {
-          background-color: #ffffff30;
+        @media (min-width: 640px) {
+          &:hover {
+            background-color: #ffffff30;
+          }
         }
         &:active {
           transform: scale(0.9);
