@@ -59,21 +59,21 @@
           {{ item }}
         </n-tag>
       </n-space>
-      <!-- <div class="control" v-if="true">
+      <n-space class="control">
         <n-space>
-          <n-button strong secondary round>
+          <n-button strong secondary round type="primary" @click="playAllSong">
             <template #icon>
-              <n-icon :component="EditNoteRound" />
+              <n-icon :component="PlaylistPlayRound" />
             </template>
-            编辑
+            播放
           </n-button>
-          <n-button strong secondary round type="primary">
+          <n-button strong secondary circle>
             <template #icon>
-              <n-icon :component="DeleteRound" />
+              <n-icon :component="MoreHorizFilled" />
             </template>
           </n-button>
         </n-space>
-      </div> -->
+      </n-space>
     </div>
     <div class="right">
       <div class="meta">
@@ -126,15 +126,16 @@
 <script setup>
 import { getPlayListDetail, getAllPlayList } from "@/api/playlist";
 import { useRouter } from "vue-router";
-// import { userStore, musicStore } from "@/store";
+import { userStore, musicStore, settingStore } from "@/store";
 import { getSongTime, getLongTime } from "@/utils/timeTools.js";
-// import { EditNoteRound, DeleteRound } from "@vicons/material";
+import { PlaylistPlayRound, MoreHorizFilled } from "@vicons/material";
 import DataLists from "@/components/DataList/DataLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
 
 const router = useRouter();
-// const user = userStore();
-// const music = musicStore();
+const user = userStore();
+const music = musicStore();
+const setting = settingStore();
 
 // 歌单数据
 const playListId = ref(router.currentRoute.value.query.id);
@@ -195,6 +196,42 @@ const getAllPlayListData = (id, limit = 30, offset = 0) => {
     // 请求后回顶
     if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
   });
+};
+
+// 播放歌单所有歌曲
+const playAllSong = () => {
+  try {
+    // 获取元素
+    const songDom = document.getElementById("datalists").firstElementChild;
+    const allSongDom = document.querySelectorAll("#datalists > *");
+    // 是否有元素存在 play
+    let isHasPlay = false;
+    // 遍历
+    allSongDom.forEach((child) => {
+      if (child.classList.contains("play")) {
+        isHasPlay = true;
+      }
+    });
+    if (!isHasPlay) {
+      // 双击操作
+      const event = new MouseEvent("dblclick", {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+      });
+      // 双击或单击
+      if (setting.listClickMode === "dblclick") {
+        songDom.dispatchEvent(event);
+      } else if (setting.listClickMode === "click") {
+        songDom.click();
+      }
+    } else {
+      music.setPlayState(true);
+    }
+  } catch (err) {
+    console.error("播放全部歌曲失败：" + err);
+    $message.error("播放全部歌曲失败，请重试");
+  }
 };
 
 onMounted(() => {
@@ -319,6 +356,9 @@ watch(
           transform: scale(0.95);
         }
       }
+    }
+    .control {
+      margin-top: 20px;
     }
   }
   .right {

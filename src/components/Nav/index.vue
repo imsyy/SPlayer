@@ -362,7 +362,6 @@ watch(
 
 onMounted(() => {
   changeUserOptions(user.userLogin);
-  console.log(router);
 });
 
 onBeforeUnmount(() => {

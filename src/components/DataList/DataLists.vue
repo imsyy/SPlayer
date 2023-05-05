@@ -1,6 +1,6 @@
 <template>
   <Transition mode="out-in">
-    <div class="datalists" v-if="listData[0]">
+    <div class="datalists" id="datalists" v-if="listData[0]">
       <n-card
         v-for="item in listData"
         :key="item"
@@ -418,7 +418,7 @@ const openRightMenu = (e, data) => {
         label: "下一首播放",
         icon: renderIcon(AddMusic),
         show:
-          music.getPersonalFmMode || music.getPlaySongData.id == data.id
+          music.getPersonalFmMode || music.getPlaySongData?.id == data.id
             ? false
             : true,
         props: {
@@ -637,7 +637,8 @@ const jumpLink = (id, type) => {
     &:hover {
       border-color: var(--main-color);
       box-shadow: 0 1px 2px -2px var(--main-boxshadow-color),
-        0 3px 6px 0 var(--main-boxshadow-color), 0 5px 12px 4px var(--main-boxshadow-hover-color);
+        0 3px 6px 0 var(--main-boxshadow-color),
+        0 5px 12px 4px var(--main-boxshadow-hover-color);
       .action {
         .like,
         .download {

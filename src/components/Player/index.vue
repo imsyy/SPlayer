@@ -522,6 +522,7 @@ const volumeMute = () => {
 
 // 获取封面图主色
 const getPicColor = (url) => {
+  if (!url) return false;
   const imgUrl = url.replace(/^http:/, "https:") + "?param=50y50";
   const img = new Image();
   fetch(imgUrl)
@@ -562,6 +563,10 @@ watch(
   () => music.getPlaySongData,
   (val) => {
     debounce(() => {
+      if (val === undefined) {
+        window.document.title =
+          sessionStorage.getItem("siteTitle") ?? "SPlayer";
+      }
       getPlaySongData(val);
       getPicColor(val?.album.picUrl);
     }, 500);
@@ -582,7 +587,7 @@ watch(
   (val) => {
     nextTick(() => {
       if ($player) {
-        val ? songInOrOut("play") : songInOrOut("pause");
+        songInOrOut(val ? "play" : "pause");
       } else {
         $message.error("播放器初始化失败，请重试");
       }

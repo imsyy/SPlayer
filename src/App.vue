@@ -80,7 +80,7 @@ const setSiteTitle = (val) => {
     ? val === "SPlayer"
       ? val
       : val + " - SPlayer"
-    : site.siteTitle;
+    : sessionStorage.getItem("siteTitle") ?? "SPlayer";
   site.siteTitle = title;
   sessionStorage.setItem("siteTitle", title);
   if (!music.getPlayState) {
