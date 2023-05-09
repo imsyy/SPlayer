@@ -314,6 +314,7 @@ const getPlaySongData = (data, level = setting.songLevel) => {
             $message.info("当前歌曲为 VIP 专享，仅可试听");
           // 获取音乐地址
           getMusicUrl(id, level).then((res) => {
+            music.isLoadingSong = false;
             player.value = createSound(
               res.data[0].url.replace(/^http:/, "https:")
             );
@@ -346,6 +347,7 @@ const getMusicNumUrlData = (id) => {
   getMusicNumUrl(id)
     .then((res) => {
       if (res.code === 200) {
+        music.isLoadingSong = false;
         console.log("替换成功：" + res.data.url.replace(/^http:/, ""));
         player.value = createSound(res.data.url.replace(/^http:/, ""));
       }
@@ -385,6 +387,9 @@ const songChange = debounce(500, (val) => {
     window.document.title =
       sessionStorage.getItem("siteTitle") ?? import.meta.env.VITE_SITE_TITLE;
   }
+  // 清除播放地址
+  soundUnload();
+  // 加载数据
   getPlaySongData(val);
   getPicColor(val?.album.picUrl);
 });
@@ -425,8 +430,6 @@ onMounted(() => {
 watch(
   () => music.getPlaySongData,
   (val) => {
-    // 清除播放地址
-    // soundUnload();
     music.setPlaySongTime({ currentTime: 0, duration: 0 });
     songChange(val);
   }
@@ -444,8 +447,8 @@ watch(
 watch(
   () => music.getPlayState,
   (val) => {
-    nextTick(() => {
-      if (player.value) {
+    nextTick().then(() => {
+      if (player.value && !music.isLoadingSong) {
         fadePlayOrPause(
           player.value,
           val ? "play" : "pause",

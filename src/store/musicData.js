@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { nextTick } from "vue";
 import { getSongTime, getSongPlayingTime } from "@/utils/timeTools";
 import { getPersonalFm, setFmTrash } from "@/api/home";
 import { getLikelist, setLikeSong } from "@/api/user";
@@ -45,6 +46,8 @@ const useMusicDataStore = defineStore("musicData", {
         analyser: null,
         audioCtx: null,
       },
+      // 是否正在加载数据
+      isLoadingSong: false,
       // 持久化数据
       persistData: {
         // 搜索历史
@@ -124,10 +127,6 @@ const useMusicDataStore = defineStore("musicData", {
     getPlayState(state) {
       return state.playState;
     },
-    // 获取播放链接
-    // getPlaySongLink(state) {
-    //   return state.playSongLink;
-    // },
     // 获取喜欢音乐列表
     getLikeList(state) {
       return state.persistData.likeList;
@@ -150,7 +149,8 @@ const useMusicDataStore = defineStore("musicData", {
     setPersonalFmMode(value) {
       this.persistData.personalFmMode = value;
       if (value) {
-        soundUnload();
+        // soundUnload();
+        setSeek($player, 0);
         if (this.persistData.personalFmData?.id) {
           this.persistData.playlists = [];
           this.persistData.playlists.push(this.persistData.personalFmData);
@@ -183,7 +183,8 @@ const useMusicDataStore = defineStore("musicData", {
             } else {
               this.persistData.personalFmData = fmData;
               if (this.persistData.personalFmMode) {
-                soundUnload();
+                // soundUnload();
+                setSeek($player, 0);
                 this.persistData.playlists = [];
                 this.persistData.playlists.push(fmData);
                 this.persistData.playSongIndex = 0;
@@ -278,10 +279,6 @@ const useMusicDataStore = defineStore("musicData", {
     setPlayBarState(value) {
       this.showPlayBar = value;
     },
-    // 更改歌曲播放链接
-    // setPlaySongLink(value) {
-    //   this.playSongLink = value;
-    // },
     // 更改播放列表模式
     setPlayListMode(value) {
       this.persistData.playListMode = value;
@@ -376,6 +373,7 @@ const useMusicDataStore = defineStore("musicData", {
     // 上下曲调整
     setPlaySongIndex(type) {
       // this.playState = false;
+      this.isLoadingSong = true;
       if (this.persistData.personalFmMode) {
         this.setPersonalFmData();
       } else {
@@ -406,7 +404,9 @@ const useMusicDataStore = defineStore("musicData", {
           // soundUnload();
           setSeek($player, 0);
         }
-        this.playState = true;
+        nextTick().then(() => {
+          this.setPlayState(true);
+        });
       }
     },
     // 添加歌曲至播放列表
@@ -474,7 +474,7 @@ const useMusicDataStore = defineStore("musicData", {
       // 检查当前播放歌曲的索引是否超出了列表范围
       if (this.persistData.playSongIndex >= this.persistData.playlists.length) {
         this.persistData.playSongIndex = 0;
-        soundUnload();
+        setSeek($player, 0);
       }
     },
     // 获取歌单分类

@@ -244,7 +244,7 @@ const changePwaColor = () => {
 };
 
 onMounted(() => {
-  nextTick(() => {
+  nextTick().then(() => {
     // 滚动歌词
     lyricsScroll(music.getPlaySongLyricIndex);
   });
@@ -261,7 +261,7 @@ watch(
     changePwaColor();
     if (val) {
       console.log("开启播放器", music.getPlaySongLyricIndex);
-      nextTick(() => {
+      nextTick().then(() => {
         music.showPlayList = false;
         lyricsScroll(music.getPlaySongLyricIndex);
       });

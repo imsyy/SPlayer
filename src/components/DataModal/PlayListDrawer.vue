@@ -108,7 +108,7 @@ watch(
   () => music.showPlayList,
   (val) => {
     playListShow.value = val;
-    nextTick(() => {
+    nextTick().then(() => {
       if (val && music.getPlaylists[0]) {
         const el = document.getElementById(
           `playlist${music.persistData.playSongIndex}`
