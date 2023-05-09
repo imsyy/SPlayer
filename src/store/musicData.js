@@ -6,7 +6,7 @@ import { getPlayListCatlist } from "@/api/playlist";
 import { userStore, settingStore } from "@/store";
 import { NIcon } from "naive-ui";
 import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
-import { soundUnload, setSeek, fadePlayOrPause } from "@/utils/player.js";
+import { soundUnload, setSeek, fadePlayOrPause } from "@/utils/Player";
 import parseLyric from "@/utils/parseLyric";
 
 const useMusicDataStore = defineStore("musicData", {
