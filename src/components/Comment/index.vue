@@ -78,7 +78,7 @@
 </template>
 
 <script setup>
-import { getCommentTime, formatNumber } from "@/utils/timeTools.js";
+import { getCommentTime, formatNumber } from "@/utils/timeTools";
 import { Local, Time, ThumbsUp } from "@icon-park/vue-next";
 import { userStore } from "@/store";
 import { useRouter } from "vue-router";

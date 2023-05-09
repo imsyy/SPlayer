@@ -98,7 +98,7 @@
 <script setup>
 import { getAlbum } from "@/api/album";
 import { useRouter } from "vue-router";
-import { getSongTime, getLongTime } from "@/utils/timeTools.js";
+import { getSongTime, getLongTime } from "@/utils/timeTools";
 import DataLists from "@/components/DataList/DataLists.vue";
 const router = useRouter();
 

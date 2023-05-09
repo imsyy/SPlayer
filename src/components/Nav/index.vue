@@ -2,7 +2,7 @@
   <nav>
     <div class="left">
       <div class="logo" @click="router.push('/')">
-        <img src="/images/logo/favicon.svg" alt="logo" />
+        <img :src="logoUrl" alt="logo" />
       </div>
       <Transition name="fade" mode="out-in">
         <div v-show="!site.searchInputActive" class="controls">
@@ -93,6 +93,7 @@ const site = siteStore();
 const setting = settingStore();
 const aboutSiteRef = ref(null);
 const timeOut = ref(null);
+const logoUrl = import.meta.env.VITE_SITE_LOGO;
 
 // 下拉菜单显隐
 const showDropdown = ref(false);
@@ -490,7 +491,7 @@ nav {
 
     .router-link-active {
       background-color: var(--main-color);
-      color: var(--n-color);
+      color: #fff;
     }
   }
   .right {

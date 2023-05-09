@@ -127,7 +127,7 @@ import { ChevronRightRound, LocalFireDepartmentRound } from "@vicons/material";
 import { useRouter } from "vue-router";
 import { musicStore } from "@/store";
 import { getHighqualityPlaylist, getTopPlaylist } from "@/api/playlist";
-import { formatNumber } from "@/utils/timeTools.js";
+import { formatNumber } from "@/utils/timeTools";
 import CoverLists from "@/components/DataList/CoverLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
 

@@ -7,14 +7,35 @@
     >
       <div class="slider">
         <span>{{ music.getPlaySongTime.songTimePlayed }}</span>
-        <n-slider
+        <!-- <n-slider
           v-model:value="music.getPlaySongTime.barMoveDistance"
           class="progress"
           :step="0.01"
           :tooltip="false"
           @update:value="songTimeSliderUpdate"
           @click.stop
-        />
+        /> -->
+        <vue-slider
+          v-model="music.getPlaySongTime.barMoveDistance"
+          @drag-start="music.setPlayState(false)"
+          @drag-end="sliderDragEnd"
+          @click.stop="
+            songTimeSliderUpdate(music.getPlaySongTime.barMoveDistance)
+          "
+          :tooltip="'active'"
+          :use-keyboard="false"
+        >
+          <template v-slot:tooltip>
+            <div class="slider-tooltip">
+              {{
+                getSongPlayingTime(
+                  (music.getPlaySongTime.duration / 100) *
+                    music.getPlaySongTime.barMoveDistance
+                )
+              }}
+            </div>
+          </template>
+        </vue-slider>
         <span>{{ music.getPlaySongTime.songTimeDuration }}</span>
       </div>
       <div class="all">
@@ -201,19 +222,6 @@
           </div>
         </div>
       </div>
-      <!-- 全局播放器 -->
-      <audio
-        ref="player"
-        :autoplay="music.getPlayState"
-        @timeupdate="songUpdate"
-        @play="songPlay"
-        @pause="songPause"
-        @canplay="songCanplay"
-        @loadeddata="songReady"
-        @error="songError"
-        @ended="music.setPlaySongIndex('next')"
-        :src="music.getPlaySongLink"
-      ></audio>
     </n-card>
   </Transition>
   <!-- 播放列表 -->
@@ -230,12 +238,10 @@ import {
   getMusicUrl,
   getMusicNumUrl,
   getMusicNewLyric,
-  songScrobble,
 } from "@/api/song";
 import { NIcon } from "naive-ui";
 import {
   KeyboardArrowUpFilled,
-  MusicNoteFilled,
   PlayCircleFilled,
   PauseCircleFilled,
   SkipNextRound,
@@ -252,26 +258,32 @@ import {
 } from "@vicons/material";
 import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
 import { storeToRefs } from "pinia";
-import { musicStore, settingStore, userStore, siteStore } from "@/store";
+import { musicStore, settingStore, siteStore } from "@/store";
+import {
+  createSound,
+  setVolume,
+  setSeek,
+  fadePlayOrPause,
+  soundUnload,
+} from "@/utils/Player";
+import { getSongPlayingTime } from "@/utils/timeTools";
 import { useRouter } from "vue-router";
+import { debounce } from "throttle-debounce";
+import VueSlider from "vue-slider-component";
 import AddPlaylist from "@/components/DataModal/AddPlaylist.vue";
 import PlayListDrawer from "@/components/DataModal/PlayListDrawer.vue";
 import AllArtists from "@/components/DataList/AllArtists.vue";
 import ColorThief from "colorthief";
 import BigPlayer from "./BigPlayer.vue";
-import debounce from "@/utils/debounce";
+import "vue-slider-component/theme/default.css";
 
 const router = useRouter();
 const setting = settingStore();
 const music = musicStore();
-const user = userStore();
 const site = siteStore();
 const { persistData } = storeToRefs(music);
 const addPlayListRef = ref(null);
 const PlayListDrawerRef = ref(null);
-
-// 重试次数
-const testNumber = ref(0);
 
 // UNM 是否存在
 const useUnmServerHas = import.meta.env.VITE_UNM_API ? true : false;
@@ -302,7 +314,9 @@ const getPlaySongData = (data, level = setting.songLevel) => {
             $message.info("当前歌曲为 VIP 专享，仅可试听");
           // 获取音乐地址
           getMusicUrl(id, level).then((res) => {
-            music.setPlaySongLink(res.data[0].url.replace(/^http:/, "https:"));
+            player.value = createSound(
+              res.data[0].url.replace(/^http:/, "https:")
+            );
           });
         } else {
           if (useUnmServerHas && setting.useUnmServer) {
@@ -319,7 +333,7 @@ const getPlaySongData = (data, level = setting.songLevel) => {
       music.setPlaySongLyric(res);
     });
   } catch (err) {
-    if (music.getPlaylists[0] && music.getPlayState && $player) {
+    if (music.getPlaylists[0] && music.getPlayState) {
       console.log("当前歌曲所有音源匹配失败：" + err);
       $message.warning("当前歌曲所有音源匹配失败，跳至下一首");
       music.setPlaySongIndex("next");
@@ -333,7 +347,7 @@ const getMusicNumUrlData = (id) => {
     .then((res) => {
       if (res.code === 200) {
         console.log("替换成功：" + res.data.url.replace(/^http:/, ""));
-        music.setPlaySongLink(res.data.url.replace(/^http:/, ""));
+        player.value = createSound(res.data.url.replace(/^http:/, ""));
       }
     })
     .catch((err) => {
@@ -343,171 +357,16 @@ const getMusicNumUrlData = (id) => {
     });
 };
 
-// 歌曲进度更新事件
-const songUpdate = (e) => {
-  const currentTime = e.target.currentTime;
-  const duration = e.target.duration;
-  music.setPlaySongTime({ currentTime, duration });
-};
-
-// 歌曲缓冲完成
-const songCanplay = () => {
-  console.log("缓冲完成", music.getPlayState);
-  if (music.getPlayState && $player) {
-    music.setPlayState(true);
-    songInOrOut("play");
-  }
-};
-
-// 歌曲首次缓冲
-const songReady = () => {
-  const songId = music.getPlaySongData?.id;
-  const sourceId = music.getPlaySongData?.sourceId
-    ? music.getPlaySongData.sourceId
-    : 0;
-  console.log("首次缓冲完成：" + songId + " / 来源：" + sourceId);
-  // 听歌打卡
-  if (user.userLogin) {
-    songScrobble(songId, sourceId).catch((err) => {
-      console.error("歌曲打卡失败：" + err);
-    });
-  }
-};
-
-// 歌曲开始播放
-const songPlay = () => {
-  testNumber.value = 0;
-  if (!Object.keys(music.getPlaySongData).length) {
-    $message.error("音乐数据获取失败");
-    return false;
-  }
-  music.setPlayState(true);
-  const songName = music.getPlaySongData.name;
-  const songArtist = music.getPlaySongData.artist[0].name;
-  $message.info(songName + " - " + songArtist, {
-    icon: () =>
-      h(NIcon, null, {
-        default: () => h(MusicNoteFilled),
-      }),
-  });
-  console.log("开始播放：" + songName + " - " + songArtist);
-  // mediaSession
-  if (
-    "mediaSession" in navigator &&
-    Object.keys(music.getPlaySongData).length
-  ) {
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: music.getPlaySongData.name,
-      artist: music.getPlaySongData.artist[0].name,
-      album: music.getPlaySongData.album.name,
-      artwork: [
-        {
-          src:
-            music.getPlaySongData.album.picUrl.replace(/^http:/, "https:") +
-            "?param=96y96",
-          sizes: "96x96",
-        },
-        {
-          src:
-            music.getPlaySongData.album.picUrl.replace(/^http:/, "https:") +
-            "?param=128y128",
-          sizes: "128x128",
-        },
-        {
-          src:
-            music.getPlaySongData.album.picUrl.replace(/^http:/, "https:") +
-            "?param=512x512",
-          sizes: "512x512",
-        },
-      ],
-    });
-    navigator.mediaSession.setActionHandler("nexttrack", () => {
-      music.setPlaySongIndex("next");
-    });
-    navigator.mediaSession.setActionHandler("previoustrack", () => {
-      music.setPlaySongIndex("prev");
-    });
-  }
-  // 写入播放历史
-  music.setPlayHistory(music.getPlaySongData);
-  // 播放时页面标题
-  window.document.title =
-    music.getPlaySongData.name +
-    " - " +
-    music.getPlaySongData.artist[0].name +
-    " - SPlayer";
-};
-
-// 音乐渐入渐出
-const isFading = ref(false);
-const songInOrOut = (type) => {
-  if (isFading.value) {
-    return;
-  }
-  isFading.value = true;
-
-  if (type === "play") {
-    let volume = 0;
-    $player.play();
-    const interval = setInterval(() => {
-      // 如果音量已经到达当前音量，则停止渐入
-      if (volume >= persistData.value.playVolume) {
-        clearInterval(interval);
-        isFading.value = false;
-        return;
-      }
-      // 增加音量
-      volume += 0.1;
-      if (volume > persistData.value.playVolume) {
-        volume = persistData.value.playVolume;
-      }
-      $player.volume = volume;
-    }, 30);
-  } else if (type === "pause") {
-    let volume = persistData.value.playVolume;
-    const interval = setInterval(() => {
-      // 如果音量已经到达最小值，则停止渐出
-      if (volume <= 0) {
-        clearInterval(interval);
-        $player.pause();
-        isFading.value = false;
-        return;
-      }
-      // 减小音量
-      volume -= 0.1;
-      if (volume < 0) {
-        volume = 0;
-      }
-      $player.volume = volume;
-    }, 30);
-  }
-};
-
-// 歌曲暂停
-const songPause = () => {
-  console.log("音乐暂停");
-  if (!$player.ended) music.setPlayState(false);
-  // 更改页面标题
-  $setSiteTitle();
-};
-
 // 歌曲进度条更新
-const songTimeSliderUpdate = (val) => {
-  if ($player && music.getPlaySongTime && music.getPlaySongTime.duration)
-    $player.currentTime = (music.getPlaySongTime.duration / 100) * val;
+const sliderDragEnd = () => {
+  songTimeSliderUpdate(music.getPlaySongTime.barMoveDistance);
+  music.setPlayState(true);
 };
-
-// 歌曲播放失败事件
-const songError = () => {
-  console.error("歌曲播放失败");
-  $message.error("歌曲播放失败");
-  if (testNumber.value < 4) {
-    if (music.getPlaylists[0]) getPlaySongData(music.getPlaySongData);
-    testNumber.value++;
-  } else {
-    $message.error("歌曲重试次数过多，请刷新后重试");
+const songTimeSliderUpdate = (val) => {
+  if (player.value && music.getPlaySongTime?.duration) {
+    const currentTime = (music.getPlaySongTime.duration / 100) * val;
+    setSeek(player.value, currentTime);
   }
-  if (music.getPlayState) songInOrOut("play");
 };
 
 // 静音事件
@@ -519,6 +378,16 @@ const volumeMute = () => {
     persistData.value.playVolume = persistData.value.playVolumeMute;
   }
 };
+
+// 歌曲更换事件
+const songChange = debounce(500, (val) => {
+  if (val === undefined) {
+    window.document.title =
+      sessionStorage.getItem("siteTitle") ?? import.meta.env.VITE_SITE_TITLE;
+  }
+  getPlaySongData(val);
+  getPicColor(val?.album.picUrl);
+});
 
 // 获取封面图主色
 const getPicColor = (url) => {
@@ -543,19 +412,13 @@ const getPicColor = (url) => {
 };
 
 onMounted(() => {
+  // 挂载方法
+  window.$getPlaySongData = getPlaySongData;
   // 获取音乐数据
   if (music.getPlaylists[0] && music.getPlaySongData) {
     getPlaySongData(music.getPlaySongData);
     getPicColor(music.getPlaySongData.album.picUrl);
   }
-  // 挂载播放器
-  window.$player = player.value;
-  // 恢复上次播放进度
-  if (music.getPlaySongTime && music.getPlaySongTime.currentTime) {
-    $player.currentTime = music.getPlaySongTime.currentTime;
-  }
-  // 设置音量
-  if ($player) $player.volume = persistData.value.playVolume;
 });
 
 // 监听当前音乐数据变化
@@ -563,16 +426,9 @@ watch(
   () => music.getPlaySongData,
   (val) => {
     // 清除播放地址
-    music.setPlaySongLink(null);
-    // 防抖
-    debounce(() => {
-      if (val === undefined) {
-        window.document.title =
-          sessionStorage.getItem("siteTitle") ?? "SPlayer";
-      }
-      getPlaySongData(val);
-      getPicColor(val?.album.picUrl);
-    }, 500);
+    soundUnload();
+    music.setPlaySongTime({ currentTime: 0, duration: 0 });
+    songChange(val);
   }
 );
 
@@ -580,7 +436,7 @@ watch(
 watch(
   () => persistData.value.playVolume,
   (val) => {
-    if ($player) $player.volume = val;
+    if (player.value) setVolume(player.value, val);
   }
 );
 
@@ -589,8 +445,12 @@ watch(
   () => music.getPlayState,
   (val) => {
     nextTick(() => {
-      if ($player) {
-        songInOrOut(val ? "play" : "pause");
+      if (player.value) {
+        fadePlayOrPause(
+          player.value,
+          val ? "play" : "pause",
+          persistData.value.playVolume
+        );
       } else {
         $message.error("播放器初始化失败，请重试");
       }
@@ -622,18 +482,14 @@ watch(
     width: 100%;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     @media (max-width: 640px) {
-      top: -6px;
+      top: -8px;
       > {
         span {
           display: none;
         }
       }
-    }
-
-    .progress {
-      --n-handle-size: 12px;
-      --n-rail-height: 3px;
     }
     > {
       span {
@@ -644,6 +500,30 @@ watch(
         padding: 2px 8px;
         border-radius: 25px;
         margin: 0 2px;
+      }
+    }
+    .vue-slider {
+      width: 100% !important;
+      height: 3px !important;
+      cursor: pointer;
+      .slider-tooltip {
+        font-size: 12px;
+        white-space: nowrap;
+        background-color: var(--n-color);
+        outline: 1px solid var(--n-border-color);
+        padding: 2px 8px;
+        border-radius: 25px;
+      }
+      :deep(.vue-slider-rail) {
+        background-color: var(--n-border-color);
+        border-radius: 25px;
+        .vue-slider-process {
+          background-color: var(--main-color);
+        }
+        .vue-slider-dot {
+          width: 12px !important;
+          height: 12px !important;
+        }
       }
     }
   }

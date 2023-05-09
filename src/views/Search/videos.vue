@@ -14,7 +14,7 @@
 <script setup>
 import { getSearchData } from "@/api/search";
 import { useRouter } from "vue-router";
-import { formatNumber, getSongTime } from "@/utils/timeTools.js";
+import { formatNumber, getSongTime } from "@/utils/timeTools";
 import VideoLists from "@/components/DataList/VideoLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
 const router = useRouter();

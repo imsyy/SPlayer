@@ -145,7 +145,7 @@
       </div>
       <n-switch v-model:value="lyricsBlur" :round="false" />
     </n-card>
-    <n-card class="set-item">
+    <!-- <n-card class="set-item">
       <div class="name">
         显示音乐频谱
         <span class="tip">可能会导致一些意想不到的后果，实验性功能</span>
@@ -155,7 +155,7 @@
         :round="false"
         @click="changeMusicFrequency"
       />
-    </n-card>
+    </n-card> -->
   </div>
 </template>
 
@@ -232,24 +232,24 @@ const backgroundImageShowOptions = [
 ];
 
 // 音乐频谱提醒
-const changeMusicFrequency = () => {
-  if (musicFrequency.value) {
-    $dialog.warning({
-      class: "s-dialog",
-      title: "实验性功能",
-      content: "确认开启音乐频谱？将在重启应用后生效",
-      positiveText: "开启",
-      negativeText: "取消",
-      onMaskClick: () => {
-        musicFrequency.value = false;
-      },
-      onPositiveClick: () => {
-        musicFrequency.value = true;
-      },
-      onNegativeClick: () => {
-        musicFrequency.value = false;
-      },
-    });
-  }
-};
+// const changeMusicFrequency = () => {
+//   if (musicFrequency.value) {
+//     $dialog.warning({
+//       class: "s-dialog",
+//       title: "实验性功能",
+//       content: "确认开启音乐频谱？将在重启应用后生效",
+//       positiveText: "开启",
+//       negativeText: "取消",
+//       onMaskClick: () => {
+//         musicFrequency.value = false;
+//       },
+//       onPositiveClick: () => {
+//         musicFrequency.value = true;
+//       },
+//       onNegativeClick: () => {
+//         musicFrequency.value = false;
+//       },
+//     });
+//   }
+// };
 </script>

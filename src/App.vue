@@ -80,10 +80,10 @@ const spacePlayOrPause = (e) => {
 // 更改页面标题
 const setSiteTitle = (val) => {
   const title = val
-    ? val === "SPlayer"
+    ? val === import.meta.env.VITE_SITE_TITLE
       ? val
-      : val + " - SPlayer"
-    : sessionStorage.getItem("siteTitle") ?? "SPlayer";
+      : val + " - " + import.meta.env.VITE_SITE_TITLE
+    : sessionStorage.getItem("siteTitle") ?? import.meta.env.VITE_SITE_TITLE;
   site.siteTitle = title;
   sessionStorage.setItem("siteTitle", title);
   if (!music.getPlayState) {
@@ -164,7 +164,7 @@ onMounted(() => {
   }
 
   // 版权声明
-  const logoText = "SPlayer";
+  const logoText = import.meta.env.VITE_SITE_TITLE;
   const copyrightNotice = `\n\n版本: ${packageJson.version}\n作者: ${packageJson.author}\n作者主页: ${packageJson.home}\nGitHub: ${packageJson.github}`;
   console.info(
     `%c${logoText} %c ${copyrightNotice}`,

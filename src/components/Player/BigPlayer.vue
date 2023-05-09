@@ -1,7 +1,7 @@
 <template>
   <Transition name="up">
     <div
-      v-show="music.showBigPlayer"
+      v-if="music.showBigPlayer"
       class="bplayer"
       :style="[
         music.getPlaySongData && setting.backgroundImageShow === 'blur'
@@ -130,9 +130,7 @@
         </div>
       </div>
       <!-- 音乐频谱 -->
-      <div class="canvas">
-        <canvas v-if="setting.musicFrequency" class="avBars" ref="avBars" />
-      </div>
+      <!-- <Spectrum v-if="setting.musicFrequency" /> -->
       <!-- 歌词设置 -->
       <LyricSetting ref="LyricSettingRef" />
     </div>
@@ -150,10 +148,11 @@ import {
 } from "@vicons/material";
 import { musicStore, settingStore, siteStore } from "@/store";
 import { useRouter } from "vue-router";
-import MusicFrequency from "@/utils/MusicFrequency.js";
+import { setSeek } from "@/utils/Player";
 import PlayerRecord from "./PlayerRecord.vue";
 import PlayerCover from "./PlayerCover.vue";
 import RollingLyrics from "./RollingLyrics.vue";
+// import Spectrum from "./Spectrum.vue";
 import LyricSetting from "@/components/DataModal/LyricSetting.vue";
 import screenfull from "screenfull";
 
@@ -165,16 +164,12 @@ const setting = settingStore();
 // 工具栏显隐
 const menuShow = ref(false);
 
-// 音乐频谱
-const avBars = ref(null);
-const musicFrequency = ref(null);
-
 // 歌词设置弹窗
 const LyricSettingRef = ref(null);
 
 // 歌词文本点击事件
 const lrcTextClick = (time) => {
-  if ($player) $player.currentTime = time;
+  if (typeof $player !== "undefined") setSeek($player, time);
   lrcMouseStatus.value = false;
 };
 
@@ -240,9 +235,9 @@ const changePwaColor = () => {
   if (music.showBigPlayer) {
     themeColorMeta.setAttribute("content", site.songPicColor);
   } else {
-    if (setting.getSiteTheme == "light") {
+    if (setting.getSiteTheme === "light") {
       themeColorMeta.setAttribute("content", "#ffffff");
-    } else if (setting.getSiteTheme == "dark") {
+    } else if (setting.getSiteTheme === "dark") {
       themeColorMeta.setAttribute("content", "#18181c");
     }
   }
@@ -250,19 +245,6 @@ const changePwaColor = () => {
 
 onMounted(() => {
   nextTick(() => {
-    if (setting.musicFrequency) {
-      $player.crossOrigin = "anonymous";
-      musicFrequency.value = new MusicFrequency(
-        avBars.value,
-        $player,
-        null,
-        50,
-        null,
-        null,
-        5
-      );
-      musicFrequency.value.drawSpectrum();
-    }
     // 滚动歌词
     lyricsScroll(music.getPlaySongLyricIndex);
   });
@@ -280,8 +262,8 @@ watch(
     if (val) {
       console.log("开启播放器", music.getPlaySongLyricIndex);
       nextTick(() => {
-        lyricsScroll(music.getPlaySongLyricIndex);
         music.showPlayList = false;
+        lyricsScroll(music.getPlaySongLyricIndex);
       });
     }
   }

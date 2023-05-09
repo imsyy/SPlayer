@@ -4,7 +4,7 @@ const useSiteDataStore = defineStore("siteData", {
   state: () => {
     return {
       // 站点标题
-      siteTitle: "SPlayer",
+      siteTitle: import.meta.env.VITE_SITE_TITLE,
       // 封面主题色
       songPicColor: "rgb(128,128,128)",
       // 搜索框激活状态

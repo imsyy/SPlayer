@@ -19,7 +19,7 @@
 <script setup>
 import { getArtistSongs } from "@/api/artist";
 import { useRouter } from "vue-router";
-import { getSongTime } from "@/utils/timeTools.js";
+import { getSongTime } from "@/utils/timeTools";
 import DataLists from "@/components/DataList/DataLists.vue";
 const router = useRouter();
 

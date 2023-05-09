@@ -51,7 +51,7 @@
 
 <script setup>
 import { playlistUpdate } from "@/api/playlist";
-import { formRules } from "@/utils/formRules.js";
+import { formRules } from "@/utils/formRules";
 import { musicStore, userStore } from "@/store";
 
 const { textRule } = formRules();

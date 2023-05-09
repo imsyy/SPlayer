@@ -1,11 +1,12 @@
 import { defineStore } from "pinia";
-import { getSongTime, getSongPlayingTime } from "@/utils/timeTools.js";
+import { getSongTime, getSongPlayingTime } from "@/utils/timeTools";
 import { getPersonalFm, setFmTrash } from "@/api/home";
 import { getLikelist, setLikeSong } from "@/api/user";
 import { getPlayListCatlist } from "@/api/playlist";
 import { userStore, settingStore } from "@/store";
 import { NIcon } from "naive-ui";
 import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
+import { soundUnload, setSeek, fadePlayOrPause } from "@/utils/player";
 import parseLyric from "@/utils/parseLyric";
 
 const useMusicDataStore = defineStore("musicData", {
@@ -20,7 +21,7 @@ const useMusicDataStore = defineStore("musicData", {
       // 播放状态
       playState: false,
       // 当前歌曲播放链接
-      playSongLink: null,
+      // playSongLink: null,
       // 当前歌曲歌词数据
       playSongLyric: {
         lrc: [],
@@ -37,6 +38,13 @@ const useMusicDataStore = defineStore("musicData", {
       catList: {},
       // 精品歌单分类
       highqualityCatList: [],
+      // 音乐频谱数据
+      spectrumsData: {
+        data: [],
+        audio: null,
+        analyser: null,
+        audioCtx: null,
+      },
       // 持久化数据
       persistData: {
         // 搜索历史
@@ -117,9 +125,9 @@ const useMusicDataStore = defineStore("musicData", {
       return state.playState;
     },
     // 获取播放链接
-    getPlaySongLink(state) {
-      return state.playSongLink;
-    },
+    // getPlaySongLink(state) {
+    //   return state.playSongLink;
+    // },
     // 获取喜欢音乐列表
     getLikeList(state) {
       return state.persistData.likeList;
@@ -142,7 +150,7 @@ const useMusicDataStore = defineStore("musicData", {
     setPersonalFmMode(value) {
       this.persistData.personalFmMode = value;
       if (value) {
-        this.playSongLink = null;
+        soundUnload();
         if (this.persistData.personalFmData.id) {
           this.persistData.playlists = [];
           this.persistData.playlists.push(this.persistData.personalFmData);
@@ -175,7 +183,7 @@ const useMusicDataStore = defineStore("musicData", {
             } else {
               this.persistData.personalFmData = fmData;
               if (this.persistData.personalFmMode) {
-                this.playSongLink = null;
+                soundUnload();
                 this.persistData.playlists = [];
                 this.persistData.playlists.push(fmData);
                 this.persistData.playSongIndex = 0;
@@ -271,9 +279,9 @@ const useMusicDataStore = defineStore("musicData", {
       this.showPlayBar = value;
     },
     // 更改歌曲播放链接
-    setPlaySongLink(value) {
-      this.playSongLink = value;
-    },
+    // setPlaySongLink(value) {
+    //   this.playSongLink = value;
+    // },
     // 更改播放列表模式
     setPlayListMode(value) {
       this.persistData.playListMode = value;
@@ -323,9 +331,13 @@ const useMusicDataStore = defineStore("musicData", {
       this.persistData.playSongTime.currentTime = value.currentTime;
       this.persistData.playSongTime.duration = value.duration;
       // 计算进度条应该移动的距离
-      this.persistData.playSongTime.barMoveDistance = Number(
-        (value.currentTime / (value.duration / 100)).toFixed(2)
-      );
+      if (value.duration === 0) {
+        this.persistData.playSongTime.barMoveDistance = 0;
+      } else {
+        this.persistData.playSongTime.barMoveDistance = Number(
+          (value.currentTime / (value.duration / 100)).toFixed(2)
+        );
+      }
       if (this.persistData.playSongTime.barMoveDistance) {
         // 歌曲播放进度转换
         this.persistData.playSongTime.songTimePlayed = getSongPlayingTime(
@@ -363,7 +375,7 @@ const useMusicDataStore = defineStore("musicData", {
     },
     // 上下曲调整
     setPlaySongIndex(type) {
-      this.playState = false;
+      // this.playState = false;
       if (this.persistData.personalFmMode) {
         this.setPersonalFmData();
       } else {
@@ -376,8 +388,9 @@ const useMusicDataStore = defineStore("musicData", {
           this.persistData.playSongIndex = Math.floor(
             Math.random() * listLength
           );
-        } else if (listMode === "single" && $player) {
-          $player.currentTime = 0;
+        } else if (listMode === "single" && typeof $player !== "undefined") {
+          setSeek($player, 0);
+          fadePlayOrPause($player, "play", this.persistData.playVolume);
         } else {
           $message.error("播放出错，请刷新后重试");
         }
@@ -386,10 +399,11 @@ const useMusicDataStore = defineStore("musicData", {
           this.persistData.playSongIndex = listLength - 1;
         } else if (this.persistData.playSongIndex >= listLength) {
           this.persistData.playSongIndex = 0;
-          $player.currentTime = 0;
+          setSeek($player, 0);
+          fadePlayOrPause($player, "play", this.persistData.playVolume);
         }
         if (listMode !== "single" && listLength > 1) {
-          this.playSongLink = null;
+          soundUnload();
         }
         this.playState = true;
       }
@@ -406,7 +420,7 @@ const useMusicDataStore = defineStore("musicData", {
           this.persistData.playlists[this.persistData.playSongIndex]?.id
         ) {
           console.log("播放歌曲与上一次不一致");
-          this.playSongLink = null;
+          soundUnload();
         }
       } catch (error) {
         console.error("出现错误：" + error);
@@ -450,15 +464,15 @@ const useMusicDataStore = defineStore("musicData", {
       if (index < this.persistData.playSongIndex) {
         this.persistData.playSongIndex--;
       } else if (index === this.persistData.playSongIndex) {
-        // 如果删除的是当前播放歌曲，则将播放链接置为null
-        this.playSongLink = null;
+        // 如果删除的是当前播放歌曲，则重置播放器
+        soundUnload();
       }
       $message.success(name + " 已从播放列表中移除");
       this.persistData.playlists.splice(index, 1);
       // 检查当前播放歌曲的索引是否超出了列表范围
       if (this.persistData.playSongIndex >= this.persistData.playlists.length) {
         this.persistData.playSongIndex = 0;
-        this.playSongLink = null;
+        soundUnload();
       }
     },
     // 获取歌单分类

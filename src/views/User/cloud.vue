@@ -84,7 +84,7 @@
 import { getCloud, upCloudSong } from "@/api/user";
 import { useRouter } from "vue-router";
 import { settingStore } from "@/store";
-import { getSongTime } from "@/utils/timeTools.js";
+import { getSongTime } from "@/utils/timeTools";
 import { BackupRound } from "@vicons/material";
 import DataLists from "@/components/DataList/DataLists.vue";
 import Pagination from "@/components/Pagination/index.vue";

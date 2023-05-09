@@ -9,10 +9,13 @@
         重置
       </n-button>
     </n-card>
+    {{ music.spectrumsData }}
   </div>
 </template>
 
 <script setup>
+import { musicStore } from "@/store";
+const music = musicStore();
 // 系统重置
 const resetApp = () => {
   const cleanAll = () => {

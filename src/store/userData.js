@@ -7,7 +7,7 @@ import {
   getUserArtistlist,
   getUserAlbum,
 } from "@/api/user";
-import { formatNumber, getLongTime } from "@/utils/timeTools.js";
+import { formatNumber, getLongTime } from "@/utils/timeTools";
 
 const useUserDataStore = defineStore("userData", {
   state: () => {

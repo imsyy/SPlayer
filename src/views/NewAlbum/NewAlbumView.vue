@@ -30,7 +30,7 @@
 <script setup>
 import { getAlbumNew } from "@/api/album";
 import { useRouter } from "vue-router";
-import { getLongTime } from "@/utils/timeTools.js";
+import { getLongTime } from "@/utils/timeTools";
 import CoverLists from "@/components/DataList/CoverLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
 

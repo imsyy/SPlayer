@@ -582,6 +582,7 @@ const openDrawer = (data) => {
 const playSong = (data, song) => {
   console.log(data, song);
   music.setPersonalFmMode(false);
+  music.setPlayState(true);
   if (router.currentRoute.value.name !== "history") music.setPlaylists(data);
   // 检查是否为云盘歌曲
   if (router.currentRoute.value.name === "user-cloud") {

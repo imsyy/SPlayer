@@ -127,7 +127,7 @@
 import { getPlayListDetail, getAllPlayList } from "@/api/playlist";
 import { useRouter } from "vue-router";
 import { userStore, musicStore, settingStore } from "@/store";
-import { getSongTime, getLongTime } from "@/utils/timeTools.js";
+import { getSongTime, getLongTime } from "@/utils/timeTools";
 import { PlaylistPlayRound, MoreHorizFilled } from "@vicons/material";
 import DataLists from "@/components/DataList/DataLists.vue";
 import Pagination from "@/components/Pagination/index.vue";

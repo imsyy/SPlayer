@@ -105,7 +105,7 @@ import {
 } from "@/api/login";
 import { useRouter } from "vue-router";
 import { PhoneAndroidRound, PasswordRound } from "@vicons/material";
-import { formRules } from "@/utils/formRules.js";
+import { formRules } from "@/utils/formRules";
 import QrcodeVue from "qrcode.vue";
 
 const router = useRouter();

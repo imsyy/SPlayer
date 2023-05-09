@@ -61,11 +61,14 @@
       </div>
       <div class="time">
         <span>{{ music.getPlaySongTime.songTimePlayed }}</span>
-        <n-slider
-          v-model:value="music.getPlaySongTime.barMoveDistance"
-          class="progress"
-          :step="0.01"
-          @update:value="songTimeSliderUpdate"
+        <vue-slider
+          v-model="music.getPlaySongTime.barMoveDistance"
+          @drag-start="music.setPlayState(false)"
+          @drag-end="sliderDragEnd"
+          @click.stop="
+            songTimeSliderUpdate(music.getPlaySongTime.barMoveDistance)
+          "
+          :tooltip="'none'"
         />
         <span>{{ music.getPlaySongTime.songTimeDuration }}</span>
       </div>
@@ -143,16 +146,25 @@ import {
 import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
 import { musicStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
+import { setSeek } from "@/utils/Player";
 import AllArtists from "@/components/DataList/AllArtists.vue";
+import VueSlider from "vue-slider-component";
+import "vue-slider-component/theme/default.css";
 
 const router = useRouter();
 const music = musicStore();
 const user = userStore();
 
 // 歌曲进度条更新
+const sliderDragEnd = () => {
+  songTimeSliderUpdate(music.getPlaySongTime.barMoveDistance);
+  music.setPlayState(true);
+};
 const songTimeSliderUpdate = (val) => {
-  if ($player && music.getPlaySongTime && music.getPlaySongTime.duration)
-    $player.currentTime = (music.getPlaySongTime.duration / 100) * val;
+  if (typeof $player !== "undefined" && music.getPlaySongTime?.duration) {
+    const currentTime = (music.getPlaySongTime.duration / 100) * val;
+    setSeek($player, currentTime);
+  }
 };
 
 // 页面跳转
@@ -268,13 +280,22 @@ const routerJump = (url, query) => {
       span {
         opacity: 0.8;
       }
-      .progress {
-        margin: 0 12px;
-        --n-handle-size: 12px;
-        --n-fill-color: #fff;
-        --n-fill-color-hover: #fff;
-        --n-rail-color: #ffffff20;
-        --n-rail-color-hover: #ffffff30;
+      .vue-slider {
+        margin: 0 10px;
+        width: 100% !important;
+        transform: translateY(-1px);
+        cursor: pointer;
+        :deep(.vue-slider-rail) {
+          background-color: #ffffff20;
+          border-radius: 25px;
+          .vue-slider-process {
+            background-color: #fff;
+          }
+          .vue-slider-dot {
+            width: 12px !important;
+            height: 12px !important;
+          }
+        }
       }
     }
     .buttons {
