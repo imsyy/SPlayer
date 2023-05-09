@@ -82,6 +82,7 @@
 <script setup>
 import { musicStore } from "@/store";
 import { DeleteFour } from "@icon-park/vue-next";
+import { setSeek } from "@/utils/Player";
 import AllArtists from "@/components/DataList/AllArtists.vue";
 
 const music = musicStore();
@@ -91,8 +92,14 @@ const playListShow = ref(false);
 
 // 改变播放索引
 const changeIndex = (index) => {
-  music.persistData.playSongIndex = index;
-  music.setPlayState(true);
+  try {
+    music.persistData.playSongIndex = index;
+    setSeek($player, 0);
+    music.setPlayState(true);
+  } catch (err) {
+    console.error("切换失败：" + err);
+    $message.error("切换失败，请刷新后重试");
+  }
 };
 
 // 监听播放列表显隐

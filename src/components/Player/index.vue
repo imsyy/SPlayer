@@ -426,7 +426,7 @@ watch(
   () => music.getPlaySongData,
   (val) => {
     // 清除播放地址
-    soundUnload();
+    // soundUnload();
     music.setPlaySongTime({ currentTime: 0, duration: 0 });
     songChange(val);
   }
@@ -451,8 +451,6 @@ watch(
           val ? "play" : "pause",
           persistData.value.playVolume
         );
-      } else {
-        $message.error("播放器初始化失败，请重试");
       }
     });
   }

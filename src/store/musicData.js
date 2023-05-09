@@ -151,7 +151,7 @@ const useMusicDataStore = defineStore("musicData", {
       this.persistData.personalFmMode = value;
       if (value) {
         soundUnload();
-        if (this.persistData.personalFmData.id) {
+        if (this.persistData.personalFmData?.id) {
           this.persistData.playlists = [];
           this.persistData.playlists.push(this.persistData.personalFmData);
           this.persistData.playSongIndex = 0;
@@ -403,7 +403,8 @@ const useMusicDataStore = defineStore("musicData", {
           fadePlayOrPause($player, "play", this.persistData.playVolume);
         }
         if (listMode !== "single" && listLength > 1) {
-          soundUnload();
+          // soundUnload();
+          setSeek($player, 0);
         }
         this.playState = true;
       }
@@ -420,7 +421,8 @@ const useMusicDataStore = defineStore("musicData", {
           this.persistData.playlists[this.persistData.playSongIndex]?.id
         ) {
           console.log("播放歌曲与上一次不一致");
-          soundUnload();
+          // soundUnload();
+          setSeek($player, 0);
         }
       } catch (error) {
         console.error("出现错误：" + error);
