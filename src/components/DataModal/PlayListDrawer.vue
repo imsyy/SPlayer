@@ -93,9 +93,12 @@ const playListShow = ref(false);
 // 改变播放索引
 const changeIndex = (index) => {
   try {
-    music.persistData.playSongIndex = index;
-    setSeek($player, 0);
-    music.setPlayState(true);
+    if (music.persistData.playSongIndex !== index) {
+      setSeek($player, 0);
+      music.persistData.playSongIndex = index;
+      music.isLoadingSong = true;
+      music.setPlayState(true);
+    }
   } catch (err) {
     console.error("切换失败：" + err);
     $message.error("切换失败，请刷新后重试");

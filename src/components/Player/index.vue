@@ -387,7 +387,8 @@ const songChange = debounce(500, (val) => {
     window.document.title =
       sessionStorage.getItem("siteTitle") ?? import.meta.env.VITE_SITE_TITLE;
   }
-  // 清除播放地址
+  // 清除当前状态
+  setSeek($player, 0);
   soundUnload();
   // 加载数据
   getPlaySongData(val);

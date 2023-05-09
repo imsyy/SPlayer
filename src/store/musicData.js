@@ -422,6 +422,7 @@ const useMusicDataStore = defineStore("musicData", {
         ) {
           console.log("播放歌曲与上一次不一致");
           // soundUnload();
+          this.isLoadingSong = true;
           setSeek($player, 0);
         }
       } catch (error) {
@@ -433,7 +434,7 @@ const useMusicDataStore = defineStore("musicData", {
         this.persistData.playlists.push(value);
         this.persistData.playSongIndex = this.persistData.playlists.length - 1;
       }
-      play ? (this.playState = true) : null;
+      play ? this.setPlayState(true) : null;
     },
     // 在当前播放歌曲后添加
     addSongToNext(value) {
