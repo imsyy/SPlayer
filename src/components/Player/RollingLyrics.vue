@@ -250,7 +250,7 @@ const lrcTextClick = (time) => {
   }
   .lrc,
   .yrc {
-    opacity: 0.2;
+    opacity: 0.3;
     transition: all 0.3s;
     margin-bottom: 0.8vh;
     padding: 1.8vh 4vh 1.8vh 3vh;

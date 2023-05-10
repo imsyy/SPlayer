@@ -402,6 +402,12 @@ watch(
       .left {
         padding-right: 0;
         transform: translateX(25vh);
+        @media (max-width: 1200px) {
+          transform: translateX(22.2vh);
+        }
+        @media (min-width: 769px) and (max-width: 869px) {
+          transform: translateX(20.1vh);
+        }
       }
       @media (max-width: 768px) {
         .left {

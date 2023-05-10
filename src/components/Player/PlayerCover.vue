@@ -101,6 +101,7 @@
           v-else
           class="dislike"
           size="20"
+          :style="!user.userLogin ? 'opacity: 0.2;pointer-events: none;' : null"
           :component="ThumbDownRound"
           @click="music.setFmDislike(music.getPersonalFmData.id)"
         />

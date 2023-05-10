@@ -14,53 +14,85 @@
         />
         <img src="/images/pic/album.png" class="album" alt="album" />
       </div>
-      <div class="intr">
-        <span class="name">歌单简介</span>
-        <span class="desc text-hidden">
-          {{ albumDetail.description }}
-        </span>
-        <n-button
-          block
-          strong
-          secondary
-          v-if="albumDetail?.description.length > 70"
-          @click="albumDescShow = true"
-        >
-          全部简介
-        </n-button>
-        <n-modal
-          class="s-modal"
-          v-model:show="albumDescShow"
-          preset="card"
-          title="歌单简介"
-          :bordered="false"
-        >
-          <n-scrollbar>
-            <n-text v-html="albumDetail.description.replace(/\n/g, '<br>')" />
-          </n-scrollbar>
-        </n-modal>
-      </div>
-      <div class="tag" v-if="albumDetail.tags">
-        <n-tag
-          class="tags"
-          round
-          :bordered="false"
-          v-for="item in albumDetail.tags"
-          :key="item"
-        >
-          {{ item }}
-        </n-tag>
+      <div class="meta">
+        <div class="title">
+          <n-text class="name">{{ albumDetail.name }}</n-text>
+          <n-text
+            class="creator"
+            @click="router.push(`/artist/songs?id=${albumDetail.artist.id}`)"
+          >
+            {{ albumDetail.artist.name }}
+          </n-text>
+        </div>
+        <div class="intr">
+          <span class="name">专辑简介</span>
+          <span class="desc text-hidden">
+            {{ albumDetail.description }}
+          </span>
+          <n-button
+            class="all-desc"
+            block
+            strong
+            secondary
+            v-if="albumDetail?.description.length > 70"
+            @click="albumDescShow = true"
+          >
+            全部简介
+          </n-button>
+          <n-modal
+            class="s-modal"
+            v-model:show="albumDescShow"
+            preset="card"
+            title="歌单简介"
+            :bordered="false"
+          >
+            <n-scrollbar>
+              <n-text v-html="albumDetail.description.replace(/\n/g, '<br>')" />
+            </n-scrollbar>
+          </n-modal>
+        </div>
+        <n-space class="tag" v-if="albumDetail.tags">
+          <n-tag
+            class="tags"
+            round
+            :bordered="false"
+            v-for="item in albumDetail.tags"
+            :key="item"
+          >
+            {{ item }}
+          </n-tag>
+        </n-space>
+        <n-space class="control">
+          <n-button strong secondary round type="primary" @click="playAllSong">
+            <template #icon>
+              <n-icon :component="MusicList" />
+            </template>
+            播放
+          </n-button>
+          <n-dropdown
+            placement="right-start"
+            trigger="click"
+            :show-arrow="true"
+            :options="dropdownOptions"
+          >
+            <n-button strong secondary circle>
+              <template #icon>
+                <n-icon :component="More" />
+              </template>
+            </n-button>
+          </n-dropdown>
+        </n-space>
       </div>
     </div>
     <div class="right">
       <div class="meta">
-        <span class="name">{{ albumDetail.name }}</span>
-        <span
+        <n-text class="name">{{ albumDetail.name }}</n-text>
+        <n-text
           class="creator"
           @click="router.push(`/artist/songs?id=${albumDetail.artist.id}`)"
         >
           {{ albumDetail.artist.name }}
-        </span>
+        </n-text>
         <div class="time">
           <div class="createTime">
             <span class="num">发行时间：</span>
@@ -96,17 +128,87 @@
 </template>
 
 <script setup>
-import { getAlbum } from "@/api/album";
+import { NIcon, NAvatar, NText } from "naive-ui";
+import { getAlbum, likeAlbum } from "@/api/album";
 import { useRouter } from "vue-router";
 import { getSongTime, getLongTime } from "@/utils/timeTools";
+import { MusicList, LinkTwo, More, Like, Unlike } from "@icon-park/vue-next";
+import { userStore, musicStore, settingStore } from "@/store";
 import DataLists from "@/components/DataList/DataLists.vue";
-const router = useRouter();
 
-// 歌单数据
+const router = useRouter();
+const user = userStore();
+const music = musicStore();
+const setting = settingStore();
+
+// 专辑数据
 const albumId = ref(router.currentRoute.value.query.id);
 const albumDetail = ref(null);
 const albumData = ref([]);
 const albumDescShow = ref(false);
+
+// 图标渲染
+const renderIcon = (icon) => {
+  return () => {
+    return h(
+      NIcon,
+      { style: { transform: "translateX(2px)" } },
+      {
+        default: () => icon,
+      }
+    );
+  };
+};
+
+// 判断收藏还是取消
+const isLikeOrDislike = (id) => {
+  const playlists = user.getUserAlbumLists.list;
+  if (playlists.length) {
+    return !playlists.some((item) => item.id === Number(id));
+  }
+  return true;
+};
+
+// 专辑下拉菜单数据
+const dropdownOptions = ref([]);
+
+// 更改专辑下拉菜单数据
+const setDropdownOptions = () => {
+  dropdownOptions.value = [
+    {
+      key: "copy",
+      label: "复制专辑链接",
+      props: {
+        onClick: () => {
+          if (navigator.clipboard) {
+            try {
+              navigator.clipboard.writeText(
+                `https://music.163.com/#/playlist?id=${albumId.value}`
+              );
+              $message.success("专辑链接复制成功");
+            } catch (err) {
+              $message.error("复制失败：", err);
+            }
+          } else {
+            $message.error("您的浏览器暂不支持该操作");
+          }
+        },
+      },
+      icon: renderIcon(h(LinkTwo)),
+    },
+    {
+      key: "like",
+      label: isLikeOrDislike(albumId.value) ? "收藏专辑" : "取消收藏专辑",
+      show: user.userLogin,
+      props: {
+        onClick: () => {
+          toChangeLike(albumId.value);
+        },
+      },
+      icon: renderIcon(h(isLikeOrDislike(albumId.value) ? Like : Unlike)),
+    },
+  ];
+};
 
 // 获取歌单信息
 const getAlbumData = (id) => {
@@ -139,9 +241,75 @@ const getAlbumData = (id) => {
   });
 };
 
+// 播放专辑所有歌曲
+const playAllSong = () => {
+  try {
+    // 获取元素
+    const songDom = document.getElementById("datalists").firstElementChild;
+    const allSongDom = document.querySelectorAll("#datalists > *");
+    // 是否有元素存在 play
+    let isHasPlay = false;
+    // 遍历
+    allSongDom.forEach((child) => {
+      if (child.classList.contains("play")) {
+        isHasPlay = true;
+      }
+    });
+    if (!isHasPlay) {
+      // 双击操作
+      const event = new MouseEvent("dblclick", {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+      });
+      // 双击或单击
+      if (setting.listClickMode === "dblclick") {
+        songDom.dispatchEvent(event);
+      } else if (setting.listClickMode === "click") {
+        songDom.click();
+      }
+    } else {
+      music.setPlayState(true);
+    }
+  } catch (err) {
+    console.error("播放全部歌曲失败：" + err);
+    $message.error("播放全部歌曲失败，请重试");
+  }
+};
+
+// 收藏/取消收藏
+const toChangeLike = async (id) => {
+  const type = isLikeOrDislike(id) ? 1 : 2;
+  try {
+    const res = await likeAlbum(type, id);
+    if (res.code === 200) {
+      $message.success(`专辑${type == 1 ? "收藏成功" : "取消收藏成功"}`);
+      user.setUserAlbumLists(() => {
+        setDropdownOptions();
+      });
+    } else {
+      $message.error(`专辑${type == 1 ? "收藏失败" : "取消收藏失败"}`);
+    }
+  } catch (err) {
+    $message.error(`专辑${type == 1 ? "收藏失败" : "取消收藏失败"}`);
+    console.error(`专辑${type == 1 ? "收藏失败：" : "取消收藏失败："}` + err);
+  }
+};
+
 onMounted(() => {
   if (albumId.value) {
     getAlbumData(albumId.value);
+    if (
+      user.userLogin &&
+      !user.getUserAlbumLists.has &&
+      !user.getUserAlbumLists.isLoading
+    ) {
+      user.setUserAlbumLists(() => {
+        setDropdownOptions();
+      });
+    } else {
+      setDropdownOptions();
+    }
   }
 });
 
@@ -173,49 +341,84 @@ watch(
     align-items: flex-start;
     position: sticky;
     top: 24px;
+    @media (max-width: 990px) {
+      margin-right: 0;
+      width: 30vw;
+    }
     .cover {
       position: relative;
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      // box-shadow: 0 0 16px 0px rgb(0 0 0 / 20%);
+      width: 80%;
+      height: 80%;
       .n-avatar {
         border-radius: 8px;
-        width: 80%;
-        height: 80%;
+        width: 100%;
+        height: 100%;
       }
       .album {
         height: 100%;
         position: absolute;
         top: 0;
-        right: 4%;
+        right: -20%;
       }
     }
-    .intr {
-      margin-top: 24px;
-      width: 80%;
-      padding-left: 4px;
-      .name {
-        display: block;
-        font-size: 20px;
-        font-weight: bold;
-        margin-bottom: 12px;
-      }
-      .desc {
-        -webkit-line-clamp: 4;
-        line-height: 26px;
-        margin-bottom: 16px;
-      }
-    }
-    .tag {
-      margin-top: 20px;
+    .meta {
       width: 100%;
+      height: 100%;
       display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      .tags {
-        margin-right: 8px;
-        font-size: 13px;
+      flex-direction: column;
+      justify-content: flex-start;
+      .title {
+        display: none;
+        flex-direction: column;
+        margin-top: 0;
+        .name {
+          font-size: 28px;
+          font-weight: bold;
+          -webkit-line-clamp: 2;
+        }
+        .creator {
+          margin-top: 6px;
+          font-size: 16px;
+          opacity: 0.8;
+        }
+      }
+      .intr {
+        margin-top: 24px;
+        width: 80%;
+        padding-left: 4px;
+        .name {
+          display: block;
+          font-size: 20px;
+          font-weight: bold;
+          margin-bottom: 12px;
+        }
+        .desc {
+          -webkit-line-clamp: 4;
+          line-height: 26px;
+          margin-bottom: 16px;
+        }
+      }
+      .tag {
+        margin-top: 20px;
+        .tags {
+          line-height: 0;
+          font-size: 13px;
+          cursor: pointer;
+          transition: all 0.3s;
+          &:hover {
+            background-color: var(--main-second-color);
+            color: var(--main-color);
+          }
+          &:active {
+            transform: scale(0.95);
+          }
+        }
+      }
+      .control {
+        margin-top: 20px;
       }
     }
   }
@@ -246,7 +449,7 @@ watch(
         display: flex;
         flex-direction: row;
         align-items: center;
-        @media (max-width: 768px) {
+        @media (max-width: 1100px) {
           flex-direction: column;
           align-items: flex-start;
         }
@@ -272,18 +475,87 @@ watch(
   @media (max-width: 768px) {
     flex-direction: column;
     .left {
-      margin-bottom: 12px;
-      position: static;
-      width: 60vw;
+      position: relative;
+      top: 0;
+      width: 100%;
+      height: 30vw;
       max-width: none;
-      .intr {
-        display: none;
+      display: flex;
+      flex-direction: row;
+      .cover {
+        height: 100%;
+        min-width: 30vw;
+        width: 30vw;
+        margin-right: 60px;
+      }
+      .meta {
+        .title {
+          display: flex;
+          margin-bottom: 16px;
+        }
+        .intr {
+          margin-top: 0;
+          padding-left: 0;
+          .name,
+          .all-desc {
+            display: none;
+          }
+          .desc {
+            -webkit-line-clamp: 3;
+            margin-bottom: 0;
+          }
+        }
+        .control {
+          position: absolute;
+          left: 0;
+          bottom: -60px;
+        }
       }
     }
     .right {
+      margin-top: 80px;
       .meta {
-        .name {
-          font-size: 26px;
+        display: none;
+      }
+    }
+  }
+  @media (max-width: 540px) {
+    .left {
+      .cover {
+        margin-right: 44px;
+      }
+      .meta {
+        .title {
+          .name {
+            font-size: 24px;
+          }
+          .creator {
+            font-size: 14px;
+          }
+        }
+        .intr,
+        .tag {
+          display: none !important;
+        }
+        .control {
+          position: static;
+        }
+      }
+    }
+    .right {
+      margin-top: 30px;
+    }
+  }
+  @media (max-width: 520px) {
+    .left {
+      .meta {
+        .title {
+          .name {
+            font-size: 20px;
+          }
+          .creator {
+            font-size: 12px;
+          }
         }
       }
     }

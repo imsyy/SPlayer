@@ -52,6 +52,8 @@ const useSettingDataStore = defineStore("settingData", {
       showLyricSetting: true,
       // 歌曲渐入渐出
       songVolumeFade: true,
+      // 列表默认数量
+      listNumber: 30,
     };
   },
   getters: {

@@ -86,7 +86,16 @@
 </template>
 
 <script setup>
-import { PlayOne, Headset } from "@icon-park/vue-next";
+import { NIcon } from "naive-ui";
+import {
+  PlayOne,
+  Headset,
+  LinkTwo,
+  Like,
+  Unlike,
+  Editor,
+  DeleteFour,
+} from "@icon-park/vue-next";
 import { delPlayList, likePlaylist } from "@/api/playlist";
 import { likeAlbum } from "@/api/album";
 import { musicStore, userStore } from "@/store";
@@ -131,6 +140,19 @@ const props = defineProps({
 });
 const playlistUpdateRef = ref(null);
 
+// 图标渲染
+const renderIcon = (icon) => {
+  return () => {
+    return h(
+      NIcon,
+      { style: { transform: "translateX(2px)" } },
+      {
+        default: () => icon,
+      }
+    );
+  };
+};
+
 // 右键菜单数据
 const rightMenuX = ref(0);
 const rightMenuY = ref(0);
@@ -153,6 +175,7 @@ const openRightMenu = (e, data) => {
             playlistUpdateRef.value.openUpdateModal(data);
           },
         },
+        icon: renderIcon(h(Editor)),
       },
       {
         key: "del",
@@ -164,6 +187,7 @@ const openRightMenu = (e, data) => {
             toDelPlayList(data);
           },
         },
+        icon: renderIcon(h(DeleteFour)),
       },
       {
         key: "likePlaylist",
@@ -180,6 +204,7 @@ const openRightMenu = (e, data) => {
             toChangeLike(data.id);
           },
         },
+        icon: renderIcon(h(isLikeOrDislike(data.id) ? Like : Unlike)),
       },
       {
         key: "likeAlbum",
@@ -195,6 +220,7 @@ const openRightMenu = (e, data) => {
             toChangeLike(data.id);
           },
         },
+        icon: renderIcon(h(isLikeOrDislike(data.id) ? Like : Unlike)),
       },
       {
         key: "copy",
@@ -221,6 +247,7 @@ const openRightMenu = (e, data) => {
             }
           },
         },
+        icon: renderIcon(h(LinkTwo)),
       },
     ];
     rightMenuShow.value = true;
@@ -279,10 +306,10 @@ const isLikeOrDislike = (id) => {
   const playlists = user.getUserPlayLists.like;
   const albums = user.getUserAlbumLists.list;
   if (listType === "playlist" && playlists.length) {
-    return !playlists.some((item) => item.id === id);
+    return !playlists.some((item) => item.id === Number(id));
   }
   if (listType === "album" && albums.length) {
-    return !albums.some((item) => item.id === id);
+    return !albums.some((item) => item.id === Number(id));
   }
   return true;
 };

@@ -36,7 +36,6 @@
       </n-dropdown>
       <!-- 下拉菜单 -->
       <n-dropdown
-        class="dropdown"
         placement="bottom-end"
         :show="showDropdown"
         :show-arrow="true"
@@ -491,7 +490,7 @@ nav {
 
     .router-link-active {
       background-color: var(--main-color);
-      color: #fff;
+      color: rgba(255, 255, 255, 0.9);
     }
   }
   .right {
