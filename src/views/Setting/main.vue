@@ -82,6 +82,13 @@
     </n-card>
     <n-card class="set-item">
       <div class="name">
+        歌曲渐入渐出
+        <span class="tip">是否在歌曲暂停 / 播放时渐入渐出</span>
+      </div>
+      <n-switch v-model:value="songVolumeFade" :round="false" />
+    </n-card>
+    <n-card class="set-item">
+      <div class="name">
         歌曲音质
         <span class="tip">无损音质及以上需要您为黑胶会员</span>
       </div>
@@ -119,6 +126,7 @@ const {
   searchHistory,
   themeType,
   showLyricSetting,
+  songVolumeFade,
 } = storeToRefs(setting);
 
 // 深浅模式

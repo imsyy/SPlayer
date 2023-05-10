@@ -39,6 +39,8 @@ export const createSound = (src, autoPlay = true) => {
       const isLogin = JSON.parse(localStorage.getItem("userData")).userLogin;
       console.log("首次缓冲完成：" + songId + " / 来源：" + sourceId);
       sound?.seek(music.persistData.playSongTime.currentTime);
+      // 取消加载状态
+      music.isLoadingSong = false;
       // 听歌打卡
       if (isLogin) {
         songScrobble(songId, sourceId).catch((err) => {
@@ -126,15 +128,17 @@ export const createSound = (src, autoPlay = true) => {
  * @param {number} volume - 设置的音量值，0-1之间的浮点数
  */
 export const setVolume = (sound, volume) => {
-  sound.volume(volume);
+  sound?.volume(volume);
 };
 
 /**
  * 设置进度
- * @param {number} seek - 设置的音量值，0-1之间的浮点数
+ * @param {number} seek - 设置的进度值，0-1之间的浮点数
  */
 export const setSeek = (sound, seek) => {
-  sound.seek(seek);
+  // const music = musicStore();
+  // music.persistData.playSongTime.currentTime = seek;
+  sound?.seek(seek);
 };
 
 /**
@@ -145,29 +149,37 @@ export const setSeek = (sound, seek) => {
  * @param {number} duration - 渐出音量的时长，单位为毫秒
  */
 export const fadePlayOrPause = (sound, type, volume, duration = 300) => {
-  if (type === "play") {
-    if (sound?.playing()) return;
-    sound.play();
-    sound?.once("play", () => {
-      sound?.fade(0, volume, duration);
-    });
-  } else if (type === "pause") {
-    sound?.fade(volume, 0, duration);
-    sound?.once("fade", () => {
-      sound?.pause();
-    });
+  const isFade =
+    JSON.parse(localStorage.getItem("settingData")).songVolumeFade ?? true;
+  if (isFade) {
+    if (type === "play") {
+      if (sound?.playing()) return;
+      sound?.play();
+      sound?.once("play", () => {
+        sound?.fade(0, volume, duration);
+      });
+    } else if (type === "pause") {
+      sound?.fade(volume, 0, duration);
+      sound?.once("fade", () => {
+        sound?.pause();
+      });
+    }
+  } else {
+    type === "play" ? sound?.play() : sound?.pause();
   }
 };
 
 /**
- * 注销播放器
+ * 停止播放器
+ * @param {Howl} sound - 音频对象
  */
-export const soundUnload = () => {
-  Howler.unload();
+export const soundStop = (sound) => {
+  sound?.stop();
+  setSeek(sound, 0);
 };
 
 /**
- * 注销播放器
+ * 获取播放进度
  * @param {Howl} sound - 音频对象
  * @param {music} music - pinia
  */

@@ -82,7 +82,7 @@
 <script setup>
 import { musicStore } from "@/store";
 import { DeleteFour } from "@icon-park/vue-next";
-import { setSeek } from "@/utils/Player";
+import { soundStop } from "@/utils/Player";
 import AllArtists from "@/components/DataList/AllArtists.vue";
 
 const music = musicStore();
@@ -94,7 +94,7 @@ const playListShow = ref(false);
 const changeIndex = (index) => {
   try {
     if (music.persistData.playSongIndex !== index) {
-      setSeek($player, 0);
+      soundStop($player);
       music.persistData.playSongIndex = index;
       music.isLoadingSong = true;
       music.setPlayState(true);

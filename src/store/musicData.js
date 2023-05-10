@@ -7,7 +7,7 @@ import { getPlayListCatlist } from "@/api/playlist";
 import { userStore, settingStore } from "@/store";
 import { NIcon } from "naive-ui";
 import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
-import { soundUnload, setSeek, fadePlayOrPause } from "@/utils/Player";
+import { soundStop, fadePlayOrPause } from "@/utils/Player";
 import parseLyric from "@/utils/parseLyric";
 
 const useMusicDataStore = defineStore("musicData", {
@@ -149,8 +149,7 @@ const useMusicDataStore = defineStore("musicData", {
     setPersonalFmMode(value) {
       this.persistData.personalFmMode = value;
       if (value) {
-        // soundUnload();
-        setSeek($player, 0);
+        soundStop($player);
         if (this.persistData.personalFmData?.id) {
           this.persistData.playlists = [];
           this.persistData.playlists.push(this.persistData.personalFmData);
@@ -183,8 +182,7 @@ const useMusicDataStore = defineStore("musicData", {
             } else {
               this.persistData.personalFmData = fmData;
               if (this.persistData.personalFmMode) {
-                // soundUnload();
-                setSeek($player, 0);
+                soundStop($player);
                 this.persistData.playlists = [];
                 this.persistData.playlists.push(fmData);
                 this.persistData.playSongIndex = 0;
@@ -373,6 +371,7 @@ const useMusicDataStore = defineStore("musicData", {
     // 上下曲调整
     setPlaySongIndex(type) {
       // this.playState = false;
+      soundStop($player);
       this.isLoadingSong = true;
       if (this.persistData.personalFmMode) {
         this.setPersonalFmData();
@@ -387,7 +386,7 @@ const useMusicDataStore = defineStore("musicData", {
             Math.random() * listLength
           );
         } else if (listMode === "single" && typeof $player !== "undefined") {
-          setSeek($player, 0);
+          soundStop($player);
           fadePlayOrPause($player, "play", this.persistData.playVolume);
         } else {
           $message.error("播放出错，请刷新后重试");
@@ -397,12 +396,11 @@ const useMusicDataStore = defineStore("musicData", {
           this.persistData.playSongIndex = listLength - 1;
         } else if (this.persistData.playSongIndex >= listLength) {
           this.persistData.playSongIndex = 0;
-          setSeek($player, 0);
+          soundStop($player);
           fadePlayOrPause($player, "play", this.persistData.playVolume);
         }
         if (listMode !== "single" && listLength > 1) {
-          // soundUnload();
-          setSeek($player, 0);
+          soundStop($player);
         }
         nextTick().then(() => {
           this.setPlayState(true);
@@ -421,9 +419,8 @@ const useMusicDataStore = defineStore("musicData", {
           this.persistData.playlists[this.persistData.playSongIndex]?.id
         ) {
           console.log("播放歌曲与上一次不一致");
-          // soundUnload();
+          soundStop($player);
           this.isLoadingSong = true;
-          setSeek($player, 0);
         }
       } catch (error) {
         console.error("出现错误：" + error);
@@ -468,14 +465,14 @@ const useMusicDataStore = defineStore("musicData", {
         this.persistData.playSongIndex--;
       } else if (index === this.persistData.playSongIndex) {
         // 如果删除的是当前播放歌曲，则重置播放器
-        soundUnload();
+        soundStop($player);
       }
       $message.success(name + " 已从播放列表中移除");
       this.persistData.playlists.splice(index, 1);
       // 检查当前播放歌曲的索引是否超出了列表范围
       if (this.persistData.playSongIndex >= this.persistData.playlists.length) {
         this.persistData.playSongIndex = 0;
-        setSeek($player, 0);
+        soundStop($player);
       }
     },
     // 获取歌单分类

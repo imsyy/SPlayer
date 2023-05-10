@@ -331,6 +331,7 @@ import { musicStore, settingStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
 import { setCloudDel } from "@/api/user";
 import { NIcon } from "naive-ui";
+import { soundStop } from "@/utils/Player";
 import AllArtists from "./AllArtists.vue";
 import AddPlaylist from "@/components/DataModal/AddPlaylist.vue";
 import CloudMatch from "@/components/DataModal/CloudMatch.vue";
@@ -581,7 +582,10 @@ const openDrawer = (data) => {
 // 播放并添加
 const playSong = (data, song) => {
   console.log(data, song);
-  music.setPersonalFmMode(false);
+  if (music.getPersonalFmMode) {
+    soundStop($player);
+    music.setPersonalFmMode(false);
+  }
   music.setPlayState(true);
   if (router.currentRoute.value.name !== "history") music.setPlaylists(data);
   // 检查是否为云盘歌曲

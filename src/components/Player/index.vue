@@ -264,7 +264,6 @@ import {
   setVolume,
   setSeek,
   fadePlayOrPause,
-  soundUnload,
 } from "@/utils/Player";
 import { getSongPlayingTime } from "@/utils/timeTools";
 import { useRouter } from "vue-router";
@@ -314,7 +313,6 @@ const getPlaySongData = (data, level = setting.songLevel) => {
             $message.info("当前歌曲为 VIP 专享，仅可试听");
           // 获取音乐地址
           getMusicUrl(id, level).then((res) => {
-            music.isLoadingSong = false;
             player.value = createSound(
               res.data[0].url.replace(/^http:/, "https:")
             );
@@ -347,7 +345,6 @@ const getMusicNumUrlData = (id) => {
   getMusicNumUrl(id)
     .then((res) => {
       if (res.code === 200) {
-        music.isLoadingSong = false;
         console.log("替换成功：" + res.data.url.replace(/^http:/, ""));
         player.value = createSound(res.data.url.replace(/^http:/, ""));
       }
@@ -387,9 +384,6 @@ const songChange = debounce(500, (val) => {
     window.document.title =
       sessionStorage.getItem("siteTitle") ?? import.meta.env.VITE_SITE_TITLE;
   }
-  // 清除当前状态
-  setSeek($player, 0);
-  soundUnload();
   // 加载数据
   getPlaySongData(val);
   getPicColor(val?.album.picUrl);

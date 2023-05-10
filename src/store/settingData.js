@@ -50,6 +50,8 @@ const useSettingDataStore = defineStore("settingData", {
       countDownShow: true,
       // 是否显示歌词设置
       showLyricSetting: true,
+      // 歌曲渐入渐出
+      songVolumeFade: true,
     };
   },
   getters: {

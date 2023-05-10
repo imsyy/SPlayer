@@ -170,6 +170,7 @@ const LyricSettingRef = ref(null);
 // 歌词文本点击事件
 const lrcTextClick = (time) => {
   if (typeof $player !== "undefined") setSeek($player, time);
+  music.setPlayState(true);
   lrcMouseStatus.value = false;
 };
 
