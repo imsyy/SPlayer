@@ -638,6 +638,12 @@ watch(
         .title {
           display: flex;
           margin-bottom: 16px;
+          .name {
+            font-size: 25px;
+          }
+          .creator {
+            font-size: 15px;
+          }
         }
         .intr {
           margin-top: 0;
@@ -674,9 +680,6 @@ watch(
         .title {
           .name {
             font-size: 24px;
-          }
-          .creator {
-            font-size: 14px;
           }
         }
         .intr,
