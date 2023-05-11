@@ -5,6 +5,7 @@ import AutoImport from "unplugin-auto-import/vite";
 import Components from "unplugin-vue-components/vite";
 import { NaiveUiResolver } from "unplugin-vue-components/resolvers";
 import { VitePWA } from "vite-plugin-pwa";
+import { createHtmlPlugin } from "vite-plugin-html";
 
 // https://vitejs.dev/config/
 export default ({ mode }) =>
@@ -26,6 +27,20 @@ export default ({ mode }) =>
       }),
       Components({
         resolvers: [NaiveUiResolver()],
+      }),
+      createHtmlPlugin({
+        minify: true,
+        template: "index.html",
+        inject: {
+          data: {
+            logo: loadEnv(mode, process.cwd()).VITE_SITE_LOGO,
+            title: loadEnv(mode, process.cwd()).VITE_SITE_TITLE,
+            author: loadEnv(mode, process.cwd()).VITE_SITE_ANTHOR,
+            keywords: loadEnv(mode, process.cwd()).VITE_SITE_KEYWORDS,
+            description: loadEnv(mode, process.cwd()).VITE_SITE_DES,
+            tongji: loadEnv(mode, process.cwd()).VITE_SITE_BAIDUTONGJI,
+          },
+        },
       }),
       // PWA
       VitePWA({
@@ -53,9 +68,9 @@ export default ({ mode }) =>
           ],
         },
         manifest: {
-          name: "SPlayer",
-          short_name: "SPlayer",
-          description: "一个简约的在线音乐播放器",
+          name: loadEnv(mode, process.cwd()).VITE_SITE_TITLE,
+          short_name: loadEnv(mode, process.cwd()).VITE_SITE_TITLE,
+          description: loadEnv(mode, process.cwd()).VITE_SITE_DES,
           display: "standalone",
           start_url: "/",
           theme_color: "#fff",

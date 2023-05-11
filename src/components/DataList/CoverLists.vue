@@ -23,6 +23,11 @@
               :src="item.cover.replace(/^http:/, 'https:') + '?param=300y300'"
               fallback-src="/images/pic/default.png"
             />
+            <n-avatar
+              class="shadow"
+              :src="item.cover.replace(/^http:/, 'https:') + '?param=300y300'"
+              fallback-src="/images/pic/default.png"
+            />
             <n-icon class="play" size="40">
               <PlayOne theme="filled" />
             </n-icon>
@@ -86,7 +91,16 @@
 </template>
 
 <script setup>
-import { PlayOne, Headset } from "@icon-park/vue-next";
+import { NIcon } from "naive-ui";
+import {
+  PlayOne,
+  Headset,
+  LinkTwo,
+  Like,
+  Unlike,
+  Editor,
+  DeleteFour,
+} from "@icon-park/vue-next";
 import { delPlayList, likePlaylist } from "@/api/playlist";
 import { likeAlbum } from "@/api/album";
 import { musicStore, userStore } from "@/store";
@@ -131,6 +145,19 @@ const props = defineProps({
 });
 const playlistUpdateRef = ref(null);
 
+// 图标渲染
+const renderIcon = (icon) => {
+  return () => {
+    return h(
+      NIcon,
+      { style: { transform: "translateX(2px)" } },
+      {
+        default: () => icon,
+      }
+    );
+  };
+};
+
 // 右键菜单数据
 const rightMenuX = ref(0);
 const rightMenuY = ref(0);
@@ -150,9 +177,10 @@ const openRightMenu = (e, data) => {
           router.currentRoute.value.name === "user-playlists" ? true : false,
         props: {
           onClick: () => {
-            playlistUpdateRef.value.openUpdateModel(data);
+            playlistUpdateRef.value.openUpdateModal(data);
           },
         },
+        icon: renderIcon(h(Editor)),
       },
       {
         key: "del",
@@ -164,6 +192,7 @@ const openRightMenu = (e, data) => {
             toDelPlayList(data);
           },
         },
+        icon: renderIcon(h(DeleteFour)),
       },
       {
         key: "likePlaylist",
@@ -180,6 +209,7 @@ const openRightMenu = (e, data) => {
             toChangeLike(data.id);
           },
         },
+        icon: renderIcon(h(isLikeOrDislike(data.id) ? Like : Unlike)),
       },
       {
         key: "likeAlbum",
@@ -195,6 +225,7 @@ const openRightMenu = (e, data) => {
             toChangeLike(data.id);
           },
         },
+        icon: renderIcon(h(isLikeOrDislike(data.id) ? Like : Unlike)),
       },
       {
         key: "copy",
@@ -221,6 +252,7 @@ const openRightMenu = (e, data) => {
             }
           },
         },
+        icon: renderIcon(h(LinkTwo)),
       },
     ];
     rightMenuShow.value = true;
@@ -279,10 +311,10 @@ const isLikeOrDislike = (id) => {
   const playlists = user.getUserPlayLists.like;
   const albums = user.getUserAlbumLists.list;
   if (listType === "playlist" && playlists.length) {
-    return !playlists.some((item) => item.id === id);
+    return !playlists.some((item) => item.id === Number(id));
   }
   if (listType === "album" && albums.length) {
-    return !albums.some((item) => item.id === id);
+    return !albums.some((item) => item.id === Number(id));
   }
   return true;
 };
@@ -356,7 +388,7 @@ onMounted(() => {
       align-items: center;
       justify-content: center;
       position: relative;
-      overflow: hidden;
+      // overflow: hidden;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.3s;
@@ -365,7 +397,25 @@ onMounted(() => {
         border-radius: 8px;
         width: 100%;
         height: 100%;
-        transition: all 0.3s;
+        overflow: hidden;
+        transition: filter 0.3s;
+        z-index: 1;
+        :deep(img) {
+          transition: transform 0.3s;
+        }
+      }
+      .shadow {
+        opacity: 0;
+        position: absolute;
+        top: 12px;
+        height: 100%;
+        width: 100%;
+        filter: blur(16px) opacity(0.6);
+        transform: scale(0.92, 0.96);
+        z-index: 0;
+        background-size: cover;
+        aspect-ratio: 1/1;
+        transition: opacity 0.3s;
       }
       .play {
         opacity: 0;
@@ -378,6 +428,7 @@ onMounted(() => {
         border-radius: 50%;
         transform: scale(0.8);
         transition: all 0.3s;
+        z-index: 1;
       }
       .description {
         position: absolute;
@@ -390,7 +441,9 @@ onMounted(() => {
         backdrop-filter: blur(4px);
         padding: 6px;
         border-top-left-radius: 8px;
+        border-bottom-right-radius: 8px;
         transition: all 0.3s;
+        z-index: 1;
         .num {
           display: flex;
           flex-direction: row;
@@ -404,10 +457,11 @@ onMounted(() => {
         }
       }
       &:hover {
-        box-shadow: 0 15px 30px rgb(0 0 0 / 10%);
         .coverImg {
           filter: brightness(0.8);
-          transform: scale(1.1);
+          :deep(img) {
+            transform: scale(1.1);
+          }
         }
         .play {
           transform: scale(1);
@@ -415,6 +469,9 @@ onMounted(() => {
         }
         .description {
           opacity: 0;
+        }
+        .shadow {
+          opacity: 1;
         }
       }
       &:active {

@@ -77,7 +77,15 @@ class MusicFrequency {
     this.source.connect(this.analyser);
     this.analyser.connect(this.context.destination);
   }
-
+  // 断开音频元素和分析器之间的连接，释放音频上下文
+  disconnect() {
+    // 断开连接
+    this.source.disconnect();
+    this.analyser.disconnect();
+    // 关闭音频上下文
+    this.context.close();
+  }
+  // 绘制频谱
   drawSpectrum() {
     // 获取频域数据
     this.analyser.getByteFrequencyData(this.output);

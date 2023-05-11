@@ -12,73 +12,80 @@
           "
           fallback-src="/images/pic/default.png"
         />
-        <img src="/images/pic/album.png" class="album" alt="album" />
+        <n-avatar
+          class="shadow"
+          :src="
+            playListDetail.coverImgUrl
+              ? playListDetail.coverImgUrl.replace(/^http:/, 'https:') +
+                '?param=1024y1024'
+              : null
+          "
+          fallback-src="/images/pic/default.png"
+        />
       </div>
-      <div class="intr">
-        <span class="name">歌单简介</span>
-        <span class="desc text-hidden">
-          {{
-            playListDetail.description
-              ? playListDetail.description
-              : "太懒了吧，连简介都不写"
-          }}
-        </span>
-        <n-button
-          block
-          strong
-          secondary
-          v-if="playListDetail?.description?.length > 70"
-          @click="playListDescShow = true"
-        >
-          全部简介
-        </n-button>
-        <n-modal
-          class="s-modal"
-          v-model:show="playListDescShow"
-          preset="card"
-          title="歌单简介"
-          :bordered="false"
-        >
-          <n-scrollbar>
-            <n-text
-              v-html="playListDetail.description.replace(/\n/g, '<br>')"
-            />
-          </n-scrollbar>
-        </n-modal>
-      </div>
-      <n-space class="tag" v-if="playListDetail.tags">
-        <n-tag
-          class="tags"
-          size="large"
-          round
-          :bordered="false"
-          v-for="item in playListDetail.tags"
-          :key="item"
-          @click="router.push(`/discover/playlists?cat=${item}&page=1`)"
-        >
-          {{ item }}
-        </n-tag>
-      </n-space>
-      <!-- <div class="control" v-if="true">
-        <n-space>
-          <n-button strong secondary round>
-            <template #icon>
-              <n-icon :component="EditNoteRound" />
-            </template>
-            编辑
+      <div class="meta">
+        <div class="title">
+          <n-text class="name text-hidden">{{ playListDetail.name }}</n-text>
+          <n-text class="creator">{{ playListDetail.creator.nickname }}</n-text>
+        </div>
+        <div class="intr">
+          <span class="name">歌单简介</span>
+          <span class="desc text-hidden">
+            {{
+              playListDetail.description
+                ? playListDetail.description
+                : "太懒了吧，连简介都不写"
+            }}
+          </span>
+          <n-button
+            class="all-desc"
+            block
+            strong
+            secondary
+            v-if="playListDetail?.description?.length > 70"
+            @click="playListDescShow = true"
+          >
+            全部简介
           </n-button>
-          <n-button strong secondary round type="primary">
-            <template #icon>
-              <n-icon :component="DeleteRound" />
-            </template>
-          </n-button>
+        </div>
+        <n-space class="tag" v-if="playListDetail.tags">
+          <n-tag
+            class="tags"
+            round
+            :bordered="false"
+            v-for="item in playListDetail.tags"
+            :key="item"
+            @click="router.push(`/discover/playlists?cat=${item}&page=1`)"
+          >
+            {{ item }}
+          </n-tag>
         </n-space>
-      </div> -->
+        <n-space class="control">
+          <n-button strong secondary round type="primary" @click="playAllSong">
+            <template #icon>
+              <n-icon :component="MusicList" />
+            </template>
+            播放
+          </n-button>
+          <n-dropdown
+            placement="right-start"
+            trigger="click"
+            :show-arrow="true"
+            :options="dropdownOptions"
+          >
+            <n-button strong secondary circle>
+              <template #icon>
+                <n-icon :component="More" />
+              </template>
+            </n-button>
+          </n-dropdown>
+        </n-space>
+      </div>
     </div>
     <div class="right">
       <div class="meta">
-        <span class="name">{{ playListDetail.name }}</span>
-        <span class="creator">{{ playListDetail.creator.nickname }}</span>
+        <n-text class="name">{{ playListDetail.name }}</n-text>
+        <n-text class="creator">{{ playListDetail.creator.nickname }}</n-text>
         <div class="time">
           <div class="createTime">
             <span class="num">创建时间：</span>
@@ -99,6 +106,18 @@
         @pageSizeChange="pageSizeChange"
         @pageNumberChange="pageNumberChange"
       />
+      <!-- 歌单简介 -->
+      <n-modal
+        class="s-modal"
+        v-model:show="playListDescShow"
+        preset="card"
+        title="歌单简介"
+        :bordered="false"
+      >
+        <n-scrollbar>
+          <n-text v-html="playListDetail.description.replace(/\n/g, '<br>')" />
+        </n-scrollbar>
+      </n-modal>
     </div>
   </div>
   <div class="title" v-else-if="!playListId || !loadingState">
@@ -124,17 +143,31 @@
 </template>
 
 <script setup>
-import { getPlayListDetail, getAllPlayList } from "@/api/playlist";
+import { NIcon, NAvatar, NText } from "naive-ui";
+import {
+  getPlayListDetail,
+  getAllPlayList,
+  delPlayList,
+  likePlaylist,
+} from "@/api/playlist";
 import { useRouter } from "vue-router";
-// import { userStore, musicStore } from "@/store";
-import { getSongTime, getLongTime } from "@/utils/timeTools.js";
-// import { EditNoteRound, DeleteRound } from "@vicons/material";
+import { userStore, musicStore, settingStore } from "@/store";
+import { getSongTime, getLongTime } from "@/utils/timeTools";
+import {
+  MusicList,
+  LinkTwo,
+  More,
+  DeleteFour,
+  Like,
+  Unlike,
+} from "@icon-park/vue-next";
 import DataLists from "@/components/DataList/DataLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
 
 const router = useRouter();
-// const user = userStore();
-// const music = musicStore();
+const user = userStore();
+const music = musicStore();
+const setting = settingStore();
 
 // 歌单数据
 const playListId = ref(router.currentRoute.value.query.id);
@@ -149,6 +182,89 @@ const pageNumber = ref(
     : 1
 );
 const totalCount = ref(0);
+
+// 图标渲染
+const renderIcon = (icon) => {
+  return () => {
+    return h(
+      NIcon,
+      { style: { transform: "translateX(2px)" } },
+      {
+        default: () => icon,
+      }
+    );
+  };
+};
+
+// 判断收藏还是取消
+const isLikeOrDislike = (id) => {
+  const playlists = user.getUserPlayLists.like;
+  if (playlists.length) {
+    return !playlists.some((item) => item.id === Number(id));
+  }
+  return true;
+};
+
+// 判断是否可删除
+const isCanDelete = (id) => {
+  const playlists = user.getUserPlayLists.own;
+  if (playlists.length) {
+    return playlists.some((item) => item.id === Number(id));
+  }
+  return false;
+};
+
+// 歌单下拉菜单数据
+const dropdownOptions = ref([]);
+
+// 更改歌单下拉菜单数据
+const setDropdownOptions = () => {
+  dropdownOptions.value = [
+    {
+      key: "copy",
+      label: "复制歌单链接",
+      props: {
+        onClick: () => {
+          if (navigator.clipboard) {
+            try {
+              navigator.clipboard.writeText(
+                `https://music.163.com/#/playlist?id=${playListId.value}`
+              );
+              $message.success("歌单链接复制成功");
+            } catch (err) {
+              $message.error("复制失败：", err);
+            }
+          } else {
+            $message.error("您的浏览器暂不支持该操作");
+          }
+        },
+      },
+      icon: renderIcon(h(LinkTwo)),
+    },
+    {
+      key: "del",
+      label: "删除歌单",
+      show: user.userLogin && isCanDelete(playListId.value),
+      props: {
+        onClick: () => {
+          toDelPlayList(playListDetail.value);
+        },
+      },
+      icon: renderIcon(h(DeleteFour)),
+    },
+    {
+      key: "like",
+      label: isLikeOrDislike(playListId.value) ? "收藏歌单" : "取消收藏歌单",
+      show: user.userLogin && !isCanDelete(playListId.value),
+      props: {
+        onClick: () => {
+          toChangeLike(playListId.value);
+        },
+      },
+      icon: renderIcon(h(isLikeOrDislike(playListId.value) ? Like : Unlike)),
+    },
+  ];
+};
 
 // 获取歌单信息
 const getPlayListDetailData = (id) => {
@@ -197,6 +313,85 @@ const getAllPlayListData = (id, limit = 30, offset = 0) => {
   });
 };
 
+// 播放歌单所有歌曲
+const playAllSong = () => {
+  try {
+    // 获取元素
+    const songDom = document.getElementById("datalists").firstElementChild;
+    const allSongDom = document.querySelectorAll("#datalists > *");
+    // 是否有元素存在 play
+    let isHasPlay = false;
+    // 遍历
+    allSongDom.forEach((child) => {
+      if (child.classList.contains("play")) {
+        isHasPlay = true;
+      }
+    });
+    if (!isHasPlay) {
+      // 双击操作
+      const event = new MouseEvent("dblclick", {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+      });
+      // 双击或单击
+      if (setting.listClickMode === "dblclick") {
+        songDom.dispatchEvent(event);
+      } else if (setting.listClickMode === "click") {
+        songDom.click();
+      }
+    } else {
+      music.setPlayState(true);
+    }
+  } catch (err) {
+    console.error("播放全部歌曲失败：" + err);
+    $message.error("播放全部歌曲失败，请重试");
+  }
+};
+
+// 删除歌单
+const toDelPlayList = (data) => {
+  if (data.id === user.getUserPlayLists?.own[0].id) {
+    $message.warning("默认歌单无法删除");
+    return false;
+  }
+  $dialog.warning({
+    class: "s-dialog",
+    title: "删除歌单",
+    content: "确认删除歌单 " + data.name + "？删除后将不可恢复！",
+    positiveText: "删除",
+    negativeText: "取消",
+    onPositiveClick: () => {
+      delPlayList(data.id).then((res) => {
+        if (res.code === 200) {
+          $message.success("删除成功");
+          user.setUserPlayLists();
+          router.push("/user/playlists");
+        }
+      });
+    },
+  });
+};
+
+// 收藏/取消收藏
+const toChangeLike = async (id) => {
+  const type = isLikeOrDislike(id) ? 1 : 2;
+  try {
+    const res = await likePlaylist(type, id);
+    if (res.code === 200) {
+      $message.success(`歌单${type == 1 ? "收藏成功" : "取消收藏成功"}`);
+      user.setUserPlayLists(() => {
+        setDropdownOptions();
+      });
+    } else {
+      $message.error(`歌单${type == 1 ? "收藏失败" : "取消收藏失败"}`);
+    }
+  } catch (err) {
+    $message.error(`歌单${type == 1 ? "收藏失败" : "取消收藏失败"}`);
+    console.error(`歌单${type == 1 ? "收藏失败：" : "取消收藏失败："}` + err);
+  }
+};
+
 onMounted(() => {
   if (playListId.value) {
     getPlayListDetailData(playListId.value);
@@ -205,6 +400,17 @@ onMounted(() => {
       pagelimit.value,
       (pageNumber.value - 1) * pagelimit.value
     );
+    if (
+      user.userLogin &&
+      !user.getUserPlayLists.has &&
+      !user.getUserPlayLists.isLoading
+    ) {
+      user.setUserPlayLists(() => {
+        setDropdownOptions();
+      });
+    } else {
+      setDropdownOptions();
+    }
   }
 });
 
@@ -272,52 +478,93 @@ watch(
     align-items: flex-start;
     position: sticky;
     top: 24px;
+    @media (max-width: 990px) {
+      margin-right: 0;
+      width: 30vw;
+    }
     .cover {
       position: relative;
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      // box-shadow: 0 0 16px 0px rgb(0 0 0 / 20%);
+      width: 80%;
+      height: 80%;
       .n-avatar {
         border-radius: 8px;
-        width: 80%;
-        height: 80%;
-      }
-      .album {
+        width: 100%;
         height: 100%;
+        z-index: 1;
+      }
+      .shadow {
         position: absolute;
-        top: 0;
-        right: 4%;
+        top: 12px;
+        height: 100%;
+        width: 100%;
+        filter: blur(16px) opacity(0.6);
+        transform: scale(0.92, 0.96);
+        z-index: 0;
+        background-size: cover;
+        aspect-ratio: 1/1;
       }
     }
-    .intr {
-      margin-top: 24px;
-      width: 80%;
-      padding-left: 4px;
-      .name {
-        display: block;
-        font-size: 20px;
-        font-weight: bold;
-        margin-bottom: 12px;
-      }
-      .desc {
-        -webkit-line-clamp: 4;
-        line-height: 26px;
-        margin-bottom: 16px;
-      }
-    }
-    .tag {
-      margin-top: 20px;
-      .tags {
-        cursor: pointer;
-        transition: all 0.3s;
-        &:hover {
-          background-color: var(--main-second-color);
-          color: var(--main-color);
+    .meta {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      .title {
+        display: none;
+        flex-direction: column;
+        margin-top: 0;
+        .name {
+          font-size: 28px;
+          font-weight: bold;
+          -webkit-line-clamp: 2;
         }
-        &:active {
-          transform: scale(0.95);
+        .creator {
+          margin-top: 6px;
+          font-size: 16px;
+          opacity: 0.8;
         }
+      }
+      .intr {
+        margin-top: 24px;
+        width: 80%;
+        padding-left: 4px;
+        .name {
+          display: block;
+          font-size: 20px;
+          font-weight: bold;
+          margin-bottom: 12px;
+          @media (max-width: 990px) {
+            font-size: 18px;
+          }
+        }
+        .desc {
+          -webkit-line-clamp: 4;
+          line-height: 26px;
+          margin-bottom: 16px;
+        }
+      }
+      .tag {
+        margin-top: 20px;
+        .tags {
+          line-height: 0;
+          font-size: 13px;
+          cursor: pointer;
+          transition: all 0.3s;
+          &:hover {
+            background-color: var(--main-second-color);
+            color: var(--main-color);
+          }
+          &:active {
+            transform: scale(0.95);
+          }
+        }
+      }
+      .control {
+        margin-top: 20px;
       }
     }
   }
@@ -374,21 +621,109 @@ watch(
   @media (max-width: 768px) {
     flex-direction: column;
     .left {
-      margin-bottom: 12px;
-      position: static;
-      width: 60vw;
+      position: relative;
+      top: 0;
+      width: 100%;
+      height: 40vw;
       max-width: none;
-      .intr,
-      .tag {
-        display: none;
+      display: flex;
+      flex-direction: row;
+      .cover {
+        height: 100%;
+        min-width: 40vw;
+        margin-right: 30px;
+      }
+      .meta {
+        .title {
+          display: flex;
+          margin-bottom: 16px;
+          .name {
+            font-size: 25px;
+          }
+          .creator {
+            font-size: 15px;
+          }
+        }
+        .intr {
+          margin-top: 0;
+          padding-left: 0;
+          .name,
+          .all-desc {
+            display: none;
+          }
+          .desc {
+            -webkit-line-clamp: 2;
+            margin-bottom: 0;
+          }
+        }
+        .control {
+          position: absolute;
+          left: 0;
+          bottom: -60px;
+        }
       }
     }
     .right {
+      margin-top: 80px;
       .meta {
-        .name {
-          font-size: 26px;
+        display: none;
+      }
+    }
+  }
+  @media (max-width: 540px) {
+    .left {
+      .cover {
+        margin-right: 20px;
+      }
+      .meta {
+        .title {
+          .name {
+            font-size: 24px;
+          }
+        }
+        .intr,
+        .tag {
+          display: none !important;
+        }
+        .control {
+          position: static;
         }
       }
+    }
+    .right {
+      margin-top: 30px;
+    }
+  }
+  @media (max-width: 520px) {
+    .left {
+      .meta {
+        .title {
+          margin-bottom: 0;
+          .name {
+            font-size: 20px;
+          }
+          .creator {
+            font-size: 12px;
+          }
+        }
+      }
+    }
+  }
+  @media (max-width: 370px) {
+    .left {
+      .meta {
+        .title {
+          .name {
+            -webkit-line-clamp: 3;
+          }
+        }
+        .control {
+          position: absolute;
+        }
+      }
+    }
+    .right {
+      margin-top: 80px;
     }
   }
 }

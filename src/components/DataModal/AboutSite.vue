@@ -10,7 +10,7 @@
   >
     <div class="copyright">
       <div class="desc">
-        <n-text class="name">SPlayer</n-text>
+        <n-text class="name">{{ siteTitle }}</n-text>
         <n-text class="version" :depth="3">
           v&nbsp;{{ packageJson.version }}
         </n-text>
@@ -53,6 +53,7 @@ import { GithubOne } from "@icon-park/vue-next";
 import packageJson from "@/../package.json";
 
 // 关于本站数据
+const siteTitle = import.meta.env.VITE_SITE_TITLE;
 const showAboutModal = ref(false);
 const icp = ref(import.meta.env.VITE_ICP ? import.meta.env.VITE_ICP : null);
 

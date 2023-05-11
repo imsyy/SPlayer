@@ -12,7 +12,12 @@
           主题色选择
           <span class="tip">更换全站主题色，即时生效</span>
         </div>
-        <n-button strong secondary @click="changeThemeColor(null, true)">
+        <n-button
+          v-if="themeType !== 'red'"
+          strong
+          secondary
+          @click="changeThemeColor(null, true)"
+        >
           恢复默认
         </n-button>
       </div>
@@ -27,7 +32,7 @@
           v-for="item in themeColorData"
           :key="item"
           :style="{ '--color': item.primaryColor }"
-          :class="item.label === setting.themeType ? 'item check' : 'item'"
+          :class="item.label === themeType ? 'item check' : 'item'"
           @click="changeThemeColor(item)"
         >
           <n-text v-html="item.name" />
@@ -77,6 +82,13 @@
     </n-card>
     <n-card class="set-item">
       <div class="name">
+        歌曲渐入渐出
+        <span class="tip">是否在歌曲暂停 / 播放时渐入渐出</span>
+      </div>
+      <n-switch v-model:value="songVolumeFade" :round="false" />
+    </n-card>
+    <n-card class="set-item">
+      <div class="name">
         歌曲音质
         <span class="tip">无损音质及以上需要您为黑胶会员</span>
       </div>
@@ -85,6 +97,30 @@
         v-model:value="songLevel"
         :options="songLevelOptions"
       />
+    </n-card>
+    <n-card class="set-item">
+      <div class="name">
+        尝试替换无法播放的歌曲
+        <span class="tip">
+          {{
+            useUnmServerShow
+              ? "是否使用 UNM 替换无法播放的歌曲链接"
+              : "请配置 UNM-Server 后使用解灰功能"
+          }}
+        </span>
+      </div>
+      <n-switch
+        v-model:value="useUnmServer"
+        :round="false"
+        :disabled="!useUnmServerShow"
+      />
+    </n-card>
+    <n-card class="set-item">
+      <div class="name">
+        播放页快捷设置
+        <span class="tip">是否在播放页面显示快捷设置</span>
+      </div>
+      <n-switch v-model:value="showLyricSetting" :round="false" />
     </n-card>
   </div>
 </template>
@@ -106,7 +142,13 @@ const {
   autoSignIn,
   searchHistory,
   themeType,
+  showLyricSetting,
+  songVolumeFade,
+  useUnmServer,
 } = storeToRefs(setting);
+
+// UNM 开关显示
+const useUnmServerShow = import.meta.env.VITE_UNM_API ? true : false;
 
 // 深浅模式
 const darkOptions = [
@@ -180,12 +222,12 @@ const changeThemeColor = (data, reset = false) => {
       negativeText: "取消",
       onPositiveClick: () => {
         $message.success("主题色已重置");
-        setting.themeType = "red";
+        themeType.value = "red";
       },
     });
   } else {
     $message.success("主题色更换为" + data.name);
-    setting.themeType = data.label;
+    themeType.value = data.label;
   }
 };
 </script>

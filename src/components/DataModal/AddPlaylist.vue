@@ -1,7 +1,7 @@
 <template>
   <n-modal
     class="add-playlist s-modal"
-    v-model:show="addToPlaylistModel"
+    v-model:show="addToPlaylistModal"
     preset="card"
     :bordered="false"
     :on-after-leave="closeAddToPlaylist"
@@ -61,7 +61,7 @@ const user = userStore();
 const createPlaylistRef = ref(null);
 
 // 收藏到歌单数据
-const addToPlaylistModel = ref(false);
+const addToPlaylistModal = ref(false);
 const addToPlaylistId = ref(null);
 
 // 收藏到歌单
@@ -88,14 +88,14 @@ const openAddToPlaylist = (id) => {
   if (!user.getUserPlayLists.has && !user.getUserPlayLists.isLoading) {
     user.setUserPlayLists();
   }
-  addToPlaylistModel.value = true;
+  addToPlaylistModal.value = true;
   addToPlaylistId.value = id;
-  console.log("开启", addToPlaylistModel.value, addToPlaylistId.value);
+  console.log("开启", addToPlaylistModal.value, addToPlaylistId.value);
 };
 
 // 关闭收藏到歌单
 const closeAddToPlaylist = () => {
-  addToPlaylistModel.value = false;
+  addToPlaylistModal.value = false;
 };
 
 // 暴露方法

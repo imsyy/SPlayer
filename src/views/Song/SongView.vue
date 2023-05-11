@@ -102,14 +102,14 @@
 import { getSimiPlayList, getMusicDetail } from "@/api/song";
 import { useRouter } from "vue-router";
 import { musicStore } from "@/store";
-import { getLongTime } from "@/utils/timeTools.js";
+import { getLongTime } from "@/utils/timeTools";
 import {
   PlayArrowRound,
   MessageFilled,
   VideocamRound,
   PlaylistAddRound,
 } from "@vicons/material";
-import { formatNumber } from "@/utils/timeTools.js";
+import { formatNumber } from "@/utils/timeTools";
 import AllArtists from "@/components/DataList/AllArtists.vue";
 import CoverLists from "@/components/DataList/CoverLists.vue";
 import AddPlaylist from "@/components/DataModal/AddPlaylist.vue";

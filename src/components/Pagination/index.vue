@@ -62,6 +62,10 @@ const pageSizes = ref([
     label: "50条/页",
     value: 50,
   },
+  {
+    label: "100条/页",
+    value: 100,
+  },
 ]);
 
 // 每页个数数据变化

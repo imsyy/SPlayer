@@ -1,6 +1,6 @@
 <template>
   <Transition mode="out-in">
-    <div class="datalists" v-if="listData[0]">
+    <div class="datalists" id="datalists" v-if="listData[0]">
       <n-card
         v-for="item in listData"
         :key="item"
@@ -108,7 +108,7 @@
           <n-icon
             class="download"
             size="20"
-            @click.stop="downloadSongRef.openDownloadModel(item)"
+            @click.stop="downloadSongRef.openDownloadModal(item)"
           >
             <DownloadFour theme="filled" />
           </n-icon>
@@ -202,7 +202,7 @@
               class="item"
               @click="
                 () => {
-                  downloadSongRef.openDownloadModel(drawerData);
+                  downloadSongRef.openDownloadModal(drawerData);
                   drawerShow = false;
                 }
               "
@@ -331,6 +331,7 @@ import { musicStore, settingStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
 import { setCloudDel } from "@/api/user";
 import { NIcon } from "naive-ui";
+import { soundStop } from "@/utils/Player";
 import AllArtists from "./AllArtists.vue";
 import AddPlaylist from "@/components/DataModal/AddPlaylist.vue";
 import CloudMatch from "@/components/DataModal/CloudMatch.vue";
@@ -418,7 +419,7 @@ const openRightMenu = (e, data) => {
         label: "下一首播放",
         icon: renderIcon(AddMusic),
         show:
-          music.getPersonalFmMode || music.getPlaySongData.id == data.id
+          music.getPersonalFmMode || music.getPlaySongData?.id == data.id
             ? false
             : true,
         props: {
@@ -444,7 +445,7 @@ const openRightMenu = (e, data) => {
         icon: renderIcon(DownloadFour),
         props: {
           onClick: () => {
-            downloadSongRef.value.openDownloadModel(data);
+            downloadSongRef.value.openDownloadModal(data);
           },
         },
       },
@@ -581,7 +582,11 @@ const openDrawer = (data) => {
 // 播放并添加
 const playSong = (data, song) => {
   console.log(data, song);
-  music.setPersonalFmMode(false);
+  if (music.getPersonalFmMode) {
+    soundStop($player);
+    music.setPersonalFmMode(false);
+  }
+  music.setPlayState(true);
   if (router.currentRoute.value.name !== "history") music.setPlaylists(data);
   // 检查是否为云盘歌曲
   if (router.currentRoute.value.name === "user-cloud") {
@@ -637,7 +642,8 @@ const jumpLink = (id, type) => {
     &:hover {
       border-color: var(--main-color);
       box-shadow: 0 1px 2px -2px var(--main-boxshadow-color),
-        0 3px 6px 0 var(--main-boxshadow-color), 0 5px 12px 4px var(--main-boxshadow-hover-color);
+        0 3px 6px 0 var(--main-boxshadow-color),
+        0 5px 12px 4px var(--main-boxshadow-hover-color);
       .action {
         .like,
         .download {

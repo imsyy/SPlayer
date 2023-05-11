@@ -13,7 +13,7 @@
 <script setup>
 import { getArtistVideos } from "@/api/artist";
 import { useRouter } from "vue-router";
-import { formatNumber, getSongTime } from "@/utils/timeTools.js";
+import { formatNumber, getSongTime } from "@/utils/timeTools";
 import VideoLists from "@/components/DataList/VideoLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
 

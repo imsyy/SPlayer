@@ -13,9 +13,9 @@
 
 <script setup>
 import { getSearchData } from "@/api/search";
-import { getMusicDetail } from "@/api/song";
+// import { getMusicDetail } from "@/api/song";
 import { useRouter } from "vue-router";
-import { getSongTime } from "@/utils/timeTools.js";
+import { getSongTime } from "@/utils/timeTools";
 import DataLists from "@/components/DataList/DataLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
 const router = useRouter();

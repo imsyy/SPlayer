@@ -79,7 +79,7 @@ import { useRouter } from "vue-router";
 import { musicStore } from "@/store";
 import { getVideoDetail, getVideoUrl, getSimiVideo } from "@/api/video";
 import { getComment } from "@/api/comment";
-import { formatNumber, getSongTime } from "@/utils/timeTools.js";
+import { formatNumber, getSongTime } from "@/utils/timeTools";
 import {
   OndemandVideoFilled,
   ShareFilled,
@@ -213,8 +213,6 @@ const pageNumberChange = (val) => {
 };
 
 onMounted(() => {
-  // 隐藏控制条
-  music.setPlayBarState(false);
   // 初始化播放器
   player.value = new Plyr(videoRef.value, playerOptions);
   // 获取视频数据
@@ -224,6 +222,8 @@ onMounted(() => {
   // 播放器事件
   player.value.on("playing", () => {
     console.log("视频开始播放");
+    // 隐藏控制条及暂停音乐
+    music.setPlayBarState(false);
     music.setPlayState(false);
   });
 });

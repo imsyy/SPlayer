@@ -105,7 +105,7 @@ import {
 } from "@/api/login";
 import { useRouter } from "vue-router";
 import { PhoneAndroidRound, PasswordRound } from "@vicons/material";
-import { formRules } from "@/utils/formRules.js";
+import { formRules } from "@/utils/formRules";
 import QrcodeVue from "qrcode.vue";
 
 const router = useRouter();
@@ -152,7 +152,7 @@ const saveLoginData = (data) => {
       // 自动签到
       if ($signIn) $signIn();
       clearInterval(qrCheckInterval.value);
-      router.go(-1);
+      router.push("/user");
     } else {
       user.userLogOut();
       $message.error("登录出错，请重试");
@@ -168,7 +168,7 @@ const getQrKeyData = () => {
     if (res.data.profile && window.localStorage.getItem("cookie")) {
       $message.info("已登录，请勿重复登录");
       user.userLogin = true;
-      router.go(-1);
+      router.push("/user");
     } else {
       user.userLogOut();
       clearInterval(qrCheckInterval.value);

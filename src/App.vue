@@ -14,7 +14,10 @@
           ref="mainContent"
           class="main"
           id="main"
-          :class="[music.showPlayList ? 'playlist' : null]"
+          :class="{
+            playlist: music.showPlayList,
+            search: site.searchInputActive,
+          }"
         >
           <n-back-top
             :bottom="music.getPlaylists[0] && music.showPlayBar ? 100 : 40"
@@ -77,10 +80,10 @@ const spacePlayOrPause = (e) => {
 // 更改页面标题
 const setSiteTitle = (val) => {
   const title = val
-    ? val === "SPlayer"
+    ? val === import.meta.env.VITE_SITE_TITLE
       ? val
-      : val + " - SPlayer"
-    : site.siteTitle;
+      : val + " - " + import.meta.env.VITE_SITE_TITLE
+    : sessionStorage.getItem("siteTitle") ?? import.meta.env.VITE_SITE_TITLE;
   site.siteTitle = title;
   sessionStorage.setItem("siteTitle", title);
   if (!music.getPlayState) {
@@ -161,7 +164,7 @@ onMounted(() => {
   }
 
   // 版权声明
-  const logoText = "SPlayer";
+  const logoText = import.meta.env.VITE_SITE_TITLE;
   const copyrightNotice = `\n\n版本: ${packageJson.version}\n作者: ${packageJson.author}\n作者主页: ${packageJson.home}\nGitHub: ${packageJson.github}`;
   console.info(
     `%c${logoText} %c ${copyrightNotice}`,
@@ -232,10 +235,29 @@ onMounted(() => {
     margin: 0 auto;
     div:nth-of-type(2) {
       transition: all 0.3s;
+      &::after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        transition: all 0.3s;
+        pointer-events: none;
+        z-index: 2;
+      }
     }
     &.playlist {
       div:nth-of-type(2) {
         transform: scale(0.98);
+      }
+    }
+    &.search {
+      div:nth-of-type(2) {
+        &::after {
+          pointer-events: all;
+          background-color: #00000040;
+        }
       }
     }
   }

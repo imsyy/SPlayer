@@ -7,7 +7,7 @@ import {
   getUserArtistlist,
   getUserAlbum,
 } from "@/api/user";
-import { formatNumber, getLongTime } from "@/utils/timeTools.js";
+import { formatNumber, getLongTime } from "@/utils/timeTools";
 
 const useUserDataStore = defineStore("userData", {
   state: () => {
@@ -105,7 +105,7 @@ const useUserDataStore = defineStore("userData", {
       userLogOut();
     },
     // 更改用户歌单
-    async setUserPlayLists() {
+    async setUserPlayLists(callback) {
       if (this.userLogin) {
         try {
           if (!Object.keys(this.userOtherData).length) {
@@ -145,6 +145,9 @@ const useUserDataStore = defineStore("userData", {
                   });
                 }
               });
+              if (typeof callback === "function") {
+                callback();
+              }
               this.userPlayLists.isLoading = false;
             } else {
               this.userPlayLists.isLoading = false;
@@ -195,7 +198,7 @@ const useUserDataStore = defineStore("userData", {
       }
     },
     // 更改用户收藏专辑
-    async setUserAlbumLists() {
+    async setUserAlbumLists(callback) {
       if (this.userLogin) {
         try {
           let offset = 0;
@@ -216,6 +219,9 @@ const useUserDataStore = defineStore("userData", {
             totalCount = res.count;
             offset += 30;
             console.log(totalCount, offset, this.userAlbum.list);
+          }
+          if (typeof callback === "function") {
+            callback();
           }
           this.userAlbum.isLoading = false;
           this.userAlbum.has = true;

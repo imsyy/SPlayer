@@ -3,24 +3,34 @@
 
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" href="/images/logo/favicon.svg">
+  <link rel="icon" href="<%- logo %>">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" /> -->
-  <title>SPlayer</title>
-  <meta name="keywords" content="SPlayer,云音乐,播放器,在线音乐,在线播放器,音乐播放器,在线音乐播放器" />
-  <meta name="description" content="一个简约的在线音乐播放器，具有音乐搜索、播放、每日推荐、私人FM、歌词显示、歌曲评论、网易云登录与云盘等功能" />
+  <title><%- title %></title>
+  <meta name="author" content="<%- author %>" />
+  <meta name="keywords" content="<%- keywords %>" />
+  <meta name="description" content="<%- description %>" />
   <meta name="theme-color" content="#ffffff">
   <!-- HarmonyOS Sans -->
   <link rel="stylesheet" href="https://s1.hdslb.com/bfs/static/jinkela/long/font/regular.css" />
+  <!-- IE Out -->
+  <script>
+    if ( /*@cc_on!@*/ false || (!!window.MSInputMethodContext && !!document.documentMode))
+      window.location.href =
+      "https://support.dmeng.net/upgrade-your-browser.html?referrer=" + encodeURIComponent(window.location.href)
+  </script>
+  <% if (tongji) { %>
+  <!-- 百度统计 -->
   <script>
     var _hmt = _hmt || [];
     (function () {
       var hm = document.createElement("script");
-      hm.src = "https://hm.baidu.com/hm.js?c6579e9a33cbc5260fc90231678556ec";
+      hm.src = "https://hm.baidu.com/hm.js?<%- tongji %>";
       var s = document.getElementsByTagName("script")[0];
       s.parentNode.insertBefore(hm, s);
     })();
   </script>
+  <% } %>
 </head>
 
 <body>

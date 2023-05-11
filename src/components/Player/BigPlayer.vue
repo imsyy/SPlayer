@@ -1,7 +1,7 @@
 <template>
   <Transition name="up">
     <div
-      v-show="music.showBigPlayer"
+      v-if="music.showBigPlayer"
       class="bplayer"
       :style="[
         music.getPlaySongData && setting.backgroundImageShow === 'blur'
@@ -17,17 +17,12 @@
       />
       <div class="icon-menu">
         <div class="menu-left">
-          <div class="icon">
+          <div v-if="setting.showLyricSetting" class="icon">
             <n-icon
               class="setting"
               size="30"
               :component="SettingsRound"
-              @click="
-                () => {
-                  music.setBigPlayerState(false);
-                  router.push('/setting/player');
-                }
-              "
+              @click="LyricSettingRef.openLyricSetting()"
             />
           </div>
         </div>
@@ -134,9 +129,10 @@
           </Transition>
         </div>
       </div>
-      <div class="canvas">
-        <canvas v-if="setting.musicFrequency" class="avBars" ref="avBars" />
-      </div>
+      <!-- 音乐频谱 -->
+      <!-- <Spectrum v-if="setting.musicFrequency" /> -->
+      <!-- 歌词设置 -->
+      <LyricSetting ref="LyricSettingRef" />
     </div>
   </Transition>
 </template>
@@ -152,10 +148,12 @@ import {
 } from "@vicons/material";
 import { musicStore, settingStore, siteStore } from "@/store";
 import { useRouter } from "vue-router";
-import MusicFrequency from "@/utils/MusicFrequency.js";
+import { setSeek } from "@/utils/Player";
 import PlayerRecord from "./PlayerRecord.vue";
 import PlayerCover from "./PlayerCover.vue";
 import RollingLyrics from "./RollingLyrics.vue";
+// import Spectrum from "./Spectrum.vue";
+import LyricSetting from "@/components/DataModal/LyricSetting.vue";
 import screenfull from "screenfull";
 
 const router = useRouter();
@@ -166,13 +164,13 @@ const setting = settingStore();
 // 工具栏显隐
 const menuShow = ref(false);
 
-// 音乐频谱
-const avBars = ref(null);
-const musicFrequency = ref(null);
+// 歌词设置弹窗
+const LyricSettingRef = ref(null);
 
 // 歌词文本点击事件
 const lrcTextClick = (time) => {
-  if ($player) $player.currentTime = time;
+  if (typeof $player !== "undefined") setSeek($player, time);
+  music.setPlayState(true);
   lrcMouseStatus.value = false;
 };
 
@@ -238,29 +236,16 @@ const changePwaColor = () => {
   if (music.showBigPlayer) {
     themeColorMeta.setAttribute("content", site.songPicColor);
   } else {
-    if (setting.getSiteTheme == "light") {
+    if (setting.getSiteTheme === "light") {
       themeColorMeta.setAttribute("content", "#ffffff");
-    } else if (setting.getSiteTheme == "dark") {
+    } else if (setting.getSiteTheme === "dark") {
       themeColorMeta.setAttribute("content", "#18181c");
     }
   }
 };
 
 onMounted(() => {
-  nextTick(() => {
-    if (setting.musicFrequency) {
-      $player.crossOrigin = "anonymous";
-      musicFrequency.value = new MusicFrequency(
-        avBars.value,
-        $player,
-        null,
-        50,
-        null,
-        null,
-        5
-      );
-      musicFrequency.value.drawSpectrum();
-    }
+  nextTick().then(() => {
     // 滚动歌词
     lyricsScroll(music.getPlaySongLyricIndex);
   });
@@ -277,9 +262,9 @@ watch(
     changePwaColor();
     if (val) {
       console.log("开启播放器", music.getPlaySongLyricIndex);
-      nextTick(() => {
-        lyricsScroll(music.getPlaySongLyricIndex);
+      nextTick().then(() => {
         music.showPlayList = false;
+        lyricsScroll(music.getPlaySongLyricIndex);
       });
     }
   }
@@ -417,6 +402,12 @@ watch(
       .left {
         padding-right: 0;
         transform: translateX(25vh);
+        @media (max-width: 1200px) {
+          transform: translateX(22.2vh);
+        }
+        @media (min-width: 769px) and (max-width: 869px) {
+          transform: translateX(20.1vh);
+        }
       }
       @media (max-width: 768px) {
         .left {

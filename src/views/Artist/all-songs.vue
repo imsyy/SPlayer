@@ -30,10 +30,10 @@
 </template>
 
 <script setup>
-import { getArtistAllSongs } from "@/api/artist";
+import { getArtistDetail, getArtistAllSongs } from "@/api/artist";
 import { getMusicDetail } from "@/api/song";
 import { useRouter } from "vue-router";
-import { getSongTime } from "@/utils/timeTools.js";
+import { getSongTime } from "@/utils/timeTools";
 import DataLists from "@/components/DataList/DataLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
 
@@ -51,41 +51,56 @@ const pageNumber = ref(
     : 1
 );
 
+// 获取歌手名称
+const getArtistDetailData = (id) => {
+  getArtistDetail(id).then((res) => {
+    artistName.value = res.data.artist.name;
+  });
+};
+
 // 获取歌手信息
 const getArtistAllSongsData = (id, limit = 30, offset = 0, order = "hot") => {
-  getArtistAllSongs(id, limit, offset, order).then((res) => {
-    console.log(res);
-    if (res.songs[0]) {
-      // 数据总数
-      totalCount.value = res.total;
-      // 歌手名称
-      artistName.value = res.songs[0].ar[0].name;
-      // 列表数据
-      const ids = res.songs.map((obj) => obj.id);
-      getMusicDetail(ids.join(",")).then((res) => {
-        console.log(res);
-        artistData.value = [];
-        res.songs.forEach((v, i) => {
-          artistData.value.push({
-            id: v.id,
-            num: i + 1 + (pageNumber.value - 1) * pagelimit.value,
-            name: v.name,
-            artist: v.ar,
-            album: v.al,
-            alia: v.alia,
-            time: getSongTime(v.dt),
-            fee: v.fee,
-            pc: v.pc ? v.pc : null,
-            mv: v.mv ? v.mv : null,
+  if (!id) return false;
+  getArtistAllSongs(id, limit, offset, order)
+    .then((res) => {
+      console.log(res);
+      // 获取歌手名称
+      getArtistDetailData(id);
+      // 全部歌曲数据
+      if (res.songs[0]) {
+        // 数据总数
+        totalCount.value = res.total;
+        // 列表数据
+        const ids = res.songs.map((obj) => obj.id);
+        getMusicDetail(ids.join(",")).then((res) => {
+          console.log(res);
+          artistData.value = [];
+          res.songs.forEach((v, i) => {
+            artistData.value.push({
+              id: v.id,
+              num: i + 1 + (pageNumber.value - 1) * pagelimit.value,
+              name: v.name,
+              artist: v.ar,
+              album: v.al,
+              alia: v.alia,
+              time: getSongTime(v.dt),
+              fee: v.fee,
+              pc: v.pc ? v.pc : null,
+              mv: v.mv ? v.mv : null,
+            });
           });
         });
-      });
-    } else {
-      $message.error("歌手全部歌曲为空");
-    }
-    // 请求后回顶并结束加载条
-    if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
-  });
+      } else {
+        $message.error("歌手全部歌曲为空");
+      }
+      // 请求后回顶并结束加载条
+      if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
+    })
+    .catch((err) => {
+      router.go(-1);
+      console.error("歌手全部歌曲获取失败：" + err);
+      $message.error("歌手全部歌曲获取失败");
+    });
 };
 
 // 监听路由参数变化

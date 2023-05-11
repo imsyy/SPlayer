@@ -30,7 +30,7 @@ import PaPersonalFm from "@/components/Personalized/PaPersonalFm.vue";
 const setting = settingStore();
 
 onMounted(() => {
-  $setSiteTitle("SPlayer");
+  $setSiteTitle(import.meta.env.VITE_SITE_TITLE);
 });
 </script>
 

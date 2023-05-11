@@ -13,7 +13,7 @@
 <script setup>
 import { getArtistAblums } from "@/api/artist";
 import { useRouter } from "vue-router";
-import { getLongTime } from "@/utils/timeTools.js";
+import { getLongTime } from "@/utils/timeTools";
 import CoverLists from "@/components/DataList/CoverLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
 const router = useRouter();

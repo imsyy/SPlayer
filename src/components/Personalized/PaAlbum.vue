@@ -16,7 +16,7 @@
 <script setup>
 import { getNewAlbum } from "@/api/home";
 import { useRouter } from "vue-router";
-import { getLongTime } from "@/utils/timeTools.js";
+import { getLongTime } from "@/utils/timeTools";
 import CoverLists from "@/components/DataList/CoverLists.vue";
 const router = useRouter();
 

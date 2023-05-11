@@ -11,6 +11,16 @@
         "
         alt="cover"
       />
+      <img
+        class="shadow"
+        :src="
+          music.getPlaySongData
+            ? music.getPlaySongData.album.picUrl.replace(/^http:/, 'https:') +
+              '?param=1024y1024'
+            : '/images/pic/default.png'
+        "
+        alt="shadow"
+      />
     </div>
     <div class="control">
       <div class="data">
@@ -61,11 +71,14 @@
       </div>
       <div class="time">
         <span>{{ music.getPlaySongTime.songTimePlayed }}</span>
-        <n-slider
-          v-model:value="music.getPlaySongTime.barMoveDistance"
-          class="progress"
-          :step="0.01"
-          @update:value="songTimeSliderUpdate"
+        <vue-slider
+          v-model="music.getPlaySongTime.barMoveDistance"
+          @drag-start="music.setPlayState(false)"
+          @drag-end="sliderDragEnd"
+          @click.stop="
+            songTimeSliderUpdate(music.getPlaySongTime.barMoveDistance)
+          "
+          :tooltip="'none'"
         />
         <span>{{ music.getPlaySongTime.songTimeDuration }}</span>
       </div>
@@ -98,6 +111,7 @@
           v-else
           class="dislike"
           size="20"
+          :style="!user.userLogin ? 'opacity: 0.2;pointer-events: none;' : null"
           :component="ThumbDownRound"
           @click="music.setFmDislike(music.getPersonalFmData.id)"
         />
@@ -143,16 +157,25 @@ import {
 import { PlayCycle, PlayOnce, ShuffleOne } from "@icon-park/vue-next";
 import { musicStore, userStore } from "@/store";
 import { useRouter } from "vue-router";
+import { setSeek } from "@/utils/Player";
 import AllArtists from "@/components/DataList/AllArtists.vue";
+import VueSlider from "vue-slider-component";
+import "vue-slider-component/theme/default.css";
 
 const router = useRouter();
 const music = musicStore();
 const user = userStore();
 
 // 歌曲进度条更新
+const sliderDragEnd = () => {
+  songTimeSliderUpdate(music.getPlaySongTime.barMoveDistance);
+  music.setPlayState(true);
+};
 const songTimeSliderUpdate = (val) => {
-  if ($player && music.getPlaySongTime && music.getPlaySongTime.duration)
-    $player.currentTime = (music.getPlaySongTime.duration / 100) * val;
+  if (typeof $player !== "undefined" && music.getPlaySongTime?.duration) {
+    const currentTime = (music.getPlaySongTime.duration / 100) * val;
+    setSeek($player, currentTime);
+  }
 };
 
 // 页面跳转
@@ -168,11 +191,11 @@ const routerJump = (url, query) => {
 <style lang="scss" scoped>
 .cover {
   .pic {
+    position: relative;
     width: 50vh;
     height: 50vh;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 0 40px 14px rgb(0 0 0 / 20%);
+    z-index: 1;
+    // overflow: hidden;
     @media (max-width: 1200px) {
       width: 44vh;
       height: 44vh;
@@ -184,6 +207,19 @@ const routerJump = (url, query) => {
     .album {
       width: 100%;
       height: 100%;
+      border-radius: 8px;
+    }
+    .shadow {
+      position: absolute;
+      left: 0;
+      top: 12px;
+      height: 100%;
+      width: 100%;
+      filter: blur(16px) opacity(0.6);
+      transform: scale(0.92, 0.96);
+      z-index: -1;
+      background-size: cover;
+      aspect-ratio: 1/1;
     }
   }
   .control {
@@ -268,13 +304,26 @@ const routerJump = (url, query) => {
       span {
         opacity: 0.8;
       }
-      .progress {
-        margin: 0 12px;
-        --n-handle-size: 12px;
-        --n-fill-color: #fff;
-        --n-fill-color-hover: #fff;
-        --n-rail-color: #ffffff20;
-        --n-rail-color-hover: #ffffff30;
+      .vue-slider {
+        margin: 0 10px;
+        width: 100% !important;
+        transform: translateY(-1px);
+        cursor: pointer;
+        :deep(.vue-slider-rail) {
+          background-color: #ffffff20;
+          border-radius: 25px;
+          .vue-slider-process {
+            background-color: #fff;
+          }
+          .vue-slider-dot {
+            width: 12px !important;
+            height: 12px !important;
+            box-shadow: none;
+          }
+          .vue-slider-dot-handle-focus {
+            box-shadow: none;
+          }
+        }
       }
     }
     .buttons {

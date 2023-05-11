@@ -41,7 +41,7 @@ axios.interceptors.response.use(
       const data = error.response.data;
       switch (error.response.status) {
         case 401:
-          console.error("您未登录");
+          console.error("无权限访问");
           break;
         case 301:
           console.error("请求发生重定向");

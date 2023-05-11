@@ -28,23 +28,6 @@
     </n-card>
     <n-card class="set-item">
       <div class="name">
-        替换无法播放的歌曲链接
-        <span class="tip">
-          {{
-            useUnmServerShow
-              ? "是否使用 UNM 替换无法播放的歌曲链接"
-              : "请配置 UNM-Server 后使用解灰功能"
-          }}
-        </span>
-      </div>
-      <n-switch
-        v-model:value="useUnmServer"
-        :round="false"
-        :disabled="!useUnmServerShow"
-      />
-    </n-card>
-    <n-card class="set-item">
-      <div class="name">
         显示歌词翻译
         <span class="tip">是否在具有翻译歌词时显示</span>
       </div>
@@ -145,7 +128,7 @@
       </div>
       <n-switch v-model:value="lyricsBlur" :round="false" />
     </n-card>
-    <n-card class="set-item">
+    <!-- <n-card class="set-item">
       <div class="name">
         显示音乐频谱
         <span class="tip">可能会导致一些意想不到的后果，实验性功能</span>
@@ -155,7 +138,7 @@
         :round="false"
         @click="changeMusicFrequency"
       />
-    </n-card>
+    </n-card> -->
   </div>
 </template>
 
@@ -175,13 +158,9 @@ const {
   lrcMousePause,
   showYrc,
   showRoma,
-  useUnmServer,
   backgroundImageShow,
   countDownShow,
 } = storeToRefs(setting);
-
-// UNM 开关显示
-const useUnmServerShow = import.meta.env.VITE_UNM_API ? true : false;
 
 // 歌词位置
 const lyricsPositionOptions = [
@@ -232,24 +211,24 @@ const backgroundImageShowOptions = [
 ];
 
 // 音乐频谱提醒
-const changeMusicFrequency = () => {
-  if (musicFrequency.value) {
-    $dialog.warning({
-      class: "s-dialog",
-      title: "实验性功能",
-      content: "确认开启音乐频谱？将在重启应用后生效",
-      positiveText: "开启",
-      negativeText: "取消",
-      onMaskClick: () => {
-        musicFrequency.value = false;
-      },
-      onPositiveClick: () => {
-        musicFrequency.value = true;
-      },
-      onNegativeClick: () => {
-        musicFrequency.value = false;
-      },
-    });
-  }
-};
+// const changeMusicFrequency = () => {
+//   if (musicFrequency.value) {
+//     $dialog.warning({
+//       class: "s-dialog",
+//       title: "实验性功能",
+//       content: "确认开启音乐频谱？将在重启应用后生效",
+//       positiveText: "开启",
+//       negativeText: "取消",
+//       onMaskClick: () => {
+//         musicFrequency.value = false;
+//       },
+//       onPositiveClick: () => {
+//         musicFrequency.value = true;
+//       },
+//       onNegativeClick: () => {
+//         musicFrequency.value = false;
+//       },
+//     });
+//   }
+// };
 </script>
