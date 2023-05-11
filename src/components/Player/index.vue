@@ -7,14 +7,6 @@
     >
       <div class="slider">
         <span>{{ music.getPlaySongTime.songTimePlayed }}</span>
-        <!-- <n-slider
-          v-model:value="music.getPlaySongTime.barMoveDistance"
-          class="progress"
-          :step="0.01"
-          :tooltip="false"
-          @update:value="songTimeSliderUpdate"
-          @click.stop
-        /> -->
         <vue-slider
           v-model="music.getPlaySongTime.barMoveDistance"
           @drag-start="music.setPlayState(false)"
@@ -519,6 +511,9 @@ watch(
         .vue-slider-dot {
           width: 12px !important;
           height: 12px !important;
+        }
+        .vue-slider-dot-handle-focus {
+          box-shadow: 0px 0px 1px 2px var(--main-color);
         }
       }
     }

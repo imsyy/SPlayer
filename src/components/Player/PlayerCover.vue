@@ -318,6 +318,10 @@ const routerJump = (url, query) => {
           .vue-slider-dot {
             width: 12px !important;
             height: 12px !important;
+            box-shadow: none;
+          }
+          .vue-slider-dot-handle-focus {
+            box-shadow: none;
           }
         }
       }
