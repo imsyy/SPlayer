@@ -11,6 +11,16 @@
         "
         alt="cover"
       />
+      <img
+        class="shadow"
+        :src="
+          music.getPlaySongData
+            ? music.getPlaySongData.album.picUrl.replace(/^http:/, 'https:') +
+              '?param=1024y1024'
+            : '/images/pic/default.png'
+        "
+        alt="shadow"
+      />
     </div>
     <div class="control">
       <div class="data">
@@ -181,11 +191,11 @@ const routerJump = (url, query) => {
 <style lang="scss" scoped>
 .cover {
   .pic {
+    position: relative;
     width: 50vh;
     height: 50vh;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 0 40px 14px rgb(0 0 0 / 20%);
+    z-index: 1;
+    // overflow: hidden;
     @media (max-width: 1200px) {
       width: 44vh;
       height: 44vh;
@@ -197,6 +207,19 @@ const routerJump = (url, query) => {
     .album {
       width: 100%;
       height: 100%;
+      border-radius: 8px;
+    }
+    .shadow {
+      position: absolute;
+      left: 0;
+      top: 12px;
+      height: 100%;
+      width: 100%;
+      filter: blur(16px) opacity(0.6);
+      transform: scale(0.92, 0.96);
+      z-index: -1;
+      background-size: cover;
+      aspect-ratio: 1/1;
     }
   }
   .control {

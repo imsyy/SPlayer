@@ -24,6 +24,12 @@
               :src="item.cover.replace(/^http:/, 'https:') + '?param=200y200'"
               fallback-src="/images/pic/default.png"
             />
+            <n-avatar
+              round
+              class="shadow"
+              :src="item.cover.replace(/^http:/, 'https:') + '?param=200y200'"
+              fallback-src="/images/pic/default.png"
+            />
             <n-icon size="40" :component="PeopleSearchOne" />
           </div>
           <n-text class="name text-hidden">{{ item.name }}</n-text>
@@ -205,12 +211,26 @@ onMounted(() => {
       box-shadow: 0 4px 16px 0 #00000020;
       border-radius: 50%;
       transition: all 0.3s;
-      .n-avatar {
+      .coverImg {
         filter: brightness(1);
         transform: scale(1);
         width: 100%;
         height: 100%;
         transition: all 0.3s;
+        z-index: 1;
+      }
+      .shadow {
+        opacity: 0;
+        position: absolute;
+        top: 12px;
+        height: 100%;
+        width: 100%;
+        filter: blur(16px) opacity(0.6);
+        transform: scale(0.92, 0.96);
+        z-index: 0;
+        background-size: cover;
+        aspect-ratio: 1/1;
+        transition: opacity 0.3s;
       }
       .n-icon {
         opacity: 0;
@@ -218,6 +238,7 @@ onMounted(() => {
         position: absolute;
         color: #fff;
         transition: all 0.3s;
+        z-index: 1;
       }
       &:hover {
         box-shadow: 0 4px 16px 0 #00000040;
@@ -225,9 +246,12 @@ onMounted(() => {
           opacity: 1;
           transform: scale(1);
         }
-        .n-avatar {
+        .coverImg {
           filter: brightness(0.8);
           transform: scale(1.05);
+        }
+        .shadow {
+          opacity: 1;
         }
       }
       &:active {

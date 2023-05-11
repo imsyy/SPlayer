@@ -504,7 +504,6 @@ watch(
         transform: scale(0.92, 0.96);
         z-index: 0;
         background-size: cover;
-        border-radius: 0.75em;
         aspect-ratio: 1/1;
       }
     }
@@ -699,6 +698,7 @@ watch(
     .left {
       .meta {
         .title {
+          margin-bottom: 0;
           .name {
             font-size: 20px;
           }
@@ -707,6 +707,23 @@ watch(
           }
         }
       }
+    }
+  }
+  @media (max-width: 370px) {
+    .left {
+      .meta {
+        .title {
+          .name {
+            -webkit-line-clamp: 3;
+          }
+        }
+        .control {
+          position: absolute;
+        }
+      }
+    }
+    .right {
+      margin-top: 80px;
     }
   }
 }

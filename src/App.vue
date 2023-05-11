@@ -244,6 +244,7 @@ onMounted(() => {
         left: 0;
         transition: all 0.3s;
         pointer-events: none;
+        z-index: 2;
       }
     }
     &.playlist {

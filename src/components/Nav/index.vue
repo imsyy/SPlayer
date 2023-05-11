@@ -481,7 +481,7 @@ nav {
       cursor: pointer;
       &:hover {
         background-color: var(--main-color);
-        color: var(--n-color);
+        color: rgba(255, 255, 255, 0.9);
       }
       &:active {
         transform: scale(0.95);

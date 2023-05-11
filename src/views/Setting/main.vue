@@ -100,6 +100,23 @@
     </n-card>
     <n-card class="set-item">
       <div class="name">
+        尝试替换无法播放的歌曲
+        <span class="tip">
+          {{
+            useUnmServerShow
+              ? "是否使用 UNM 替换无法播放的歌曲链接"
+              : "请配置 UNM-Server 后使用解灰功能"
+          }}
+        </span>
+      </div>
+      <n-switch
+        v-model:value="useUnmServer"
+        :round="false"
+        :disabled="!useUnmServerShow"
+      />
+    </n-card>
+    <n-card class="set-item">
+      <div class="name">
         播放页快捷设置
         <span class="tip">是否在播放页面显示快捷设置</span>
       </div>
@@ -127,7 +144,11 @@ const {
   themeType,
   showLyricSetting,
   songVolumeFade,
+  useUnmServer,
 } = storeToRefs(setting);
+
+// UNM 开关显示
+const useUnmServerShow = import.meta.env.VITE_UNM_API ? true : false;
 
 // 深浅模式
 const darkOptions = [

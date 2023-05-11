@@ -23,6 +23,11 @@
               :src="item.cover.replace(/^http:/, 'https:') + '?param=300y300'"
               fallback-src="/images/pic/default.png"
             />
+            <n-avatar
+              class="shadow"
+              :src="item.cover.replace(/^http:/, 'https:') + '?param=300y300'"
+              fallback-src="/images/pic/default.png"
+            />
             <n-icon class="play" size="40">
               <PlayOne theme="filled" />
             </n-icon>
@@ -383,7 +388,7 @@ onMounted(() => {
       align-items: center;
       justify-content: center;
       position: relative;
-      overflow: hidden;
+      // overflow: hidden;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.3s;
@@ -392,7 +397,25 @@ onMounted(() => {
         border-radius: 8px;
         width: 100%;
         height: 100%;
-        transition: all 0.3s;
+        overflow: hidden;
+        transition: filter 0.3s;
+        z-index: 1;
+        :deep(img) {
+          transition: transform 0.3s;
+        }
+      }
+      .shadow {
+        opacity: 0;
+        position: absolute;
+        top: 12px;
+        height: 100%;
+        width: 100%;
+        filter: blur(16px) opacity(0.6);
+        transform: scale(0.92, 0.96);
+        z-index: 0;
+        background-size: cover;
+        aspect-ratio: 1/1;
+        transition: opacity 0.3s;
       }
       .play {
         opacity: 0;
@@ -405,6 +428,7 @@ onMounted(() => {
         border-radius: 50%;
         transform: scale(0.8);
         transition: all 0.3s;
+        z-index: 1;
       }
       .description {
         position: absolute;
@@ -417,7 +441,9 @@ onMounted(() => {
         backdrop-filter: blur(4px);
         padding: 6px;
         border-top-left-radius: 8px;
+        border-bottom-right-radius: 8px;
         transition: all 0.3s;
+        z-index: 1;
         .num {
           display: flex;
           flex-direction: row;
@@ -431,10 +457,11 @@ onMounted(() => {
         }
       }
       &:hover {
-        box-shadow: 0 15px 30px rgb(0 0 0 / 10%);
         .coverImg {
           filter: brightness(0.8);
-          transform: scale(1.1);
+          :deep(img) {
+            transform: scale(1.1);
+          }
         }
         .play {
           transform: scale(1);
@@ -442,6 +469,9 @@ onMounted(() => {
         }
         .description {
           opacity: 0;
+        }
+        .shadow {
+          opacity: 1;
         }
       }
       &:active {

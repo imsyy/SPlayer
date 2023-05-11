@@ -532,6 +532,7 @@ watch(
       }
       .meta {
         .title {
+          margin-bottom: 0;
           .name {
             font-size: 24px;
           }
@@ -561,6 +562,23 @@ watch(
           }
         }
       }
+    }
+  }
+  @media (max-width: 370px) {
+    .left {
+      .meta {
+        .title {
+          .name {
+            -webkit-line-clamp: 3;
+          }
+        }
+        .control {
+          position: absolute;
+        }
+      }
+    }
+    .right {
+      margin-top: 80px;
     }
   }
 }

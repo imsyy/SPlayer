@@ -28,23 +28,6 @@
     </n-card>
     <n-card class="set-item">
       <div class="name">
-        替换无法播放的歌曲链接
-        <span class="tip">
-          {{
-            useUnmServerShow
-              ? "是否使用 UNM 替换无法播放的歌曲链接"
-              : "请配置 UNM-Server 后使用解灰功能"
-          }}
-        </span>
-      </div>
-      <n-switch
-        v-model:value="useUnmServer"
-        :round="false"
-        :disabled="!useUnmServerShow"
-      />
-    </n-card>
-    <n-card class="set-item">
-      <div class="name">
         显示歌词翻译
         <span class="tip">是否在具有翻译歌词时显示</span>
       </div>
@@ -175,13 +158,9 @@ const {
   lrcMousePause,
   showYrc,
   showRoma,
-  useUnmServer,
   backgroundImageShow,
   countDownShow,
 } = storeToRefs(setting);
-
-// UNM 开关显示
-const useUnmServerShow = import.meta.env.VITE_UNM_API ? true : false;
 
 // 歌词位置
 const lyricsPositionOptions = [
