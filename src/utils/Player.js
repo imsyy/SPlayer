@@ -6,6 +6,8 @@ import { MusicNoteFilled } from "@vicons/material";
 
 // 歌曲信息更新定时器
 let timeupdateInterval = null;
+// 听歌打卡延时器
+let scrobbleTimeout = null;
 // 重试次数
 let testNumber = 0;
 
@@ -43,9 +45,16 @@ export const createSound = (src, autoPlay = true) => {
       music.isLoadingSong = false;
       // 听歌打卡
       if (isLogin) {
-        songScrobble(songId, sourceId).catch((err) => {
-          console.error("歌曲打卡失败：" + err);
-        });
+        clearTimeout(scrobbleTimeout);
+        scrobbleTimeout = setTimeout(() => {
+          songScrobble(songId, sourceId)
+            .then((res) => {
+              console.log("歌曲打卡完成", res);
+            })
+            .catch((err) => {
+              console.error("歌曲打卡失败：" + err);
+            });
+        }, 3000);
       }
     });
     // 播放事件

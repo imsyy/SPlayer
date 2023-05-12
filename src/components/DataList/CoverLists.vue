@@ -18,14 +18,24 @@
           @contextmenu="openRightMenu($event, item)"
         >
           <div class="cover">
-            <n-avatar
+            <n-image
+              lazy
               class="coverImg"
-              :src="item.cover.replace(/^http:/, 'https:') + '?param=300y300'"
+              preview-disabled
+              :src="getCoverUrl(item.cover)"
               fallback-src="/images/pic/default.png"
-            />
-            <n-avatar
+            >
+              <template #placeholder>
+                <div class="cover-loading">
+                  <n-spin size="small" />
+                </div>
+              </template>
+            </n-image>
+            <n-image
+              lazy
               class="shadow"
-              :src="item.cover.replace(/^http:/, 'https:') + '?param=300y300'"
+              preview-disabled
+              :src="getCoverUrl(item.cover)"
               fallback-src="/images/pic/default.png"
             />
             <n-icon class="play" size="40">
@@ -156,6 +166,15 @@ const renderIcon = (icon) => {
       }
     );
   };
+};
+
+// 封面图像地址
+const getCoverUrl = (url) => {
+  const imageUrl = url.replace(/^http:/, "https:");
+  if (imageUrl.endsWith(".jpg")) {
+    return imageUrl + "?param=300y300";
+  }
+  return imageUrl;
 };
 
 // 右键菜单数据
@@ -401,7 +420,26 @@ onMounted(() => {
         transition: filter 0.3s;
         z-index: 1;
         :deep(img) {
+          width: 100%;
           transition: transform 0.3s;
+        }
+        .cover-loading {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 0;
+          padding-bottom: 100%;
+          background-color: #0001;
+          .n-spin-body {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
         }
       }
       .shadow {
@@ -515,6 +553,19 @@ onMounted(() => {
       height: 0;
       border-radius: 8px !important;
       margin-bottom: 12px;
+    }
+  }
+  @media (max-width: 450px) {
+    :deep(.n-grid) {
+      gap: 18px 10px;
+    }
+    .item {
+      .title {
+        margin-top: 8px;
+        .name {
+          font-size: 13px;
+        }
+      }
     }
   }
 }

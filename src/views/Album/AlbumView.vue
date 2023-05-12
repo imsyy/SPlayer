@@ -4,12 +4,7 @@
       <div class="cover">
         <n-avatar
           class="coverImg"
-          :src="
-            albumDetail.picUrl
-              ? albumDetail.picUrl.replace(/^http:/, 'https:') +
-                '?param=1024y1024'
-              : null
-          "
+          :src="getCoverUrl(albumDetail.picUrl)"
           fallback-src="/images/pic/default.png"
         />
         <img src="/images/pic/album.png" class="album" alt="album" />
@@ -158,6 +153,15 @@ const renderIcon = (icon) => {
       }
     );
   };
+};
+
+// 封面图像地址
+const getCoverUrl = (url) => {
+  const imageUrl = url.replace(/^http:/, "https:");
+  if (imageUrl.endsWith(".jpg")) {
+    return imageUrl + "?param=1024y1024";
+  }
+  return imageUrl;
 };
 
 // 判断收藏还是取消

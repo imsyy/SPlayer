@@ -2,11 +2,10 @@
   <div
     class="papersonalfm"
     v-if="music.getPersonalFmData.id"
-    :style="
-      'background-image: url(' +
-      music.getPersonalFmData.album.picUrl.replace(/^http:/, 'https:') +
-      '?param=300y300)'
-    "
+    :style="`background-image: url(${music.getPersonalFmData.album.picUrl.replace(
+      /^http:/,
+      'https:'
+    )}?param=300y300)`"
   >
     <div class="gray" />
     <img
@@ -110,7 +109,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   padding: 20px;
-  height: 200px;
+  height: 100%;
   border-radius: 8px;
   box-sizing: border-box;
   overflow: hidden;
@@ -127,8 +126,8 @@ onMounted(() => {
     width: 100%;
     height: 100%;
     background-color: #00000040;
-    -webkit-backdrop-filter: blur(80px);
-    backdrop-filter: blur(80px);
+    -webkit-backdrop-filter: blur(40px);
+    backdrop-filter: blur(40px);
     z-index: -1;
   }
   .pic {
@@ -172,8 +171,7 @@ onMounted(() => {
       align-items: center;
       .state {
         margin-right: 2px;
-        transform: scale(1);
-        transition: all 0.3s;
+        transition: transform 0.3s;
         cursor: pointer;
         &:hover {
           transform: scale(1.1);
@@ -236,7 +234,7 @@ onMounted(() => {
       }
     }
   }
-  @media (max-width: 500px) {
+  @media (max-width: 1020px) {
     .pic {
       height: 96px;
       position: absolute;

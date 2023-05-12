@@ -86,7 +86,7 @@ const useUserDataStore = defineStore("userData", {
             console.log(res);
             this.userOtherData.level = res[0].data;
             this.userOtherData.subcount = res[1];
-            this.setUserPlayLists();
+            // this.setUserPlayLists();
           })
           .catch((err) => {
             console.error("获取用户详情失败：" + err);
@@ -108,51 +108,48 @@ const useUserDataStore = defineStore("userData", {
     async setUserPlayLists(callback) {
       if (this.userLogin) {
         try {
-          if (!Object.keys(this.userOtherData).length) {
-            this.setUserOtherData();
-          } else {
-            this.userPlayLists.isLoading = true;
-            const { userId } = this.userData;
-            const { subcount } = this.userOtherData;
-            const number =
-              subcount.createdPlaylistCount + subcount.subPlaylistCount;
-            const res = await getUserPlaylist(userId, number);
-            if (res.playlist) {
-              this.userPlayLists = {
-                has: true,
-                own: [],
-                like: [],
-              };
-              res.playlist.forEach((v) => {
-                if (v.creator.userId === this.getUserData.userId) {
-                  this.userPlayLists.own.push({
-                    id: v.id,
-                    cover: v.coverImgUrl,
-                    name: v.name,
-                    artist: v.creator,
-                    desc: v.description,
-                    tags: v.tags,
-                    playCount: formatNumber(v.playCount),
-                    trackCount: v.trackCount,
-                  });
-                } else {
-                  this.userPlayLists.like.push({
-                    id: v.id,
-                    cover: v.coverImgUrl,
-                    name: v.name,
-                    artist: v.creator,
-                    playCount: formatNumber(v.playCount),
-                  });
-                }
-              });
-              if (typeof callback === "function") {
-                callback();
+          this.userPlayLists.isLoading = true;
+          const { userId } = this.userData;
+          // const { subcount } = this.userOtherData;
+          const { createdPlaylistCount, subPlaylistCount } =
+            await getUserSubcount();
+          const number = createdPlaylistCount + subPlaylistCount ?? 30;
+          const res = await getUserPlaylist(userId, number);
+          if (res.playlist) {
+            this.userPlayLists = {
+              has: true,
+              own: [],
+              like: [],
+            };
+            res.playlist.forEach((v) => {
+              if (v.creator.userId === this.getUserData.userId) {
+                this.userPlayLists.own.push({
+                  id: v.id,
+                  cover: v.coverImgUrl,
+                  name: v.name,
+                  artist: v.creator,
+                  desc: v.description,
+                  tags: v.tags,
+                  playCount: formatNumber(v.playCount),
+                  trackCount: v.trackCount,
+                });
+              } else {
+                this.userPlayLists.like.push({
+                  id: v.id,
+                  cover: v.coverImgUrl,
+                  name: v.name,
+                  artist: v.creator,
+                  playCount: formatNumber(v.playCount),
+                });
               }
-              this.userPlayLists.isLoading = false;
-            } else {
-              this.userPlayLists.isLoading = false;
-              $message.error("用户歌单为空");
+            });
+            if (typeof callback === "function") {
+              callback();
             }
+            this.userPlayLists.isLoading = false;
+          } else {
+            this.userPlayLists.isLoading = false;
+            $message.error("用户歌单为空");
           }
         } catch (err) {
           this.userPlayLists.isLoading = false;

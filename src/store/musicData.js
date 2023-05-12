@@ -149,7 +149,7 @@ const useMusicDataStore = defineStore("musicData", {
     setPersonalFmMode(value) {
       this.persistData.personalFmMode = value;
       if (value) {
-        soundStop($player);
+        if (typeof $player !== "undefined") soundStop($player);
         if (this.persistData.personalFmData?.id) {
           this.persistData.playlists = [];
           this.persistData.playlists.push(this.persistData.personalFmData);
@@ -182,7 +182,7 @@ const useMusicDataStore = defineStore("musicData", {
             } else {
               this.persistData.personalFmData = fmData;
               if (this.persistData.personalFmMode) {
-                soundStop($player);
+                if (typeof $player !== "undefined") soundStop($player);
                 this.persistData.playlists = [];
                 this.persistData.playlists.push(fmData);
                 this.persistData.playSongIndex = 0;
@@ -371,6 +371,7 @@ const useMusicDataStore = defineStore("musicData", {
     // 上下曲调整
     setPlaySongIndex(type) {
       // this.playState = false;
+      if (typeof $player === "undefined") return false;
       soundStop($player);
       this.isLoadingSong = true;
       if (this.persistData.personalFmMode) {
@@ -419,7 +420,7 @@ const useMusicDataStore = defineStore("musicData", {
           this.persistData.playlists[this.persistData.playSongIndex]?.id
         ) {
           console.log("播放歌曲与上一次不一致");
-          soundStop($player);
+          if (typeof $player !== "undefined") soundStop($player);
           this.isLoadingSong = true;
         }
       } catch (error) {
@@ -460,6 +461,7 @@ const useMusicDataStore = defineStore("musicData", {
     },
     // 播放列表移除歌曲
     removeSong(index) {
+      if (typeof $player === "undefined") return false;
       const name = this.persistData.playlists[index].name;
       if (index < this.persistData.playSongIndex) {
         this.persistData.playSongIndex--;
