@@ -13,7 +13,7 @@
         <main
           ref="mainContent"
           class="main"
-          id="main"
+          id="mainContent"
           :class="{
             playlist: music.showPlayList,
             search: site.searchInputActive,
@@ -147,9 +147,21 @@ const cleanAll = () => {
   document.location.reload();
 };
 
+// 滚动至顶部
+const scrollToTop = () => {
+  nextTick().then(() => {
+    if (mainContent.value) {
+      mainContent.value?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      const mainContent = document.getElementById("mainContent");
+      mainContent?.scrollIntoView({ behavior: "smooth" });
+    }
+  });
+};
+
 onMounted(() => {
-  // 挂载至全局
-  window.$mainContent = mainContent.value;
+  // 挂载方法至全局
+  window.$scrollToTop = scrollToTop;
   window.$cleanAll = cleanAll;
   window.$signIn = signIn;
   window.$setSiteTitle = setSiteTitle;

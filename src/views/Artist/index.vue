@@ -148,7 +148,7 @@ const getArtistDetailData = (id) => {
         };
         $setSiteTitle(res.data.artist.name + " - 歌手");
         // 请求后回顶
-        if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
+        if (typeof $scrollToTop !== "undefined") $scrollToTop();
       })
       .catch((err) => {
         router.go(-1);

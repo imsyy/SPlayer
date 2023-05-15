@@ -43,6 +43,8 @@ const setting = settingStore();
 
 onMounted(() => {
   $setSiteTitle(import.meta.env.VITE_SITE_TITLE);
+  // 回顶
+  if (typeof $scrollToTop !== "undefined") $scrollToTop();
 });
 </script>
 
@@ -55,9 +57,17 @@ onMounted(() => {
     padding-left: 16px;
   }
   .recommend {
-    @media (max-width: 750px) {
+    @media (max-width: 850px) {
       grid-template-columns: repeat(1, minmax(0px, 1fr)) !important;
       gap: 20px 0 !important;
+      .rec-left {
+        display: flex;
+        flex-direction: column-reverse;
+        .padailysongs {
+          margin-bottom: 0;
+          margin-top: 20px;
+        }
+      }
     }
     .rec-left,
     .rec-right {

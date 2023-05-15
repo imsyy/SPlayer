@@ -49,11 +49,13 @@ const useSettingDataStore = defineStore("settingData", {
       // 是否显示前奏等待
       countDownShow: true,
       // 是否显示歌词设置
-      showLyricSetting: true,
+      showLyricSetting: false,
       // 歌曲渐入渐出
       songVolumeFade: true,
       // 列表默认数量
       listNumber: 30,
+      // 记忆上次播放位置
+      memoryLastPlaybackPosition: true,
     };
   },
   getters: {

@@ -25,7 +25,7 @@
         class="play"
         :component="PlayCircleFilled"
         size="50"
-        @click.stop
+        @click.stop="playThisSong"
       />
     </div>
   </div>
@@ -44,13 +44,17 @@ const router = useRouter();
 // 卡片背景
 const cardImage = ref(null);
 
+// 随机数
+const randomNumber = Math.floor(Math.random() * music.getDailySongs.length);
+
 // 生成卡片背景
-const getCardImage = (index) => {
+const getCardImage = () => {
   if (user.userLogin && music.getDailySongs[0]) {
-    const num = index ?? Math.floor(Math.random() * music.getDailySongs.length);
     cardImage.value =
-      music.getDailySongs[num]?.album.picUrl.replace(/^http:/, "https:") +
-      "?param=100y100";
+      music.getDailySongs[randomNumber]?.album.picUrl.replace(
+        /^http:/,
+        "https:"
+      ) + "?param=100y100";
   } else {
     cardImage.value = "/images/pic/pic.jpg";
   }
@@ -58,19 +62,44 @@ const getCardImage = (index) => {
 
 // 获取每日推荐数据
 const getDailySongsData = () => {
-  getDailySongs().then((res) => {
-    if (res.data.dailySongs) {
-      music.setDailySongs(res.data.dailySongs);
-      getCardImage();
+  getCardImage();
+  if (music.getDailySongs.length === 0 && user.userLogin) {
+    getDailySongs().then((res) => {
+      if (res.data.dailySongs) {
+        music.setDailySongs(res.data.dailySongs);
+        getCardImage();
+      } else {
+        $message.error("每日推荐获取失败");
+      }
+    });
+  }
+};
+
+// 从当前歌曲开始播放
+const playThisSong = () => {
+  if (user.userLogin) {
+    if (music.getDailySongs.length !== 0) {
+      // 正在播放的歌曲id
+      const songId = music.getPlaySongData?.id;
+      // 查找是否在日推中
+      const isHas = music.getDailySongs.findIndex((o) => o.id === songId);
+      console.log(isHas);
+      music.setPersonalFmMode(false);
+      music.setPlayState(true);
+      if (isHas === -1) {
+        music.setPlaylists(music.getDailySongs);
+        music.addSongToPlaylists(music.getDailySongs[randomNumber]);
+      }
     } else {
-      $message.error("每日推荐获取失败");
+      $message.error("每日推荐获取失败，请刷新后重试");
     }
-  });
+  } else {
+    $message.error("请登录账号后使用");
+  }
 };
 
 onMounted(() => {
-  getCardImage();
-  if (music.getDailySongs.length === 0 && user.userLogin) getDailySongsData();
+  getDailySongsData();
 });
 </script>
 
@@ -143,6 +172,9 @@ onMounted(() => {
       .title {
         font-size: 20px;
         margin-bottom: 2px;
+        @media (max-width: 1020px) {
+          font-size: 18px;
+        }
       }
       .tip {
         color: #e9e9e9;
@@ -156,6 +188,7 @@ onMounted(() => {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    margin-left: 12px;
     .cover {
       position: relative;
       background-color: transparent;

@@ -141,6 +141,9 @@ onMounted(() => {
         color: #fff;
         font-size: 18px;
         transition: all 0.3s;
+        @media (max-width: 1020px) {
+          font-size: 16px;
+        }
       }
       .tip {
         height: 100%;

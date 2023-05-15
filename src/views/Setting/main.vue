@@ -89,6 +89,13 @@
     </n-card>
     <n-card class="set-item">
       <div class="name">
+        记忆播放位置
+        <span class="tip">是否在刷新后恢复上次播放进度</span>
+      </div>
+      <n-switch v-model:value="memoryLastPlaybackPosition" :round="false" />
+    </n-card>
+    <n-card class="set-item">
+      <div class="name">
         歌曲音质
         <span class="tip">无损音质及以上需要您为黑胶会员</span>
       </div>
@@ -145,6 +152,7 @@ const {
   showLyricSetting,
   songVolumeFade,
   useUnmServer,
+  memoryLastPlaybackPosition,
 } = storeToRefs(setting);
 
 // UNM 开关显示

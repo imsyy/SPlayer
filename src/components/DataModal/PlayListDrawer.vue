@@ -7,7 +7,7 @@
     :trap-focus="false"
     :block-scroll="false"
     placement="right"
-    to="#main"
+    to="#mainContent"
     @after-leave="music.showPlayList = false"
     @mask-click="music.showPlayList = false"
   >
@@ -94,7 +94,7 @@ const playListShow = ref(false);
 const changeIndex = (index) => {
   try {
     if (music.persistData.playSongIndex !== index) {
-      soundStop($player);
+      if (typeof $player !== "undefined") soundStop($player);
       music.persistData.playSongIndex = index;
       music.isLoadingSong = true;
       music.setPlayState(true);

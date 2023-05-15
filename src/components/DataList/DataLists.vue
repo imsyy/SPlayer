@@ -25,6 +25,7 @@
       >
         <n-avatar
           v-if="item.album?.picUrl"
+          lazy
           class="pic"
           :src="item.album.picUrl.replace(/^http:/, 'https:') + '?param=60y60'"
           fallback-src="/images/pic/default.png"

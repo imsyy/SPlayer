@@ -370,7 +370,6 @@ const useMusicDataStore = defineStore("musicData", {
     },
     // 上下曲调整
     setPlaySongIndex(type) {
-      // this.playState = false;
       if (typeof $player === "undefined") return false;
       soundStop($player);
       this.isLoadingSong = true;

@@ -38,9 +38,22 @@ export const createSound = (src, autoPlay = true) => {
       const sourceId = music.getPlaySongData?.sourceId
         ? music.getPlaySongData.sourceId
         : 0;
-      const isLogin = JSON.parse(localStorage.getItem("userData")).userLogin;
+      const user = JSON.parse(localStorage.getItem("userData"));
+      const settings = JSON.parse(localStorage.getItem("settingData"));
+      const isLogin = user.userLogin;
+      const isMemory = settings.memoryLastPlaybackPosition;
       console.log("首次缓冲完成：" + songId + " / 来源：" + sourceId);
-      sound?.seek(music.persistData.playSongTime.currentTime);
+      if (isMemory) {
+        sound?.seek(music.persistData.playSongTime.currentTime);
+      } else {
+        music.persistData.playSongTime = {
+          currentTime: 0,
+          duration: 0,
+          barMoveDistance: 0,
+          songTimePlayed: "00:00",
+          songTimeDuration: "00:00",
+        };
+      }
       // 取消加载状态
       music.isLoadingSong = false;
       // 听歌打卡
@@ -145,8 +158,8 @@ export const setVolume = (sound, volume) => {
  * @param {number} seek - 设置的进度值，0-1之间的浮点数
  */
 export const setSeek = (sound, seek) => {
-  // const music = musicStore();
-  // music.persistData.playSongTime.currentTime = seek;
+  const music = musicStore();
+  music.persistData.playSongTime.currentTime = seek;
   sound?.seek(seek);
 };
 

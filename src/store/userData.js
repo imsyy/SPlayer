@@ -143,7 +143,7 @@ const useUserDataStore = defineStore("userData", {
                 });
               }
             });
-            if (typeof callback === "function") {
+            if (callback && typeof callback === "function") {
               callback();
             }
             this.userPlayLists.isLoading = false;
@@ -153,8 +153,10 @@ const useUserDataStore = defineStore("userData", {
           }
         } catch (err) {
           this.userPlayLists.isLoading = false;
-          console.error("获取用户歌单时出现错误：" + err);
-          $message.error("获取用户歌单时出现错误，请刷新后重试");
+          if (this.userLogin) {
+            console.error("获取用户歌单时出现错误：" + err);
+            $message.error("获取用户歌单时出现错误，请刷新后重试");
+          }
         }
       } else {
         $message.error("请登录账号后使用");
@@ -177,7 +179,7 @@ const useUserDataStore = defineStore("userData", {
                 size: v.musicSize,
               });
             });
-            if (typeof callback === "function") {
+            if (callback && typeof callback === "function") {
               callback();
             }
             this.userArtistLists.isLoading = false;
@@ -187,8 +189,10 @@ const useUserDataStore = defineStore("userData", {
           }
         } catch (err) {
           this.userArtistLists.isLoading = false;
-          console.error("用户收藏歌手获取失败：" + err);
-          $message.error("用户收藏歌手获取失败，请刷新后重试");
+          if (this.userLogin) {
+            console.error("用户收藏歌手获取失败：" + err);
+            $message.error("用户收藏歌手获取失败，请刷新后重试");
+          }
         }
       } else {
         $message.error("请登录账号后使用");
@@ -217,15 +221,17 @@ const useUserDataStore = defineStore("userData", {
             offset += 30;
             console.log(totalCount, offset, this.userAlbum.list);
           }
-          if (typeof callback === "function") {
+          if (callback && typeof callback === "function") {
             callback();
           }
           this.userAlbum.isLoading = false;
           this.userAlbum.has = true;
         } catch (err) {
           this.userAlbum.isLoading = false;
-          console.error("用户收藏专辑获取失败：" + err);
-          $message.error("用户收藏专辑获取失败，请刷新后重试");
+          if (this.userLogin) {
+            console.error("用户收藏专辑获取失败：" + err);
+            $message.error("用户收藏专辑获取失败，请刷新后重试");
+          }
         }
       } else {
         $message.error("请登录账号后使用");

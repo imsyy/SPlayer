@@ -19,12 +19,20 @@
         >
           <div class="cover">
             <n-avatar
+              lazy
               round
               class="coverImg"
               :src="item.cover.replace(/^http:/, 'https:') + '?param=200y200'"
               fallback-src="/images/pic/default.png"
-            />
+            >
+              <template #placeholder>
+                <div class="cover-loading">
+                  <n-spin size="small" />
+                </div>
+              </template>
+            </n-avatar>
             <n-avatar
+              lazy
               round
               class="shadow"
               :src="item.cover.replace(/^http:/, 'https:') + '?param=200y200'"
@@ -218,6 +226,24 @@ onMounted(() => {
         height: 100%;
         transition: all 0.3s;
         z-index: 1;
+        .cover-loading {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 0;
+          padding-bottom: 100%;
+          background-color: #0001;
+          .n-spin-body {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+        }
       }
       .shadow {
         opacity: 0;
