@@ -4,22 +4,12 @@
       <div class="cover">
         <n-avatar
           class="coverImg"
-          :src="
-            playListDetail.coverImgUrl
-              ? playListDetail.coverImgUrl.replace(/^http:/, 'https:') +
-                '?param=1024y1024'
-              : null
-          "
+          :src="getCoverUrl(playListDetail.coverImgUrl)"
           fallback-src="/images/pic/default.png"
         />
         <n-avatar
           class="shadow"
-          :src="
-            playListDetail.coverImgUrl
-              ? playListDetail.coverImgUrl.replace(/^http:/, 'https:') +
-                '?param=1024y1024'
-              : null
-          "
+          :src="getCoverUrl(playListDetail.coverImgUrl)"
           fallback-src="/images/pic/default.png"
         />
       </div>
@@ -163,6 +153,7 @@ import {
 } from "@icon-park/vue-next";
 import DataLists from "@/components/DataList/DataLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
+// import SpecialPlayLists from "./SpecialPlayLists.json";
 
 const router = useRouter();
 const user = userStore();
@@ -194,6 +185,15 @@ const renderIcon = (icon) => {
       }
     );
   };
+};
+
+// 封面图像地址
+const getCoverUrl = (url) => {
+  const imageUrl = url.replace(/^http:/, "https:");
+  if (imageUrl.endsWith(".jpg")) {
+    return imageUrl + "?param=1024y1024";
+  }
+  return imageUrl;
 };
 
 // 判断收藏还是取消
@@ -309,7 +309,7 @@ const getAllPlayListData = (id, limit = 30, offset = 0) => {
       $message.error("获取歌单内歌曲失败");
     }
     // 请求后回顶
-    if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
+    if (typeof $scrollToTop !== "undefined") $scrollToTop();
   });
 };
 

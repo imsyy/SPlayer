@@ -93,8 +93,8 @@ const getArtistAllSongsData = (id, limit = 30, offset = 0, order = "hot") => {
       } else {
         $message.error("歌手全部歌曲为空");
       }
-      // 请求后回顶并结束加载条
-      if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
+      // 请求后回顶
+      if (typeof $scrollToTop !== "undefined") $scrollToTop();
     })
     .catch((err) => {
       router.go(-1);

@@ -167,7 +167,7 @@ const getVideoData = (id) => {
         $message.error("视频加载失败，请重试");
       });
     // 请求后回顶
-    if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
+    if (typeof $scrollToTop !== "undefined") $scrollToTop();
   });
 
   // 获取相似视频
@@ -202,8 +202,8 @@ const getCommentData = (id, offset = 0, type = "mv") => {
     }
     commentData.allComments = res.comments;
     commentsCount.value = res.total;
-    // 滚动至顶部
-    if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
+    // 请求后回顶
+    if (typeof $scrollToTop !== "undefined") $scrollToTop();
   });
 };
 

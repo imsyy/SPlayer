@@ -209,7 +209,7 @@ const getPlaylistData = (cat = "全部歌单", limit = 30, offset = 0) => {
       $message.error("歌单列表为空");
     }
     // 请求后回顶
-    if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
+    if (typeof $scrollToTop !== "undefined") $scrollToTop();
   });
 };
 

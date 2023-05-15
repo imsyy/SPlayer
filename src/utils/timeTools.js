@@ -66,7 +66,7 @@ export const getCommentTime = (t) => {
 };
 
 /**
- * 过万数字转化
+ * 过万/亿数字转化
  * @param {number} num 需要格式化的数字
  * @returns {string|number} 格式化后的字符串或原样返回的数字
  */
@@ -74,8 +74,17 @@ export const formatNumber = (num) => {
   const n = Number(num);
   if (n === 0 || n < 10000) {
     return n;
+  } else if (n < 100000000) {
+    const numString = (n / 10000).toFixed(1);
+    return numString.endsWith(".0")
+      ? numString.slice(0, -2) + "万"
+      : numString + "万";
+  } else {
+    const numString = (n / 100000000).toFixed(1);
+    return numString.endsWith(".0")
+      ? numString.slice(0, -2) + "亿"
+      : numString + "亿";
   }
-  return (n / 10000).toFixed(1) + "万";
 };
 
 /**

@@ -52,7 +52,7 @@ const getSearchDataList = (keywords, limit = 30, offset = 0, type = 1000) => {
       $message.error("搜索内容为空");
     }
     // 请求后回顶
-    if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
+    if (typeof $scrollToTop !== "undefined") $scrollToTop();
   });
 };
 

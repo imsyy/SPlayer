@@ -59,8 +59,8 @@ const getArtistVideosData = (id, limit = 30, offset = 0) => {
     } else {
       $message.error("搜索内容为空");
     }
-    // 请求后回顶并结束加载条
-    if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
+    // 请求后回顶
+    if (typeof $scrollToTop !== "undefined") $scrollToTop();
   });
 };
 

@@ -86,7 +86,7 @@ const useUserDataStore = defineStore("userData", {
             console.log(res);
             this.userOtherData.level = res[0].data;
             this.userOtherData.subcount = res[1];
-            this.setUserPlayLists();
+            // this.setUserPlayLists();
           })
           .catch((err) => {
             console.error("获取用户详情失败：" + err);
@@ -108,56 +108,55 @@ const useUserDataStore = defineStore("userData", {
     async setUserPlayLists(callback) {
       if (this.userLogin) {
         try {
-          if (!Object.keys(this.userOtherData).length) {
-            this.setUserOtherData();
-          } else {
-            this.userPlayLists.isLoading = true;
-            const { userId } = this.userData;
-            const { subcount } = this.userOtherData;
-            const number =
-              subcount.createdPlaylistCount + subcount.subPlaylistCount;
-            const res = await getUserPlaylist(userId, number);
-            if (res.playlist) {
-              this.userPlayLists = {
-                has: true,
-                own: [],
-                like: [],
-              };
-              res.playlist.forEach((v) => {
-                if (v.creator.userId === this.getUserData.userId) {
-                  this.userPlayLists.own.push({
-                    id: v.id,
-                    cover: v.coverImgUrl,
-                    name: v.name,
-                    artist: v.creator,
-                    desc: v.description,
-                    tags: v.tags,
-                    playCount: formatNumber(v.playCount),
-                    trackCount: v.trackCount,
-                  });
-                } else {
-                  this.userPlayLists.like.push({
-                    id: v.id,
-                    cover: v.coverImgUrl,
-                    name: v.name,
-                    artist: v.creator,
-                    playCount: formatNumber(v.playCount),
-                  });
-                }
-              });
-              if (typeof callback === "function") {
-                callback();
+          this.userPlayLists.isLoading = true;
+          const { userId } = this.userData;
+          // const { subcount } = this.userOtherData;
+          const { createdPlaylistCount, subPlaylistCount } =
+            await getUserSubcount();
+          const number = createdPlaylistCount + subPlaylistCount ?? 30;
+          const res = await getUserPlaylist(userId, number);
+          if (res.playlist) {
+            this.userPlayLists = {
+              has: true,
+              own: [],
+              like: [],
+            };
+            res.playlist.forEach((v) => {
+              if (v.creator.userId === this.getUserData.userId) {
+                this.userPlayLists.own.push({
+                  id: v.id,
+                  cover: v.coverImgUrl,
+                  name: v.name,
+                  artist: v.creator,
+                  desc: v.description,
+                  tags: v.tags,
+                  playCount: formatNumber(v.playCount),
+                  trackCount: v.trackCount,
+                });
+              } else {
+                this.userPlayLists.like.push({
+                  id: v.id,
+                  cover: v.coverImgUrl,
+                  name: v.name,
+                  artist: v.creator,
+                  playCount: formatNumber(v.playCount),
+                });
               }
-              this.userPlayLists.isLoading = false;
-            } else {
-              this.userPlayLists.isLoading = false;
-              $message.error("用户歌单为空");
+            });
+            if (callback && typeof callback === "function") {
+              callback();
             }
+            this.userPlayLists.isLoading = false;
+          } else {
+            this.userPlayLists.isLoading = false;
+            $message.error("用户歌单为空");
           }
         } catch (err) {
           this.userPlayLists.isLoading = false;
-          console.error("获取用户歌单时出现错误：" + err);
-          $message.error("获取用户歌单时出现错误，请刷新后重试");
+          if (this.userLogin) {
+            console.error("获取用户歌单时出现错误：" + err);
+            $message.error("获取用户歌单时出现错误，请刷新后重试");
+          }
         }
       } else {
         $message.error("请登录账号后使用");
@@ -180,7 +179,7 @@ const useUserDataStore = defineStore("userData", {
                 size: v.musicSize,
               });
             });
-            if (typeof callback === "function") {
+            if (callback && typeof callback === "function") {
               callback();
             }
             this.userArtistLists.isLoading = false;
@@ -190,8 +189,10 @@ const useUserDataStore = defineStore("userData", {
           }
         } catch (err) {
           this.userArtistLists.isLoading = false;
-          console.error("用户收藏歌手获取失败：" + err);
-          $message.error("用户收藏歌手获取失败，请刷新后重试");
+          if (this.userLogin) {
+            console.error("用户收藏歌手获取失败：" + err);
+            $message.error("用户收藏歌手获取失败，请刷新后重试");
+          }
         }
       } else {
         $message.error("请登录账号后使用");
@@ -220,15 +221,17 @@ const useUserDataStore = defineStore("userData", {
             offset += 30;
             console.log(totalCount, offset, this.userAlbum.list);
           }
-          if (typeof callback === "function") {
+          if (callback && typeof callback === "function") {
             callback();
           }
           this.userAlbum.isLoading = false;
           this.userAlbum.has = true;
         } catch (err) {
           this.userAlbum.isLoading = false;
-          console.error("用户收藏专辑获取失败：" + err);
-          $message.error("用户收藏专辑获取失败，请刷新后重试");
+          if (this.userLogin) {
+            console.error("用户收藏专辑获取失败：" + err);
+            $message.error("用户收藏专辑获取失败，请刷新后重试");
+          }
         }
       } else {
         $message.error("请登录账号后使用");

@@ -49,7 +49,8 @@ watch(
 
 onMounted(() => {
   $setSiteTitle("全局设置");
-  if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
+  // 回顶
+  if (typeof $scrollToTop !== "undefined") $scrollToTop();
 });
 </script>
 

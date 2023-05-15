@@ -26,18 +26,20 @@ const music = musicStore();
 
 // 获取每日推荐数据
 const getDailySongsData = () => {
-  getDailySongs().then((res) => {
-    if (res.data.dailySongs) {
-      music.setDailySongs(res.data.dailySongs);
-    } else {
-      $message.error("每日推荐获取失败");
-    }
-  });
+  if (music.getDailySongs.length === 0) {
+    getDailySongs().then((res) => {
+      if (res.data.dailySongs) {
+        music.setDailySongs(res.data.dailySongs);
+      } else {
+        $message.error("每日推荐获取失败");
+      }
+    });
+  }
 };
 
 onMounted(() => {
   $setSiteTitle("每日推荐");
-  if (music.getDailySongs.length === 0) getDailySongsData();
+  getDailySongsData();
 });
 </script>
 

@@ -6,6 +6,8 @@ import { MusicNoteFilled } from "@vicons/material";
 
 // 歌曲信息更新定时器
 let timeupdateInterval = null;
+// 听歌打卡延时器
+let scrobbleTimeout = null;
 // 重试次数
 let testNumber = 0;
 
@@ -36,16 +38,36 @@ export const createSound = (src, autoPlay = true) => {
       const sourceId = music.getPlaySongData?.sourceId
         ? music.getPlaySongData.sourceId
         : 0;
-      const isLogin = JSON.parse(localStorage.getItem("userData")).userLogin;
+      const user = JSON.parse(localStorage.getItem("userData"));
+      const settings = JSON.parse(localStorage.getItem("settingData"));
+      const isLogin = user.userLogin;
+      const isMemory = settings.memoryLastPlaybackPosition;
       console.log("首次缓冲完成：" + songId + " / 来源：" + sourceId);
-      sound?.seek(music.persistData.playSongTime.currentTime);
+      if (isMemory) {
+        sound?.seek(music.persistData.playSongTime.currentTime);
+      } else {
+        music.persistData.playSongTime = {
+          currentTime: 0,
+          duration: 0,
+          barMoveDistance: 0,
+          songTimePlayed: "00:00",
+          songTimeDuration: "00:00",
+        };
+      }
       // 取消加载状态
       music.isLoadingSong = false;
       // 听歌打卡
       if (isLogin) {
-        songScrobble(songId, sourceId).catch((err) => {
-          console.error("歌曲打卡失败：" + err);
-        });
+        clearTimeout(scrobbleTimeout);
+        scrobbleTimeout = setTimeout(() => {
+          songScrobble(songId, sourceId)
+            .then((res) => {
+              console.log("歌曲打卡完成", res);
+            })
+            .catch((err) => {
+              console.error("歌曲打卡失败：" + err);
+            });
+        }, 3000);
       }
     });
     // 播放事件
@@ -136,8 +158,8 @@ export const setVolume = (sound, volume) => {
  * @param {number} seek - 设置的进度值，0-1之间的浮点数
  */
 export const setSeek = (sound, seek) => {
-  // const music = musicStore();
-  // music.persistData.playSongTime.currentTime = seek;
+  const music = musicStore();
+  music.persistData.playSongTime.currentTime = seek;
   sound?.seek(seek);
 };
 

@@ -117,8 +117,8 @@ const getCommentData = (id, offset = 0) => {
       $message.info("暂无评论");
       router.go(-1);
     }
-    // 滚动至顶部
-    if ($mainContent) $mainContent.scrollIntoView({ behavior: "smooth" });
+    // 请求后回顶
+    if (typeof $scrollToTop !== "undefined") $scrollToTop();
   });
 };
 
