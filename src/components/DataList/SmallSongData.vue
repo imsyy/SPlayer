@@ -14,7 +14,7 @@
       <n-text
         class="text-hidden"
         depth="2"
-        v-html="songDetail ? songDetail.name : '未知歌曲'"
+        v-html="songDetail ? songDetail.name : $t('general.name.unknownSong')"
         @click.stop="router.push(`/song?id=${songDetail.id}`)"
       />
       <AllArtists
@@ -29,8 +29,10 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { getMusicDetail } from "@/api/song";
+import { useI18n } from "vue-i18n";
 import AllArtists from "./AllArtists.vue";
 
+const { t } = useI18n();
 const router = useRouter();
 const props = defineProps({
   // 歌曲数据
@@ -64,7 +66,7 @@ const getMusicDetailData = (id) => {
         id: res.songs[0].id,
       };
     } else {
-      $message.error("歌曲信息获取失败");
+      $message.error(t("general.message.acquisitionFailed"));
     }
   });
 };

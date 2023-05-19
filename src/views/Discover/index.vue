@@ -1,15 +1,15 @@
 <template>
   <div class="discover">
-    <n-text class="title">发现</n-text>
+    <n-text class="title">{{ $t("nav.discover") }}</n-text>
     <n-tabs
       class="main-tab"
       type="segment"
       @update:value="tabChange"
       v-model:value="tabValue"
     >
-      <n-tab name="playlists"> 歌单 </n-tab>
-      <n-tab name="toplists"> 排行榜 </n-tab>
-      <n-tab name="artists"> 歌手 </n-tab>
+      <n-tab name="playlists">{{ $t("nav.discoverChildren.playlists") }}</n-tab>
+      <n-tab name="toplists">{{ $t("nav.discoverChildren.toplists") }}</n-tab>
+      <n-tab name="artists">{{ $t("nav.discoverChildren.artists") }}</n-tab>
     </n-tabs>
     <main class="content">
       <router-view v-slot="{ Component }">

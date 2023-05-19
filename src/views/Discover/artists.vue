@@ -49,14 +49,16 @@
 
 <script setup>
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { getArtistList } from "@/api/artist";
 import ArtistLists from "@/components/DataList/ArtistLists.vue";
 
+const { t } = useI18n();
 const router = useRouter();
 
 // 歌手标签数据
 const artistInitials = [
-  { key: "-1", value: "热门" },
+  { key: "-1", value: t("general.type.hot") },
   ...Array.from({ length: 26 }, (_, i) => String.fromCharCode(i + 65)).map(
     (v) => ({
       key: v,
@@ -73,24 +75,24 @@ const artistInitialChoose = ref(
 
 // 歌手分类数据
 const artistTypeNames = [
-  "全部",
-  "华语",
-  "华语男",
-  "华语女",
-  "华语组合",
-  "欧美",
-  "欧美男",
-  "欧美女",
-  "欧美组合",
-  "日本",
-  "日本男",
-  "日本女",
-  "日本组合",
-  "韩国",
-  "韩国男",
-  "韩国女",
-  "韩国组合",
-  "其他",
+  t("general.type.all"),
+  t("general.type.china"),
+  t("general.type.chinaMale"),
+  t("general.type.chinaFemale"),
+  t("general.type.chinaGroup"),
+  t("general.type.western"),
+  t("general.type.westernMale"),
+  t("general.type.westernFemale"),
+  t("general.type.westernGroup"),
+  t("general.type.japan"),
+  t("general.type.japanMale"),
+  t("general.type.japanFemale"),
+  t("general.type.japanGroup"),
+  t("general.type.korea"),
+  t("general.type.koreaMale"),
+  t("general.type.koreaFemale"),
+  t("general.type.koreaGroup"),
+  t("general.type.other"),
 ];
 const artistType = [-1, -1, 1, 2, 3, -1, 1, 2, 3, -1, 1, 2, 3, -1, 1, 2, 3, -1];
 const artistArea = [

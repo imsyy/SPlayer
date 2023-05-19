@@ -2,7 +2,7 @@
   <div class="home">
     <Banner v-if="setting.bannerShow" />
     <!-- 个性化推荐 -->
-    <n-h3 class="title" prefix="bar"> 专属推荐 </n-h3>
+    <n-h3 class="title" prefix="bar">{{ $t("home.title.exclusive") }}</n-h3>
     <n-grid class="recommend" :x-gap="20" :cols="2">
       <n-gi class="rec-left">
         <!-- 每日推荐 -->
@@ -30,6 +30,7 @@
 
 <script setup>
 import { settingStore } from "@/store";
+import { useI18n } from "vue-i18n";
 import Banner from "@/components/Banner/index.vue";
 import PaPlayLists from "@/components/Personalized/PaPlayLists.vue";
 import PaArtists from "@/components/Personalized/PaArtists.vue";
@@ -39,6 +40,7 @@ import PaPersonalFm from "@/components/Personalized/PaPersonalFm.vue";
 import PaRadar from "@/components/Personalized/PaRadar.vue";
 import PaLikeSongs from "@/components/Personalized/PaLikeSongs.vue";
 
+const { t } = useI18n();
 const setting = settingStore();
 
 onMounted(() => {

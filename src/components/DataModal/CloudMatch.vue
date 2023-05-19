@@ -3,20 +3,20 @@
     class="s-modal"
     v-model:show="cloudMatchModal"
     preset="card"
-    title="歌曲信息纠正"
+    :title="$t('menu.match')"
     :bordered="false"
     :on-after-leave="closeCloudMatch"
   >
     <n-form class="cloud-match" :label-width="80" :model="cloudMatchValue">
-      <n-form-item label="原歌曲信息">
+      <n-form-item :label="$t('other.sData')">
         <n-card content-style="padding: 16px" :bordered="false" embedded>
           <SmallSongData :songData="cloudMatchBeforeData" notJump />
         </n-card>
       </n-form-item>
-      <n-form-item label="匹配 ID" path="asid">
+      <n-form-item :label="$t('other.asId')" path="asid">
         <n-input-number
           v-model:value="cloudMatchValue.asid"
-          placeholder="请输入要匹配的歌曲 ID"
+          :placeholder="$t('other.asIdDes')"
           :show-button="false"
         />
         <n-button
@@ -24,7 +24,7 @@
           :disabled="!cloudMatchValue.asid"
           @click="cloudMatchId = cloudMatchValue.asid.toString()"
         >
-          检查
+          {{ $t("general.dialog.check") }}
         </n-button>
       </n-form-item>
     </n-form>
@@ -42,13 +42,15 @@
     </n-card>
     <template #footer>
       <n-space justify="end">
-        <n-button @click="closeCloudMatch"> 取消 </n-button>
+        <n-button @click="closeCloudMatch">
+          {{ $t("general.dialog.cancel") }}
+        </n-button>
         <n-button
           type="primary"
           @click="setCloudMatchBtn(cloudMatchValue)"
           :disabled="!cloudMatchValue.asid"
         >
-          纠正歌曲
+          {{ $t("general.dialog.match") }}
         </n-button>
       </n-space>
     </template>
@@ -58,8 +60,10 @@
 <script setup>
 import { setCloudMatch } from "@/api/user";
 import { userStore } from "@/store";
+import { useI18n } from "vue-i18n";
 import SmallSongData from "@/components/DataList/SmallSongData.vue";
 
+const { t } = useI18n();
 const user = userStore();
 
 // 歌曲信息纠正数据
@@ -77,23 +81,23 @@ const cloudMatchValue = ref({
 // 歌曲纠正
 const setCloudMatchBtn = (data) => {
   if (data.sid == data.asid) {
-    $message.error("与原歌曲 ID 一致，无需纠正");
+    $message.error(t("other.noNeedMatch"));
   } else {
     if (!smallSongDataRef.value) {
-      $message.error("请先检查");
+      $message.error(t("other.plaseCheck"));
     } else if (smallSongDataRef.value.checkSongData()) {
       setCloudMatch(data.uid, data.sid, data.asid).then((res) => {
         console.log(res);
         if (res.data) {
           closeCloudMatch();
-          $message.success("歌曲纠正成功");
+          $message.success(t("other.matchSuccess"));
           cloudDataLoad();
         } else {
-          $message.error("歌曲纠正失败，请重试");
+          $message.error(t("other.matchFailed"));
         }
       });
     } else {
-      $message.error("非正常歌曲 ID，无法匹配");
+      $message.error(t("other.matchError"));
     }
   }
 };

@@ -40,6 +40,15 @@
       </n-grid>
     </n-card>
     <n-card class="set-item">
+      <div class="name">语言</div>
+      <n-select
+        class="set"
+        v-model:value="language"
+        :options="languageOptions"
+        @update:value="changeLanguage"
+      />
+    </n-card>
+    <n-card class="set-item">
       <div class="name">明暗模式</div>
       <n-select class="set" v-model:value="theme" :options="darkOptions" />
     </n-card>
@@ -135,6 +144,7 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { settingStore, userStore } from "@/store";
+import { useI18n } from "vue-i18n";
 import themeColorData from "@/components/Provider/themeColor.json";
 
 const setting = settingStore();
@@ -153,7 +163,11 @@ const {
   songVolumeFade,
   useUnmServer,
   memoryLastPlaybackPosition,
+  language,
 } = storeToRefs(setting);
+
+// 国际化
+const { locale, t } = useI18n();
 
 // UNM 开关显示
 const useUnmServerShow = import.meta.env.VITE_UNM_API ? true : false;
@@ -181,6 +195,25 @@ const listClickModeOptions = [
     value: "click",
   },
 ];
+
+// 语言
+const languageOptions = [
+  {
+    label: "🇨🇳 简体中文",
+    value: "zh-CN",
+  },
+  {
+    label: "🇬🇧 English",
+    value: "en",
+  },
+];
+
+// 语言切换
+const changeLanguage = (value, option) => {
+  console.log("语言切换：" + value);
+  locale.value = value;
+  $message.success("语言切换：" + option.label);
+};
 
 // 歌曲音质
 const songLevelOptions = [

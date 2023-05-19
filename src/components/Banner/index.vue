@@ -36,7 +36,9 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { getBanner } from "@/api/home";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const router = useRouter();
 
 // 轮播图高度
@@ -78,7 +80,7 @@ const bannerJump = (type, id, url) => {
       const time = setTimeout(() => {
         window.open(url);
       }, 2000);
-      $message.loading("即将跳转至站外链接", {
+      $message.loading(t("general.message.jumpOut"), {
         closable: true,
         duration: 2000,
         onClose: () => {

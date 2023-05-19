@@ -57,9 +57,11 @@
         <div class="radio">
           <div class="icon">
             <n-icon size="20" :component="RadioFilled" />
-            <span>私人FM</span>
+            <span>{{ $t("home.modules.papersonalfm.title") }}</span>
           </div>
-          <span class="tip" v-if="!user.userLogin">未登录模式</span>
+          <span class="tip" v-if="!user.userLogin">
+            {{ $t("home.modules.papersonalfm.subtitle") }}
+          </span>
         </div>
       </div>
     </div>

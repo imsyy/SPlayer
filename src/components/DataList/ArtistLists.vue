@@ -42,7 +42,11 @@
           </div>
           <n-text class="name text-hidden">{{ item.name }}</n-text>
           <n-text class="size" :depth="3" v-if="item.size">
-            {{ item.size }}首
+            {{
+              $t("general.name.songSize", {
+                size: item.size,
+              })
+            }}
           </n-text>
         </n-gi>
       </n-grid>
@@ -79,12 +83,16 @@
 </template>
 
 <script setup>
-import { PeopleSearchOne } from "@icon-park/vue-next";
+import { NIcon } from "naive-ui";
+import { PeopleSearchOne, LinkTwo, Like, Unlike } from "@icon-park/vue-next";
 import { likeArtist } from "@/api/artist";
 import { useRouter } from "vue-router";
-import { userStore } from "@/store";
+import { userStore, settingStore } from "@/store";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const user = userStore();
+const setting = settingStore();
 const router = useRouter();
 const props = defineProps({
   // 列表数据
@@ -115,6 +123,19 @@ const rightMenuY = ref(0);
 const rightMenuShow = ref(false);
 const rightMenuOptions = ref(null);
 
+// 图标渲染
+const renderIcon = (icon) => {
+  return () => {
+    return h(
+      NIcon,
+      { style: { transform: "translateX(2px)" } },
+      {
+        default: () => icon,
+      }
+    );
+  };
+};
+
 // 打开右键菜单
 const openRightMenu = (e, data) => {
   e.preventDefault();
@@ -123,8 +144,11 @@ const openRightMenu = (e, data) => {
     rightMenuOptions.value = [
       {
         key: "like",
-        label: isLikeOrDislike(data.id) ? "收藏歌手" : "取消收藏歌手",
+        label: isLikeOrDislike(data.id)
+          ? t("menu.collection", { name: t("general.name.artists") })
+          : t("menu.cancelCollection", { name: t("general.name.artists") }),
         show: user.userLogin && user.getUserArtistLists.has ? true : false,
+        icon: renderIcon(h(isLikeOrDislike(data.id) ? Like : Unlike)),
         props: {
           onClick: () => {
             toLikeArtist(data);
@@ -133,7 +157,11 @@ const openRightMenu = (e, data) => {
       },
       {
         key: "copy",
-        label: "复制歌手链接",
+        label: t("menu.copy", {
+          name: t("general.name.artists"),
+          other: t("general.name.link"),
+        }),
+        icon: renderIcon(h(LinkTwo)),
         props: {
           onClick: () => {
             if (navigator.clipboard) {
@@ -141,12 +169,13 @@ const openRightMenu = (e, data) => {
                 navigator.clipboard.writeText(
                   `https://music.163.com/#/artist?id=${data.id}`
                 );
-                $message.success("歌手链接复制成功");
+                $message.success(t("general.message.copySuccess"));
               } catch (err) {
-                $message.error("复制失败：", err);
+                console.error(t("general.message.copyFailure"), err);
+                $message.error(t("general.message.copyFailure"));
               }
             } else {
-              $message.error("您的浏览器暂不支持该操作");
+              $message.error(t("general.message.notSupported"));
             }
           },
         },
@@ -166,14 +195,25 @@ const onClickoutside = () => {
 // 收藏/取消收藏歌手
 const toLikeArtist = (data) => {
   const type = isLikeOrDislike(data.id) ? 1 : 2;
+  const isThereASpace = setting.language === "zh-CN" ? "" : " ";
   likeArtist(type, data.id).then((res) => {
     if (res.code === 200) {
       $message.success(
-        `${data.name}${type == 1 ? "收藏成功" : "取消收藏成功"}`
+        `${data.name + isThereASpace}${
+          type == 1
+            ? t("menu.collection", { name: t("general.dialog.success") })
+            : t("menu.cancelCollection", { name: t("general.dialog.success") })
+        }`
       );
       user.setUserArtistLists();
     } else {
-      $message.error(`${data.name}${type == 1 ? "收藏失败" : "取消收藏失败"}`);
+      $message.error(
+        `${data.name + isThereASpace}${
+          type == 1
+            ? t("menu.collection", { name: t("general.dialog.failed") })
+            : t("menu.cancelCollection", { name: t("general.dialog.failed") })
+        }`
+      );
     }
   });
 };

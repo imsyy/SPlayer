@@ -41,7 +41,7 @@ const useSettingDataStore = defineStore("settingData", {
       // 音乐频谱
       musicFrequency: false,
       // 鼠标移入歌词区域暂停滚动
-      lrcMousePause: true,
+      lrcMousePause: false,
       // 是否使用网易云解灰
       useUnmServer: true,
       // 播放背景是否显示图片
@@ -56,6 +56,8 @@ const useSettingDataStore = defineStore("settingData", {
       listNumber: 30,
       // 记忆上次播放位置
       memoryLastPlaybackPosition: true,
+      // 语言
+      language: "zh-CN",
     };
   },
   getters: {

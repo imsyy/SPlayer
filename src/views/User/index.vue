@@ -22,11 +22,11 @@
       @update:value="tabChange"
       v-model:value="tabValue"
     >
-      <n-tab name="playlists"> 我的歌单 </n-tab>
-      <n-tab name="like"> 收藏的歌单 </n-tab>
-      <n-tab name="album"> 收藏的专辑 </n-tab>
-      <n-tab name="artists"> 收藏的歌手 </n-tab>
-      <n-tab name="cloud"> 音乐云盘 </n-tab>
+      <n-tab name="playlists">{{ $t("nav.userChildren.playlists") }}</n-tab>
+      <n-tab name="like">{{ $t("nav.userChildren.like") }}</n-tab>
+      <n-tab name="album">{{ $t("nav.userChildren.album") }}</n-tab>
+      <n-tab name="artists">{{ $t("nav.userChildren.artists") }}</n-tab>
+      <n-tab name="cloud">{{ $t("nav.userChildren.cloud") }}</n-tab>
     </n-tabs>
     <main class="content">
       <router-view v-slot="{ Component }">

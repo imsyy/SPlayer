@@ -3,7 +3,7 @@
     class="s-modal downloadModal"
     v-model:show="downloadModal"
     preset="card"
-    title="歌曲下载"
+    :title="$t('menu.download')"
     :bordered="false"
     :on-after-leave="closeDownloadModal"
   >
@@ -11,7 +11,7 @@
       <div v-if="songData">
         <SmallSongData ref="smallSongDataRef" :songData="songData" notJump />
         <n-alert v-if="songData.pc" class="tip" type="info" :show-icon="false">
-          当前为云盘歌曲，下载的文件均为最高音质
+          {{ $t("other.cloudTip") }}
         </n-alert>
         <n-radio-group
           class="downloadGroup"
@@ -31,18 +31,20 @@
                   {{ item.size }}
                 </n-text>
                 <n-text v-else-if="!item.disabled" class="error" :depth="3">
-                  无法获取
+                  {{ $t("general.message.acquisitionFailed") }}
                 </n-text>
               </div>
             </n-radio>
           </n-space>
         </n-radio-group>
       </div>
-      <n-text v-else>正在获取歌曲下载数据</n-text>
+      <n-text v-else>{{ $t("general.message.isLoading") }}</n-text>
     </Transition>
     <template #footer>
       <n-space justify="end">
-        <n-button @click="closeDownloadModal"> 取消 </n-button>
+        <n-button @click="closeDownloadModal">
+          {{ $t("general.dialog.cancel") }}
+        </n-button>
         <n-button
           :disabled="!downloadChoose"
           :loading="downloadStatus"
@@ -55,7 +57,11 @@
             )
           "
         >
-          {{ downloadStatus ? "正在下载" : "下载" }}
+          {{
+            downloadStatus
+              ? $t("general.dialog.downloadingNow")
+              : $t("general.dialog.download")
+          }}
         </n-button>
       </n-space>
     </template>
@@ -66,8 +72,10 @@
 import { userStore } from "@/store";
 import { useRouter } from "vue-router";
 import { getMusicDetail, getSongDownload } from "@/api/song";
+import { useI18n } from "vue-i18n";
 import SmallSongData from "@/components/DataList/SmallSongData.vue";
 
+const { t } = useI18n();
 const user = userStore();
 const router = useRouter();
 
@@ -87,7 +95,7 @@ const toSongDownload = (id, br, name) => {
       console.log(name, res);
       if (res.data.url) {
         const type = res.data.type.toLowerCase();
-        const songName = name ? name : "未知曲目";
+        const songName = name ? name : t("general.name.unknownSong");
         fetch(res.data.url)
           .then((response) => response.blob())
           .then((blob) => {
@@ -100,17 +108,17 @@ const toSongDownload = (id, br, name) => {
             a.remove();
             closeDownloadModal();
             downloadStatus.value = false;
-            $message.success(name + " 下载完成");
+            $message.success(t("general.message.downloadSuccess", { name }));
           });
       } else {
         downloadStatus.value = false;
-        $message.error("下载失败，请尝试其他音质");
+        $message.error(t("general.message.downloadFailure"));
       }
     })
     .catch((err) => {
       closeDownloadModal();
-      console.error("下载出现错误：" + err);
-      $message.error("下载出现错误，请重试");
+      console.error(t("general.message.downloadError"), err);
+      $message.error(t("general.message.downloadError"));
     });
 };
 
@@ -129,13 +137,13 @@ const getMusicDetailData = (id) => {
         // 生成音质列表
         generateLists(res);
       } else {
-        $message.error("歌曲信息获取失败");
+        $message.error(t("general.message.acquisitionFailed"));
       }
     })
     .catch((err) => {
       closeDownloadModal();
-      console.error("歌曲信息获取出现错误：" + err);
-      $message.error("歌曲信息获取出现错误，请重试");
+      console.error(t("general.message.acquisitionFailed"), err);
+      $message.error(t("general.message.acquisitionFailed"));
     });
 };
 
@@ -145,25 +153,25 @@ const generateLists = (data) => {
   downloadLevel.value = [
     {
       value: "128000",
-      label: "标准音质",
+      label: t("general.type.quality.l"),
       disabled: br >= 128000 ? false : true,
       size: getSongSize(data, "l"),
     },
     {
       value: "192000",
-      label: "较高音质",
+      label: t("general.type.quality.m"),
       disabled: br >= 192000 ? false : true,
       size: getSongSize(data, "m"),
     },
     {
       value: "320000",
-      label: "极高音质",
+      label: t("general.type.quality.h"),
       disabled: br >= 320000 ? false : true,
       size: getSongSize(data, "h"),
     },
     {
       value: "420000",
-      label: "无损音质",
+      label: t("general.type.quality.sq"),
       disabled: [128000, 192000, 320000].includes(parseInt(br)),
       size: getSongSize(data, "sq"),
     },
@@ -212,10 +220,10 @@ const openDownloadModal = (data) => {
       downloadModal.value = true;
       getMusicDetailData(data.id);
     } else {
-      $message.error("该歌曲需使用黑胶会员下载");
+      $message.error(t("general.message.needVip"));
     }
   } else {
-    $message.error("请登录后使用该功能");
+    $message.error(t("general.message.needLogin"));
   }
 };
 

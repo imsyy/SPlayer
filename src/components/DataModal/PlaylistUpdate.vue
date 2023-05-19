@@ -3,7 +3,7 @@
     class="s-modal"
     v-model:show="playlistUpdateModal"
     preset="card"
-    title="歌单编辑"
+    :title="$t('menu.update')"
     :bordered="false"
     :on-after-leave="closeUpdateModal"
   >
@@ -13,28 +13,28 @@
       :label-width="80"
       :model="playlistUpdateValue"
     >
-      <n-form-item label="歌单名称" path="name">
+      <n-form-item :label="$t('other.plName')" path="name">
         <n-input
           v-model:value="playlistUpdateValue.name"
-          placeholder="请输入歌单名称"
+          :placeholder="$t('other.plNameTip')"
         />
       </n-form-item>
-      <n-form-item label="歌单描述" path="desc">
+      <n-form-item :label="$t('other.plDes')" path="desc">
         <n-input
           v-model:value="playlistUpdateValue.desc"
-          placeholder="请输入歌单描述"
           type="textarea"
+          :placeholder="$t('other.plDesTip')"
           :autosize="{
             minRows: 3,
             maxRows: 5,
           }"
         />
       </n-form-item>
-      <n-form-item label="歌单标签" path="tags">
+      <n-form-item :label="$t('other.plTag')" path="tags">
         <n-select
           multiple
           v-model:value="playlistUpdateValue.tags"
-          placeholder="请输入歌单标签"
+          :placeholder="$t('other.plTagTip')"
           :options="playlistTags"
           @click="openSelect"
         />
@@ -42,8 +42,12 @@
     </n-form>
     <template #footer>
       <n-space justify="end">
-        <n-button @click="closeUpdateModal"> 取消 </n-button>
-        <n-button type="primary" @click="toUpdatePlayList"> 编辑 </n-button>
+        <n-button @click="closeUpdateModal">
+          {{ $t("general.dialog.cancel") }}
+        </n-button>
+        <n-button type="primary" @click="toUpdatePlayList">
+          {{ $t("general.dialog.editor") }}
+        </n-button>
       </n-space>
     </template>
   </n-modal>
@@ -53,7 +57,9 @@
 import { playlistUpdate } from "@/api/playlist";
 import { formRules } from "@/utils/formRules";
 import { musicStore, userStore } from "@/store";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const { textRule } = formRules();
 const music = musicStore();
 const user = userStore();
@@ -85,16 +91,16 @@ const toUpdatePlayList = (e) => {
       ).then((res) => {
         console.log(res);
         if (res.code === 200) {
-          $message.success("编辑成功");
+          $message.success(t("general.message.editorSuccess"));
           closeUpdateModal();
           user.setUserPlayLists();
         } else {
-          $message.error("编辑失败，请重试");
+          $message.error(t("general.message.editorFailed"));
         }
       });
     } else {
       $loadingBar.error();
-      $message.error("请检查您的输入");
+      $message.error(t("general.message.needCheck"));
     }
   });
 };

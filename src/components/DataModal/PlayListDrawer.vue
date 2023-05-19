@@ -14,9 +14,11 @@
     <n-drawer-content :native-scrollbar="false" closable>
       <template #header>
         <div class="text">
-          <n-text class="name">播放列表</n-text>
+          <n-text class="name">{{ $t("general.name.playlists") }}</n-text>
           <n-text class="num" :depth="3" v-if="music.getPlaylists.length > 0">
-            {{ music.getPlaylists.length }} 首
+            {{
+              $t("general.name.songSize", { size: music.getPlaylists.length })
+            }}
           </n-text>
         </div>
       </template>
@@ -73,7 +75,7 @@
             </div>
           </n-card>
         </div>
-        <n-text v-else>暂无歌曲，请前往列表添加</n-text>
+        <n-text v-else>{{ $t("other.playlistEmpty") }}</n-text>
       </Transition>
     </n-drawer-content>
   </n-drawer>
@@ -83,8 +85,10 @@
 import { musicStore } from "@/store";
 import { DeleteFour } from "@icon-park/vue-next";
 import { soundStop } from "@/utils/Player";
+import { useI18n } from "vue-i18n";
 import AllArtists from "@/components/DataList/AllArtists.vue";
 
+const { t } = useI18n();
 const music = musicStore();
 
 // 播放列表显隐
@@ -100,8 +104,8 @@ const changeIndex = (index) => {
       music.setPlayState(true);
     }
   } catch (err) {
-    console.error("切换失败：" + err);
-    $message.error("切换失败，请刷新后重试");
+    console.error(t("general.message.operationFailed"), err);
+    $message.error(t("general.message.operationFailed"));
   }
 };
 

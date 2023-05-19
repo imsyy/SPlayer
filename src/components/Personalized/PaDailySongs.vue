@@ -11,8 +11,8 @@
         <n-text class="num" v-html="new Date().getDate()" />
       </div>
       <div class="desc">
-        <n-text class="title">每日推荐</n-text>
-        <n-text class="tip">根据你的音乐口味 · 每日 6:00 更新</n-text>
+        <n-text class="title">{{ $t("home.modules.dailySongs.title") }}</n-text>
+        <n-text class="tip">{{ $t("home.modules.dailySongs.subtitle") }}</n-text>
       </div>
     </div>
     <div class="control">
