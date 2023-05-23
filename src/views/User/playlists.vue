@@ -12,7 +12,7 @@
         <template #icon>
           <n-icon :component="AddCircleRound" />
         </template>
-        新建歌单
+        {{ $t("menu.create") }}
       </n-button>
       <!-- 新建歌单 -->
       <CreatePlaylist ref="createPlaylistRef" />
@@ -24,14 +24,16 @@
 <script setup>
 import { AddCircleRound } from "@vicons/material";
 import { userStore } from "@/store";
+import { useI18n } from "vue-i18n";
 import CoverLists from "@/components/DataList/CoverLists.vue";
 import CreatePlaylist from "@/components/DataModal/CreatePlaylist.vue";
 
+const { t } = useI18n();
 const user = userStore();
 const createPlaylistRef = ref(null);
 
 onMounted(() => {
-  $setSiteTitle("音乐库 - 我的歌单");
+  $setSiteTitle(t("nav.user") + " - " + t("nav.userChildren.playlist"));
   if (!user.getUserPlayLists.has && !user.getUserPlayLists.isLoading)
     user.setUserPlayLists();
 });

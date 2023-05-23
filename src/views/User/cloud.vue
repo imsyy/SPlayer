@@ -12,7 +12,7 @@
         <template #icon>
           <n-icon :component="BackupRound" />
         </template>
-        上传歌曲
+        {{ $t("general.name.upCloud") }}
       </n-button>
       <input
         ref="upSongRef"
@@ -34,11 +34,14 @@
             />
           </template>
           <n-text>
-            已用 {{ (100 / (cloudSpace[1] / cloudSpace[0])).toFixed() }}%，剩余
-            {{ cloudSpace[1] - cloudSpace[0] }} G
+            {{
+              $t("general.name.cloudUsed", {
+                used: (100 / (cloudSpace[1] / cloudSpace[0])).toFixed(),
+                remaining: cloudSpace[1] - cloudSpace[0],
+              })
+            }}
           </n-text>
         </n-popover>
-
         <span>{{ cloudSpace[1] }} G</span>
       </div>
     </div>
@@ -54,7 +57,7 @@
       class="s-modal close"
       v-model:show="upSongModal"
       preset="card"
-      title="云盘上传"
+      :title="$t('general.name.upCloud')"
       :auto-focus="false"
       :bordered="false"
       :close-on-esc="false"
@@ -70,9 +73,11 @@
       />
       <template #footer>
         <n-space justify="end" v-if="upSongType === 'error'">
-          <n-button @click="closeUpSongModal"> 取消 </n-button>
+          <n-button @click="closeUpSongModal">
+            {{ $t("general.dialog.cancel") }}
+          </n-button>
           <n-button type="primary" @click="resetUpSongModal">
-            重新上传
+            {{ $t("general.dialog.resetUp") }}
           </n-button>
         </n-space>
       </template>
@@ -86,9 +91,11 @@ import { useRouter } from "vue-router";
 import { settingStore } from "@/store";
 import { getSongTime } from "@/utils/timeTools";
 import { BackupRound } from "@vicons/material";
+import { useI18n } from "vue-i18n";
 import DataLists from "@/components/DataList/DataLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
 
+const { t } = useI18n();
 const router = useRouter();
 const setting = settingStore();
 
@@ -135,7 +142,7 @@ const getCloudData = (limit = 30, offset = 0, scroll = true) => {
         });
       });
     } else {
-      $message.error("搜索内容为空");
+      $message.error(t("general.message.acquisitionFailed"));
     }
     // 请求后回顶
     if (typeof $scrollToTop !== "undefined") $scrollToTop();
@@ -147,7 +154,6 @@ const onUploadProgress = (progressEvent) => {
   const { loaded, total } = progressEvent;
   const percentCompleted = Math.round((loaded * 100) / total);
   upSongCompleted.value = Number(percentCompleted);
-  console.log(`上传 ${percentCompleted}% 完成`);
 };
 
 // 歌曲上传
@@ -163,21 +169,25 @@ const upCloudSongData = (e) => {
       if (res.code === 200) {
         closeUpSongModal();
         if (!res.privateCloud.simpleSong.al?.name) {
-          $message.warning("上传歌曲详细信息获取失败，可尝试歌曲纠正");
+          $message.warning(t("general.message.upCloudNotHas"));
         }
-        $message.success(res.privateCloud.simpleSong?.name + " 上传成功");
+        $message.success(
+          t("general.message.upCloudSuccess", {
+            name: res.privateCloud.simpleSong?.name,
+          })
+        );
         getCloudData(pagelimit.value, (pageNumber.value - 1) * pagelimit.value);
       } else {
         upSongType.value = "error";
-        $message.error("歌曲上传出错，请重试");
-        console.error("歌曲上传出错，请重试");
+        $message.error(t("general.message.upCloudError"));
+        console.error(t("general.message.upCloudError"));
       }
     })
     .catch((err) => {
       upSongType.value = "error";
       closeUpSongModal();
-      $message.error("歌曲上传出现错误");
-      console.error("歌曲上传出现错误：" + err);
+      $message.error(t("general.message.upCloudFailure"));
+      console.error(t("general.message.upCloudFailure"), err);
     });
 };
 
@@ -233,7 +243,7 @@ watch(
 );
 
 onMounted(() => {
-  $setSiteTitle("音乐库 - 音乐云盘");
+  $setSiteTitle(t("nav.user") + " - " + t("nav.userChildren.cloud"));
   getCloudData(pagelimit.value, (pageNumber.value - 1) * pagelimit.value);
 });
 </script>

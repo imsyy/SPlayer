@@ -173,6 +173,7 @@ const renderIcon = (icon) => {
 
 // 封面图像地址
 const getCoverUrl = (url) => {
+  if (!url) return "/images/pic/default.png";
   const imageUrl = url.replace(/^http:/, "https:");
   if (imageUrl.endsWith(".jpg")) {
     return imageUrl + "?param=300y300";

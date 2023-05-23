@@ -30,7 +30,6 @@
 
 <script setup>
 import { settingStore } from "@/store";
-import { useI18n } from "vue-i18n";
 import Banner from "@/components/Banner/index.vue";
 import PaPlayLists from "@/components/Personalized/PaPlayLists.vue";
 import PaArtists from "@/components/Personalized/PaArtists.vue";
@@ -40,7 +39,6 @@ import PaPersonalFm from "@/components/Personalized/PaPersonalFm.vue";
 import PaRadar from "@/components/Personalized/PaRadar.vue";
 import PaLikeSongs from "@/components/Personalized/PaLikeSongs.vue";
 
-const { t } = useI18n();
 const setting = settingStore();
 
 onMounted(() => {

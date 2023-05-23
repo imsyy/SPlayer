@@ -6,9 +6,11 @@
         <n-text class="num" v-html="new Date().getDate()" />
       </div>
       <div class="right">
-        <n-gradient-text class="big" type="danger"> 每日推荐 </n-gradient-text>
+        <n-gradient-text class="big" type="danger">
+          {{ $t("home.modules.dailySongs.title") }}
+        </n-gradient-text>
         <n-text class="tip" :depth="3">
-          根据你的音乐口味生成 · 每天 6:00 更新
+          {{ $t("home.modules.dailySongs.subtitle") }}
         </n-text>
       </div>
     </div>
@@ -20,8 +22,10 @@
 import { getDailySongs } from "@/api/home";
 import { musicStore } from "@/store";
 import { CalendarTodayFilled } from "@vicons/material";
+import { useI18n } from "vue-i18n";
 import DataLists from "@/components/DataList/DataLists.vue";
 
+const { t } = useI18n();
 const music = musicStore();
 
 // 获取每日推荐数据
@@ -31,14 +35,14 @@ const getDailySongsData = () => {
       if (res.data.dailySongs) {
         music.setDailySongs(res.data.dailySongs);
       } else {
-        $message.error("每日推荐获取失败");
+        $message.error(t("general.message.acquisitionFailed"));
       }
     });
   }
 };
 
 onMounted(() => {
-  $setSiteTitle("每日推荐");
+  $setSiteTitle(t("home.modules.dailySongs.title"));
   getDailySongsData();
 });
 </script>

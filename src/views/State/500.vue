@@ -2,11 +2,13 @@
   <n-result
     class="error"
     status="500"
-    title="服务器错误"
-    description="服务器寄了，等会再试吧"
+    :title="$t('state.error')"
+    :description="$t('state.errorDesc')"
   >
     <template #footer>
-      <n-button type="primary" @click="router.push('/')">重新载入</n-button>
+      <n-button type="primary" @click="router.push('/')">{{
+        $t("general.name.reload")
+      }}</n-button>
     </template>
   </n-result>
 </template>

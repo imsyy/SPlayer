@@ -10,13 +10,16 @@
     />
   </div>
 </template>
-  
+
 <script setup>
 import { getSearchData } from "@/api/search";
 import { useRouter } from "vue-router";
 import { formatNumber, getSongTime } from "@/utils/timeTools";
+import { useI18n } from "vue-i18n";
 import VideoLists from "@/components/DataList/VideoLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
+
+const { t } = useI18n();
 const router = useRouter();
 
 // 搜索数据
@@ -50,7 +53,7 @@ const getSearchDataList = (keywords, limit = 30, offset = 0, type = 1004) => {
         });
       });
     } else {
-      $message.error("搜索内容为空");
+      $message.error(t("general.message.acquisitionFailed"));
     }
     // 请求后回顶
     if (typeof $scrollToTop !== "undefined") $scrollToTop();

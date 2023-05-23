@@ -10,7 +10,7 @@
         round
         @click="router.push(`/all-songs?id=${artistId}&page=1`)"
       >
-        全部歌曲
+        {{ $t("general.name.allSong") }}
       </n-button>
     </n-space>
   </div>

@@ -1,4 +1,4 @@
-import { settingStore } from "@/store";
+import getLanguageData from "./getLanguageData";
 
 /**
  * 歌曲时长时间戳转换
@@ -102,36 +102,4 @@ export const getSongPlayingTime = (num) => {
   const minutes = String(Math.floor(num / 60)).padStart(2, "0");
   const seconds = String(Math.floor(num % 60)).padStart(2, "0");
   return `${minutes}:${seconds}`;
-};
-
-/**
- * 返回翻译文本
- * @returns {Object} 对应语种文本
- */
-const getLanguageData = (type) => {
-  const setting = settingStore();
-  const language = setting.language;
-  const languageData = {
-    "zh-CN": {
-      million: "万",
-      billion: "亿",
-      year: "年",
-      month: "月",
-      day: "日",
-      just: "刚刚发布",
-      minutesAgo: "分钟前",
-      yesterday: "昨天",
-    },
-    en: {
-      million: "M",
-      billion: "B",
-      year: "-",
-      month: "-",
-      day: "",
-      just: "Just released",
-      minutesAgo: "Minutes ago",
-      yesterday: "Yesterday",
-    },
-  };
-  return languageData[language][type];
 };

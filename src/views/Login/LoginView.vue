@@ -2,7 +2,7 @@
   <div class="login">
     <div class="title">
       <img src="/images/logo/favicon.png" alt="logo" />
-      <span>登录云音乐</span>
+      <n-text>{{ $t("login.login", { name: siteTitle }) }}</n-text>
     </div>
     <n-tabs
       animated
@@ -17,7 +17,7 @@
       }"
       @update:value="tabChange"
     >
-      <n-tab-pane name="qr" tab="二维码登录">
+      <n-tab-pane name="qr" :tab="$t('login.qr')">
         <n-card class="qr-img">
           <n-skeleton
             v-if="!qrImg"
@@ -37,14 +37,14 @@
         </n-card>
         <span class="tip">{{ qrText }}</span>
       </n-tab-pane>
-      <n-tab-pane name="phone" tab="手机号登录">
+      <n-tab-pane name="phone" :tab="$t('login.phone')">
         <n-alert
           style="width: 100%; margin-top: -20px; margin-bottom: 12px"
           type="warning"
         >
-          该登录方式暂时无法使用
+          {{ $t("login.canNotUse") }}
         </n-alert>
-        <n-form
+        <!-- <n-form
           class="phone"
           ref="phoneFormRef"
           :model="phoneFormData"
@@ -83,12 +83,19 @@
           </n-form-item>
           <n-form-item>
             <n-button style="width: 100%" type="primary" @click="phoneLogin">
-              登录
+              {{$t("login.login")}}
             </n-button>
           </n-form-item>
-        </n-form>
+        </n-form> -->
       </n-tab-pane>
-      <n-tab-pane name="email" tab="邮箱登录"> 还没搞 </n-tab-pane>
+      <n-tab-pane name="email" :tab="$t('login.email')">
+        <n-alert
+          style="width: 100%; margin-top: -20px; margin-bottom: 12px"
+          type="warning"
+        >
+          {{ $t("login.canNotUse") }}
+        </n-alert>
+      </n-tab-pane>
     </n-tabs>
   </div>
 </template>
@@ -106,17 +113,20 @@ import {
 import { useRouter } from "vue-router";
 import { PhoneAndroidRound, PasswordRound } from "@vicons/material";
 import { formRules } from "@/utils/formRules";
+import { useI18n } from "vue-i18n";
 import QrcodeVue from "qrcode.vue";
 
+const { t } = useI18n();
 const router = useRouter();
 const user = userStore();
 const music = musicStore();
 const setting = settingStore();
+const siteTitle = import.meta.env.VITE_SITE_TITLE;
 const { numberRule, mobileRule } = formRules();
 
 // 二维码数据
 const qrImg = ref(null);
-const qrText = ref("请打开云音乐 APP 扫码登录");
+const qrText = ref(t("login.qrText1"));
 
 // 手机号登录数据
 const phoneFormRef = ref(null);
@@ -147,15 +157,15 @@ const saveLoginData = (data) => {
     if (res.data.profile) {
       user.setUserData(res.data.profile);
       user.userLogin = true;
-      qrText.value = "登录成功";
-      $message.success("登录成功");
+      qrText.value = t("login.qrText4");
+      $message.success(t("login.qrText4"));
       // 自动签到
       if ($signIn) $signIn();
       clearInterval(qrCheckInterval.value);
       router.push("/user");
     } else {
       user.userLogOut();
-      $message.error("登录出错，请重试");
+      $message.error(t("login.qrText5"));
       getQrKeyData();
     }
   });
@@ -166,7 +176,7 @@ const getQrKeyData = () => {
   // 检测是否登录
   getLoginState().then((res) => {
     if (res.data.profile && window.localStorage.getItem("cookie")) {
-      $message.info("已登录，请勿重复登录");
+      $message.info(t("login.loggedIn"));
       user.userLogin = true;
       router.push("/user");
     } else {
@@ -178,7 +188,7 @@ const getQrKeyData = () => {
           qrImg.value = `https://music.163.com/login?codekey=${res.data.unikey}`;
           checkQrState(res.data.unikey);
         } else {
-          $message.error("登录二维码生成失败");
+          $message.error(t("login.qrText6"));
         }
       });
     }
@@ -194,19 +204,16 @@ const checkQrState = (key) => {
       if (res.code == 800) {
         getQrKeyData();
         loginStateMessage.value = null;
-        qrText.value = "当前二维码已失效，请重新扫码";
+        qrText.value = t("login.qrText2");
       } else if (res.code == 801) {
         loginStateMessage.value = null;
-        qrText.value = "请打开云音乐 APP 扫码登录";
+        qrText.value = t("login.qrText1");
       } else if (res.code == 802) {
-        qrText.value = "扫描成功，请在客户端确认登录";
+        qrText.value = t("login.qrText3");
         if (!loginStateMessage.value) {
-          loginStateMessage.value = $message.loading(
-            "扫描成功，请在客户端确认登录",
-            {
-              duration: 0,
-            }
-          );
+          loginStateMessage.value = $message.loading(t("login.qrText3"), {
+            duration: 0,
+          });
         }
       } else if (res.code == 803) {
         loginStateMessage.value.destroy();
@@ -291,7 +298,7 @@ const tabChange = (val) => {
 };
 
 onMounted(() => {
-  $setSiteTitle("登录");
+  $setSiteTitle(t("login.login"));
   // 隐藏控制条
   music.setPlayBarState(false);
   // 获取二维码登录 key

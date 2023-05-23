@@ -215,7 +215,7 @@ const changeUserOptions = (val) => {
   userOptions.value = val
     ? [
         {
-          label: t("nav.userChildren.playlists"),
+          label: t("nav.userChildren.playlist"),
           key: "/user/playlists",
         },
         {
@@ -227,7 +227,7 @@ const changeUserOptions = (val) => {
           key: "/user/album",
         },
         {
-          label: t("nav.userChildren.artists"),
+          label: t("nav.userChildren.artist"),
           key: "/user/artists",
         },
         {

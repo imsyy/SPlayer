@@ -1,11 +1,11 @@
 <template>
   <div class="search">
     <div class="title" v-if="searchKeywords">
-      <span class="key">{{ searchKeywords }}</span>
-      <span>的搜索结果</span>
+      <n-text class="key" v-html="searchKeywords" />
+      <n-text v-html="$t('nav.search.results')" />
     </div>
     <div class="title" v-else>
-      <span class="key">未提供搜索关键字</span>
+      <span class="key">{{ $t("general.name.noKeywords") }}</span>
       <br />
       <n-button
         strong
@@ -13,7 +13,7 @@
         @click="router.go(-1)"
         style="margin-top: 20px"
       >
-        返回上一级
+        {{ $t("general.name.goBack") }}
       </n-button>
     </div>
     <n-tabs
@@ -23,11 +23,11 @@
       v-model:value="tabValue"
       v-if="searchKeywords"
     >
-      <n-tab name="songs"> 单曲 </n-tab>
-      <n-tab name="artists"> 歌手 </n-tab>
-      <n-tab name="albums"> 专辑 </n-tab>
-      <n-tab name="videos"> 视频 </n-tab>
-      <n-tab name="playlists"> 歌单 </n-tab>
+      <n-tab name="songs">{{ $t("general.name.song") }}</n-tab>
+      <n-tab name="artists">{{ $t("general.name.artists") }}</n-tab>
+      <n-tab name="albums">{{ $t("general.name.album") }}</n-tab>
+      <n-tab name="videos">{{ $t("general.name.videos") }}</n-tab>
+      <n-tab name="playlists">{{ $t("general.name.playlist") }}</n-tab>
     </n-tabs>
     <main class="content" v-if="searchKeywords">
       <router-view v-slot="{ Component }">
@@ -43,6 +43,9 @@
 
 <script setup>
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 const router = useRouter();
 
 // 搜索关键词
@@ -74,7 +77,8 @@ const tabChange = (value) => {
 };
 
 onMounted(() => {
-  if (searchKeywords.value) $setSiteTitle(searchKeywords.value + "的搜索结果");
+  if (searchKeywords.value)
+    $setSiteTitle(searchKeywords.value + " " + t("nav.search.results"));
 });
 </script>
 

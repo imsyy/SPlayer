@@ -2,30 +2,36 @@
   <div class="set-other">
     <n-card class="set-item">
       <div class="name">
-        程序重置
-        <span class="tip">若程序显示异常或出现问题时可尝试此操作</span>
+        {{ $t("setting.resetApp") }}
+        <span class="tip">{{ $t("setting.resetAppTip") }}</span>
       </div>
       <n-button strong secondary type="error" @click="resetApp">
-        重置
+        {{ $t("general.name.restore") }}
       </n-button>
     </n-card>
   </div>
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
+
 // 程序重置
 const resetApp = () => {
   const cleanAll = () => {
-    $message ? $message.success("重置成功") : alert("重置成功");
+    $message
+      ? $message.success(t("other.cleanAll"))
+      : alert(t("other.cleanAll"));
     localStorage.clear();
     window.location.href = "/";
   };
   $dialog.warning({
     class: "s-dialog",
-    title: "程序重置",
-    content: "确认重置为默认状态？你的登录状态以及自定义设置都将丢失！",
-    positiveText: "确认重置",
-    negativeText: "取消",
+    title: t("setting.resetApp"),
+    content: t("setting.resetAppWarning"),
+    positiveText: t("setting.resetApp"),
+    negativeText: t("general.dialog.cancel"),
     onPositiveClick: () => {
       $cleanAll ? $cleanAll() : cleanAll();
     },

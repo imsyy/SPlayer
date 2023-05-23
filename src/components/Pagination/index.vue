@@ -10,12 +10,17 @@
     :show-size-picker="showSizePicker"
     :show-quick-jumper="showQuickJumper"
   >
-    <template #prefix="{ itemCount }"> 共 {{ itemCount }} 项 </template>
-    <template #goto> 前往 </template>
+    <template #prefix="{ itemCount }">
+      {{ $t("general.name.itemCount", { size: itemCount }) }}
+    </template>
+    <template #goto> {{ $t("general.name.goto") }} </template>
   </n-pagination>
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 const props = defineProps({
   // 数据总量
   totalCount: {
@@ -47,23 +52,23 @@ const currentPageNumber = ref(1);
 // 自定义每页数量
 const pageSizes = ref([
   {
-    label: "10条/页",
+    label: t("general.name.pageSizes", { num: 10 }),
     value: 10,
   },
   {
-    label: "20条/页",
+    label: t("general.name.pageSizes", { num: 20 }),
     value: 20,
   },
   {
-    label: "30条/页",
+    label: t("general.name.pageSizes", { num: 30 }),
     value: 30,
   },
   {
-    label: "50条/页",
+    label: t("general.name.pageSizes", { num: 50 }),
     value: 50,
   },
   {
-    label: "100条/页",
+    label: t("general.name.pageSizes", { num: 100 }),
     value: 100,
   },
 ]);

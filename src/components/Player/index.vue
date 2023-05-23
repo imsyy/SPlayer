@@ -52,7 +52,9 @@
               @click.stop="router.push(`/song?id=${music.getPlaySongData.id}`)"
             >
               {{
-                music.getPlaySongData ? music.getPlaySongData.name : "暂无歌曲"
+                music.getPlaySongData
+                  ? music.getPlaySongData.name
+                  : $t("other.noSong")
               }}
             </div>
             <div class="artisrOrLrc" v-if="music.getPlaySongData">
@@ -112,7 +114,6 @@
         <div class="control">
           <n-icon
             v-if="!music.getPersonalFmMode"
-            title="上一曲"
             class="prev"
             size="30"
             :component="SkipPreviousRound"
@@ -128,7 +129,6 @@
           <div class="play-state">
             <n-icon
               size="46"
-              :title="music.getPlayState ? '暂停' : '播放'"
               :component="
                 music.getPlayState ? PauseCircleFilled : PlayCircleFilled
               "
@@ -260,6 +260,7 @@ import {
 import { getSongPlayingTime } from "@/utils/timeTools";
 import { useRouter } from "vue-router";
 import { debounce } from "throttle-debounce";
+import { useI18n } from "vue-i18n";
 import VueSlider from "vue-slider-component";
 import AddPlaylist from "@/components/DataModal/AddPlaylist.vue";
 import PlayListDrawer from "@/components/DataModal/PlayListDrawer.vue";
@@ -268,6 +269,7 @@ import ColorThief from "colorthief";
 import BigPlayer from "./BigPlayer.vue";
 import "vue-slider-component/theme/default.css";
 
+const { t } = useI18n();
 const router = useRouter();
 const setting = settingStore();
 const music = musicStore();
@@ -302,7 +304,7 @@ const getPlaySongData = (data, level = setting.songLevel) => {
         if (res.success) {
           console.log("当前歌曲可用");
           if (!pc && (fee === 1 || fee === 4))
-            $message.info("当前歌曲为 VIP 专享，仅可试听");
+            $message.info(t("general.message.vipTip"));
           // 获取音乐地址
           getMusicUrl(id, level).then((res) => {
             player.value = createSound(
@@ -313,7 +315,7 @@ const getPlaySongData = (data, level = setting.songLevel) => {
           if (useUnmServerHas && setting.useUnmServer) {
             getMusicNumUrlData(id);
           } else {
-            $message.warning("当前歌曲播放失败，跳至下一首");
+            $message.warning(t("general.message.playError"));
             music.setPlaySongIndex("next");
           }
         }
@@ -326,7 +328,7 @@ const getPlaySongData = (data, level = setting.songLevel) => {
   } catch (err) {
     if (music.getPlaylists[0] && music.getPlayState) {
       console.log("当前歌曲所有音源匹配失败：" + err);
-      $message.warning("当前歌曲所有音源匹配失败，跳至下一首");
+      $message.warning(t("general.message.playError"));
       music.setPlaySongIndex("next");
     }
   }
@@ -343,7 +345,7 @@ const getMusicNumUrlData = (id) => {
     })
     .catch((err) => {
       console.log("解灰失败：" + err);
-      $message.warning("当前歌曲解灰失败，跳至下一首");
+      $message.warning(t("general.message.playError"));
       music.setPlaySongIndex("next");
     });
 };

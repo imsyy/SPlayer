@@ -8,6 +8,7 @@ import {
   getUserAlbum,
 } from "@/api/user";
 import { formatNumber, getLongTime } from "@/utils/timeTools";
+import getLanguageData from "@/utils/getLanguageData";
 
 const useUserDataStore = defineStore("userData", {
   state: () => {
@@ -89,8 +90,8 @@ const useUserDataStore = defineStore("userData", {
             // this.setUserPlayLists();
           })
           .catch((err) => {
-            console.error("获取用户详情失败：" + err);
-            $message.error("获取用户详情失败，请刷新后重试");
+            console.error(getLanguageData("getDataError"), err);
+            $message.error(getLanguageData("getDataError"));
           });
       }
     },
@@ -149,17 +150,17 @@ const useUserDataStore = defineStore("userData", {
             this.userPlayLists.isLoading = false;
           } else {
             this.userPlayLists.isLoading = false;
-            $message.error("用户歌单为空");
+            $message.info(getLanguageData("getDaraEmpty"));
           }
         } catch (err) {
           this.userPlayLists.isLoading = false;
           if (this.userLogin) {
-            console.error("获取用户歌单时出现错误：" + err);
-            $message.error("获取用户歌单时出现错误，请刷新后重试");
+            console.error(getLanguageData("getDataError"), err);
+            $message.error(getLanguageData("getDataError"));
           }
         }
       } else {
-        $message.error("请登录账号后使用");
+        $message.error(getLanguageData("needLogin"));
       }
     },
     // 更改用户收藏歌手
@@ -185,17 +186,17 @@ const useUserDataStore = defineStore("userData", {
             this.userArtistLists.isLoading = false;
           } else {
             this.userArtistLists.isLoading = false;
-            $message.error("用户收藏歌手为空");
+            $message.info(getLanguageData("getDaraEmpty"));
           }
         } catch (err) {
           this.userArtistLists.isLoading = false;
           if (this.userLogin) {
-            console.error("用户收藏歌手获取失败：" + err);
-            $message.error("用户收藏歌手获取失败，请刷新后重试");
+            console.error(getLanguageData("getDataError"), err);
+            $message.error(getLanguageData("getDataError"));
           }
         }
       } else {
-        $message.error("请登录账号后使用");
+        $message.error(getLanguageData("needLogin"));
       }
     },
     // 更改用户收藏专辑
@@ -229,12 +230,12 @@ const useUserDataStore = defineStore("userData", {
         } catch (err) {
           this.userAlbum.isLoading = false;
           if (this.userLogin) {
-            console.error("用户收藏专辑获取失败：" + err);
-            $message.error("用户收藏专辑获取失败，请刷新后重试");
+            console.error(getLanguageData("getDataError"), err);
+            $message.error(getLanguageData("getDataError"));
           }
         }
       } else {
-        $message.error("请登录账号后使用");
+        $message.error(getLanguageData("needLogin"));
       }
     },
   },

@@ -7,7 +7,7 @@
     >
       <n-text
         class="name"
-        depth="3"
+        :depth="isDark ? 3 : 0"
         v-html="item.name"
         @click.stop="jumpArtist(item.id)"
       />
@@ -33,6 +33,11 @@ const props = defineProps({
   artistsData: {
     type: Array,
     default: [],
+  },
+  // 是否变灰
+  isDark: {
+    type: Boolean,
+    default: true,
   },
 });
 

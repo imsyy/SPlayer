@@ -17,15 +17,15 @@
         <div class="num">
           <n-text class="musicSize" @click="tabChange('songs')">
             <n-icon :component="MusicNoteFilled" />
-            {{ artistData.musicSize }} 首歌
+            {{ $t("general.name.songSize", { size: artistData.musicSize }) }}
           </n-text>
           <n-text class="albumSize" @click="tabChange('albums')">
             <n-icon :component="AlbumFilled" />
-            {{ artistData.albumSize }} 张专辑
+            {{ $t("general.name.albumSize", { size: artistData.albumSize }) }}
           </n-text>
           <n-text class="mvSize" @click="tabChange('videos')">
             <n-icon :component="VideocamRound" />
-            {{ artistData.mvSize }} 个 MV
+            {{ $t("general.name.mvSize", { size: artistData.mvSize }) }}
           </n-text>
         </div>
         <n-text class="desc text-hidden" @click="artistDescShow = true">
@@ -51,7 +51,13 @@
                 "
               />
             </template>
-            {{ artistLikeBtn ? "收藏歌手" : "取消收藏歌手" }}
+            {{
+              artistLikeBtn
+                ? $t("menu.collection", { name: $t("general.name.artists") })
+                : $t("menu.cancelCollection", {
+                    name: $t("general.name.artists"),
+                  })
+            }}
           </n-button>
         </n-space>
         <!-- 歌手介绍 -->
@@ -59,7 +65,7 @@
           class="s-modal"
           v-model:show="artistDescShow"
           preset="card"
-          title="歌手介绍"
+          :title="$t('general.name.artistDesc')"
           :bordered="false"
         >
           <n-scrollbar>
@@ -69,7 +75,7 @@
       </div>
     </div>
     <div class="error" v-else-if="!artistId">
-      <n-text>参数不完整</n-text>
+      <n-text>{{ $t("general.name.noKeywords") }}</n-text>
       <br />
       <n-button
         strong
@@ -77,7 +83,7 @@
         @click="router.go(-1)"
         style="margin-top: 20px"
       >
-        返回上一级
+        {{ $t("general.name.goBack") }}
       </n-button>
     </div>
     <n-tabs
@@ -87,8 +93,8 @@
       v-model:value="tabValue"
       v-if="artistData"
     >
-      <n-tab name="songs"> 热门单曲 </n-tab>
-      <n-tab name="albums"> 专辑 </n-tab>
+      <n-tab name="songs"> {{ $t("general.name.hotSong") }} </n-tab>
+      <n-tab name="albums"> {{ $t("general.name.album") }} </n-tab>
       <n-tab name="videos"> MV </n-tab>
     </n-tabs>
     <main class="content" v-if="artistData">
@@ -117,7 +123,9 @@ import {
   PersonAddAlt1Round,
   PersonRemoveAlt1Round,
 } from "@vicons/material";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const router = useRouter();
 const user = userStore();
 
@@ -146,17 +154,15 @@ const getArtistDetailData = (id) => {
           musicSize: res.data.artist.musicSize,
           mvSize: res.data.artist.mvSize,
         };
-        $setSiteTitle(res.data.artist.name + " - 歌手");
+        $setSiteTitle(res.data.artist.name + " - " + t("general.name.artists"));
         // 请求后回顶
         if (typeof $scrollToTop !== "undefined") $scrollToTop();
       })
       .catch((err) => {
         router.go(-1);
-        console.error("歌手信息获取失败：" + err);
-        $message.error("歌手信息获取失败");
+        console.error(t("general.message.acquisitionFailed"), err);
+        $message.error(t("general.message.acquisitionFailed"));
       });
-  } else {
-    $message.error("参数不完整");
   }
 };
 
@@ -193,13 +199,23 @@ const toLikeArtist = (data) => {
   likeArtist(type, data.id).then((res) => {
     if (res.code === 200) {
       $message.success(
-        `${data.name}${type == 1 ? "收藏成功" : "取消收藏成功"}`
+        `${data.name} ${
+          type == 1
+            ? t("menu.collection", { name: t("general.dialog.success") })
+            : t("menu.cancelCollection", { name: t("general.dialog.success") })
+        }`
       );
       user.setUserArtistLists(() => {
         artistLikeBtn.value = isLikeOrDislike(artistId.value);
       });
     } else {
-      $message.error(`${data.name}${type == 1 ? "收藏失败" : "取消收藏失败"}`);
+      $message.error(
+        `${data.name} ${
+          type == 1
+            ? t("menu.collection", { name: t("general.dialog.failed") })
+            : t("menu.cancelCollection", { name: t("general.dialog.failed") })
+        }`
+      );
     }
   });
 };

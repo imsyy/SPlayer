@@ -2,8 +2,8 @@
   <div class="set-player">
     <n-card class="set-item">
       <div class="name">
-        播放器样式
-        <span class="tip">播放器左侧功能区样式</span>
+        {{ $t("setting.playerStyle") }}
+        <span class="tip">{{ $t("setting.playerStyleTip") }}</span>
       </div>
       <n-select
         class="set"
@@ -13,11 +13,11 @@
     </n-card>
     <n-card class="set-item">
       <div class="name">
-        播放背景样式
+        {{ $t("setting.backgroundImageShow") }}
         <span class="tip">{{
           backgroundImageShow === "blur"
-            ? "将专辑封面模糊显示"
-            : "提取专辑主色作为背景颜色"
+            ? $t("setting.backgroundImageShowTip1")
+            : $t("setting.backgroundImageShowTip2")
         }}</span>
       </div>
       <n-select
@@ -28,43 +28,43 @@
     </n-card>
     <n-card class="set-item">
       <div class="name">
-        显示歌词翻译
-        <span class="tip">是否在具有翻译歌词时显示</span>
+        {{ $t("setting.showTransl") }}
+        <span class="tip">{{ $t("setting.showTranslTip") }}</span>
       </div>
       <n-switch v-model:value="showTransl" :round="false" />
     </n-card>
     <n-card class="set-item">
       <div class="name">
-        显示歌词音译
-        <span class="tip">是否在具有音译歌词时显示</span>
+        {{ $t("setting.showRoma") }}
+        <span class="tip">{{ $t("setting.showRomaTip") }}</span>
       </div>
       <n-switch v-model:value="showRoma" :round="false" />
     </n-card>
     <n-card class="set-item">
       <div class="name">
-        显示前奏等待
-        <span class="tip">部分歌曲前奏可能存在显示错误</span>
-      </div>
-      <n-switch v-model:value="countDownShow" :round="false" />
-    </n-card>
-    <n-card class="set-item">
-      <div class="name">
-        显示逐字歌词
-        <span class="tip">是否在歌曲具有逐字歌词时显示，实验性功能</span>
+        {{ $t("setting.showYrc") }}
+        <span class="tip">{{ $t("setting.showYrcTip") }}</span>
       </div>
       <n-switch v-model:value="showYrc" :round="false" />
     </n-card>
     <n-card class="set-item">
       <div class="name">
-        智能暂停滚动
-        <span class="tip">鼠标移入歌词区域是否暂停滚动</span>
+        {{ $t("setting.countDownShow") }}
+        <span class="tip">{{ $t("setting.countDownShowTip") }}</span>
+      </div>
+      <n-switch v-model:value="countDownShow" :round="false" />
+    </n-card>
+    <n-card class="set-item">
+      <div class="name">
+        {{ $t("setting.lrcMousePause") }}
+        <span class="tip">{{ $t("setting.lrcMousePauseTip") }}</span>
       </div>
       <n-switch v-model:value="lrcMousePause" :round="false" />
     </n-card>
     <n-card class="set-item">
       <div class="name">
-        歌词滚动位置
-        <span class="tip">歌词高亮时所处的位置</span>
+        {{ $t("setting.lyricsBlock") }}
+        <span class="tip">{{ $t("setting.lyricsBlockTip") }}</span>
       </div>
       <n-select
         class="set"
@@ -79,7 +79,7 @@
         alignItems: 'flex-start',
       }"
     >
-      <div class="name">歌词文本大小</div>
+      <div class="name">{{ $t("setting.lyricsFontSize") }}</div>
       <n-slider
         v-model:value="lyricsFontSize"
         :tooltip="false"
@@ -87,9 +87,9 @@
         :min="3"
         :step="0.01"
         :marks="{
-          3: '最小',
-          3.6: '默认',
-          4: '最大',
+          3: t('setting.lyrics1'),
+          3.6: t('setting.lyrics2'),
+          4: t('setting.lyrics3'),
         }"
       />
       <div :class="lyricsBlur ? 'more blur' : 'more'">
@@ -114,7 +114,7 @@
       </div>
     </n-card>
     <n-card class="set-item">
-      <div class="name">默认歌词位置</div>
+      <div class="name">{{ $t("setting.lyricsPosition") }}</div>
       <n-select
         class="set"
         v-model:value="lyricsPosition"
@@ -123,8 +123,8 @@
     </n-card>
     <n-card class="set-item">
       <div class="name">
-        歌词模糊
-        <span class="tip">未播放或已播放歌词模糊显示，实验性功能</span>
+        {{ $t("setting.lyricsBlur") }}
+        <span class="tip">{{ $t("setting.lyricsBlurTip") }}</span>
       </div>
       <n-switch v-model:value="lyricsBlur" :round="false" />
     </n-card>
@@ -145,6 +145,9 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { settingStore } from "@/store";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const setting = settingStore();
 const {
@@ -165,11 +168,11 @@ const {
 // 歌词位置
 const lyricsPositionOptions = [
   {
-    label: "居左",
+    label: t("setting.positionLeft"),
     value: "left",
   },
   {
-    label: "居中",
+    label: t("setting.positionCenter"),
     value: "center",
   },
 ];
@@ -177,11 +180,11 @@ const lyricsPositionOptions = [
 // 歌词滚动位置
 const lyricsBlockOptions = [
   {
-    label: "靠近顶部",
+    label: t("setting.blockStart"),
     value: "start",
   },
   {
-    label: "水平居中",
+    label: t("setting.blockCenter"),
     value: "center",
   },
 ];
@@ -189,11 +192,11 @@ const lyricsBlockOptions = [
 // 播放器样式
 const playerStyleOptions = [
   {
-    label: "封面模式",
+    label: t("setting.cover"),
     value: "cover",
   },
   {
-    label: "唱片模式",
+    label: t("setting.record"),
     value: "record",
   },
 ];
@@ -201,11 +204,11 @@ const playerStyleOptions = [
 // 播放背景类型
 const backgroundImageShowOptions = [
   {
-    label: "封面主色",
+    label: t("setting.solid"),
     value: "solid",
   },
   {
-    label: "封面模糊",
+    label: t("setting.blur"),
     value: "blur",
   },
 ];

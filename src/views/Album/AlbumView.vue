@@ -1,5 +1,5 @@
 <template>
-  <div class="playlist" v-if="albumDetail">
+  <div class="album" v-if="albumDetail">
     <div class="left">
       <div class="cover">
         <n-avatar
@@ -20,7 +20,9 @@
           </n-text>
         </div>
         <div class="intr">
-          <span class="name">专辑简介</span>
+          <span class="name">{{
+            $t("general.name.desc", { name: $t("general.name.album") })
+          }}</span>
           <span class="desc text-hidden">
             {{ albumDetail.description }}
           </span>
@@ -32,19 +34,8 @@
             v-if="albumDetail?.description.length > 70"
             @click="albumDescShow = true"
           >
-            全部简介
+            {{ $t("general.name.allDesc") }}
           </n-button>
-          <n-modal
-            class="s-modal"
-            v-model:show="albumDescShow"
-            preset="card"
-            title="歌单简介"
-            :bordered="false"
-          >
-            <n-scrollbar>
-              <n-text v-html="albumDetail.description.replace(/\n/g, '<br>')" />
-            </n-scrollbar>
-          </n-modal>
         </div>
         <n-space class="tag" v-if="albumDetail.tags">
           <n-tag
@@ -62,7 +53,7 @@
             <template #icon>
               <n-icon :component="MusicList" />
             </template>
-            播放
+            {{ $t("general.name.play") }}
           </n-button>
           <n-dropdown
             placement="right-start"
@@ -86,27 +77,40 @@
           class="creator"
           @click="router.push(`/artist/songs?id=${albumDetail.artist.id}`)"
         >
+          <n-icon :depth="3" :component="People" />
           {{ albumDetail.artist.name }}
         </n-text>
-        <div class="time">
-          <div class="createTime">
-            <span class="num">发行时间：</span>
-            {{ getLongTime(albumDetail.publishTime) }}
+        <n-space class="time">
+          <div class="num">
+            <n-icon :depth="3" :component="Time" />
+            <n-text v-html="getLongTime(albumDetail.publishTime)" />
           </div>
-          <div class="company" v-if="albumDetail.company">
-            <span class="num">发行公司：</span>
-            {{ albumDetail.company }}
+          <div class="num" v-if="albumDetail.company">
+            <n-icon :depth="3" :component="City" />
+            <n-text v-html="albumDetail.company" />
           </div>
-        </div>
+        </n-space>
       </div>
       <DataLists :listData="albumData" hideAlbum />
+      <!-- 专辑简介 -->
+      <n-modal
+        class="s-modal"
+        v-model:show="albumDescShow"
+        preset="card"
+        :title="$t('general.name.desc', { name: $t('general.name.album') })"
+        :bordered="false"
+      >
+        <n-scrollbar>
+          <n-text v-html="albumDetail.description.replace(/\n/g, '<br>')" />
+        </n-scrollbar>
+      </n-modal>
     </div>
   </div>
   <div class="title" v-else-if="!albumId">
-    <span class="key">参数不完整</span>
+    <span class="key">{{ $t("general.name.noKeywords") }}</span>
     <br />
     <n-button strong secondary @click="router.go(-1)" style="margin-top: 20px">
-      返回上一级
+      {{ $t("general.name.goBack") }}
     </n-button>
   </div>
   <div class="loading" v-else>
@@ -127,10 +131,21 @@ import { NIcon, NAvatar, NText } from "naive-ui";
 import { getAlbum, likeAlbum } from "@/api/album";
 import { useRouter } from "vue-router";
 import { getSongTime, getLongTime } from "@/utils/timeTools";
-import { MusicList, LinkTwo, More, Like, Unlike } from "@icon-park/vue-next";
+import {
+  MusicList,
+  LinkTwo,
+  More,
+  Like,
+  Unlike,
+  People,
+  Time,
+  City,
+} from "@icon-park/vue-next";
 import { userStore, musicStore, settingStore } from "@/store";
+import { useI18n } from "vue-i18n";
 import DataLists from "@/components/DataList/DataLists.vue";
 
+const { t } = useI18n();
 const router = useRouter();
 const user = userStore();
 const music = musicStore();
@@ -181,7 +196,10 @@ const setDropdownOptions = () => {
   dropdownOptions.value = [
     {
       key: "copy",
-      label: "复制专辑链接",
+      label: t("menu.copy", {
+        name: t("general.name.album"),
+        other: t("general.name.link"),
+      }),
       props: {
         onClick: () => {
           if (navigator.clipboard) {
@@ -189,12 +207,13 @@ const setDropdownOptions = () => {
               navigator.clipboard.writeText(
                 `https://music.163.com/#/playlist?id=${albumId.value}`
               );
-              $message.success("专辑链接复制成功");
+              $message.success(t("general.message.copySuccess"));
             } catch (err) {
-              $message.error("复制失败：", err);
+              console.error(t("general.message.copyFailure"), err);
+              $message.error(t("general.message.copyFailure"));
             }
           } else {
-            $message.error("您的浏览器暂不支持该操作");
+            $message.error(t("general.message.notSupported"));
           }
         },
       },
@@ -202,7 +221,9 @@ const setDropdownOptions = () => {
     },
     {
       key: "like",
-      label: isLikeOrDislike(albumId.value) ? "收藏专辑" : "取消收藏专辑",
+      label: isLikeOrDislike(albumId.value)
+        ? t("menu.collection", { name: t("general.name.album") })
+        : t("menu.cancelCollection", { name: t("general.name.album") }),
       show: user.userLogin,
       props: {
         onClick: () => {
@@ -220,7 +241,7 @@ const getAlbumData = (id) => {
     console.log(res);
     // 专辑信息
     albumDetail.value = res.album;
-    $setSiteTitle(res.album.name + " - 专辑");
+    $setSiteTitle(res.album.name + " - " + t("general.name.album"));
     // 专辑歌曲
     if (res.songs) {
       albumData.value = [];
@@ -240,7 +261,7 @@ const getAlbumData = (id) => {
         });
       });
     } else {
-      $message.error("获取专辑歌曲失败");
+      $message.error(t("general.message.acquisitionFailed"));
     }
   });
 };
@@ -276,27 +297,54 @@ const playAllSong = () => {
       music.setPlayState(true);
     }
   } catch (err) {
-    console.error("播放全部歌曲失败：" + err);
-    $message.error("播放全部歌曲失败，请重试");
+    console.error($message.error(t("general.message.operationFailed")), err);
+    $message.error($message.error(t("general.message.operationFailed")));
   }
 };
 
 // 收藏/取消收藏
 const toChangeLike = async (id) => {
   const type = isLikeOrDislike(id) ? 1 : 2;
+  const likeMsg = t("general.name.album");
+  const isThereASpace = setting.language === "zh-CN" ? "" : " ";
   try {
     const res = await likeAlbum(type, id);
     if (res.code === 200) {
-      $message.success(`专辑${type == 1 ? "收藏成功" : "取消收藏成功"}`);
+      $message.success(
+        `${likeMsg + isThereASpace}${
+          type == 1
+            ? t("menu.collection", { name: t("general.dialog.success") })
+            : t("menu.cancelCollection", { name: t("general.dialog.success") })
+        }`
+      );
       user.setUserAlbumLists(() => {
         setDropdownOptions();
       });
     } else {
-      $message.error(`专辑${type == 1 ? "收藏失败" : "取消收藏失败"}`);
+      $message.error(
+        `${likeMsg + isThereASpace}${
+          type == 1
+            ? t("menu.collection", { name: t("general.dialog.failed") })
+            : t("menu.cancelCollection", { name: t("general.dialog.failed") })
+        }`
+      );
     }
   } catch (err) {
-    $message.error(`专辑${type == 1 ? "收藏失败" : "取消收藏失败"}`);
-    console.error(`专辑${type == 1 ? "收藏失败：" : "取消收藏失败："}` + err);
+    $message.error(
+      `${likeMsg + isThereASpace}${
+        type == 1
+          ? t("menu.collection", { name: t("general.dialog.failed") })
+          : t("menu.cancelCollection", { name: t("general.dialog.failed") })
+      }`
+    );
+    console.error(
+      `${likeMsg + isThereASpace}${
+        type == 1
+          ? t("menu.collection", { name: t("general.dialog.failed") })
+          : t("menu.cancelCollection", { name: t("general.dialog.failed") })
+      }`,
+      err
+    );
   }
 };
 
@@ -330,7 +378,7 @@ watch(
 </script>
 
 <style lang="scss" scoped>
-.playlist,
+.album,
 .loading {
   display: flex;
   flex-direction: row;
@@ -438,6 +486,8 @@ watch(
         font-weight: bold;
       }
       .creator {
+        display: flex;
+        align-items: center;
         margin-top: 6px;
         font-size: 16px;
         opacity: 0.8;
@@ -446,6 +496,9 @@ watch(
         &:hover {
           opacity: 1;
           color: var(--main-color);
+        }
+        .n-icon {
+          margin-right: 6px;
         }
       }
       .time {
@@ -458,10 +511,13 @@ watch(
           align-items: flex-start;
         }
         .num {
-          color: #999;
-        }
-        div {
-          margin-right: 12px;
+          // color: #999;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          .n-icon {
+            margin-right: 6px;
+          }
         }
       }
     }

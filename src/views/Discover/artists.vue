@@ -41,7 +41,7 @@
         :loading="loading"
         @click="loadingMore"
       >
-        加载更多
+        {{ $t("general.name.loadMore") }}
       </n-button>
     </n-space>
   </div>
@@ -134,7 +134,7 @@ const getArtistListData = (
       });
     } else {
       hasMore.value = false;
-      $message.error("歌手内容为空");
+      $message.error(t("general.message.acquisitionFailed"));
     }
   });
 };
@@ -169,7 +169,6 @@ const artistTypeChange = (index) => {
 const loadingMore = () => {
   loading.value = true;
   artistsOffset.value += 30;
-  if (artistsOffset.value >= 300) $message.info("太多了吧 😲");
   getArtistListData(
     artistType[artistTypeNamesChoose.value],
     artistArea[artistTypeNamesChoose.value],
@@ -202,7 +201,7 @@ watch(
 );
 
 onMounted(() => {
-  $setSiteTitle("发现 - 歌手");
+  $setSiteTitle(t("nav.discover") + " - " + t("nav.discoverChildren.artists"));
   // 获取歌手数据
   getArtistListData(
     artistType[artistTypeNamesChoose.value],

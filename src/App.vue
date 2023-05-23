@@ -42,11 +42,13 @@ import { musicStore, userStore, settingStore, siteStore } from "@/store";
 import { useRouter } from "vue-router";
 import { getLoginState, refreshLogin } from "@/api/login";
 import { userDailySignin, userYunbeiSign } from "@/api/user";
+import { useI18n } from "vue-i18n";
 import Provider from "@/components/Provider/index.vue";
 import Nav from "@/components/Nav/index.vue";
 import Player from "@/components/Player/index.vue";
 import packageJson from "@/../package.json";
 
+const { t } = useI18n();
 const music = musicStore();
 const user = userStore();
 const setting = settingStore();
@@ -122,27 +124,23 @@ const signIn = () => {
     Promise.all(signInPromises)
       .then((results) => {
         localStorage.setItem("lastSignInDate", today);
-        console.log("签到成功！");
-        console.log("userDailySignin:", results[0]);
-        console.log("userYunbeiSign:", results[1]);
+        console.log(t("general.message.signInSuccess"), results[0], results[1]);
         $notification["success"]({
-          content: "签到成功",
-          meta: "每日签到及云贝签到成功",
+          content: t("general.message.signInSuccess"),
+          meta: t("general.message.signInSuccessDesc"),
           duration: 3000,
         });
       })
       .catch((error) => {
-        console.error("签到失败：", error);
-        $message.error("每日签到失败");
+        console.error(t("general.message.signInFailed"), error);
+        $message.error(t("general.message.signInFailed"));
       });
-  } else {
-    console.log("今天已经签到过了！");
   }
 };
 
 // 系统重置
 const cleanAll = () => {
-  $message ? $message.success("重置成功") : alert("重置成功");
+  $message ? $message.success(t("other.cleanAll")) : alert(t("other.cleanAll"));
   localStorage.clear();
   document.location.reload();
 };
@@ -165,6 +163,10 @@ onMounted(() => {
   window.$cleanAll = cleanAll;
   window.$signIn = signIn;
   window.$setSiteTitle = setSiteTitle;
+
+  // 更改页面语言
+  const html = document.documentElement;
+  if (html) html.setAttribute("lang", setting.language);
 
   // 公告
   if (annShow) {
@@ -204,15 +206,15 @@ onMounted(() => {
       } else {
         user.userLogOut();
         if (music.getPlayListMode === "cloud") {
-          $message.info("登录已失效，请重新登录");
+          $message.info(t("other.loginExpired"));
           music.setPlaylists([]);
           music.setPlayListMode("list");
         }
       }
     })
     .catch((err) => {
-      $message.error("请求发生错误");
-      console.error("请求发生错误" + err);
+      console.error(t("general.message.acquisitionFailed"), err);
+      $message.error(t("general.message.acquisitionFailed"));
       router.push("/500");
       return false;
     });
