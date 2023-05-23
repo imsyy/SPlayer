@@ -8,8 +8,8 @@
 
 ## 说明
 
-- 本项目采用 [Vue 3](https://cn.vuejs.org/) 全家桶和 [Naïve UI](https://www.naiveui.com/) 组件库及 `SCSS` 开发  
-- 目前主要以 `Web` 端为主，可能暂时不会考虑使用 `Electron` 构建客户端 
+- 本项目采用 [Vue 3](https://cn.vuejs.org/) 全家桶和 [Naïve UI](https://www.naiveui.com/) 组件库及 `SCSS` 开发
+- 目前主要以 `Web` 端为主，可能暂时不会考虑使用 `Electron` 构建客户端
 - 仅对移动端做了基础适配，**不保证功能全部可用**
 - 欢迎各位大佬指点和 `Star` 哦 😍
 
@@ -42,13 +42,13 @@
 - 支持评论区及评论点赞
 - 明暗模式自动 / 手动切换
 - 移动端基础适配
+- `i18n` 支持
 
 #### 待办
 
 - [ ] 电台节目支持
 - [ ] 歌词页面进一步完善
 - [ ] 发表评论
-- [ ] `i18n` 支持
 - [ ] 重构（写成屎山了） 🤣
 
 ## 😍 Screenshots
@@ -57,30 +57,35 @@
 <summary>主页面</summary>
 
 ![主页面](/screenshots/SPlayer%20-%20%E4%B8%BB%E9%A1%B5%E9%9D%A2.png)
+
 </details>
 
 <details>
 <summary>播放页面</summary>
 
 ![播放页面](/screenshots/SPlayer%20-%20%E6%92%AD%E6%94%BE%E9%A1%B5%E9%9D%A2.png)
+
 </details>
 
 <details>
 <summary>发现页面</summary>
 
 ![发现页面](/screenshots/SPlayer%20-%20%E5%8F%91%E7%8E%B0%E9%A1%B5%E9%9D%A2.png)
+
 </details>
 
 <details>
 <summary>歌单页面</summary>
 
 ![歌单页面](/screenshots/SPlayer%20-%20%E6%AD%8C%E5%8D%95%E9%A1%B5%E9%9D%A2.png)
+
 </details>
 
 <details>
 <summary>评论页面</summary>
 
 ![评论页面](/screenshots/SPlayer%20-%20%E8%AF%84%E8%AE%BA%E9%A1%B5%E9%9D%A2.png)
+
 </details>
 
 ## ⚙️ 部署
@@ -94,7 +99,7 @@
 - 请在根目录下的 `.env` 文件中的 `VITE_MUSIC_API` 中填入 API 地址（必需）
 
 ```js
-VITE_MUSIC_API = "your api url"
+VITE_MUSIC_API = "your api url";
 ```
 
 ### 网易云解灰 API（可选）
@@ -144,6 +149,7 @@ npm build
 - [Vue-mmPlayer](https://github.com/maomao1996/Vue-mmPlayer)
 
 ## 📜 开源许可
+
 - **本项目仅供个人学习研究使用，禁止用于商业及非法用途**
 - 本项目基于 [MIT license](https://opensource.org/license/mit/) 许可进行开源
 
