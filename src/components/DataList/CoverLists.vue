@@ -111,16 +111,19 @@ import {
   Editor,
   DeleteFour,
 } from "@icon-park/vue-next";
+import { useI18n } from "vue-i18n";
 import { delPlayList, likePlaylist } from "@/api/playlist";
 import { likeAlbum } from "@/api/album";
-import { musicStore, userStore } from "@/store";
+import { musicStore, userStore, settingStore } from "@/store";
 import { useRouter } from "vue-router";
 import AllArtists from "./AllArtists.vue";
 import PlaylistUpdate from "@/components/DataModal/PlaylistUpdate.vue";
 
+const { t } = useI18n();
 const router = useRouter();
 const music = musicStore();
 const user = userStore();
+const setting = settingStore();
 const props = defineProps({
   // 列表数据
   listData: {
@@ -170,6 +173,7 @@ const renderIcon = (icon) => {
 
 // 封面图像地址
 const getCoverUrl = (url) => {
+  if (!url) return "/images/pic/default.png";
   const imageUrl = url.replace(/^http:/, "https:");
   if (imageUrl.endsWith(".jpg")) {
     return imageUrl + "?param=300y300";
@@ -191,7 +195,7 @@ const openRightMenu = (e, data) => {
     rightMenuOptions.value = [
       {
         key: "update",
-        label: "编辑歌单",
+        label: t("menu.update"),
         show:
           router.currentRoute.value.name === "user-playlists" ? true : false,
         props: {
@@ -203,7 +207,7 @@ const openRightMenu = (e, data) => {
       },
       {
         key: "del",
-        label: "删除歌单",
+        label: t("menu.del"),
         show:
           router.currentRoute.value.name === "user-playlists" ? true : false,
         props: {
@@ -215,7 +219,9 @@ const openRightMenu = (e, data) => {
       },
       {
         key: "likePlaylist",
-        label: isLikeOrDislike(data.id) ? "收藏歌单" : "取消收藏歌单",
+        label: isLikeOrDislike(data.id)
+          ? t("menu.collection", { name: t("general.name.playlist") })
+          : t("menu.cancelCollection", { name: t("general.name.playlist") }),
         show:
           user.userLogin &&
           user.getUserPlayLists.has &&
@@ -232,7 +238,9 @@ const openRightMenu = (e, data) => {
       },
       {
         key: "likeAlbum",
-        label: isLikeOrDislike(data.id) ? "收藏专辑" : "取消收藏专辑",
+        label: isLikeOrDislike(data.id)
+          ? t("menu.collection", { name: t("general.name.album") })
+          : t("menu.cancelCollection", { name: t("general.name.album") }),
         show:
           user.userLogin &&
           user.getUserAlbumLists.has &&
@@ -248,7 +256,13 @@ const openRightMenu = (e, data) => {
       },
       {
         key: "copy",
-        label: `复制${props.listType === "playlist" ? "歌单" : "专辑"}链接`,
+        label: t("menu.copy", {
+          name:
+            props.listType === "playlist"
+              ? t("general.name.playlist")
+              : t("general.name.album"),
+          other: t("general.name.link"),
+        }),
         props: {
           onClick: () => {
             if (navigator.clipboard) {
@@ -258,16 +272,13 @@ const openRightMenu = (e, data) => {
                     props.listType === "playlist" ? "playlist" : "album"
                   }?id=${data.id}`
                 );
-                $message.success(
-                  `${
-                    props.listType === "playlist" ? "歌单" : "专辑"
-                  }链接复制成功`
-                );
+                $message.success(t("general.message.copySuccess"));
               } catch (err) {
-                $message.error("复制失败：", err);
+                console.error(t("general.message.copyFailure"), err);
+                $message.error(t("general.message.copyFailure"));
               }
             } else {
-              $message.error("您的浏览器暂不支持该操作");
+              $message.error(t("general.message.notSupported"));
             }
           },
         },
@@ -307,16 +318,22 @@ const toLink = (id) => {
 
 // 删除歌单
 const toDelPlayList = (data) => {
+  if (data.id === user.getUserPlayLists?.own[0].id) {
+    $message.warning(t("menu.unableToDelete"));
+    return false;
+  }
   $dialog.warning({
     class: "s-dialog",
-    title: "删除歌单",
-    content: "确认删除歌单 " + data.name + "？删除后将不可恢复！",
-    positiveText: "删除",
-    negativeText: "取消",
+    title: t("general.dialog.delete"),
+    content: t("menu.delQuestion", {
+      name: data.name,
+    }),
+    positiveText: t("general.dialog.delete"),
+    negativeText: t("general.dialog.cancel"),
     onPositiveClick: () => {
       delPlayList(data.id).then((res) => {
         if (res.code === 200) {
-          $message.success("删除成功");
+          $message.success(t("general.message.deleteSuccess"));
           user.setUserPlayLists();
         }
       });
@@ -343,21 +360,48 @@ const toChangeLike = async (id) => {
   const listType = props.listType;
   const type = isLikeOrDislike(id) ? 1 : 2;
   const likeFn = listType === "playlist" ? likePlaylist : likeAlbum;
-  const likeMsg = listType === "playlist" ? "歌单" : "专辑";
+  const likeMsg =
+    listType === "playlist"
+      ? t("general.name.playlist")
+      : t("general.name.album");
+  const isThereASpace = setting.language === "zh-CN" ? "" : " ";
   try {
     const res = await likeFn(type, id);
     if (res.code === 200) {
-      $message.success(`${likeMsg}${type == 1 ? "收藏成功" : "取消收藏成功"}`);
+      $message.success(
+        `${likeMsg + isThereASpace}${
+          type == 1
+            ? t("menu.collection", { name: t("general.dialog.success") })
+            : t("menu.cancelCollection", { name: t("general.dialog.success") })
+        }`
+      );
       listType === "playlist"
         ? user.setUserPlayLists()
         : user.setUserAlbumLists();
     } else {
-      $message.error(`${likeMsg}${type == 1 ? "收藏失败" : "取消收藏失败"}`);
+      $message.error(
+        `${likeMsg + isThereASpace}${
+          type == 1
+            ? t("menu.collection", { name: t("general.dialog.failed") })
+            : t("menu.cancelCollection", { name: t("general.dialog.failed") })
+        }`
+      );
     }
   } catch (err) {
-    $message.error(`${likeMsg}${type == 1 ? "收藏失败" : "取消收藏失败"}`);
+    $message.error(
+      `${likeMsg + isThereASpace}${
+        type == 1
+          ? t("menu.collection", { name: t("general.dialog.failed") })
+          : t("menu.cancelCollection", { name: t("general.dialog.failed") })
+      }`
+    );
     console.error(
-      `${likeMsg}${type == 1 ? "收藏失败：" : "取消收藏失败："}` + err
+      `${likeMsg + isThereASpace}${
+        type == 1
+          ? t("menu.collection", { name: t("general.dialog.failed") })
+          : t("menu.cancelCollection", { name: t("general.dialog.failed") })
+      }`,
+      err
     );
   }
 };

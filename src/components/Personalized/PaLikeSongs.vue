@@ -9,8 +9,8 @@
     <div class="left">
       <n-icon class="icon" :component="CollectionRecords" size="30" />
       <div class="title">
-        <n-text class="name">喜欢的音乐</n-text>
-        <n-text class="tip">发现你独特的音乐品味</n-text>
+        <n-text class="name">{{ $t("home.modules.likeSong.title") }}</n-text>
+        <n-text class="tip">{{ $t("home.modules.likeSong.subtitle") }}</n-text>
       </div>
     </div>
     <div class="right">

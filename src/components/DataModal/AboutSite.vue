@@ -4,7 +4,7 @@
     class="s-modal"
     v-model:show="showAboutModal"
     preset="card"
-    title="关于本站"
+    :title="$t('nav.avatar.about')"
     :bordered="false"
     transform-origin="center"
   >

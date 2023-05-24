@@ -1,21 +1,21 @@
 <template>
   <div class="paartists">
     <n-h3 class="title" prefix="bar">
-      歌手推荐
+      {{ $t("home.title.artists") }}
       <n-tabs
         class="tab"
         :default-value="-1"
         size="small"
         @update:value="tabChange"
       >
-        <n-tab :name="-1"> 全部 </n-tab>
-        <n-tab :name="7"> 华语 </n-tab>
-        <n-tab :name="96"> 欧美 </n-tab>
-        <n-tab :name="8"> 日本 </n-tab>
-        <n-tab :name="16"> 韩国 </n-tab>
+        <n-tab :name="-1"> {{ $t("general.type.all") }} </n-tab>
+        <n-tab :name="7"> {{ $t("general.type.china") }} </n-tab>
+        <n-tab :name="96"> {{ $t("general.type.western") }} </n-tab>
+        <n-tab :name="8"> {{ $t("general.type.japan") }} </n-tab>
+        <n-tab :name="16"> {{ $t("general.type.korea") }} </n-tab>
       </n-tabs>
       <span class="more" @click="router.push('/discover/artists?page=1')">
-        更多
+        {{ $t("home.title.more") }}
       </span>
     </n-h3>
     <ArtistLists :listData="artistsData" :gridCollapsed="true" />

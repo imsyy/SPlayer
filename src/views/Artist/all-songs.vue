@@ -1,11 +1,15 @@
 <template>
   <div class="all-songs">
     <div class="title" v-if="artistId">
-      <span class="key">{{ artistName ? artistName : "未知歌手" }}</span>
-      <span>全部歌曲</span>
+      <template v-if="artistData[0]">
+        <span class="key">{{
+          artistName ? artistName : $t("general.name.unknownArtist")
+        }}</span>
+        <span>{{ $t("general.name.allSong") }} </span>
+      </template>
     </div>
     <div class="title" v-else>
-      <span class="key">未提供所需信息</span>
+      <span class="key">{{ $t("general.name.noKeywords") }}</span>
       <br />
       <n-button
         strong
@@ -13,7 +17,7 @@
         @click="router.go(-1)"
         style="margin-top: 20px"
       >
-        返回上一级
+        {{ $t("general.name.goBack") }}
       </n-button>
     </div>
     <div class="songs" v-if="artistId">
@@ -34,9 +38,11 @@ import { getArtistDetail, getArtistAllSongs } from "@/api/artist";
 import { getMusicDetail } from "@/api/song";
 import { useRouter } from "vue-router";
 import { getSongTime } from "@/utils/timeTools";
+import { useI18n } from "vue-i18n";
 import DataLists from "@/components/DataList/DataLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
 
+const { t } = useI18n();
 const router = useRouter();
 
 // 歌手信息
@@ -91,15 +97,15 @@ const getArtistAllSongsData = (id, limit = 30, offset = 0, order = "hot") => {
           });
         });
       } else {
-        $message.error("歌手全部歌曲为空");
+        $message.error(t("general.message.acquisitionFailed"));
       }
       // 请求后回顶
       if (typeof $scrollToTop !== "undefined") $scrollToTop();
     })
     .catch((err) => {
       router.go(-1);
-      console.error("歌手全部歌曲获取失败：" + err);
-      $message.error("歌手全部歌曲获取失败");
+      console.error(t("general.message.acquisitionFailed"), err);
+      $message.error(t("general.message.acquisitionFailed"));
     });
 };
 

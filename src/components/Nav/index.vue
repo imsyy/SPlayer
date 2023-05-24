@@ -12,16 +12,18 @@
       </Transition>
     </div>
     <div class="center">
-      <router-link class="link" to="/">首页</router-link>
+      <router-link class="link" to="/">{{ $t("nav.home") }}</router-link>
       <n-dropdown
         trigger="hover"
         :options="discoverOptions"
         @select="menuSelect"
       >
-        <router-link class="link" to="/discover">发现</router-link>
+        <router-link class="link" to="/discover">
+          {{ $t("nav.discover") }}
+        </router-link>
       </n-dropdown>
       <n-dropdown trigger="hover" :options="userOptions" @select="menuSelect">
-        <router-link class="link" to="/user">我的</router-link>
+        <router-link class="link" to="/user">{{ $t("nav.user") }}</router-link>
       </n-dropdown>
     </div>
     <div class="right">
@@ -83,9 +85,11 @@ import {
 } from "@icon-park/vue-next";
 import { userStore, settingStore, siteStore } from "@/store";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import AboutSite from "@/components/DataModal/AboutSite.vue";
 import SearchInp from "@/components/SearchInp/index.vue";
 
+const { t } = useI18n();
 const router = useRouter();
 const user = userStore();
 const site = siteStore();
@@ -147,7 +151,9 @@ const userDataRender = () => {
             { depth: 2 },
             {
               default: () =>
-                user.userLogin ? user.getUserData.nickname : "未登录",
+                user.userLogin
+                  ? user.getUserData.nickname
+                  : t("nav.avatar.notLogin"),
             }
           ),
         ]),
@@ -173,8 +179,8 @@ const userDataRender = () => {
                             "Lv." + user.getUserOtherData.level.level,
                         }
                       )
-                    : "等级信息获取失败"
-                  : "登录后享受完整功能",
+                    : t("nav.avatar.loginError")
+                  : t("nav.avatar.notLoginSubtitle"),
             }
           ),
         ]),
@@ -184,141 +190,155 @@ const userDataRender = () => {
 };
 
 // 下拉框数据
-const discoverOptions = ref([
-  {
-    label: "歌单",
-    key: "/discover/playlists",
-  },
-  {
-    label: "排行榜",
-    key: "/discover/toplists",
-  },
-  {
-    label: "歌手",
-    key: "/discover/artists",
-  },
-]);
+const discoverOptions = ref([]);
 const userOptions = ref([]);
+const dropdownOptions = ref([]);
+
+// 写入下拉框数据
+const changeDiscoverOptions = () => {
+  discoverOptions.value = [
+    {
+      label: t("nav.discoverChildren.playlists"),
+      key: "/discover/playlists",
+    },
+    {
+      label: t("nav.discoverChildren.toplists"),
+      key: "/discover/toplists",
+    },
+    {
+      label: t("nav.discoverChildren.artists"),
+      key: "/discover/artists",
+    },
+  ];
+};
 const changeUserOptions = (val) => {
   userOptions.value = val
     ? [
         {
-          label: "我的歌单",
+          label: t("nav.userChildren.playlist"),
           key: "/user/playlists",
         },
         {
-          label: "收藏的歌单",
+          label: t("nav.userChildren.like"),
           key: "/user/like",
         },
         {
-          label: "收藏的专辑",
+          label: t("nav.userChildren.album"),
           key: "/user/album",
         },
         {
-          label: "收藏的歌手",
+          label: t("nav.userChildren.artist"),
           key: "/user/artists",
         },
         {
-          label: "音乐云盘",
+          label: t("nav.userChildren.cloud"),
           key: "/user/cloud",
         },
       ]
     : [
         {
-          label: "登录账号",
+          label: t("nav.userChildren.login"),
           key: "/login",
         },
       ];
 };
-const dropdownOptions = ref([
-  {
-    key: "header",
-    type: "render",
-    render: userDataRender,
-  },
-  {
-    key: "header-divider",
-    type: "divider",
-  },
-  {
-    label: () => {
-      return h(
-        NText,
-        { style: { transform: "translateX(2px)" } },
-        {
-          default: () =>
-            setting.getSiteTheme == "light" ? "深色模式" : "浅色模式",
-        }
-      );
+const changeDropdownOptions = () => {
+  dropdownOptions.value = [
+    {
+      key: "header",
+      type: "render",
+      render: userDataRender,
     },
-    key: "changeTheme",
-    icon: () => {
-      return h(
-        NIcon,
-        { style: { transform: "translateX(2px)" } },
-        {
-          default: () =>
-            setting.getSiteTheme == "light" ? h(Moon) : h(SunOne),
-        }
-      );
+    {
+      key: "header-divider",
+      type: "divider",
     },
-  },
-  {
-    label: "播放历史",
-    key: "history",
-    icon: renderIcon(h(History)),
-  },
-  {
-    label: "全局设置",
-    key: "setting",
-    icon: renderIcon(h(SettingTwo)),
-  },
-  {
-    label: () => {
-      return h(
-        NText,
-        { style: { transform: "translateX(2px)" } },
-        {
-          default: () => (user.userLogin ? "退出登录" : "登录账号"),
-        }
-      );
+    {
+      label: () => {
+        return h(
+          NText,
+          { style: { transform: "translateX(2px)" } },
+          {
+            default: () =>
+              setting.getSiteTheme == "light"
+                ? t("nav.avatar.dark")
+                : t("nav.avatar.light"),
+          }
+        );
+      },
+      key: "changeTheme",
+      icon: () => {
+        return h(
+          NIcon,
+          { style: { transform: "translateX(2px)" } },
+          {
+            default: () =>
+              setting.getSiteTheme == "light" ? h(Moon) : h(SunOne),
+          }
+        );
+      },
     },
-    key: "user",
-    icon: () => {
-      return h(
-        NIcon,
-        { style: { transform: "translateX(2px)" } },
-        {
-          default: () => (user.userLogin ? h(Logout) : h(Login)),
-        }
-      );
+    {
+      label: t("nav.avatar.history"),
+      key: "history",
+      icon: renderIcon(h(History)),
     },
-  },
-  {
-    label: "关于本站",
-    key: "about",
-    icon: renderIcon(h(Info)),
-  },
-]);
+    {
+      label: t("nav.avatar.setting"),
+      key: "setting",
+      icon: renderIcon(h(SettingTwo)),
+    },
+    {
+      label: () => {
+        return h(
+          NText,
+          { style: { transform: "translateX(2px)" } },
+          {
+            default: () =>
+              user.userLogin ? t("nav.avatar.logout") : t("nav.avatar.login"),
+          }
+        );
+      },
+      key: "user",
+      icon: () => {
+        return h(
+          NIcon,
+          { style: { transform: "translateX(2px)" } },
+          {
+            default: () => (user.userLogin ? h(Logout) : h(Login)),
+          }
+        );
+      },
+    },
+    {
+      label: t("nav.avatar.about"),
+      key: "about",
+      icon: renderIcon(h(Info)),
+    },
+  ];
+};
 
 // 移动端菜单
-const mbMenuOptions = ref([
-  {
-    label: "首页",
-    key: "/",
-    icon: renderIcon(h(HomeTwo)),
-  },
-  {
-    label: "发现",
-    key: "/discover",
-    icon: renderIcon(h(FindOne)),
-  },
-  {
-    label: "我的",
-    key: "/user",
-    icon: renderIcon(h(Me)),
-  },
-]);
+const mbMenuOptions = ref([]);
+const changeMbMenuOptions = () => {
+  mbMenuOptions.value = [
+    {
+      label: t("nav.home"),
+      key: "/",
+      icon: renderIcon(h(HomeTwo)),
+    },
+    {
+      label: t("nav.discover"),
+      key: "/discover",
+      icon: renderIcon(h(FindOne)),
+    },
+    {
+      label: t("nav.user"),
+      key: "/user",
+      icon: renderIcon(h(Me)),
+    },
+  ];
+};
 
 // 下拉框点击事件
 const menuSelect = (key) => {
@@ -347,13 +367,13 @@ const dropdownSelect = (key) => {
         // 退出登录
         $dialog.warning({
           class: "s-dialog",
-          title: "退出登录",
-          content: "确认退出当前用户登录？",
-          positiveText: "退出登录",
-          negativeText: "取消",
+          title: t("nav.avatar.logout"),
+          content: t("nav.avatar.tip"),
+          positiveText: t("nav.avatar.logout"),
+          negativeText: t("general.dialog.cancel"),
           onPositiveClick: () => {
             user.userLogOut();
-            $message.success("已退出登录");
+            $message.success(t("nav.avatar.success"));
             // 刷新页面
             timeOut.value = setTimeout(() => {
               document.location.reload();
@@ -382,7 +402,21 @@ watch(
   }
 );
 
+// 监听语言变化
+watch(
+  () => setting.language,
+  () => {
+    changeDiscoverOptions();
+    changeMbMenuOptions();
+    changeDropdownOptions();
+    changeUserOptions(user.userLogin);
+  }
+);
+
 onMounted(() => {
+  changeDiscoverOptions();
+  changeMbMenuOptions();
+  changeDropdownOptions();
   changeUserOptions(user.userLogin);
 });
 

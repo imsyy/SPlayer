@@ -1,3 +1,5 @@
+import getLanguageData from "./getLanguageData";
+
 /**
  * 歌曲时长时间戳转换
  * @param {number} mss 毫秒数
@@ -47,21 +49,25 @@ export const getCommentTime = (t) => {
       : userDate.getMinutes();
   // 判断时间差
   if (nowDate - t <= 60000) {
-    return "刚刚发布";
+    return getLanguageData("just");
   } else if (nowDate - t > 60000 && nowDate - t <= 3600000) {
     const pastTimeUnix = nowDate - t;
     const pastTime = new Date(Number(pastTimeUnix));
-    return `${pastTime.getMinutes()} 分钟前`;
+    return `${pastTime.getMinutes("yesterday")} ${getLanguageData(
+      "minutesAgo"
+    )}`;
   } else if (todayLast - t > 3600000 && todayLast - t <= 86400000) {
     return `${UH}:${Um}`;
   } else if (todayLast - t > 86400000 && todayLast - t <= 172800000) {
-    return `昨天 ${UH}:${Um}`;
+    return `${getLanguageData("yesterday")} ${UH}:${Um}`;
   } else if (todayLast - t > 172800000 && todayLast - t <= 31557600000) {
-    return `${userDate.getMonth() + 1}月${userDate.getDate()}日`;
+    return `${userDate.getMonth() + 1}${getLanguageData(
+      "month"
+    )}${userDate.getDate()}${getLanguageData("day")}`;
   } else {
-    return `${userDate.getFullYear()}年${
+    return `${userDate.getFullYear()}${getLanguageData("year")}${
       userDate.getMonth() + 1
-    }月${userDate.getDate()}日`;
+    }${getLanguageData("month")}${userDate.getDate()}${getLanguageData("day")}`;
   }
 };
 
@@ -77,13 +83,13 @@ export const formatNumber = (num) => {
   } else if (n < 100000000) {
     const numString = (n / 10000).toFixed(1);
     return numString.endsWith(".0")
-      ? numString.slice(0, -2) + "万"
-      : numString + "万";
+      ? numString.slice(0, -2) + getLanguageData("million")
+      : numString + getLanguageData("million");
   } else {
     const numString = (n / 100000000).toFixed(1);
     return numString.endsWith(".0")
-      ? numString.slice(0, -2) + "亿"
-      : numString + "亿";
+      ? numString.slice(0, -2) + getLanguageData("billion")
+      : numString + getLanguageData("billion");
   }
 };
 

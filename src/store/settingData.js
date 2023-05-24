@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { NIcon } from "naive-ui";
 import { WbSunnyFilled, DarkModeFilled } from "@vicons/material";
+import getLanguageData from "@/utils/getLanguageData";
 
 const useSettingDataStore = defineStore("settingData", {
   state: () => {
@@ -41,7 +42,7 @@ const useSettingDataStore = defineStore("settingData", {
       // 音乐频谱
       musicFrequency: false,
       // 鼠标移入歌词区域暂停滚动
-      lrcMousePause: true,
+      lrcMousePause: false,
       // 是否使用网易云解灰
       useUnmServer: true,
       // 播放背景是否显示图片
@@ -56,6 +57,8 @@ const useSettingDataStore = defineStore("settingData", {
       listNumber: 30,
       // 记忆上次播放位置
       memoryLastPlaybackPosition: true,
+      // 语言
+      language: "zh-CN",
     };
   },
   getters: {
@@ -68,7 +71,9 @@ const useSettingDataStore = defineStore("settingData", {
     // 切换明暗模式
     setSiteTheme(value) {
       const isLightMode = value === "light";
-      const message = isLightMode ? "已切换至浅色模式" : "已切换至深色模式";
+      const message = isLightMode
+        ? getLanguageData("lightMode")
+        : getLanguageData("darkMode");
       const icon = isLightMode ? WbSunnyFilled : DarkModeFilled;
       this.theme = value;
       $message.info(message, {

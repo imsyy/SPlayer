@@ -48,7 +48,7 @@
               :bordered="false"
               size="small"
             >
-              {{ item.fee == 1 ? "VIP" : "数字专辑" }}
+              {{ item.fee == 1 ? "VIP" : "EP" }}
             </n-tag>
             <n-tag
               v-if="item.pc"
@@ -58,7 +58,7 @@
               size="small"
               :bordered="false"
             >
-              云盘
+              {{ $t("general.name.cloud") }}
             </n-tag>
             <n-tag
               v-if="item.mv"
@@ -165,7 +165,7 @@
               <n-icon size="20">
                 <PlayOne theme="filled" />
               </n-icon>
-              <n-text>立即播放</n-text>
+              <n-text>{{ $t("menu.play") }}</n-text>
             </div>
             <div
               v-if="
@@ -183,7 +183,7 @@
               <n-icon size="20">
                 <AddMusic theme="filled" />
               </n-icon>
-              <n-text>下一首播放</n-text>
+              <n-text>{{ $t("menu.nextPlay") }}</n-text>
             </div>
             <div
               class="item"
@@ -197,7 +197,7 @@
               <n-icon size="20">
                 <ListAdd theme="filled" />
               </n-icon>
-              <n-text>添加到歌单</n-text>
+              <n-text>{{ $t("menu.add") }}</n-text>
             </div>
             <div
               class="item"
@@ -211,7 +211,7 @@
               <n-icon size="20">
                 <DownloadFour theme="filled" />
               </n-icon>
-              <n-text>歌曲下载</n-text>
+              <n-text>{{ $t("menu.download") }}</n-text>
             </div>
             <div
               class="item"
@@ -220,7 +220,7 @@
               <n-icon size="20">
                 <Comments theme="filled" />
               </n-icon>
-              <n-text>前往评论区</n-text>
+              <n-text>{{ $t("menu.comment") }}</n-text>
             </div>
             <div
               class="item"
@@ -230,7 +230,7 @@
               <n-icon size="20">
                 <Video theme="filled" />
               </n-icon>
-              <n-text>观看 MV</n-text>
+              <n-text>{{ $t("menu.mv") }}</n-text>
             </div>
             <div
               class="item"
@@ -244,14 +244,14 @@
               <n-icon size="20">
                 <LinkTwo theme="filled" />
               </n-icon>
-              <n-text>复制歌曲链接</n-text>
+              <n-text>{{ $t("menu.copy") }}</n-text>
             </div>
             <div class="item">
               <n-icon size="20">
                 <Voice theme="filled" />
               </n-icon>
               <n-text>
-                歌手：
+                {{ $t("general.name.artists") }}:
                 <AllArtists
                   class="text-hidden"
                   :artistsData="drawerData.artist"
@@ -265,7 +265,9 @@
               <n-icon size="20">
                 <RecordDisc theme="filled" />
               </n-icon>
-              <n-text>专辑：{{ drawerData.album.name }}</n-text>
+              <n-text>
+                {{ $t("general.name.album") }}: {{ drawerData.album.name }}
+              </n-text>
             </div>
             <div
               v-if="router.currentRoute.value.name === 'user-cloud'"
@@ -280,7 +282,7 @@
               <n-icon size="20">
                 <FileMusic theme="filled" />
               </n-icon>
-              <n-text>歌曲信息纠正</n-text>
+              <n-text>{{ $t("menu.match") }}</n-text>
             </div>
             <div
               v-if="router.currentRoute.value.name === 'user-cloud'"
@@ -295,7 +297,7 @@
               <n-icon size="20">
                 <DeleteFour theme="filled" />
               </n-icon>
-              <n-text>从云盘中删除</n-text>
+              <n-text>{{ $t("menu.delete") }}</n-text>
             </div>
           </div>
         </n-drawer-content>
@@ -333,12 +335,14 @@ import { useRouter } from "vue-router";
 import { setCloudDel } from "@/api/user";
 import { NIcon } from "naive-ui";
 import { soundStop } from "@/utils/Player";
+import { useI18n } from "vue-i18n";
 import AllArtists from "./AllArtists.vue";
 import AddPlaylist from "@/components/DataModal/AddPlaylist.vue";
 import CloudMatch from "@/components/DataModal/CloudMatch.vue";
 import DownloadSong from "@/components/DataModal/DownloadSong.vue";
 import SmallSongData from "./SmallSongData.vue";
 
+const { t } = useI18n();
 const router = useRouter();
 const music = musicStore();
 const setting = settingStore();
@@ -370,22 +374,6 @@ const rightMenuOptions = ref(null);
 const drawerShow = ref(false);
 const drawerData = ref(null);
 
-// 复制歌曲链接或ID
-const copySongData = (id, url = true) => {
-  if (navigator.clipboard) {
-    try {
-      navigator.clipboard.writeText(
-        url ? `https://music.163.com/#/song?id=${id}` : id
-      );
-      $message.success(`歌曲${url ? "链接" : " ID "}复制成功`);
-    } catch (err) {
-      $message.error("复制失败：", err);
-    }
-  } else {
-    $message.error("您的浏览器暂不支持该操作");
-  }
-};
-
 // 图标渲染
 const renderIcon = (icon, filled = true) => {
   return () => {
@@ -407,7 +395,7 @@ const openRightMenu = (e, data) => {
     rightMenuOptions.value = [
       {
         key: "play",
-        label: "立即播放",
+        label: t("menu.play"),
         icon: renderIcon(PlayOne),
         props: {
           onClick: () => {
@@ -417,7 +405,7 @@ const openRightMenu = (e, data) => {
       },
       {
         key: "nextPlay",
-        label: "下一首播放",
+        label: t("menu.nextPlay"),
         icon: renderIcon(AddMusic),
         show:
           music.getPersonalFmMode || music.getPlaySongData?.id == data.id
@@ -431,7 +419,7 @@ const openRightMenu = (e, data) => {
       },
       {
         key: "add",
-        label: "添加到歌单",
+        label: t("menu.add"),
         icon: renderIcon(ListAdd),
         show: user.userLogin ? true : false,
         props: {
@@ -442,7 +430,7 @@ const openRightMenu = (e, data) => {
       },
       {
         key: "download",
-        label: "歌曲下载",
+        label: t("menu.download"),
         icon: renderIcon(DownloadFour),
         props: {
           onClick: () => {
@@ -452,7 +440,7 @@ const openRightMenu = (e, data) => {
       },
       {
         key: "comment",
-        label: "前往评论区",
+        label: t("menu.comment"),
         icon: renderIcon(Comments, false),
         props: {
           onClick: () => {
@@ -462,7 +450,7 @@ const openRightMenu = (e, data) => {
       },
       {
         key: "mv",
-        label: "观看 MV",
+        label: t("menu.mv"),
         icon: renderIcon(Video, false),
         show: data.mv && data.mv != 0 ? true : false,
         props: {
@@ -478,7 +466,7 @@ const openRightMenu = (e, data) => {
       },
       {
         key: "delete",
-        label: "从云盘中删除",
+        label: t("menu.delete"),
         icon: renderIcon(DeleteFour),
         show: router.currentRoute.value.name === "user-cloud" ? true : false,
         props: {
@@ -489,7 +477,7 @@ const openRightMenu = (e, data) => {
       },
       {
         key: "match",
-        label: "歌曲信息纠正",
+        label: t("menu.match"),
         icon: renderIcon(FileMusic),
         show: router.currentRoute.value.name === "user-cloud" ? true : false,
         props: {
@@ -504,7 +492,7 @@ const openRightMenu = (e, data) => {
       },
       {
         key: "search",
-        label: "同名搜索",
+        label: t("menu.search"),
         icon: renderIcon(Search, false),
         props: {
           onClick: () => {
@@ -520,7 +508,10 @@ const openRightMenu = (e, data) => {
       },
       {
         key: "copyId",
-        label: "复制歌曲 ID",
+        label: t("menu.copy", {
+          name: t("general.name.song"),
+          other: "ID",
+        }),
         icon: renderIcon(FileMusic, false),
         props: {
           onClick: () => {
@@ -530,7 +521,10 @@ const openRightMenu = (e, data) => {
       },
       {
         key: "copy",
-        label: "复制歌曲链接",
+        label: t("menu.copy", {
+          name: t("general.name.song"),
+          other: t("general.name.link"),
+        }),
         icon: renderIcon(LinkTwo),
         props: {
           onClick: () => {
@@ -550,23 +544,42 @@ const onClickoutside = () => {
   rightMenuShow.value = false;
 };
 
+// 复制歌曲链接或ID
+const copySongData = (id, url = true) => {
+  if (navigator.clipboard) {
+    try {
+      navigator.clipboard.writeText(
+        url ? `https://music.163.com/#/song?id=${id}` : id
+      );
+      $message.success(t("general.message.copySuccess"));
+    } catch (err) {
+      console.error(t("general.message.copyFailure"), err);
+      $message.error(t("general.message.copyFailure"));
+    }
+  } else {
+    $message.error(t("general.message.notSupported"));
+  }
+};
+
 // 云盘歌曲删除
 const delCloudSong = (data) => {
   $dialog.warning({
     class: "s-dialog",
-    title: "歌曲删除",
-    content: "确认从云盘中删除歌曲 " + data.name + " ？",
-    positiveText: "删除",
-    negativeText: "取消",
+    title: t("general.dialog.delete"),
+    content: t("menu.deleteQuestion", {
+      name: data.name,
+    }),
+    positiveText: t("general.dialog.delete"),
+    negativeText: t("general.dialog.cancel"),
     onPositiveClick: () => {
       setCloudDel(data.id).then((res) => {
         if (res.code == 200) {
-          $message.success("云盘歌曲删除成功");
+          $message.success(t("general.message.deleteSuccess"));
           props.listData.forEach((v, i) => {
             if (v.id == data.id) props.listData.splice(i, 1);
           });
         } else {
-          $message.error("云盘歌曲删除失败");
+          $message.error(t("general.message.deleteFailure"));
         }
       });
     },

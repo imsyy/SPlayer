@@ -100,6 +100,7 @@ export const getMusicDetail = (ids) => {
     url: "/song/detail",
     params: {
       ids,
+      timestamp: new Date().getTime(),
     },
   });
 };

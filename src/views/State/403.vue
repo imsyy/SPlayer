@@ -2,11 +2,13 @@
   <n-result
     class="error"
     status="403"
-    title="禁止访问"
-    description="总有些门是对你关闭的"
+    :title="$t('state.prohibition')"
+    :description="$t('state.prohibitionDesc')"
   >
     <template #footer>
-      <n-button type="primary" @click="router.go(-1)">回到上一页</n-button>
+      <n-button type="primary" @click="router.go(-1)">{{
+        $t("general.name.goBack")
+      }}</n-button>
     </template>
   </n-result>
 </template>

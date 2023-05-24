@@ -6,12 +6,14 @@
 
 <script setup>
 import { userStore } from "@/store";
+import { useI18n } from "vue-i18n";
 import CoverLists from "@/components/DataList/CoverLists.vue";
 
+const { t } = useI18n();
 const user = userStore();
 
 onMounted(() => {
-  $setSiteTitle("音乐库 - 收藏的专辑");
+  $setSiteTitle(t("nav.user") + " - " + t("nav.userChildren.album"));
   if (!user.getUserAlbumLists.has && !user.getUserAlbumLists.isLoading)
     user.setUserAlbumLists();
 });

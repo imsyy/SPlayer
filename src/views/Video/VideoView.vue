@@ -16,21 +16,21 @@
         <div class="num">
           <span class="playCount">
             <n-icon :component="OndemandVideoFilled" />
-            {{ formatNumber(videoData.playCount) }} 次播放
+            {{ formatNumber(videoData.playCount) }}
           </span>
           <span class="shareCount">
             <n-icon :component="ShareFilled" />
-            {{ formatNumber(videoData.shareCount) }} 次分享
+            {{ formatNumber(videoData.shareCount) }}
           </span>
           <span class="commentCount">
             <n-icon :component="MessageOutlined" />
-            {{ formatNumber(videoData.commentCount) }} 条评论
+            {{ formatNumber(videoData.commentCount) }}
           </span>
         </div>
       </div>
       <div class="comment" v-if="commentData.allComments[0]">
         <div class="hotComments" v-if="commentData.hotComments[0]">
-          <n-h6 prefix="bar"> 热门评论 </n-h6>
+          <n-h6 prefix="bar"> {{ $t("general.name.hotComments") }} </n-h6>
           <div class="loading" v-if="!commentData.hotComments[0]">
             <n-skeleton text :repeat="3" />
             <n-skeleton text style="width: 60%" />
@@ -45,8 +45,8 @@
         </div>
         <div class="allComments" ref="allCommentsRef">
           <n-h6 prefix="bar">
-            全部评论
-            <span class="count">{{ commentsCount }} 条</span>
+            {{ $t("general.name.allComments") }}
+            <span class="count">{{ commentsCount }} +</span>
           </n-h6>
           <div class="loading" v-if="!commentData.allComments[0]">
             <n-skeleton text :repeat="3" />
@@ -68,7 +68,7 @@
       </div>
     </section>
     <section class="simiVideo">
-      <n-h6 prefix="bar"> 相似视频 </n-h6>
+      <n-h6 prefix="bar"> {{ $t("general.name.simiVideo") }} </n-h6>
       <VideoLists v-if="simiVideo[0]" :listData="simiVideo" />
     </section>
   </div>
@@ -76,7 +76,7 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { musicStore } from "@/store";
+import { musicStore, settingStore } from "@/store";
 import { getVideoDetail, getVideoUrl, getSimiVideo } from "@/api/video";
 import { getComment } from "@/api/comment";
 import { formatNumber, getSongTime } from "@/utils/timeTools";
@@ -85,6 +85,7 @@ import {
   ShareFilled,
   MessageOutlined,
 } from "@vicons/material";
+import { useI18n } from "vue-i18n";
 import VideoLists from "@/components/DataList/VideoLists.vue";
 import AllArtists from "@/components/DataList/AllArtists.vue";
 import Comment from "@/components/Comment/index.vue";
@@ -92,8 +93,10 @@ import Pagination from "@/components/Pagination/index.vue";
 import Plyr from "plyr";
 import "plyr/dist/plyr.css";
 
+const { t } = useI18n();
 const router = useRouter();
 const music = musicStore();
+const setting = settingStore();
 
 // 视频 id
 const videoId = ref(router.currentRoute.value.query.id);
@@ -113,19 +116,22 @@ const playerOptions = {
     default: 1080,
     options: [1080, 720, 480, 240],
   },
-  i18n: {
-    play: "播放",
-    pause: "暂停",
-    speed: "速度",
-    settings: "设置",
-    normal: "正常",
-    quality: "画质",
-    pip: "画中画",
-    enterFullscreen: "开启全屏",
-    exitFullscreen: "退出全屏",
-    mute: "音量",
-    unmute: "静音",
-  },
+  i18n:
+    setting.language === "zh-CN"
+      ? {
+          play: "播放",
+          pause: "暂停",
+          speed: "速度",
+          settings: "设置",
+          normal: "正常",
+          quality: "画质",
+          pip: "画中画",
+          enterFullscreen: "开启全屏",
+          exitFullscreen: "退出全屏",
+          mute: "音量",
+          unmute: "静音",
+        }
+      : {},
   tooltips: {
     controls: true,
   },
@@ -142,7 +148,13 @@ const commentsCount = ref(0);
 const getVideoData = (id) => {
   getVideoDetail(id).then((res) => {
     videoData.value = res.data;
-    $setSiteTitle(res.data.name + " - " + res.data.artists[0].name + " - 视频");
+    $setSiteTitle(
+      res.data.name +
+        " - " +
+        res.data.artists[0].name +
+        " - " +
+        t("general.name.videos")
+    );
     const requests = res.data.brs.map((v) => {
       return getVideoUrl(id, v.br);
     });
@@ -163,8 +175,8 @@ const getVideoData = (id) => {
         };
       })
       .catch((err) => {
-        console.error(err);
-        $message.error("视频加载失败，请重试");
+        console.error(t("general.message.userChildren.playlist"), err);
+        $message.error(t("general.message.userChildren.playlist"));
       });
     // 请求后回顶
     if (typeof $scrollToTop !== "undefined") $scrollToTop();
@@ -221,7 +233,6 @@ onMounted(() => {
   getCommentData(videoId.value);
   // 播放器事件
   player.value.on("playing", () => {
-    console.log("视频开始播放");
     // 隐藏控制条及暂停音乐
     music.setPlayBarState(false);
     music.setPlayState(false);

@@ -1,15 +1,15 @@
 <template>
   <div class="setting">
-    <div class="title">全局设置</div>
+    <div class="title">{{ $t("nav.avatar.setting") }}</div>
     <n-tabs
       class="main-tab"
       type="segment"
       @update:value="tabChange"
       v-model:value="tabValue"
     >
-      <n-tab name="main"> 基础 </n-tab>
-      <n-tab name="player"> 播放器 </n-tab>
-      <n-tab name="other"> 其他 </n-tab>
+      <n-tab name="main">{{ $t("setting.main") }}</n-tab>
+      <n-tab name="player">{{ $t("setting.player") }}</n-tab>
+      <n-tab name="other">{{ $t("general.type.other") }}</n-tab>
     </n-tabs>
     <main class="content">
       <router-view v-slot="{ Component }">
@@ -25,7 +25,9 @@
 
 <script setup>
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const router = useRouter();
 
 // Tab 默认选中
@@ -48,7 +50,7 @@ watch(
 );
 
 onMounted(() => {
-  $setSiteTitle("全局设置");
+  $setSiteTitle(t("nav.avatar.setting"));
   // 回顶
   if (typeof $scrollToTop !== "undefined") $scrollToTop();
 });

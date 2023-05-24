@@ -2,11 +2,13 @@
   <n-result
     class="error"
     status="404"
-    title="资源不存在"
-    description="怎么跑到这来了"
+    :title="$t('state.notFound')"
+    :description="$t('state.notFoundDesc')"
   >
     <template #footer>
-      <n-button type="primary" @click="router.go(-1)">回到上一页</n-button>
+      <n-button type="primary" @click="router.go(-1)">{{
+        $t("general.name.goBack")
+      }}</n-button>
     </template>
   </n-result>
 </template>

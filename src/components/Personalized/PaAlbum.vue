@@ -1,8 +1,10 @@
 <template>
   <div class="paalbum">
     <n-h3 class="title" prefix="bar">
-      新碟上架
-      <span class="more" @click="router.push('/new-album?page=1')">更多</span>
+      {{ $t("home.title.newAlbum") }}
+      <span class="more" @click="router.push('/new-album?page=1')">
+        {{ $t("home.title.more") }}
+      </span>
     </n-h3>
     <CoverLists
       listType="album"

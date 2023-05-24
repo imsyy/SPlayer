@@ -6,17 +6,18 @@
         class="goback"
         @click="router.push(`/comment?id=${music.getPlaySongData.id}&page=1`)"
         content-style="padding: 6px"
-        >前往当前播放歌曲
+      >
+        {{ $t("general.name.toCurrentlySong") }}
       </n-card>
     </Transition>
     <div class="title" v-if="songId">
-      <span class="key">全部评论</span>
+      <span class="key">{{ $t("general.name.allComments") }}</span>
       <n-card class="song">
         <SmallSongData :getDataByID="songId" />
       </n-card>
     </div>
     <div class="title" v-else>
-      <span class="key">缺少必要参数</span>
+      <span class="key">{{ $t("general.name.noKeywords") }}</span>
       <br />
       <n-button
         strong
@@ -24,12 +25,12 @@
         @click="router.go(-1)"
         style="margin-top: 20px"
       >
-        返回上一页
+        {{ $t("general.name.goBack") }}
       </n-button>
     </div>
     <div class="commentData" v-if="songId && commentData.allComments[0]">
       <div class="hotComments" v-if="commentData.hotComments[0]">
-        <n-h6 prefix="bar"> 热门评论 </n-h6>
+        <n-h6 prefix="bar"> {{ $t("general.name.hotComments") }} </n-h6>
         <div class="loading" v-if="!commentData.hotComments[0]">
           <n-skeleton text :repeat="3" />
           <n-skeleton text style="width: 60%" />
@@ -44,8 +45,8 @@
       </div>
       <div class="allComments" ref="allCommentsRef">
         <n-h6 prefix="bar">
-          全部评论
-          <span class="count">{{ commentsCount }} 条</span>
+          {{ $t("general.name.allComments") }}
+          <span class="count">{{ commentsCount }} +</span>
         </n-h6>
         <div class="loading" v-if="!commentData.allComments[0]">
           <n-skeleton text :repeat="3" />
@@ -73,9 +74,12 @@
 import { musicStore } from "@/store";
 import { useRouter } from "vue-router";
 import { getComment } from "@/api/comment";
+import { useI18n } from "vue-i18n";
 import SmallSongData from "@/components/DataList/SmallSongData.vue";
 import Comment from "@/components/Comment/index.vue";
 import Pagination from "@/components/Pagination/index.vue";
+
+const { t } = useI18n();
 const router = useRouter();
 const music = musicStore();
 
@@ -114,7 +118,7 @@ const getCommentData = (id, offset = 0) => {
       commentData.allComments = res.comments;
       commentsCount.value = res.total;
     } else {
-      $message.info("暂无评论");
+      $message.error(t("general.message.acquisitionFailed"));
       router.go(-1);
     }
     // 请求后回顶
@@ -134,7 +138,7 @@ const pageNumberChange = (val) => {
 };
 
 onMounted(() => {
-  $setSiteTitle("全部评论");
+  $setSiteTitle(t("general.name.allComments"));
   // 获取评论数据
   if (songId.value) getCommentData(songId.value, (pageNumber.value - 1) * 20);
 });

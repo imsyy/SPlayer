@@ -19,12 +19,14 @@
           <n-text class="creator">{{ playListDetail.creator.nickname }}</n-text>
         </div>
         <div class="intr">
-          <span class="name">歌单简介</span>
+          <span class="name">{{
+            $t("general.name.desc", { name: $t("general.name.playlist") })
+          }}</span>
           <span class="desc text-hidden">
             {{
               playListDetail.description
                 ? playListDetail.description
-                : "太懒了吧，连简介都不写"
+                : $t("oyher.noDesc")
             }}
           </span>
           <n-button
@@ -35,7 +37,7 @@
             v-if="playListDetail?.description?.length > 70"
             @click="playListDescShow = true"
           >
-            全部简介
+            {{ $t("general.name.allDesc") }}
           </n-button>
         </div>
         <n-space class="tag" v-if="playListDetail.tags">
@@ -55,7 +57,7 @@
             <template #icon>
               <n-icon :component="MusicList" />
             </template>
-            播放
+            {{ $t("general.name.play") }}
           </n-button>
           <n-dropdown
             placement="right-start"
@@ -75,17 +77,20 @@
     <div class="right">
       <div class="meta">
         <n-text class="name">{{ playListDetail.name }}</n-text>
-        <n-text class="creator">{{ playListDetail.creator.nickname }}</n-text>
-        <div class="time">
-          <div class="createTime">
-            <span class="num">创建时间：</span>
-            {{ getLongTime(playListDetail.createTime) }}
+        <n-text class="creator">
+          <n-icon :depth="3" :component="People" />
+          {{ playListDetail.creator.nickname }}
+        </n-text>
+        <n-space class="time">
+          <div class="num">
+            <n-icon :depth="3" :component="Newlybuild" />
+            <n-text v-html="getLongTime(playListDetail.createTime)" />
           </div>
-          <div class="updateTime">
-            <span class="num">更新时间：</span>
-            {{ getLongTime(playListDetail.updateTime) }}
+          <div class="num">
+            <n-icon :depth="3" :component="Write" />
+            <n-text v-html="getLongTime(playListDetail.updateTime)" />
           </div>
-        </div>
+        </n-space>
       </div>
       <DataLists :listData="playListData" />
       <Pagination
@@ -101,7 +106,7 @@
         class="s-modal"
         v-model:show="playListDescShow"
         preset="card"
-        title="歌单简介"
+        :title="$t('general.name.desc', { name: $t('general.name.playlist') })"
         :bordered="false"
       >
         <n-scrollbar>
@@ -112,11 +117,13 @@
   </div>
   <div class="title" v-else-if="!playListId || !loadingState">
     <span class="key">{{
-      loadingState ? "参数不完整" : "歌单信息加载失败"
+      loadingState
+        ? $t("general.name.noKeywords")
+        : $t("general.message.acquisitionFailed")
     }}</span>
     <br />
     <n-button strong secondary @click="router.go(-1)" style="margin-top: 20px">
-      返回上一页
+      {{ $t("general.name.goBack") }}
     </n-button>
   </div>
   <div class="loading" v-else>
@@ -150,11 +157,16 @@ import {
   DeleteFour,
   Like,
   Unlike,
+  Newlybuild,
+  Write,
+  People,
 } from "@icon-park/vue-next";
+import { useI18n } from "vue-i18n";
 import DataLists from "@/components/DataList/DataLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
 // import SpecialPlayLists from "./SpecialPlayLists.json";
 
+const { t } = useI18n();
 const router = useRouter();
 const user = userStore();
 const music = musicStore();
@@ -222,7 +234,10 @@ const setDropdownOptions = () => {
   dropdownOptions.value = [
     {
       key: "copy",
-      label: "复制歌单链接",
+      label: t("menu.copy", {
+        name: t("general.name.playlist"),
+        other: t("general.name.link"),
+      }),
       props: {
         onClick: () => {
           if (navigator.clipboard) {
@@ -230,12 +245,13 @@ const setDropdownOptions = () => {
               navigator.clipboard.writeText(
                 `https://music.163.com/#/playlist?id=${playListId.value}`
               );
-              $message.success("歌单链接复制成功");
+              $message.success(t("general.message.copySuccess"));
             } catch (err) {
-              $message.error("复制失败：", err);
+              console.error(t("general.message.copyFailure"), err);
+              $message.error(t("general.message.copyFailure"));
             }
           } else {
-            $message.error("您的浏览器暂不支持该操作");
+            $message.error(t("general.message.notSupported"));
           }
         },
       },
@@ -243,7 +259,7 @@ const setDropdownOptions = () => {
     },
     {
       key: "del",
-      label: "删除歌单",
+      label: t("menu.del"),
       show: user.userLogin && isCanDelete(playListId.value),
       props: {
         onClick: () => {
@@ -254,7 +270,9 @@ const setDropdownOptions = () => {
     },
     {
       key: "like",
-      label: isLikeOrDislike(playListId.value) ? "收藏歌单" : "取消收藏歌单",
+      label: isLikeOrDislike(playListId.value)
+        ? t("menu.collection", { name: t("general.name.playlist") })
+        : t("menu.cancelCollection", { name: t("general.name.playlist") }),
       show: user.userLogin && !isCanDelete(playListId.value),
       props: {
         onClick: () => {
@@ -275,12 +293,16 @@ const getPlayListDetailData = (id) => {
       totalCount.value = res.playlist.trackCount;
       // 歌单信息
       playListDetail.value = res.playlist;
-      $setSiteTitle(res.playlist.name + " - 歌单");
+      $setSiteTitle(res.playlist.name + " - " + t("general.name.playlist"));
     })
     .catch((err) => {
-      $setSiteTitle("歌单详情");
+      $setSiteTitle(t("general.name.playlist"));
       loadingState.value = false;
-      console.error("获取歌单信息失败：" + err);
+      console.error(
+        $message.error(t("general.message.acquisitionFailed")),
+        err
+      );
+      $message.error(t("general.message.acquisitionFailed"));
     });
 };
 
@@ -306,7 +328,7 @@ const getAllPlayListData = (id, limit = 30, offset = 0) => {
         });
       });
     } else {
-      $message.error("获取歌单内歌曲失败");
+      $message.error(t("general.message.acquisitionFailed"));
     }
     // 请求后回顶
     if (typeof $scrollToTop !== "undefined") $scrollToTop();
@@ -344,27 +366,29 @@ const playAllSong = () => {
       music.setPlayState(true);
     }
   } catch (err) {
-    console.error("播放全部歌曲失败：" + err);
-    $message.error("播放全部歌曲失败，请重试");
+    console.error($message.error(t("general.message.operationFailed")), err);
+    $message.error($message.error(t("general.message.operationFailed")));
   }
 };
 
 // 删除歌单
 const toDelPlayList = (data) => {
   if (data.id === user.getUserPlayLists?.own[0].id) {
-    $message.warning("默认歌单无法删除");
+    $message.warning(t("menu.unableToDelete"));
     return false;
   }
   $dialog.warning({
     class: "s-dialog",
-    title: "删除歌单",
-    content: "确认删除歌单 " + data.name + "？删除后将不可恢复！",
-    positiveText: "删除",
-    negativeText: "取消",
+    title: t("general.dialog.delete"),
+    content: t("menu.delQuestion", {
+      name: data.name,
+    }),
+    positiveText: t("general.dialog.delete"),
+    negativeText: t("general.dialog.cancel"),
     onPositiveClick: () => {
       delPlayList(data.id).then((res) => {
         if (res.code === 200) {
-          $message.success("删除成功");
+          $message.success(t("general.message.deleteSuccess"));
           user.setUserPlayLists();
           router.push("/user/playlists");
         }
@@ -376,19 +400,46 @@ const toDelPlayList = (data) => {
 // 收藏/取消收藏
 const toChangeLike = async (id) => {
   const type = isLikeOrDislike(id) ? 1 : 2;
+  const likeMsg = t("general.name.playlist");
+  const isThereASpace = setting.language === "zh-CN" ? "" : " ";
   try {
     const res = await likePlaylist(type, id);
     if (res.code === 200) {
-      $message.success(`歌单${type == 1 ? "收藏成功" : "取消收藏成功"}`);
+      $message.success(
+        `${likeMsg + isThereASpace}${
+          type == 1
+            ? t("menu.collection", { name: t("general.dialog.success") })
+            : t("menu.cancelCollection", { name: t("general.dialog.success") })
+        }`
+      );
       user.setUserPlayLists(() => {
         setDropdownOptions();
       });
     } else {
-      $message.error(`歌单${type == 1 ? "收藏失败" : "取消收藏失败"}`);
+      $message.error(
+        `${likeMsg + isThereASpace}${
+          type == 1
+            ? t("menu.collection", { name: t("general.dialog.failed") })
+            : t("menu.cancelCollection", { name: t("general.dialog.failed") })
+        }`
+      );
     }
   } catch (err) {
-    $message.error(`歌单${type == 1 ? "收藏失败" : "取消收藏失败"}`);
-    console.error(`歌单${type == 1 ? "收藏失败：" : "取消收藏失败："}` + err);
+    $message.error(
+      `${likeMsg + isThereASpace}${
+        type == 1
+          ? t("menu.collection", { name: t("general.dialog.failed") })
+          : t("menu.cancelCollection", { name: t("general.dialog.failed") })
+      }`
+    );
+    console.error(
+      `${likeMsg + isThereASpace}${
+        type == 1
+          ? t("menu.collection", { name: t("general.dialog.failed") })
+          : t("menu.cancelCollection", { name: t("general.dialog.failed") })
+      }`,
+      err
+    );
   }
 };
 
@@ -580,6 +631,8 @@ watch(
         font-weight: bold;
       }
       .creator {
+        display: flex;
+        align-items: center;
         margin-top: 6px;
         font-size: 16px;
         opacity: 0.8;
@@ -588,6 +641,9 @@ watch(
         &:hover {
           opacity: 1;
           color: var(--main-color);
+        }
+        .n-icon {
+          margin-right: 6px;
         }
       }
       .time {
@@ -600,10 +656,13 @@ watch(
           align-items: flex-start;
         }
         .num {
-          color: #999;
-        }
-        div {
-          margin-right: 12px;
+          // color: #999;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          .n-icon {
+            margin-right: 6px;
+          }
         }
       }
     }

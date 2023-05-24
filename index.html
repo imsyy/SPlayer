@@ -1,41 +1,79 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="<%- logo %>" />
+    <link rel="apple-touch-icon" href="<%- logo %>" />
+    <link rel="bookmark" href="<%- logo %>" />
+    <link
+      rel="apple-touch-icon-precomposed"
+      sizes="200x200"
+      href="<%- logo %>"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" /> -->
+    <title><%- title %></title>
+    <meta name="apple-mobile-web-app-title" content="<%- title %>" />
+    <meta name="author" content="<%- author %>" />
+    <meta name="keywords" content="<%- keywords %>" />
+    <meta name="description" content="<%- description %>" />
+    <meta name="theme-color" content="#ffffff" />
+    <!-- HarmonyOS Sans -->
+    <link
+      rel="stylesheet"
+      href="https://s1.hdslb.com/bfs/static/jinkela/long/font/regular.css"
+    />
+    <!-- IE Out -->
+    <script>
+      if (
+        /*@cc_on!@*/ false ||
+        (!!window.MSInputMethodContext && !!document.documentMode)
+      )
+        window.location.href =
+          "https://support.dmeng.net/upgrade-your-browser.html?referrer=" +
+          encodeURIComponent(window.location.href);
+    </script>
+    <% if (tongji) { %>
+    <!-- 百度统计 -->
+    <script>
+      var _hmt = _hmt || [];
+      (function () {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?<%- tongji %>";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+      })();
+    </script>
+    <% } %>
+    <style>
+      noscript {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: calc(100vh - 16px);
+        font-family: "HarmonyOS_Regular", sans-serif;
+      }
+      noscript .title {
+        font-size: 30px;
+        font-weight: bold;
+        margin-top: 50px;
+      }
+      noscript .tip {
+        opacity: 0.6;
+        margin: 0;
+      }
+    </style>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <link rel="icon" href="<%- logo %>">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" /> -->
-  <title><%- title %></title>
-  <meta name="author" content="<%- author %>" />
-  <meta name="keywords" content="<%- keywords %>" />
-  <meta name="description" content="<%- description %>" />
-  <meta name="theme-color" content="#ffffff">
-  <!-- HarmonyOS Sans -->
-  <link rel="stylesheet" href="https://s1.hdslb.com/bfs/static/jinkela/long/font/regular.css" />
-  <!-- IE Out -->
-  <script>
-    if ( /*@cc_on!@*/ false || (!!window.MSInputMethodContext && !!document.documentMode))
-      window.location.href =
-      "https://support.dmeng.net/upgrade-your-browser.html?referrer=" + encodeURIComponent(window.location.href)
-  </script>
-  <% if (tongji) { %>
-  <!-- 百度统计 -->
-  <script>
-    var _hmt = _hmt || [];
-    (function () {
-      var hm = document.createElement("script");
-      hm.src = "https://hm.baidu.com/hm.js?<%- tongji %>";
-      var s = document.getElementsByTagName("script")[0];
-      s.parentNode.insertBefore(hm, s);
-    })();
-  </script>
-  <% } %>
-</head>
-
-<body>
-  <div id="app"></div>
-  <script type="module" src="/src/main.js"></script>
-</body>
-
+  <body>
+    <div id="app"></div>
+    <noscript>
+      <img src="<%- logo %>" alt="logo" />
+      <p class="title"><%- title %></p>
+      <p class="tip">请开启 JavaScript</p>
+    </noscript>
+    <script type="module" src="/src/main.js"></script>
+  </body>
 </html>

@@ -16,8 +16,11 @@ import { getSearchData } from "@/api/search";
 // import { getMusicDetail } from "@/api/song";
 import { useRouter } from "vue-router";
 import { getSongTime } from "@/utils/timeTools";
+import { useI18n } from "vue-i18n";
 import DataLists from "@/components/DataList/DataLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
+
+const { t } = useI18n();
 const router = useRouter();
 
 // 搜索数据
@@ -58,7 +61,7 @@ const getSearchDataList = (keywords, limit = 30, offset = 0, type = 1) => {
         });
       });
     } else {
-      $message.error("搜索内容为空");
+      $message.error(t("general.message.acquisitionFailed"));
     }
     // 请求后回顶
     if (typeof $scrollToTop !== "undefined") $scrollToTop();

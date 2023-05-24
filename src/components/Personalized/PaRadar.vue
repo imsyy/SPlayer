@@ -5,8 +5,8 @@
     <div class="left">
       <n-icon class="icon" :component="RadarThree" size="30" />
       <div class="title">
-        <n-text class="name">私人雷达</n-text>
-        <n-text class="tip">根据听歌记录为你打造</n-text>
+        <n-text class="name">{{ $t("home.modules.radar.title") }}</n-text>
+        <n-text class="tip">{{ $t("home.modules.radar.subtitle") }}</n-text>
       </div>
     </div>
     <div class="right">

@@ -1,6 +1,8 @@
 <template>
   <div class="toplists">
-    <n-divider v-if="toplistData.officialList[0]">官方榜</n-divider>
+    <n-divider v-if="toplistData.officialList[0]">
+      {{ $t("nav.officialList") }}
+    </n-divider>
     <Transition mode="out-in">
       <n-grid
         class="official"
@@ -49,7 +51,7 @@
         </n-gi>
       </n-grid>
     </Transition>
-    <n-divider>全球榜</n-divider>
+    <n-divider>{{ $t("nav.globalList") }}</n-divider>
     <CoverLists :listData="toplistData.globalList" listType="topList" />
   </div>
 </template>
@@ -58,8 +60,10 @@
 import { getToplist } from "@/api/album";
 import { useRouter } from "vue-router";
 import { formatNumber } from "@/utils/timeTools";
+import { useI18n } from "vue-i18n";
 import CoverLists from "@/components/DataList/CoverLists.vue";
 
+const { t } = useI18n();
 const router = useRouter();
 
 // 排行榜数据
@@ -91,13 +95,13 @@ const getToplistData = () => {
       });
       console.log(toplistData);
     } else {
-      $message.error("排行榜获取失败");
+      $message.error(t("general.message.acquisitionFailed"));
     }
   });
 };
 
 onMounted(() => {
-  $setSiteTitle("发现 - 排行榜");
+  $setSiteTitle(t("nav.discover") + " - " + t("nav.discoverChildren.toplists"));
   getToplistData();
 });
 </script>

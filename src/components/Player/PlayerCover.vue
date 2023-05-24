@@ -27,7 +27,9 @@
         <div class="desc">
           <span class="name text-hidden">
             {{
-              music.getPlaySongData ? music.getPlaySongData.name : "暂无歌曲"
+              music.getPlaySongData
+                ? music.getPlaySongData.name
+                : $t("other.noSong")
             }}
           </span>
           <div v-if="music.getPlaySongData" class="message">

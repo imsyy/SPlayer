@@ -53,7 +53,7 @@
         <!-- 提示文本 -->
         <Transition name="lrc">
           <div class="tip" v-show="lrcMouseStatus">
-            <n-text>点击选中的歌词以调整播放进度</n-text>
+            <n-text>{{ $t("other.lrcClicks") }}</n-text>
           </div>
         </Transition>
         <div class="left">
@@ -78,7 +78,7 @@
                   <span>{{
                     music.getPlaySongData
                       ? music.getPlaySongData.name
-                      : "暂无歌曲"
+                      : $t("other.noSong")
                   }}</span>
                   <span
                     v-if="music.getPlaySongData && music.getPlaySongData.alia"

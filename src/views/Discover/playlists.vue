@@ -19,11 +19,11 @@
         class="s-modal"
         v-model:show="catModalShow"
         preset="card"
-        title="歌单分类"
+        :title="$t('general.name.playlistType')"
         :bordered="false"
       >
         <template #header>
-          歌单分类
+          {{ $t("general.name.playlistType") }}
           <n-tag
             round
             class="tag"
@@ -37,7 +37,7 @@
             :bordered="false"
             @click="changeTagName('全部歌单')"
           >
-            全部歌单
+            {{ $t("general.name.allPLaylist") }}
           </n-tag>
         </template>
         <n-scrollbar>
@@ -76,7 +76,9 @@
               </n-list-item>
             </n-list>
           </div>
-          <div class="error" v-else>分类数据获取失败</div>
+          <div class="error" v-else>
+            {{ $t("general.message.acquisitionFailed") }}
+          </div>
         </n-scrollbar>
       </n-modal>
       <!-- 精品歌单开关 -->
@@ -84,7 +86,7 @@
         v-if="getHaveHqPlaylists(music.highqualityCatList, catName)"
         align="center"
       >
-        <n-text>精品歌单</n-text>
+        <n-text>{{ $t("general.name.bestPlaylist") }}</n-text>
         <n-switch
           v-model:value="hqPLayListOpen"
           @update:value="hqPLayListChange"
@@ -116,7 +118,7 @@
           }
         "
       >
-        加载更多
+        {{ $t("general.name.loadMore") }}
       </n-button>
     </n-space>
   </div>
@@ -128,9 +130,11 @@ import { useRouter } from "vue-router";
 import { musicStore } from "@/store";
 import { getHighqualityPlaylist, getTopPlaylist } from "@/api/playlist";
 import { formatNumber } from "@/utils/timeTools";
+import { useI18n } from "vue-i18n";
 import CoverLists from "@/components/DataList/CoverLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
 
+const { t } = useI18n();
 const router = useRouter();
 const music = musicStore();
 
@@ -206,7 +210,7 @@ const getPlaylistData = (cat = "全部歌单", limit = 30, offset = 0) => {
         });
       });
     } else {
-      $message.error("歌单列表为空");
+      $message.error(t("general.message.acquisitionFailed"));
     }
     // 请求后回顶
     if (typeof $scrollToTop !== "undefined") $scrollToTop();
@@ -240,7 +244,7 @@ const getHqPlaylistData = (cat = "全部歌单", limit = 30) => {
       });
     } else {
       hasMore.value = false;
-      $message.error("精品歌单列表为空");
+      $message.error(t("general.message.acquisitionFailed"));
     }
   });
 };
@@ -315,7 +319,7 @@ watch(
 );
 
 onMounted(() => {
-  $setSiteTitle("发现 - 歌单");
+  $setSiteTitle(t("nav.discover") + " - " + t("general.name.playlist"));
   // 获取歌单分类
   if (!music.catList.sub || !music.highqualityCatList[0])
     music.setCatList(true);

@@ -7,7 +7,7 @@
     :on-after-leave="closeAddToPlaylist"
   >
     <template #header>
-      添加到歌单
+      {{ $t("menu.add") }}
       <n-tag
         round
         class="tag"
@@ -21,32 +21,40 @@
         :bordered="false"
         @click="createPlaylistRef.openCreatePlaylist()"
       >
-        新建歌单
+        {{ $t("menu.create") }}
       </n-tag>
     </template>
-    <n-space vertical class="list" v-if="user.getUserPlayLists.own[0]">
-      <div
-        class="item"
-        v-for="item in user.getUserPlayLists.own.slice(1)"
-        :key="item"
-        @click="addToPlayList(item.id, addToPlaylistId)"
-      >
-        <n-avatar
-          class="pic"
-          :src="
-            item.cover
-              ? item.cover.replace(/^http:/, 'https:') + '?param=60y60'
-              : '/images/pic/default.png'
-          "
-          fallback-src="/images/pic/default.png"
-        />
-        <div class="desc">
-          <n-text class="name">{{ item.name }}</n-text>
-          <n-text class="num">{{ item.trackCount }}首</n-text>
-        </div>
+    <Transition mode="out-in">
+      <div v-if="user.getUserPlayLists.own[0]">
+        <n-space vertical class="list">
+          <div
+            class="item"
+            v-for="item in user.getUserPlayLists.own.slice(1)"
+            :key="item"
+            @click="addToPlayList(item.id, addToPlaylistId)"
+          >
+            <n-avatar
+              class="pic"
+              :src="
+                item.cover
+                  ? item.cover.replace(/^http:/, 'https:') + '?param=60y60'
+                  : '/images/pic/default.png'
+              "
+              fallback-src="/images/pic/default.png"
+            />
+            <div class="desc">
+              <n-text class="name">{{ item.name }}</n-text>
+              <n-text class="num">{{
+                $t("general.name.songSize", {
+                  size: item.trackCount,
+                })
+              }}</n-text>
+            </div>
+          </div>
+        </n-space>
       </div>
-    </n-space>
-    <n-text v-else>歌单列表加载中</n-text>
+      <n-text v-else>{{ $t("general.message.isLoading") }}</n-text>
+    </Transition>
   </n-modal>
   <!-- 新建歌单 -->
   <CreatePlaylist ref="createPlaylistRef" />
@@ -55,8 +63,10 @@
 <script setup>
 import { addSongToPlayList } from "@/api/playlist";
 import { userStore } from "@/store";
+import { useI18n } from "vue-i18n";
 import CreatePlaylist from "./CreatePlaylist.vue";
 
+const { t } = useI18n();
 const user = userStore();
 const createPlaylistRef = ref(null);
 
@@ -66,15 +76,14 @@ const addToPlaylistId = ref(null);
 
 // 收藏到歌单
 const addToPlayList = (pid, tracks) => {
-  console.log("添加" + tracks + "到" + pid);
   addSongToPlayList(pid, tracks).then((res) => {
     console.log(res);
     if (res.status === 200) {
-      $message.success("添加歌曲至歌单成功");
+      $message.success(t("general.message.addSuccess"));
       closeAddToPlaylist();
       user.setUserPlayLists();
     } else {
-      $message.error("添加失败，请重试");
+      $message.error(t("general.message.addFailure"));
     }
   });
 };
@@ -82,7 +91,7 @@ const addToPlayList = (pid, tracks) => {
 // 开启收藏到歌单
 const openAddToPlaylist = (id) => {
   if (!user.userLogin) {
-    $message.error("请登录账号后使用");
+    $message.error(t("general.message.needLogin"));
     return false;
   }
   if (!user.getUserPlayLists.has && !user.getUserPlayLists.isLoading) {
@@ -106,6 +115,15 @@ defineExpose({
 
 <style lang="scss" scoped>
 .add-playlist {
+  .v-enter-active,
+  .v-leave-active {
+    transition: opacity 0.3s ease;
+  }
+
+  .v-enter-from,
+  .v-leave-to {
+    opacity: 0;
+  }
   .list {
     .item {
       display: flex;

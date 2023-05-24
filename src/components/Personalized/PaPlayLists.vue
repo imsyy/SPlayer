@@ -1,9 +1,9 @@
 <template>
   <div class="paplaylists">
     <n-h3 class="title" prefix="bar">
-      推荐歌单
+      {{ $t("home.title.playlists") }}
       <span class="more" @click="router.push('/discover/playlists?page=1')">
-        更多
+        {{ $t("home.title.more") }}
       </span>
     </n-h3>
     <CoverLists

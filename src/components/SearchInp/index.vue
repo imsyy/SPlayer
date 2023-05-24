@@ -3,10 +3,10 @@
     <n-input
       :class="site.searchInputActive ? 'input focus' : 'input'"
       :input-props="{ autoComplete: false }"
+      :placeholder="$t('nav.search.placeholder')"
       ref="searchInpRef"
       round
       clearable
-      placeholder="搜索音乐/视频"
       v-model:value="inputValue"
       @focus="inputFocus"
       @keydown="inputkeydown($event)"
@@ -37,7 +37,7 @@
           >
             <div class="list-title">
               <n-icon size="16" :component="History" />
-              <n-text>搜索历史</n-text>
+              <n-text>{{ $t("nav.search.history") }}</n-text>
             </div>
             <n-space>
               <n-tag
@@ -53,7 +53,7 @@
               <n-icon size="16" :depth="3">
                 <DeleteFour theme="filled" />
               </n-icon>
-              <n-text :depth="3">删除搜索历史</n-text>
+              <n-text :depth="3">{{ $t("nav.search.delHistory") }}</n-text>
             </div>
           </div>
           <div class="hot-list" v-if="searchData.hot[0]">
@@ -61,7 +61,7 @@
               <n-icon size="16">
                 <Fire theme="filled" />
               </n-icon>
-              <n-text>热搜榜</n-text>
+              <n-text>{{ $t("nav.search.hotList") }}</n-text>
             </div>
             <div
               class="hot-item"
@@ -103,19 +103,19 @@
             v-if="Object.keys(searchData.suggest).length === 0"
           >
             <n-icon size="16" :component="Find" />
-            <span>暂无搜索结果</span>
+            <span>{{ $t("nav.search.noSuggestions") }}</span>
           </div>
           <div class="suggest-all" v-else>
             <div class="loading" v-show="!searchData.suggest.order">
               <n-icon size="16" :component="Find" />
-              <span>努力搜索中</span>
+              <span>{{ $t("nav.search.searchTip") }}</span>
             </div>
             <div class="suggest-item" v-if="searchData.suggest.songs">
               <div class="type">
                 <n-icon size="18">
                   <MusicOne theme="filled" />
                 </n-icon>
-                <span class="name">单曲</span>
+                <span class="name">{{ $t("nav.search.songs") }}</span>
               </div>
               <span
                 class="names"
@@ -131,7 +131,7 @@
                 <n-icon size="18">
                   <Voice theme="filled" />
                 </n-icon>
-                <span class="name">歌手</span>
+                <span class="name">{{ $t("nav.search.artists") }}</span>
               </div>
               <span
                 class="names"
@@ -146,7 +146,7 @@
                 <n-icon size="18">
                   <RecordDisc theme="filled" />
                 </n-icon>
-                <span class="name">专辑</span>
+                <span class="name">{{ $t("nav.search.albums") }}</span>
               </div>
               <span
                 class="names"
@@ -162,7 +162,7 @@
                 <n-icon size="18">
                   <Record theme="filled" />
                 </n-icon>
-                <span class="name">歌单</span>
+                <span class="name">{{ $t("nav.search.playlists") }}</span>
               </div>
               <span
                 class="names"
@@ -193,11 +193,13 @@ import {
   History,
   DeleteFour,
 } from "@icon-park/vue-next";
-import CollapseTransition from "@ivanv/vue-collapse-transition/src/CollapseTransition.vue";
-import debounce from "@/utils/debounce";
+import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { musicStore, settingStore, siteStore } from "@/store";
+import CollapseTransition from "@ivanv/vue-collapse-transition/src/CollapseTransition.vue";
+import debounce from "@/utils/debounce";
 
+const { t } = useI18n();
 const router = useRouter();
 const music = musicStore();
 const setting = settingStore();
@@ -293,13 +295,13 @@ const inputkeydown = (e) => {
 const delHistory = () => {
   $dialog.warning({
     class: "s-dialog",
-    title: "删除历史",
-    content: "确认删除全部的搜索历史记录？",
-    positiveText: "删除",
-    negativeText: "取消",
+    title: t("general.dialog.delete"),
+    content: t("nav.search.tip"),
+    positiveText: t("general.dialog.delete"),
+    negativeText: t("general.dialog.cancel"),
     onPositiveClick: () => {
       music.setSearchHistory(null, true);
-      $message.success("删除成功");
+      $message.success(t("general.message.deleteSuccess"));
     },
   });
 };
@@ -402,7 +404,7 @@ watch(
         position: absolute;
         right: 0;
         top: 0;
-        content: "收起";
+        content: "×";
         padding: 4px 12px;
         font-size: 12px;
         background-color: #efefef;
@@ -420,7 +422,9 @@ watch(
         width: 4px;
       }
       .n-scrollbar-container {
-        padding-top: 8px;
+        @media (max-width: 450px) {
+          padding-top: 8px;
+        }
         .n-scrollbar-content {
           padding: 12px;
           .list-title {

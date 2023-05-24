@@ -3,7 +3,7 @@
     class="s-modal"
     v-model:show="createPlaylistShow"
     preset="card"
-    title="新建歌单"
+    :title="$t('menu.create')"
     :bordered="false"
     :on-after-leave="closeCreatePlaylist"
   >
@@ -11,17 +11,22 @@
       style="margin-bottom: 12px"
       v-model:value="createName"
       type="text"
-      placeholder="请输入新歌单标题"
+      :placeholder="$t('other.newPlaylistName')"
     />
-    <n-checkbox v-model:checked="createPrivacy"> 设置为隐私歌单 </n-checkbox>
+    <n-checkbox v-model:checked="createPrivacy">
+      {{ $t("other.setPrivacy") }}
+    </n-checkbox>
     <template #footer>
       <n-space justify="end">
-        <n-button @click="closeCreatePlaylist"> 取消 </n-button>
+        <n-button @click="closeCreatePlaylist">
+          {{ $t("general.dialog.cancel") }}
+        </n-button>
         <n-button
           type="primary"
+          :disabled="!createName"
           @click="createPlaylistBtn(createName, createPrivacy)"
         >
-          新建
+          {{ $t("general.dialog.create") }}
         </n-button>
       </n-space>
     </template>
@@ -31,7 +36,9 @@
 <script setup>
 import { userStore } from "@/store";
 import { createPlaylist } from "@/api/playlist";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const user = userStore();
 
 // 新建歌单数据
@@ -41,19 +48,15 @@ const createName = ref(null);
 
 // 新建歌单
 const createPlaylistBtn = (name, privacy = false) => {
-  if (createName.value) {
-    createPlaylist(name, privacy ? "10" : null).then((res) => {
-      if (res.code === 200) {
-        closeCreatePlaylist();
-        $message.success("歌单新建成功");
-        user.setUserPlayLists();
-      } else {
-        $message.error("歌单新建失败，请重试");
-      }
-    });
-  } else {
-    $message.info("请输入歌单名称");
-  }
+  createPlaylist(name, privacy ? "10" : null).then((res) => {
+    if (res.code === 200) {
+      closeCreatePlaylist();
+      $message.success(t("general.message.createSuccess"));
+      user.setUserPlayLists();
+    } else {
+      $message.error(t("general.message.createFailed"));
+    }
+  });
 };
 
 // 开启新建歌单

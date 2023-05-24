@@ -83,7 +83,9 @@ import { Local, Time, ThumbsUp } from "@icon-park/vue-next";
 import { userStore } from "@/store";
 import { useRouter } from "vue-router";
 import { likeComment } from "@/api/comment";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const user = userStore();
 const router = useRouter();
 const props = defineProps({
@@ -104,15 +106,14 @@ const toLikeComment = () => {
       type
     ).then((res) => {
       if (res.code === 200) {
-        $message.success(type ? "点赞成功" : "取消点赞成功");
         props.commentData.liked = !props.commentData.liked;
         props.commentData.likedCount += type ? 1 : -1;
       } else {
-        $message.error("操作失败，请重试");
+        $message.error(t("general.message.operationFailed"));
       }
     });
   } else {
-    $message.error("请登录账号后使用");
+    $message.error(t("general.message.needLogin"));
   }
 };
 </script>

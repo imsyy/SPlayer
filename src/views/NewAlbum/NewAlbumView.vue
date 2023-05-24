@@ -1,7 +1,7 @@
 <template>
   <div class="new-album">
     <div class="title">
-      <span class="key">全部新碟</span>
+      <span class="key">{{ $t("home.title.newAlbum") }}</span>
     </div>
     <n-space class="category">
       <n-tag
@@ -31,9 +31,11 @@
 import { getAlbumNew } from "@/api/album";
 import { useRouter } from "vue-router";
 import { getLongTime } from "@/utils/timeTools";
+import { useI18n } from "vue-i18n";
 import CoverLists from "@/components/DataList/CoverLists.vue";
 import Pagination from "@/components/Pagination/index.vue";
 
+const { t } = useI18n();
 const router = useRouter();
 
 // 新碟数据
@@ -52,24 +54,24 @@ const albumAreaChoose = ref(
 );
 const albumArea = [
   {
-    label: "全部",
+    label: t("general.type.all"),
     value: "ALL",
   },
   {
-    label: "华语",
+    label: t("general.type.china"),
     value: "ZH",
   },
   {
-    label: "欧美",
+    label: t("general.type.western"),
     value: "EA",
   },
   {
-    label: "韩国",
-    value: "KR",
+    label: t("general.type.japan"),
+    value: "JP",
   },
   {
-    label: "日本",
-    value: "JP",
+    label: t("general.type.korea"),
+    value: "KR",
   },
 ];
 
@@ -92,7 +94,7 @@ const getAlbumNewData = (area, limit = 30, offset = 0) => {
         });
       });
     } else {
-      $message.error("全部新碟为空");
+      $message.error(t("general.message.acquisitionFailed"));
     }
     // 请求后回顶
     if (typeof $scrollToTop !== "undefined") $scrollToTop();
@@ -149,7 +151,7 @@ const changeArea = (area) => {
 };
 
 onMounted(() => {
-  $setSiteTitle("全部新碟");
+  $setSiteTitle(t("home.title.newAlbum"));
   getAlbumNewData(
     albumAreaChoose.value,
     pagelimit.value,
