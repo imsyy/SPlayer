@@ -158,6 +158,7 @@ import AllArtists from "@/components/DataList/AllArtists.vue";
 import CoverLists from "@/components/DataList/CoverLists.vue";
 import AddPlaylist from "@/components/DataModal/AddPlaylist.vue";
 import Comment from "@/components/Comment/index.vue";
+import getCoverUrl from "@/utils/getCoverUrl";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -173,17 +174,6 @@ const commentData = ref([]);
 
 // 相似数据
 const simiPlayList = ref([]);
-
-// 封面图像地址
-const getCoverUrl = (url, size = null) => {
-  if (!url) return "/images/pic/default.png";
-  const sizeUrl = size ? `?param=${size}y${size}` : "";
-  const imageUrl = url.replace(/^http:/, "https:");
-  if (imageUrl.endsWith(".jpg")) {
-    return imageUrl + sizeUrl;
-  }
-  return imageUrl;
-};
 
 // 获取歌曲数据
 const getMusicDetailData = (id) => {
@@ -287,7 +277,6 @@ watch(
       align-items: center;
       justify-content: center;
       max-width: 280px;
-      border-radius: 8px;
       border-radius: 8px;
       margin-right: 40px;
       position: relative;

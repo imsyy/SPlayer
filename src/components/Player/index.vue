@@ -57,57 +57,62 @@
                   : $t("other.noSong")
               }}
             </div>
+            <!-- 显示歌手或歌词 -->
             <div class="artisrOrLrc" v-if="music.getPlaySongData">
-              <template v-if="setting.bottomLyricShow">
-                <Transition mode="out-in">
-                  <AllArtists
-                    v-if="!music.getPlayState || !music.getPlaySongLyric.lrc[0]"
-                    class="text-hidden"
-                    :artistsData="music.getPlaySongData.artist"
-                  />
-                  <n-text
-                    v-else-if="
-                      setting.showYrc &&
-                      music.getPlaySongLyricIndex != -1 &&
-                      music.getPlaySongLyric.hasYrc
-                    "
-                    class="lrc text-hidden"
-                  >
+              <Transition name="fade" mode="out-in">
+                <template v-if="setting.bottomLyricShow">
+                  <Transition name="fade" mode="out-in">
+                    <AllArtists
+                      v-if="
+                        !music.getPlayState || !music.getPlaySongLyric.lrc[0]
+                      "
+                      class="text-hidden"
+                      :artistsData="music.getPlaySongData.artist"
+                    />
                     <n-text
-                      v-for="item in music.getPlaySongLyric.yrc[
-                        music.getPlaySongLyricIndex
-                      ].content"
-                      :key="item"
-                      :depth="3"
+                      v-else-if="
+                        setting.showYrc &&
+                        music.getPlaySongLyricIndex != -1 &&
+                        music.getPlaySongLyric.hasYrc
+                      "
+                      class="lrc text-hidden"
                     >
-                      {{ item.content }}
+                      <n-text
+                        v-for="item in music.getPlaySongLyric.yrc[
+                          music.getPlaySongLyricIndex
+                        ].content"
+                        :key="item"
+                        :depth="3"
+                      >
+                        {{ item.content }}
+                      </n-text>
                     </n-text>
-                  </n-text>
-                  <n-text
-                    v-else-if="
-                      music.getPlaySongLyricIndex != -1 &&
-                      music.getPlaySongLyric.lrc[0]
-                    "
-                    class="lrc text-hidden"
-                    :depth="3"
-                    v-html="
-                      music.getPlaySongLyric.lrc[music.getPlaySongLyricIndex]
-                        .content
-                    "
-                  />
+                    <n-text
+                      v-else-if="
+                        music.getPlaySongLyricIndex != -1 &&
+                        music.getPlaySongLyric.lrc[0]
+                      "
+                      class="lrc text-hidden"
+                      :depth="3"
+                      v-html="
+                        music.getPlaySongLyric.lrc[music.getPlaySongLyricIndex]
+                          .content
+                      "
+                    />
+                    <AllArtists
+                      v-else
+                      class="text-hidden"
+                      :artistsData="music.getPlaySongData.artist"
+                    />
+                  </Transition>
+                </template>
+                <template v-else>
                   <AllArtists
-                    v-else
                     class="text-hidden"
                     :artistsData="music.getPlaySongData.artist"
                   />
-                </Transition>
-              </template>
-              <template v-else>
-                <AllArtists
-                  class="text-hidden"
-                  :artistsData="music.getPlaySongData.artist"
-                />
-              </template>
+                </template>
+              </Transition>
             </div>
           </div>
         </div>
@@ -459,6 +464,15 @@ watch(
 .show-leave-to {
   transform: translateY(80px);
 }
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 .player {
   height: 70px;
   position: fixed;
@@ -584,15 +598,6 @@ watch(
         .artisrOrLrc {
           font-size: 12px;
           margin-top: 2px;
-          .v-enter-active,
-          .v-leave-active {
-            transition: opacity 0.3s ease;
-          }
-
-          .v-enter-from,
-          .v-leave-to {
-            opacity: 0;
-          }
         }
       }
     }

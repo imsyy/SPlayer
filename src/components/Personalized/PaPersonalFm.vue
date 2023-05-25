@@ -1,7 +1,7 @@
 <template>
   <div
     class="papersonalfm"
-    v-if="music.getPersonalFmData.id"
+    v-if="music.getPersonalFmData?.id"
     :style="`background-image: url(${music.getPersonalFmData.album.picUrl.replace(
       /^http:/,
       'https:'

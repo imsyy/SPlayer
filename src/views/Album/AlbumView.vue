@@ -2,9 +2,12 @@
   <div class="album" v-if="albumDetail">
     <div class="left">
       <div class="cover">
-        <n-avatar
+        <n-image
+          show-toolbar-tooltip
           class="coverImg"
-          :src="getCoverUrl(albumDetail.picUrl)"
+          :src="getCoverUrl(albumDetail.picUrl, 1024)"
+          :previewed-img-props="{ style: { borderRadius: '8px' } }"
+          :preview-src="getCoverUrl(albumDetail.picUrl)"
           fallback-src="/images/pic/default.png"
         />
         <img src="/images/pic/album.png" class="album" alt="album" />
@@ -24,7 +27,11 @@
             $t("general.name.desc", { name: $t("general.name.album") })
           }}</span>
           <span class="desc text-hidden">
-            {{ albumDetail.description }}
+            {{
+              albumDetail.description
+                ? albumDetail.description
+                : $t("other.noDesc")
+            }}
           </span>
           <n-button
             class="all-desc"
@@ -144,6 +151,7 @@ import {
 import { userStore, musicStore, settingStore } from "@/store";
 import { useI18n } from "vue-i18n";
 import DataLists from "@/components/DataList/DataLists.vue";
+import getCoverUrl from "@/utils/getCoverUrl";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -168,15 +176,6 @@ const renderIcon = (icon) => {
       }
     );
   };
-};
-
-// 封面图像地址
-const getCoverUrl = (url) => {
-  const imageUrl = url.replace(/^http:/, "https:");
-  if (imageUrl.endsWith(".jpg")) {
-    return imageUrl + "?param=1024y1024";
-  }
-  return imageUrl;
 };
 
 // 判断收藏还是取消
@@ -404,10 +403,21 @@ watch(
       justify-content: flex-start;
       width: 80%;
       height: 80%;
-      .n-avatar {
+      border-radius: 8px;
+      position: relative;
+      transition: transform 0.3s;
+      &:active {
+        transform: scale(0.95);
+      }
+      .coverImg {
         border-radius: 8px;
         width: 100%;
         height: 100%;
+        overflow: hidden;
+        z-index: 1;
+        :deep(img) {
+          width: 100%;
+        }
       }
       .album {
         height: 100%;

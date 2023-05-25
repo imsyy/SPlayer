@@ -47,6 +47,22 @@
       </div>
       <n-switch v-model:value="showYrc" :round="false" />
     </n-card>
+    <template v-if="showYrc">
+      <n-card class="set-item">
+        <div class="name">
+          {{ $t("setting.showYrcAnimation") }}
+          <span class="tip">{{ $t("setting.showYrcAnimationTip") }}</span>
+        </div>
+        <n-switch v-model:value="showYrcAnimation" :round="false" />
+      </n-card>
+      <n-card class="set-item">
+        <div class="name">
+          {{ $t("setting.showYrcTransform") }}
+          <span class="tip">{{ $t("setting.showYrcTransformTip") }}</span>
+        </div>
+        <n-switch v-model:value="showYrcTransform" :round="false" />
+      </n-card>
+    </template>
     <n-card class="set-item">
       <div class="name">
         {{ $t("setting.countDownShow") }}
@@ -163,6 +179,8 @@ const {
   showRoma,
   backgroundImageShow,
   countDownShow,
+  showYrcAnimation,
+  showYrcTransform,
 } = storeToRefs(setting);
 
 // 歌词位置

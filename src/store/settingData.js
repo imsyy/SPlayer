@@ -25,6 +25,10 @@ const useSettingDataStore = defineStore("settingData", {
       bottomLyricShow: true,
       // 是否显示逐字歌词
       showYrc: true,
+      // 是否显示逐字歌词动画
+      showYrcAnimation: false,
+      // 是否显示逐字歌词上浮
+      showYrcTransform: false,
       // 是否显示歌词翻译
       showTransl: true,
       // 是否显示歌词音译
