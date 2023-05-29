@@ -26,7 +26,7 @@ const useSettingDataStore = defineStore("settingData", {
       // 是否显示逐字歌词
       showYrc: true,
       // 是否显示逐字歌词动画
-      showYrcAnimation: false,
+      showYrcAnimation: true,
       // 是否显示逐字歌词上浮
       showYrcTransform: false,
       // 是否显示歌词翻译

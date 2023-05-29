@@ -204,7 +204,7 @@ const themeChange = () => {
 const themeAutoOpen = (val) => {
   console.log(osThemeRef.value);
   if (val) {
-    setting.setSiteTheme(osThemeRef.value);
+    theme.value = osThemeRef.value;
   }
 };
 
