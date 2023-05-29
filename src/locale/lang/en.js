@@ -273,6 +273,7 @@ export default {
   },
   // Setting
   setting: {
+    dev: "WIP",
     main: "Basic",
     player: "Player",
     themeChange: "Theme color changed to {name}",
@@ -338,8 +339,13 @@ export default {
     countDownShow: "Show Countdown Before Playing",
     countDownShowTip: "Some songs may have incorrect countdown display",
     showYrc: "Show Word-by-Word Lyrics",
-    showYrcTip:
-      "Whether to display word-by-word lyrics when available, experimental feature",
+    showYrcTip: "Whether to display word-by-word lyrics when available",
+    showYrcAnimation: "Word by word lyric step animation",
+    showYrcAnimationTip:
+      "Whether to display verbatim lyrics step - by - step animation, more cost performance",
+    showYrcTransform: "Word for word lyrics come up",
+    showYrcTransformTip:
+      "Whether to display verbatim lyrics text floating animation",
     lrcMousePause: "Intelligent Scroll Pause",
     lrcMousePauseTip:
       "Whether to pause scrolling when the mouse is over the lyrics area",

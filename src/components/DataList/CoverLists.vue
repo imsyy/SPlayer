@@ -22,7 +22,7 @@
               lazy
               class="coverImg"
               preview-disabled
-              :src="getCoverUrl(item.cover)"
+              :src="getCoverUrl(item.cover, 300)"
               fallback-src="/images/pic/default.png"
             >
               <template #placeholder>
@@ -35,7 +35,7 @@
               lazy
               class="shadow"
               preview-disabled
-              :src="getCoverUrl(item.cover)"
+              :src="getCoverUrl(item.cover, 300)"
               fallback-src="/images/pic/default.png"
             />
             <n-icon class="play" size="40">
@@ -118,6 +118,7 @@ import { musicStore, userStore, settingStore } from "@/store";
 import { useRouter } from "vue-router";
 import AllArtists from "./AllArtists.vue";
 import PlaylistUpdate from "@/components/DataModal/PlaylistUpdate.vue";
+import getCoverUrl from "@/utils/getCoverUrl";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -169,16 +170,6 @@ const renderIcon = (icon) => {
       }
     );
   };
-};
-
-// 封面图像地址
-const getCoverUrl = (url) => {
-  if (!url) return "/images/pic/default.png";
-  const imageUrl = url.replace(/^http:/, "https:");
-  if (imageUrl.endsWith(".jpg")) {
-    return imageUrl + "?param=300y300";
-  }
-  return imageUrl;
 };
 
 // 右键菜单数据

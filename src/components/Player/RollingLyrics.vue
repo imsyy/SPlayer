@@ -1,5 +1,5 @@
 <template>
-  <!-- 歌词滚动 -->
+  <!-- 滚动歌词 -->
   <div
     v-if="music.getPlaySongLyric.lrc[0]"
     :class="[
@@ -26,115 +26,119 @@
     <!-- 普通歌词 -->
     <template v-if="!music.getPlaySongLyric.hasYrc || !setting.showYrc">
       <div
+        class="lrc"
         v-for="(item, index) in music.getPlaySongLyric.lrc"
-        :class="music.getPlaySongLyricIndex == index ? 'lrc on' : 'lrc'"
-        :style="{ marginBottom: setting.lyricsFontSize - 1.6 + 'vh' }"
+        :class="{
+          on: music.getPlaySongLyricIndex == index,
+          blur: setting.lyricsBlur,
+        }"
+        :style="{
+          marginBottom: setting.lyricsFontSize - 1.6 + 'vh',
+          transformOrigin:
+            setting.lyricsPosition === 'center' ? 'center' : null,
+          filter: setting.lyricsBlur
+            ? `blur(${getFilter(music.getPlaySongLyricIndex, index)}px)`
+            : 'none',
+        }"
         :key="item"
         :id="'lrc' + index"
         @click="lrcTextClick(item.time)"
       >
-        <div
-          :class="setting.lyricsBlur ? 'lrc-text blur' : 'lrc-text'"
-          :style="{
-            transformOrigin:
-              setting.lyricsPosition === 'center' ? 'center' : null,
-            filter: setting.lyricsBlur
-              ? `blur(${getFilter(music.getPlaySongLyricIndex, index)}px)`
-              : null,
-          }"
+        <span
+          class="lyric"
+          :style="{ fontSize: setting.lyricsFontSize + 'vh' }"
         >
-          <span
-            class="lyric"
-            :style="{ fontSize: setting.lyricsFontSize + 'vh' }"
-          >
-            {{ item.content }}
-          </span>
-          <span
-            v-show="
-              music.getPlaySongLyric.hasLrcTran &&
-              setting.showTransl &&
-              item.tran
-            "
-            :style="{ fontSize: setting.lyricsFontSize - 1 + 'vh' }"
-            class="lyric-fy"
-          >
-            {{ item.tran }}</span
-          >
-          <span
-            v-show="
-              music.getPlaySongLyric.hasLrcRoma && setting.showRoma && item.roma
-            "
-            :style="{ fontSize: setting.lyricsFontSize - 1.5 + 'vh' }"
-            class="lyric-roma"
-          >
-            {{ item.roma }}</span
-          >
-        </div>
+          {{ item.content }}
+        </span>
+        <span
+          v-if="
+            music.getPlaySongLyric.hasLrcTran && setting.showTransl && item.tran
+          "
+          :style="{ fontSize: setting.lyricsFontSize - 1 + 'vh' }"
+          class="lyric-fy"
+        >
+          {{ item.tran }}</span
+        >
+        <span
+          v-if="
+            music.getPlaySongLyric.hasLrcRoma && setting.showRoma && item.roma
+          "
+          :style="{ fontSize: setting.lyricsFontSize - 1.5 + 'vh' }"
+          class="lyric-roma"
+        >
+          {{ item.roma }}</span
+        >
       </div>
     </template>
     <!-- 逐字歌词 -->
     <template v-else>
       <div
+        class="yrc"
         v-for="(item, index) in music.getPlaySongLyric.yrc"
-        :class="music.getPlaySongLyricIndex == index ? 'yrc on' : 'yrc'"
+        :class="{
+          on: music.getPlaySongLyricIndex === index,
+          blur: setting.lyricsBlur,
+        }"
+        :style="{
+          marginBottom: setting.lyricsFontSize - 1.6 + 'vh',
+          transformOrigin:
+            setting.lyricsPosition === 'center' ? 'center' : null,
+          filter: setting.lyricsBlur
+            ? `blur(${getFilter(music.getPlaySongLyricIndex, index)}px)`
+            : 'none',
+        }"
         :key="item"
         :id="'yrc' + index"
         @click="lrcTextClick(item.time)"
       >
-        <div
-          :class="setting.lyricsBlur ? 'yrc-text blur' : 'yrc-text'"
-          :style="{
-            transformOrigin:
-              setting.lyricsPosition === 'center' ? 'center' : null,
-            filter: setting.lyricsBlur
-              ? `blur(${getFilter(music.getPlaySongLyricIndex, index)}px)`
-              : null,
-          }"
-        >
+        <div class="lyric" :style="{ fontSize: setting.lyricsFontSize + 'vh' }">
           <div
-            class="lyric"
-            :style="{ fontSize: setting.lyricsFontSize + 'vh' }"
-          >
-            <span
-              v-for="(v, i) in item.content"
-              :key="i"
-              :style="{
-                '--dur': `${Math.max(v.duration - 0.15, 0.1)}s`,
-              }"
-              :class="
+            class="text"
+            v-for="(v, i) in item.content"
+            :class="{
+              fill:
                 music.getPlaySongLyricIndex === index &&
-                music.getPlaySongTime.currentTime + 0.15 > v.time
-                  ? 'text fill'
-                  : 'text'
-              "
-            >
-              {{ v.content }}
-            </span>
+                music.getPlaySongTime.currentTime + 0.2 >= v.time,
+              transform: setting.showYrcTransform,
+            }"
+            :key="i"
+            :style="{
+              '--dur': `${Math.max(v.duration - 0.2, 0.1)}s`,
+            }"
+          >
+            <span class="word" v-html="v.content.replace(/ /g, '&nbsp;')" />
+            <span
+              class="filler"
+              :class="{
+                long: i === item.content.length - 1 && v.duration > 1,
+                animation: setting.showYrcAnimation,
+                paused: !music.playState,
+              }"
+              v-html="v.content.replace(/ /g, '&nbsp;')"
+            />
           </div>
-          <span
-            v-show="
-              music.getPlaySongLyric.hasYrcTran &&
-              setting.showTransl &&
-              item.tran
-            "
-            :style="{ fontSize: setting.lyricsFontSize - 1 + 'vh' }"
-            class="lyric-fy"
-          >
-            {{ item.tran }}
-          </span>
-          <span
-            v-show="
-              music.getPlaySongLyric.hasYrcRoma && setting.showRoma && item.roma
-            "
-            :style="{ fontSize: setting.lyricsFontSize - 1.5 + 'vh' }"
-            class="lyric-roma"
-          >
-            {{ item.roma }}
-          </span>
         </div>
+        <span
+          v-if="
+            music.getPlaySongLyric.hasYrcTran && setting.showTransl && item.tran
+          "
+          :style="{ fontSize: setting.lyricsFontSize - 1 + 'vh' }"
+          class="lyric-fy"
+        >
+          {{ item.tran }}
+        </span>
+        <span
+          v-if="
+            music.getPlaySongLyric.hasYrcRoma && setting.showRoma && item.roma
+          "
+          :style="{ fontSize: setting.lyricsFontSize - 1.5 + 'vh' }"
+          class="lyric-roma"
+        >
+          {{ item.roma }}
+        </span>
       </div>
     </template>
-    <div class="placeholder"></div>
+    <div class="placeholder" />
   </div>
 </template>
 
@@ -165,11 +169,133 @@ const lrcTextClick = (time) => {
 
 <style lang="scss" scoped>
 .lrc-all {
-  margin-right: 20%;
+  display: flex;
+  flex-direction: column;
+  // margin-right: 20%;
   scrollbar-width: none;
-  // max-width: 460px;
   max-width: 52vh;
   overflow: auto;
+  padding: 0 10px;
+  .placeholder {
+    width: 100%;
+    &:nth-of-type(1) {
+      min-height: 50%;
+      display: flex;
+      align-items: flex-end;
+      padding: 0 0 0.8vh 3vh;
+    }
+    &:nth-last-of-type(1) {
+      min-height: 80%;
+    }
+  }
+  .lrc,
+  .yrc {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding: 1.8vh 4vh 1.8vh 3vh;
+    box-sizing: border-box;
+    border-radius: 8px;
+    opacity: 0.3;
+    transform: scale(0.9);
+    transform-origin: left bottom;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    cursor: pointer;
+    .lyric {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      font-weight: bold;
+      .text {
+        position: relative;
+        transition: transform 0.3s ease;
+        .filler {
+          transition: color 0.3s ease, opacity 0.3s ease;
+          position: absolute;
+          top: 0;
+          left: 0;
+          opacity: 0;
+          &.animation {
+            color: white;
+            background: linear-gradient(to right, white, white) no-repeat 0 0;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+            background-size: 0 100%;
+          }
+        }
+        &.fill {
+          &.transform {
+            transform: translateY(-1.5px);
+          }
+          .word {
+            opacity: 0.3;
+          }
+          .filler {
+            opacity: 1 !important;
+            &.long {
+              animation: shine calc var(--dur) ease-in-out;
+            }
+            &.animation {
+              background-size: 100% 100%;
+              animation: progress var(--dur) linear forwards;
+            }
+            &.paused {
+              animation-play-state: paused;
+              -webkit-animation-play-state: paused;
+            }
+          }
+        }
+      }
+    }
+    .lyric-fy,
+    .lyric-roma {
+      margin-top: 4px;
+      opacity: 0.6;
+    }
+    &.on {
+      opacity: 1;
+      transform: scale(1);
+      .lyric {
+        .text {
+          .word,
+          .filler {
+            opacity: 0.3;
+          }
+        }
+      }
+    }
+    &::before {
+      @media (min-width: 768px) {
+        content: "";
+        display: block;
+        position: absolute;
+        left: 0px;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 8px;
+        background-color: #ffffff20;
+        opacity: 0;
+        z-index: 0;
+        transform: scale(1.05);
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        pointer-events: none;
+      }
+    }
+    &:hover {
+      opacity: 1;
+      &::before {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    &:active {
+      &::before {
+        transform: scale(0.95);
+      }
+    }
+  }
   &::-webkit-scrollbar {
     display: none;
   }
@@ -177,7 +303,7 @@ const lrcTextClick = (time) => {
     height: 80vh;
   }
   &.record {
-    height: 60vh;
+    height: 70vh;
   }
   &.center {
     mask: linear-gradient(
@@ -220,108 +346,39 @@ const lrcTextClick = (time) => {
     );
     .placeholder {
       &:nth-of-type(1) {
-        height: 16%;
-      }
-    }
-  }
-  &:hover {
-    .lrc-text,
-    .yrc-text {
-      &.blur {
-        filter: blur(0) !important;
+        min-height: 16%;
       }
     }
   }
   @media (max-width: 768px) {
     height: 70vh;
     margin-right: 0;
+    padding: 0;
   }
-  .placeholder {
-    width: 100%;
-    &:nth-of-type(1) {
-      height: 50%;
-      display: flex;
-      align-items: flex-end;
-      padding: 0 0 0.8vh 3vh;
-    }
-    &:nth-last-of-type(1) {
-      height: 80%;
-    }
+}
+@keyframes progress {
+  0% {
+    background-size: 0 100%;
   }
-  .lrc,
-  .yrc {
-    opacity: 0.3;
-    transition: all 0.3s;
-    margin-bottom: 0.8vh;
-    padding: 1.8vh 4vh 1.8vh 3vh;
-    border-radius: 8px;
-    transition: all 0.3s;
-    transform-origin: left bottom;
-    cursor: pointer;
-    .lrc-text,
-    .yrc-text {
-      display: flex;
-      flex-direction: column;
-      transition: all 0.35s ease-in-out;
-      transform: scale(0.95);
-      transform-origin: left bottom;
-      .lyric {
-        font-weight: bold;
-        transition: all 0.3s;
-        .text {
-          transition: all var(--dur);
-          color: #ffffff66;
-          &.fill {
-            text-shadow: 0 0 40px rgb(255 255 255 / 40%);
-            background-image: linear-gradient(to right, #fff 0%, #fff 0%);
-            background-repeat: no-repeat;
-            background-size: 0% 100%;
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: #ffffff66;
-            animation: toRight var(--dur) forwards linear;
-          }
-          @keyframes toRight {
-            to {
-              background-size: 100% 100%;
-            }
-          }
-        }
-      }
-      .lyric-fy,
-      .lyric-roma {
-        margin-top: 4px;
-        transition: all 0.3s;
-        opacity: 0.6;
-      }
-    }
-    &.on {
-      opacity: 1;
-      .lrc-text {
-        transform: scale(1.05);
-        .lyric {
-          text-shadow: 0 0 40px rgb(255 255 255 / 40%);
-        }
-      }
-      .yrc-text {
-        transform: scale(1.05);
-        .lyric {
-          font-weight: bold;
-        }
-      }
-    }
-    &:hover {
-      @media (min-width: 768px) {
-        background-color: #ffffff20;
-        opacity: 0.8;
-      }
-    }
-    &:active {
-      transform: scale(0.95);
-    }
+  100% {
+    background-size: 100% 100%;
   }
-  .yrc {
-    opacity: 0.6;
+}
+@keyframes shine {
+  0% {
+    text-shadow: 0 0 0.1em rgba(255, 255, 255, 0);
+  }
+  25% {
+    text-shadow: 0 0 0.3em rgba(255, 255, 255, 0.5);
+  }
+  50% {
+    text-shadow: 0 0 0.5em rgba(255, 255, 255, 0.7);
+  }
+  75% {
+    text-shadow: 0 0 0.3em rgba(255, 255, 255, 0.5);
+  }
+  100% {
+    text-shadow: 0 0 0.1em rgba(255, 255, 255, 0);
   }
 }
 </style>

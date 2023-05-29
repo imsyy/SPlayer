@@ -57,57 +57,62 @@
                   : $t("other.noSong")
               }}
             </div>
+            <!-- 显示歌手或歌词 -->
             <div class="artisrOrLrc" v-if="music.getPlaySongData">
-              <template v-if="setting.bottomLyricShow">
-                <Transition mode="out-in">
-                  <AllArtists
-                    v-if="!music.getPlayState || !music.getPlaySongLyric.lrc[0]"
-                    class="text-hidden"
-                    :artistsData="music.getPlaySongData.artist"
-                  />
-                  <n-text
-                    v-else-if="
-                      setting.showYrc &&
-                      music.getPlaySongLyricIndex != -1 &&
-                      music.getPlaySongLyric.hasYrc
-                    "
-                    class="lrc text-hidden"
-                  >
+              <Transition name="fade" mode="out-in">
+                <template v-if="setting.bottomLyricShow">
+                  <Transition name="fade" mode="out-in">
+                    <AllArtists
+                      v-if="
+                        !music.getPlayState || !music.getPlaySongLyric.lrc[0]
+                      "
+                      class="text-hidden"
+                      :artistsData="music.getPlaySongData.artist"
+                    />
                     <n-text
-                      v-for="item in music.getPlaySongLyric.yrc[
-                        music.getPlaySongLyricIndex
-                      ].content"
-                      :key="item"
-                      :depth="3"
+                      v-else-if="
+                        setting.showYrc &&
+                        music.getPlaySongLyricIndex != -1 &&
+                        music.getPlaySongLyric.hasYrc
+                      "
+                      class="lrc text-hidden"
                     >
-                      {{ item.content }}
+                      <n-text
+                        v-for="item in music.getPlaySongLyric.yrc[
+                          music.getPlaySongLyricIndex
+                        ].content"
+                        :key="item"
+                        :depth="3"
+                      >
+                        {{ item.content }}
+                      </n-text>
                     </n-text>
-                  </n-text>
-                  <n-text
-                    v-else-if="
-                      music.getPlaySongLyricIndex != -1 &&
-                      music.getPlaySongLyric.lrc[0]
-                    "
-                    class="lrc text-hidden"
-                    :depth="3"
-                    v-html="
-                      music.getPlaySongLyric.lrc[music.getPlaySongLyricIndex]
-                        .content
-                    "
-                  />
+                    <n-text
+                      v-else-if="
+                        music.getPlaySongLyricIndex != -1 &&
+                        music.getPlaySongLyric.lrc[0]
+                      "
+                      class="lrc text-hidden"
+                      :depth="3"
+                      v-html="
+                        music.getPlaySongLyric.lrc[music.getPlaySongLyricIndex]
+                          .content
+                      "
+                    />
+                    <AllArtists
+                      v-else
+                      class="text-hidden"
+                      :artistsData="music.getPlaySongData.artist"
+                    />
+                  </Transition>
+                </template>
+                <template v-else>
                   <AllArtists
-                    v-else
                     class="text-hidden"
                     :artistsData="music.getPlaySongData.artist"
                   />
-                </Transition>
-              </template>
-              <template v-else>
-                <AllArtists
-                  class="text-hidden"
-                  :artistsData="music.getPlaySongData.artist"
-                />
-              </template>
+                </template>
+              </Transition>
             </div>
           </div>
         </div>
@@ -143,32 +148,46 @@
           />
         </div>
         <div :class="music.getPersonalFmMode ? 'menu fm' : 'menu'">
-          <div class="like" v-if="music.getPlaySongData">
-            <n-icon
-              class="like-icon"
-              size="24"
-              :component="
-                music.getSongIsLike(music.getPlaySongData.id)
-                  ? FavoriteRound
-                  : FavoriteBorderRound
-              "
-              @click.stop="
-                music.getSongIsLike(music.getPlaySongData.id)
-                  ? music.changeLikeList(music.getPlaySongData.id, false)
-                  : music.changeLikeList(music.getPlaySongData.id, true)
-              "
-            />
-          </div>
-          <div class="add-playlist">
-            <n-icon
-              class="add-icon"
-              size="30"
-              :component="PlaylistAddRound"
-              @click.stop="
-                addPlayListRef.openAddToPlaylist(music.getPlaySongData.id)
-              "
-            />
-          </div>
+          <n-popover trigger="hover" :keep-alive-on-hover="false">
+            <template #trigger>
+              <div class="like" v-if="music.getPlaySongData">
+                <n-icon
+                  class="like-icon"
+                  size="24"
+                  :component="
+                    music.getSongIsLike(music.getPlaySongData.id)
+                      ? FavoriteRound
+                      : FavoriteBorderRound
+                  "
+                  @click.stop="
+                    music.getSongIsLike(music.getPlaySongData.id)
+                      ? music.changeLikeList(music.getPlaySongData.id, false)
+                      : music.changeLikeList(music.getPlaySongData.id, true)
+                  "
+                />
+              </div>
+            </template>
+            {{
+              music.getSongIsLike(music.getPlaySongData.id)
+                ? $t("menu.cancelCollection")
+                : $t("menu.collection")
+            }}
+          </n-popover>
+          <n-popover trigger="hover" :keep-alive-on-hover="false">
+            <template #trigger>
+              <div class="add-playlist">
+                <n-icon
+                  class="add-icon"
+                  size="30"
+                  :component="PlaylistAddRound"
+                  @click.stop="
+                    addPlayListRef.openAddToPlaylist(music.getPlaySongData.id)
+                  "
+                />
+              </div>
+            </template>
+            {{ $t("menu.add") }}
+          </n-popover>
           <div class="pattern">
             <n-icon
               :component="
@@ -181,13 +200,18 @@
               @click="music.setPlaySongMode()"
             />
           </div>
-          <div :class="music.showPlayList ? 'playlist open' : 'playlist'">
-            <n-icon
-              size="30"
-              :component="PlaylistPlayRound"
-              @click.stop="music.showPlayList = !music.showPlayList"
-            />
-          </div>
+          <n-popover trigger="hover" :keep-alive-on-hover="false">
+            <template #trigger>
+              <div :class="music.showPlayList ? 'playlist open' : 'playlist'">
+                <n-icon
+                  size="30"
+                  :component="PlaylistPlayRound"
+                  @click.stop="music.showPlayList = !music.showPlayList"
+                />
+              </div>
+            </template>
+            {{ $t("general.name.playlists") }}
+          </n-popover>
           <div class="volume">
             <n-icon
               size="28"
@@ -459,6 +483,15 @@ watch(
 .show-leave-to {
   transform: translateY(80px);
 }
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 .player {
   height: 70px;
   position: fixed;
@@ -584,15 +617,6 @@ watch(
         .artisrOrLrc {
           font-size: 12px;
           margin-top: 2px;
-          .v-enter-active,
-          .v-leave-active {
-            transition: opacity 0.3s ease;
-          }
-
-          .v-enter-from,
-          .v-leave-to {
-            opacity: 0;
-          }
         }
       }
     }

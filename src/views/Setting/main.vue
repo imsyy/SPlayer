@@ -50,11 +50,20 @@
     </n-card>
     <n-card class="set-item">
       <div class="name">{{ $t("setting.theme") }}</div>
-      <n-select class="set" v-model:value="theme" :options="themeOptions" />
+      <n-select
+        class="set"
+        v-model:value="theme"
+        :options="themeOptions"
+        @update:value="themeAuto = false"
+      />
     </n-card>
     <n-card class="set-item">
       <div class="name">{{ $t("setting.themeAuto") }}</div>
-      <n-switch v-model:value="themeAuto" :round="false" />
+      <n-switch
+        v-model:value="themeAuto"
+        :round="false"
+        @update:value="themeAutoOpen"
+      />
     </n-card>
     <n-card class="set-item">
       <div class="name">
@@ -147,10 +156,12 @@
 import { storeToRefs } from "pinia";
 import { settingStore, userStore } from "@/store";
 import { useI18n } from "vue-i18n";
+import { useOsTheme } from "naive-ui";
 import themeColorData from "@/components/Provider/themeColor.json";
 
 const setting = settingStore();
 const user = userStore();
+const osThemeRef = useOsTheme();
 const {
   theme,
   themeAuto,
@@ -187,6 +198,14 @@ const themeChange = () => {
       value: "dark",
     },
   ];
+};
+
+// 开启自动跟随
+const themeAutoOpen = (val) => {
+  console.log(osThemeRef.value);
+  if (val) {
+    theme.value = osThemeRef.value;
+  }
 };
 
 // 列表模式

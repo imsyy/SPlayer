@@ -62,6 +62,15 @@ const changeTheme = () => {
   }
 };
 
+// 根据系统决定明暗切换
+const osThemeChange = (val) => {
+  if (setting.themeAuto) {
+    val == "dark"
+      ? setting.setSiteTheme("dark")
+      : setting.setSiteTheme("light");
+  }
+};
+
 // 配置主题色
 const changeThemeColor = (val) => {
   const color = themeColorData[val];
@@ -109,11 +118,7 @@ watch(
 watch(
   () => osThemeRef.value,
   (val) => {
-    if (setting.themeAuto) {
-      val == "dark"
-        ? setting.setSiteTheme("dark")
-        : setting.setSiteTheme("light");
-    }
+    osThemeChange(val);
   }
 );
 
@@ -126,5 +131,6 @@ watch(
 onMounted(() => {
   changeTheme();
   changeThemeColor(setting.themeType);
+  osThemeChange(osThemeRef.value);
 });
 </script>

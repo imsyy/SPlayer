@@ -19,7 +19,8 @@ axios.defaults.withCredentials = true;
 // 请求拦截
 axios.interceptors.request.use(
   (request) => {
-    if (!request.hiddenBar) $loadingBar.start();
+    if (!request.hiddenBar && typeof $loadingBar !== "undefined")
+      $loadingBar.start();
     return request;
   },
   (error) => {
@@ -32,7 +33,7 @@ axios.interceptors.request.use(
 // 响应拦截
 axios.interceptors.response.use(
   (response) => {
-    $loadingBar.finish();
+    if (typeof $loadingBar !== "undefined") $loadingBar.finish();
     return response.data;
   },
   (error) => {

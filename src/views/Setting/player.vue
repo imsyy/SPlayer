@@ -42,11 +42,35 @@
     </n-card>
     <n-card class="set-item">
       <div class="name">
-        {{ $t("setting.showYrc") }}
+        <div class="dev">
+          {{ $t("setting.showYrc") }}
+          <n-tag round :bordered="false" size="small" type="warning">
+            {{ $t("setting.dev") }}
+            <template #icon>
+              <n-icon :component="Code" />
+            </template>
+          </n-tag>
+        </div>
         <span class="tip">{{ $t("setting.showYrcTip") }}</span>
       </div>
       <n-switch v-model:value="showYrc" :round="false" />
     </n-card>
+    <template v-if="showYrc">
+      <n-card class="set-item">
+        <div class="name">
+          {{ $t("setting.showYrcAnimation") }}
+          <span class="tip">{{ $t("setting.showYrcAnimationTip") }}</span>
+        </div>
+        <n-switch v-model:value="showYrcAnimation" :round="false" />
+      </n-card>
+      <n-card class="set-item">
+        <div class="name">
+          {{ $t("setting.showYrcTransform") }}
+          <span class="tip">{{ $t("setting.showYrcTransformTip") }}</span>
+        </div>
+        <n-switch v-model:value="showYrcTransform" :round="false" />
+      </n-card>
+    </template>
     <n-card class="set-item">
       <div class="name">
         {{ $t("setting.countDownShow") }}
@@ -146,6 +170,7 @@
 import { storeToRefs } from "pinia";
 import { settingStore } from "@/store";
 import { useI18n } from "vue-i18n";
+import { Code } from "@icon-park/vue-next";
 
 const { t } = useI18n();
 
@@ -163,6 +188,8 @@ const {
   showRoma,
   backgroundImageShow,
   countDownShow,
+  showYrcAnimation,
+  showYrcTransform,
 } = storeToRefs(setting);
 
 // 歌词位置

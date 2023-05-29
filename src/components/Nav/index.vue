@@ -352,6 +352,7 @@ const dropdownSelect = (key) => {
       setting.getSiteTheme == "light"
         ? setting.setSiteTheme("dark")
         : setting.setSiteTheme("light");
+      setting.themeAuto = false;
       break;
     // 播放历史
     case "history":

@@ -55,6 +55,7 @@ const parseLyric = (data) => {
       ? parseOtherLrc(result.yrc, parseLrc(lrcData.yromalrc), "roma")
       : result.yrc;
   }
+  console.log(result);
   return result;
 };
 
@@ -167,7 +168,7 @@ const parseYrc = (lyrics) => {
               return null;
             }
             return {
-              time: Number(time) / 1000,
+              time: Number(time) / 1000 + 0.1,
               duration: Number(duration) / 1000,
               content,
             };

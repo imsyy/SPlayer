@@ -82,6 +82,14 @@ onMounted(() => {
           display: flex;
           flex-direction: column;
           padding-right: 20px;
+          .dev {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            .n-tag {
+              margin-left: 6px;
+            }
+          }
           .tip {
             font-size: 12px;
             opacity: 0.8;
