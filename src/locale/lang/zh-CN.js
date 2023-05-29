@@ -268,6 +268,7 @@ export default {
     cleanAll: "重置成功",
   },
   setting: {
+    dev: "开发中功能",
     main: "基础",
     player: "播放器",
     themeChange: "主题色更换为 {name}",

@@ -407,7 +407,7 @@ watch(
         content: "×";
         padding: 4px 12px;
         font-size: 12px;
-        background-color: #efefef;
+        background-color: var(--n-action-color);
         border-radius: 0 0 0 14px;
       }
     }

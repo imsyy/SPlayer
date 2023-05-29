@@ -42,7 +42,15 @@
     </n-card>
     <n-card class="set-item">
       <div class="name">
-        {{ $t("setting.showYrc") }}
+        <div class="dev">
+          {{ $t("setting.showYrc") }}
+          <n-tag round :bordered="false" size="small" type="warning">
+            {{ $t("setting.dev") }}
+            <template #icon>
+              <n-icon :component="Code" />
+            </template>
+          </n-tag>
+        </div>
         <span class="tip">{{ $t("setting.showYrcTip") }}</span>
       </div>
       <n-switch v-model:value="showYrc" :round="false" />
@@ -162,6 +170,7 @@
 import { storeToRefs } from "pinia";
 import { settingStore } from "@/store";
 import { useI18n } from "vue-i18n";
+import { Code } from "@icon-park/vue-next";
 
 const { t } = useI18n();
 

@@ -42,7 +42,8 @@ import PaLikeSongs from "@/components/Personalized/PaLikeSongs.vue";
 const setting = settingStore();
 
 onMounted(() => {
-  $setSiteTitle(import.meta.env.VITE_SITE_TITLE);
+  if (typeof $setSiteTitle !== "undefined")
+    $setSiteTitle(import.meta.env.VITE_SITE_TITLE);
   // 回顶
   if (typeof $scrollToTop !== "undefined") $scrollToTop();
 });

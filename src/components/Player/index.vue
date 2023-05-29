@@ -148,32 +148,46 @@
           />
         </div>
         <div :class="music.getPersonalFmMode ? 'menu fm' : 'menu'">
-          <div class="like" v-if="music.getPlaySongData">
-            <n-icon
-              class="like-icon"
-              size="24"
-              :component="
-                music.getSongIsLike(music.getPlaySongData.id)
-                  ? FavoriteRound
-                  : FavoriteBorderRound
-              "
-              @click.stop="
-                music.getSongIsLike(music.getPlaySongData.id)
-                  ? music.changeLikeList(music.getPlaySongData.id, false)
-                  : music.changeLikeList(music.getPlaySongData.id, true)
-              "
-            />
-          </div>
-          <div class="add-playlist">
-            <n-icon
-              class="add-icon"
-              size="30"
-              :component="PlaylistAddRound"
-              @click.stop="
-                addPlayListRef.openAddToPlaylist(music.getPlaySongData.id)
-              "
-            />
-          </div>
+          <n-popover trigger="hover" :keep-alive-on-hover="false">
+            <template #trigger>
+              <div class="like" v-if="music.getPlaySongData">
+                <n-icon
+                  class="like-icon"
+                  size="24"
+                  :component="
+                    music.getSongIsLike(music.getPlaySongData.id)
+                      ? FavoriteRound
+                      : FavoriteBorderRound
+                  "
+                  @click.stop="
+                    music.getSongIsLike(music.getPlaySongData.id)
+                      ? music.changeLikeList(music.getPlaySongData.id, false)
+                      : music.changeLikeList(music.getPlaySongData.id, true)
+                  "
+                />
+              </div>
+            </template>
+            {{
+              music.getSongIsLike(music.getPlaySongData.id)
+                ? $t("menu.cancelCollection")
+                : $t("menu.collection")
+            }}
+          </n-popover>
+          <n-popover trigger="hover" :keep-alive-on-hover="false">
+            <template #trigger>
+              <div class="add-playlist">
+                <n-icon
+                  class="add-icon"
+                  size="30"
+                  :component="PlaylistAddRound"
+                  @click.stop="
+                    addPlayListRef.openAddToPlaylist(music.getPlaySongData.id)
+                  "
+                />
+              </div>
+            </template>
+            {{ $t("menu.add") }}
+          </n-popover>
           <div class="pattern">
             <n-icon
               :component="
@@ -186,13 +200,18 @@
               @click="music.setPlaySongMode()"
             />
           </div>
-          <div :class="music.showPlayList ? 'playlist open' : 'playlist'">
-            <n-icon
-              size="30"
-              :component="PlaylistPlayRound"
-              @click.stop="music.showPlayList = !music.showPlayList"
-            />
-          </div>
+          <n-popover trigger="hover" :keep-alive-on-hover="false">
+            <template #trigger>
+              <div :class="music.showPlayList ? 'playlist open' : 'playlist'">
+                <n-icon
+                  size="30"
+                  :component="PlaylistPlayRound"
+                  @click.stop="music.showPlayList = !music.showPlayList"
+                />
+              </div>
+            </template>
+            {{ $t("general.name.playlists") }}
+          </n-popover>
           <div class="volume">
             <n-icon
               size="28"

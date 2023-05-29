@@ -273,6 +273,7 @@ export default {
   },
   // Setting
   setting: {
+    dev: "WIP",
     main: "Basic",
     player: "Player",
     themeChange: "Theme color changed to {name}",

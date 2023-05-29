@@ -51,7 +51,7 @@
           {{ item.content }}
         </span>
         <span
-          v-show="
+          v-if="
             music.getPlaySongLyric.hasLrcTran && setting.showTransl && item.tran
           "
           :style="{ fontSize: setting.lyricsFontSize - 1 + 'vh' }"
@@ -60,7 +60,7 @@
           {{ item.tran }}</span
         >
         <span
-          v-show="
+          v-if="
             music.getPlaySongLyric.hasLrcRoma && setting.showRoma && item.roma
           "
           :style="{ fontSize: setting.lyricsFontSize - 1.5 + 'vh' }"
@@ -119,7 +119,7 @@
           </div>
         </div>
         <span
-          v-show="
+          v-if="
             music.getPlaySongLyric.hasYrcTran && setting.showTransl && item.tran
           "
           :style="{ fontSize: setting.lyricsFontSize - 1 + 'vh' }"
@@ -128,7 +128,7 @@
           {{ item.tran }}
         </span>
         <span
-          v-show="
+          v-if="
             music.getPlaySongLyric.hasYrcRoma && setting.showRoma && item.roma
           "
           :style="{ fontSize: setting.lyricsFontSize - 1.5 + 'vh' }"
@@ -266,20 +266,22 @@ const lrcTextClick = (time) => {
       }
     }
     &::before {
-      content: "";
-      display: block;
-      position: absolute;
-      left: 0px;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      border-radius: 8px;
-      background-color: #ffffff20;
-      opacity: 0;
-      z-index: 0;
-      transform: scale(1.05);
-      transition: transform 0.3s ease, opacity 0.3s ease;
-      pointer-events: none;
+      @media (min-width: 768px) {
+        content: "";
+        display: block;
+        position: absolute;
+        left: 0px;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 8px;
+        background-color: #ffffff20;
+        opacity: 0;
+        z-index: 0;
+        transform: scale(1.05);
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        pointer-events: none;
+      }
     }
     &:hover {
       opacity: 1;
@@ -351,6 +353,7 @@ const lrcTextClick = (time) => {
   @media (max-width: 768px) {
     height: 70vh;
     margin-right: 0;
+    padding: 0;
   }
 }
 @keyframes progress {

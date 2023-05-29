@@ -22,6 +22,7 @@
     "qrcode.vue": "^3.3.3",
     "sass": "^1.56.1",
     "screenfull": "^6.0.2",
+    "swiper": "^9.3.2",
     "throttle-debounce": "^5.0.0",
     "vite-plugin-html": "^3.2.0",
     "vue": "^3.2.45",
