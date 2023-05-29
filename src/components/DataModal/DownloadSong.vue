@@ -96,7 +96,7 @@ const toSongDownload = (id, br, name) => {
       if (res.data.url) {
         const type = res.data.type.toLowerCase();
         const songName = name ? name : t("general.name.unknownSong");
-        fetch(res.data.url)
+        fetch(res.data.url.replace(/^http:/, "https:"))
           .then((response) => response.blob())
           .then((blob) => {
             const url = window.URL.createObjectURL(blob);
