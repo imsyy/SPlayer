@@ -43,11 +43,12 @@ export const getMusicUrl = (id, level = "exhigh") => {
  * @param {number} id - 要替换播放链接的音乐ID
  */
 export const getMusicNumUrl = async (id) => {
-  const server =
-    process.env.NODE_ENV === "development"
-      ? "kuwo,qq,pyncmd,kugou"
-      : "qq,pyncmd,kugou";
-  const url = `${import.meta.env.VITE_UNM_API}match?id=${id}&server=${server}`;
+  // const server =
+  //   process.env.NODE_ENV === "development"
+  //     ? "kuwo,qq,pyncmd,kugou"
+  //     : "qq,pyncmd,kugou";
+  // const url = `${import.meta.env.VITE_UNM_API}match?id=${id}&server=${server}`;
+  const url = `${import.meta.env.VITE_UNM_API}match?id=${id}`;
   const response = await fetch(url, {
     method: "GET",
     headers: {
