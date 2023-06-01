@@ -65,9 +65,7 @@ const changeTheme = () => {
 // 根据系统决定明暗切换
 const osThemeChange = (val) => {
   if (setting.themeAuto) {
-    val == "dark"
-      ? setting.setSiteTheme("dark")
-      : setting.setSiteTheme("light");
+    val == "dark" ? (setting.theme = "dark") : (setting.theme = "light");
   }
 };
 

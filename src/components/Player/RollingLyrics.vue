@@ -6,16 +6,16 @@
       setting.playerStyle === 'cover' ? 'lrc-all cover' : 'lrc-all record',
       setting.lyricsBlock === 'center' ? 'center' : 'top',
     ]"
-    :style="
-      setting.lyricsPosition === 'center'
-        ? { textAlign: 'center', paddingRight: '0' }
-        : null
-    "
   >
     <div
       class="placeholder"
       :id="
         !music.getPlaySongLyric.hasYrc || !setting.showYrc ? 'lrc-1' : 'yrc-1'
+      "
+      :style="
+        setting.lyricsPosition === 'center'
+          ? { justifyContent: 'center', padding: '0' }
+          : null
       "
     >
       <CountDown
@@ -39,6 +39,8 @@
           filter: setting.lyricsBlur
             ? `blur(${getFilter(music.getPlaySongLyricIndex, index)}px)`
             : 'none',
+          alignItems:
+            setting.lyricsPosition === 'center' ? 'center' : 'flex-start',
         }"
         :key="item"
         :id="'lrc' + index"
@@ -86,6 +88,8 @@
           filter: setting.lyricsBlur
             ? `blur(${getFilter(music.getPlaySongLyricIndex, index)}px)`
             : 'none',
+          alignItems:
+            setting.lyricsPosition === 'center' ? 'center' : 'flex-start',
         }"
         :key="item"
         :id="'yrc' + index"

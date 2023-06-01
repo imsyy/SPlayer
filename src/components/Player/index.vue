@@ -363,8 +363,16 @@ const getMusicNumUrlData = (id) => {
   getMusicNumUrl(id)
     .then((res) => {
       if (res.code === 200) {
-        console.log("替换成功：" + res.data.url.replace(/^http:/, ""));
-        player.value = createSound(res.data.url.replace(/^http:/, ""));
+        const songUrl = res.data.url.replace(/^http:/, "");
+        // 匹配酷我域名
+        const pattern = /kuwo\.cn/i;
+        if (pattern.test(songUrl) && res.data?.proxyUrl) {
+          player.value = createSound(res.data.proxyUrl);
+          console.log("替换成功：" + res.data.proxyUrl);
+        } else {
+          player.value = createSound(songUrl);
+          console.log("替换成功：" + songUrl);
+        }
       }
     })
     .catch((err) => {
