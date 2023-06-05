@@ -49,6 +49,8 @@ const useMusicDataStore = defineStore("musicData", {
       },
       // 是否正在加载数据
       isLoadingSong: false,
+      // 临时弹窗数据
+      message: null,
       // 持久化数据
       persistData: {
         // 搜索历史
@@ -343,23 +345,37 @@ const useMusicDataStore = defineStore("musicData", {
       this.playSongLyricIndex = index === -1 ? lyrics.length - 1 : index - 1;
     },
     // 设置当前播放模式
-    setPlaySongMode() {
-      if (this.persistData.playSongMode === "normal") {
-        this.persistData.playSongMode = "random";
-        $message.info(getLanguageData("random"), {
-          icon: () => h(NIcon, null, { default: () => h(ShuffleOne) }),
-        });
-      } else if (this.persistData.playSongMode === "random") {
-        this.persistData.playSongMode = "single";
-        $message.info(getLanguageData("single"), {
-          icon: () => h(NIcon, null, { default: () => h(PlayOnce) }),
-        });
+    setPlaySongMode(value = null) {
+      const modeObj = {
+        normal: PlayCycle,
+        random: ShuffleOne,
+        single: PlayOnce,
+      };
+      if (value && value in modeObj) {
+        this.persistData.playSongMode = value;
       } else {
-        this.persistData.playSongMode = "normal";
-        $message.info(getLanguageData("normal"), {
-          icon: () => h(NIcon, null, { default: () => h(PlayCycle) }),
-        });
+        switch (this.persistData.playSongMode) {
+          case "normal":
+            this.persistData.playSongMode = "random";
+            value = "random";
+            break;
+          case "random":
+            this.persistData.playSongMode = "single";
+            value = "single";
+            break;
+          default:
+            this.persistData.playSongMode = "normal";
+            value = "normal";
+            break;
+        }
       }
+      this.message?.destroy();
+      this.message = $message.info(getLanguageData(value), {
+        icon: () =>
+          h(NIcon, null, {
+            default: () => h(modeObj[this.persistData.playSongMode]),
+          }),
+      });
     },
     // 上下曲调整
     setPlaySongIndex(type) {

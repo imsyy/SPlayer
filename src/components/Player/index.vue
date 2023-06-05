@@ -188,18 +188,25 @@
             </template>
             {{ $t("menu.add") }}
           </n-popover>
-          <div class="pattern">
-            <n-icon
-              :component="
-                persistData.playSongMode === 'normal'
-                  ? PlayCycle
-                  : persistData.playSongMode === 'random'
-                  ? ShuffleOne
-                  : PlayOnce
-              "
-              @click="music.setPlaySongMode()"
-            />
-          </div>
+          <n-dropdown
+            trigger="hover"
+            :options="patternOptions"
+            :show-arrow="true"
+            @select="patternClick"
+          >
+            <div class="pattern">
+              <n-icon
+                :component="
+                  persistData.playSongMode === 'normal'
+                    ? PlayCycle
+                    : persistData.playSongMode === 'random'
+                    ? ShuffleOne
+                    : PlayOnce
+                "
+                @click="music.setPlaySongMode()"
+              />
+            </div>
+          </n-dropdown>
           <n-popover trigger="hover" :keep-alive-on-hover="false">
             <template #trigger>
               <div :class="music.showPlayList ? 'playlist open' : 'playlist'">
@@ -358,6 +365,19 @@ const getPlaySongData = (data, level = setting.songLevel) => {
   }
 };
 
+// 图标渲染
+const renderIcon = (icon) => {
+  return () => {
+    return h(
+      NIcon,
+      { style: { transform: "translateX(1px)" } },
+      {
+        default: () => icon,
+      }
+    );
+  };
+};
+
 // 网易云解灰
 const getMusicNumUrlData = (id) => {
   getMusicNumUrl(id)
@@ -402,6 +422,30 @@ const volumeMute = () => {
   } else {
     persistData.value.playVolume = persistData.value.playVolumeMute;
   }
+};
+
+// 播放模式数据
+const patternOptions = ref([
+  {
+    label: t("general.name.random"),
+    key: "random",
+    icon: renderIcon(h(ShuffleOne)),
+  },
+  {
+    label: t("general.name.single"),
+    key: "single",
+    icon: renderIcon(h(PlayOnce)),
+  },
+  {
+    label: t("general.name.normal"),
+    key: "normal",
+    icon: renderIcon(h(PlayCycle)),
+  },
+]);
+
+// 播放模式点击
+const patternClick = (val) => {
+  music.setPlaySongMode(val);
 };
 
 // 歌曲更换事件
