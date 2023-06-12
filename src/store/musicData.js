@@ -49,8 +49,6 @@ const useMusicDataStore = defineStore("musicData", {
       },
       // 是否正在加载数据
       isLoadingSong: false,
-      // 临时弹窗数据
-      message: null,
       // 持久化数据
       persistData: {
         // 搜索历史
@@ -369,8 +367,7 @@ const useMusicDataStore = defineStore("musicData", {
             break;
         }
       }
-      this.message?.destroy();
-      this.message = $message.info(getLanguageData(value), {
+      $message.info(getLanguageData(value), {
         icon: () =>
           h(NIcon, null, {
             default: () => h(modeObj[this.persistData.playSongMode]),

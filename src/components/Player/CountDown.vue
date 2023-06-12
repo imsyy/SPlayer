@@ -1,5 +1,5 @@
 <template>
-  <Transition mode="out-in" appear>
+  <Transition mode="out-in" appear v-if="music.getPlaySongLyric">
     <div
       class="countdown"
       :style="{ animationPlayState: music.getPlayState ? 'running' : 'paused' }"
@@ -24,33 +24,35 @@ const music = musicStore();
 // 剩余点数
 const remainingPoint = ref(0);
 // 总时长
-const totalDuration = ref(
-  music.getPlaySongLyric.hasYrc
-    ? music.getPlaySongLyric?.yrc[0].time
-    : music.getPlaySongLyric?.lrc[0].time
-);
+const totalDuration = ref(0);
 
 // 监听歌曲时长变化
 watch(
   () => music.getPlaySongTime.currentTime,
   (val) => {
-    if (music.getPlaySongLyric.lrc[0]) {
-      const remainingTime = totalDuration.value - val - 0.5;
-      const progress = 1 - remainingTime / totalDuration.value;
-      remainingPoint.value = Number(Math.floor(3 * progress));
+    if (music.getPlaySongLyric) {
+      const lyric =
+        music.getPlaySongLyric.lrc[0] || music.getPlaySongLyric.yrc[0];
+      if (lyric) {
+        totalDuration.value = lyric.time;
+        const remainingTime = totalDuration.value - val - 0.5;
+        const progress = 1 - remainingTime / totalDuration.value;
+        remainingPoint.value = Number(Math.floor(3 * progress));
+      }
     }
   }
 );
 
 // 监听歌曲改变
 watch(
-  () => music.getPlaySongLyric?.lrc,
+  () => music.getPlaySongLyric,
   (val) => {
-    if (music.getPlaySongLyric.lrc[0]) {
-      totalDuration.value = music.getPlaySongLyric.hasYrc
-        ? music.getPlaySongLyric?.yrc[0].time
-        : val[0].time;
-      remainingPoint.value = 0;
+    if (val) {
+      const lyric = val.lrc[0] || val.yrc[0];
+      if (lyric) {
+        totalDuration.value = lyric.time;
+        remainingPoint.value = 0;
+      }
     }
   }
 );
@@ -67,6 +69,7 @@ watch(
   opacity: 0;
   transform: scale(0);
 }
+
 .countdown {
   animation: breathe 5s ease-in-out infinite;
   .point {
@@ -77,13 +80,16 @@ watch(
     }
   }
 }
+
 @keyframes breathe {
   0% {
     transform: scale(0.95);
   }
+
   50% {
     transform: scale(1.1);
   }
+
   100% {
     transform: scale(0.95);
   }
