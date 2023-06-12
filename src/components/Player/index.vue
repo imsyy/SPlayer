@@ -148,9 +148,9 @@
           />
         </div>
         <div :class="music.getPersonalFmMode ? 'menu fm' : 'menu'">
-          <n-popover trigger="hover" :keep-alive-on-hover="false">
+          <n-popover v-if="music.getPlaySongData" trigger="hover" :keep-alive-on-hover="false">
             <template #trigger>
-              <div class="like" v-if="music.getPlaySongData">
+              <div class="like">
                 <n-icon
                   class="like-icon"
                   size="24"

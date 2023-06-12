@@ -349,7 +349,7 @@ const dropdownSelect = (key) => {
   switch (key) {
     // 明暗切换
     case "changeTheme":
-      setting.getSiteTheme == "light"
+      setting.getSiteTheme === "light"
         ? setting.setSiteTheme("dark")
         : setting.setSiteTheme("light");
       setting.themeAuto = false;
