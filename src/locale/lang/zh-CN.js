@@ -182,6 +182,9 @@ export default {
       cloudUsed: "已用 {used}%，剩余 {remaining} G",
       simiVideo: "相似视频",
       restore: "恢复默认",
+      random: "随机播放",
+      single: "单曲循环",
+      normal: "列表循环",
     },
     dialog: {
       check: "检查",

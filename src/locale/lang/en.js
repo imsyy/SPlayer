@@ -184,6 +184,9 @@ export default {
       cloudUsed: "Used {used}%, Remaining {remaining} G",
       simiVideo: "Similar Videos",
       restore: "Restore",
+      random: "Random play",
+      single: "Single loop",
+      normal: "list loop",
     },
     dialog: {
       check: "Check",

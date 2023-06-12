@@ -229,40 +229,36 @@ const useMusicDataStore = defineStore("musicData", {
       return this.persistData.likeList.includes(id);
     },
     // 移入移除喜欢列表
-    changeLikeList(id, like = true) {
+    async changeLikeList(id, like = true) {
       const user = userStore();
       const list = this.persistData.likeList;
       const exists = list.includes(id);
-      if (user.userLogin) {
-        if (like) {
-          if (!exists) {
-            setLikeSong(id, like).then((res) => {
-              if (res.code == 200) {
-                list.push(id);
-                $message.info(getLanguageData("loveSong"));
-              } else {
-                $message.error(getLanguageData("loveSongError"));
-              }
-            });
-          } else {
+      if (!user.userLogin) {
+        $message.error(getLanguageData("needLogin"));
+        return;
+      }
+      try {
+        const res = await setLikeSong(id, like);
+        if (res.code === 200) {
+          if (like && !exists) {
+            list.push(id);
+            $message.info(getLanguageData("loveSong"));
+          } else if (!like && exists) {
+            list.splice(list.indexOf(id), 1);
+            $message.info(getLanguageData("loveSongRemove"));
+          } else if (like && exists) {
             $message.info(getLanguageData("loveSongRepeat"));
           }
         } else {
-          if (exists) {
-            setLikeSong(id, like).then((res) => {
-              if (res.code == 200) {
-                list.splice(list.indexOf(id), 1);
-                $message.info(getLanguageData("loveSongRemove"));
-              } else {
-                $message.error(getLanguageData("loveSongRemoveError"));
-              }
-            });
+          if (like) {
+            $message.error(getLanguageData("loveSongError"));
           } else {
-            $message.error(getLanguageData("loveSongNoFound"));
+            $message.error(getLanguageData("loveSongRemoveError"));
           }
         }
-      } else {
-        $message.error(getLanguageData("needLogin"));
+      } catch (error) {
+        console.error(getLanguageData("loveSongError"), error);
+        $message.error(getLanguageData("loveSongError"));
       }
     },
     // 更改音乐播放状态
@@ -347,23 +343,36 @@ const useMusicDataStore = defineStore("musicData", {
       this.playSongLyricIndex = index === -1 ? lyrics.length - 1 : index - 1;
     },
     // 设置当前播放模式
-    setPlaySongMode() {
-      if (this.persistData.playSongMode === "normal") {
-        this.persistData.playSongMode = "random";
-        $message.info(getLanguageData("random"), {
-          icon: () => h(NIcon, null, { default: () => h(ShuffleOne) }),
-        });
-      } else if (this.persistData.playSongMode === "random") {
-        this.persistData.playSongMode = "single";
-        $message.info(getLanguageData("single"), {
-          icon: () => h(NIcon, null, { default: () => h(PlayOnce) }),
-        });
+    setPlaySongMode(value = null) {
+      const modeObj = {
+        normal: PlayCycle,
+        random: ShuffleOne,
+        single: PlayOnce,
+      };
+      if (value && value in modeObj) {
+        this.persistData.playSongMode = value;
       } else {
-        this.persistData.playSongMode = "normal";
-        $message.info(getLanguageData("normal"), {
-          icon: () => h(NIcon, null, { default: () => h(PlayCycle) }),
-        });
+        switch (this.persistData.playSongMode) {
+          case "normal":
+            this.persistData.playSongMode = "random";
+            value = "random";
+            break;
+          case "random":
+            this.persistData.playSongMode = "single";
+            value = "single";
+            break;
+          default:
+            this.persistData.playSongMode = "normal";
+            value = "normal";
+            break;
+        }
       }
+      $message.info(getLanguageData(value), {
+        icon: () =>
+          h(NIcon, null, {
+            default: () => h(modeObj[this.persistData.playSongMode]),
+          }),
+      });
     },
     // 上下曲调整
     setPlaySongIndex(type) {

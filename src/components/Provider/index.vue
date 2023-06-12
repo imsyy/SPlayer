@@ -21,7 +21,7 @@
     <n-loading-bar-provider>
       <n-dialog-provider>
         <n-notification-provider>
-          <n-message-provider>
+          <n-message-provider :max="1">
             <slot></slot>
             <NaiveProviderContent />
           </n-message-provider>

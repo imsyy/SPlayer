@@ -203,7 +203,7 @@ const lrcTextClick = (time) => {
     opacity: 0.3;
     transform: scale(0.9);
     transform-origin: left bottom;
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease, filter 0.3s ease;
     cursor: pointer;
     .lyric {
       display: flex;
@@ -302,6 +302,14 @@ const lrcTextClick = (time) => {
   }
   &::-webkit-scrollbar {
     display: none;
+  }
+  &:hover {
+    .lrc,
+    .yrc {
+      &.blur {
+        filter: blur(0) !important;
+      }
+    }
   }
   &.cover {
     height: 80vh;

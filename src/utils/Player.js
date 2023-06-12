@@ -81,12 +81,15 @@ export const createSound = (src, autoPlay = true) => {
       music.setPlayState(true);
       const songName = music.getPlaySongData.name;
       const songArtist = music.getPlaySongData.artist[0].name;
-      $message.info(songName + " - " + songArtist, {
-        icon: () =>
-          h(NIcon, null, {
-            default: () => h(MusicNoteFilled),
-          }),
-      });
+      // 播放通知
+      if (typeof $message !== "undefined") {
+        $message.info(songName + " - " + songArtist, {
+          icon: () =>
+            h(NIcon, null, {
+              default: () => h(MusicNoteFilled),
+            }),
+        });
+      }
       console.log("开始播放：" + songName + " - " + songArtist);
       // 获取播放器信息
       timeupdateInterval = setInterval(() => checkAudioTime(sound, music), 250);
