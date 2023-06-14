@@ -311,7 +311,13 @@ const useMusicDataStore = defineStore("musicData", {
         }
       } else {
         console.log("该歌曲暂无歌词");
-        this.playSongLyric = [];
+        this.playSongLyric = {
+          lrc: [],
+          yrc: [],
+          hasTran: false,
+          hasTran: false,
+          hasYrc: false,
+        };
       }
     },
     // 歌曲播放进度
@@ -339,7 +345,7 @@ const useMusicDataStore = defineStore("musicData", {
       const setting = settingStore();
       const lrcType = !this.playSongLyric.hasYrc || !setting.showYrc;
       const lyrics = lrcType ? this.playSongLyric.lrc : this.playSongLyric.yrc;
-      const index = lyrics.findIndex((v) => v.time >= value.currentTime);
+      const index = lyrics?.findIndex((v) => v?.time >= value?.currentTime);
       this.playSongLyricIndex = index === -1 ? lyrics.length - 1 : index - 1;
     },
     // 设置当前播放模式

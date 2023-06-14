@@ -185,6 +185,9 @@ export default {
       random: "随机播放",
       single: "单曲循环",
       normal: "列表循环",
+      mute: "静音",
+      unmute: "取消静音",
+      customTheme: "自定义主题",
     },
     dialog: {
       check: "检查",
@@ -208,7 +211,7 @@ export default {
       createFailed: "歌单新建失败，请重试",
       deleteSuccess: "删除成功",
       deleteFailure: "删除失败",
-      downloadSuccess: "{name}下载完成",
+      downloadSuccess: "{name} 下载完成",
       downloadFailure: "下载失败，请尝试其他音质",
       downloadError: "下载出现错误，请重试",
       upCloudSuccess: "{name} 上传成功",

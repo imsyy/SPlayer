@@ -187,6 +187,9 @@ export default {
       random: "Random play",
       single: "Single loop",
       normal: "list loop",
+      mute: "Mute",
+      unmute: "Unmute",
+      customTheme: "Custom theme",
     },
     dialog: {
       check: "Check",

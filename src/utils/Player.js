@@ -79,21 +79,23 @@ export const createSound = (src, autoPlay = true) => {
       }
       testNumber = 0;
       music.setPlayState(true);
-      const songName = music.getPlaySongData.name;
-      const songArtist = music.getPlaySongData.artist[0].name;
+      const songName = music.getPlaySongData?.name;
+      const songArtist = music.getPlaySongData.artist[0]?.name;
       // 播放通知
-      if (typeof $message !== "undefined") {
+      if (typeof $message !== "undefined" && songArtist !== null) {
         $message.info(songName + " - " + songArtist, {
           icon: () =>
             h(NIcon, null, {
               default: () => h(MusicNoteFilled),
             }),
         });
+      } else {
+        $message.warning(getLanguageData("songNotDetails"));
       }
       console.log("开始播放：" + songName + " - " + songArtist);
+      setMediaSession(music);
       // 获取播放器信息
       timeupdateInterval = setInterval(() => checkAudioTime(sound, music), 250);
-      setMediaSession(music);
       // 写入播放历史
       music.setPlayHistory(music.getPlaySongData);
       // 播放时页面标题

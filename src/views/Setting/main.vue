@@ -37,6 +37,13 @@
         >
           <n-text v-html="language === 'zh-CN' ? item.name : item.label" />
         </n-grid-item>
+        <n-grid-item
+          :class="themeType === 'custom' ? 'item check' : 'item'"
+          :style="{ '--color': themeData.primaryColor }"
+          @click="openThemeCustom()"
+        >
+          <n-text v-html="$t('general.name.customTheme')" />
+        </n-grid-item>
       </n-grid>
     </n-card>
     <n-card class="set-item">
@@ -149,6 +156,25 @@
       </div>
       <n-switch v-model:value="showLyricSetting" :round="false" />
     </n-card>
+    <!-- 自定义主题 -->
+    <n-modal
+      class="s-modal"
+      v-model:show="showThemeCustom"
+      preset="card"
+      :title="$t('general.name.customTheme')"
+      :bordered="false"
+    >
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showThemeCustom = false">
+            {{ $t("general.dialog.cancel") }}
+          </n-button>
+          <n-button type="primary">
+            {{ $t("general.name.customTheme") }}
+          </n-button>
+        </n-space>
+      </template>
+    </n-modal>
   </div>
 </template>
 
@@ -172,6 +198,7 @@ const {
   autoSignIn,
   searchHistory,
   themeType,
+  themeData,
   showLyricSetting,
   songVolumeFade,
   useUnmServer,
@@ -181,6 +208,12 @@ const {
 
 // 国际化
 const { locale, t } = useI18n();
+
+// 自定义主题
+const showThemeCustom = ref(false);
+const openThemeCustom = () => {
+  showThemeCustom.value = true;
+};
 
 // UNM 开关显示
 const useUnmServerShow = import.meta.env.VITE_UNM_API ? true : false;
