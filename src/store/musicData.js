@@ -415,10 +415,12 @@ const useMusicDataStore = defineStore("musicData", {
     },
     // 添加歌曲至播放列表
     addSongToPlaylists(value, play = true) {
+      // 停止当前播放
+      if (typeof $player !== "undefined") soundStop($player);
+      // 判断与上一次播放歌曲是否一致
       const index = this.persistData.playlists.findIndex(
         (o) => o.id === value.id
       );
-      // 判断与上一次播放歌曲是否一致
       try {
         if (
           value.id !==
