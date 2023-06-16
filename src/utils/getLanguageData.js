@@ -36,6 +36,7 @@ const languageData = {
     songLoadError: "音乐数据获取失败",
     songPlayError: "歌曲播放失败",
     songLoadTest: "歌曲重试次数过多，请刷新后重试",
+    songNotDetails: "歌曲详细信息获取失败，可尝试歌曲匹配",
   },
   en: {
     million: "M",
@@ -66,6 +67,7 @@ const languageData = {
     playError: "Playback error, please refresh and try again",
     addSongToNext: "has been added to the next song to play",
     removeSong: "has been removed from the playlist",
+    songNotDetails: "Song details failed to get, try song match",
   },
 };
 

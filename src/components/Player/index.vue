@@ -64,7 +64,7 @@
                   <Transition name="fade" mode="out-in">
                     <AllArtists
                       v-if="
-                        !music.getPlayState || !music.getPlaySongLyric.lrc[0]
+                        !music.getPlayState || !music.getPlaySongLyric?.lrc[0]
                       "
                       class="text-hidden"
                       :artistsData="music.getPlaySongData.artist"
@@ -90,7 +90,7 @@
                     <n-text
                       v-else-if="
                         music.getPlaySongLyricIndex != -1 &&
-                        music.getPlaySongLyric.lrc[0]
+                        music.getPlaySongLyric?.lrc[0]
                       "
                       class="lrc text-hidden"
                       :depth="3"
@@ -148,7 +148,11 @@
           />
         </div>
         <div :class="music.getPersonalFmMode ? 'menu fm' : 'menu'">
-          <n-popover v-if="music.getPlaySongData" trigger="hover" :keep-alive-on-hover="false">
+          <n-popover
+            v-if="music.getPlaySongData"
+            trigger="hover"
+            :keep-alive-on-hover="false"
+          >
             <template #trigger>
               <div class="like">
                 <n-icon
@@ -219,30 +223,43 @@
             </template>
             {{ $t("general.name.playlists") }}
           </n-popover>
-          <div class="volume">
-            <n-icon
-              size="28"
-              :component="
-                persistData.playVolume == 0
-                  ? VolumeOffRound
-                  : persistData.playVolume < 0.4
-                  ? VolumeMuteRound
-                  : persistData.playVolume < 0.7
-                  ? VolumeDownRound
-                  : VolumeUpRound
-              "
-              @click.stop="volumeMute"
-            />
-            <n-slider
-              class="volmePg"
-              v-model:value="persistData.playVolume"
-              :tooltip="false"
-              :min="0"
-              :max="1"
-              :step="0.01"
-              @click.stop
-            />
-          </div>
+          <n-popover
+            trigger="hover"
+            placement="top-start"
+            :keep-alive-on-hover="false"
+          >
+            <template #trigger>
+              <div class="volume">
+                <n-icon
+                  size="28"
+                  :component="
+                    persistData.playVolume == 0
+                      ? VolumeOffRound
+                      : persistData.playVolume < 0.4
+                      ? VolumeMuteRound
+                      : persistData.playVolume < 0.7
+                      ? VolumeDownRound
+                      : VolumeUpRound
+                  "
+                  @click.stop="volumeMute"
+                />
+                <n-slider
+                  class="volmePg"
+                  v-model:value="persistData.playVolume"
+                  :tooltip="false"
+                  :min="0"
+                  :max="1"
+                  :step="0.01"
+                  @click.stop
+                />
+              </div>
+            </template>
+            {{
+              persistData.playVolume > 0
+                ? $t("general.name.mute")
+                : $t("general.name.unmute")
+            }}
+          </n-popover>
         </div>
       </div>
     </n-card>

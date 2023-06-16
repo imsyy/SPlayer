@@ -2,10 +2,11 @@
   <Transition mode="out-in">
     <div class="datalists" id="datalists" v-if="listData[0]">
       <n-card
-        v-for="item in listData"
+        v-for="(item, index) in listData"
         :key="item"
+        :id="'song' + index"
         :class="
-          music.getPlaySongData && music.getPlaySongData.id == item.id
+          music.getPlaySongData && music.getPlaySongData?.id == item?.id
             ? 'songs play'
             : 'songs'
         "
@@ -30,28 +31,28 @@
           :src="item.album.picUrl.replace(/^http:/, 'https:') + '?param=60y60'"
           fallback-src="/images/pic/default.png"
         />
-        <div class="num" v-else-if="item.num">
-          <n-text :depth="2" v-html="item.num" />
+        <div class="num" v-else-if="item?.num">
+          <n-text :depth="2" v-html="item?.num" />
         </div>
         <div class="name">
           <div class="title">
             <n-text
               class="text-hidden"
               depth="2"
-              v-html="item.name"
-              @click.stop="jumpLink(item.id, 1)"
+              v-html="item?.name"
+              @click.stop="jumpLink(item?.id, 1)"
             />
             <n-tag
-              v-if="item.fee == 1 || item.fee == 4"
+              v-if="item?.fee == 1 || item?.fee == 4"
               class="vip"
               round
               :bordered="false"
               size="small"
             >
-              {{ item.fee == 1 ? "VIP" : "EP" }}
+              {{ item?.fee == 1 ? "VIP" : "EP" }}
             </n-tag>
             <n-tag
-              v-if="item.pc"
+              v-if="item?.pc"
               class="cloud"
               round
               type="info"
@@ -61,7 +62,7 @@
               {{ $t("general.name.cloud") }}
             </n-tag>
             <n-tag
-              v-if="item.mv"
+              v-if="item?.mv"
               class="mv"
               round
               type="warning"
@@ -74,19 +75,19 @@
           </div>
           <div class="meta">
             <AllArtists
-              v-if="item.artist"
+              v-if="item?.artist"
               class="text-hidden"
-              :artistsData="item.artist"
+              :artistsData="item?.artist"
             />
             <n-text
               class="alia text-hidden"
               depth="3"
-              v-if="item.alia && item.alia[0]"
+              v-if="item?.alia[0]"
               v-html="item.alia[0]"
             />
           </div>
         </div>
-        <div class="album" v-if="!hideAlbum && item.album">
+        <div class="album" v-if="!hideAlbum && item?.album">
           <n-text
             v-html="item.album.name"
             @click.stop="jumpLink(item.album.id, 10)"
@@ -97,13 +98,13 @@
             class="like"
             size="20"
             @click.stop="
-              music.getSongIsLike(item.id)
-                ? music.changeLikeList(item.id, false)
-                : music.changeLikeList(item.id, true)
+              music.getSongIsLike(item?.id)
+                ? music.changeLikeList(item?.id, false)
+                : music.changeLikeList(item?.id, true)
             "
           >
             <Like
-              :theme="music.getSongIsLike(item.id) ? 'filled' : 'outline'"
+              :theme="music.getSongIsLike(item?.id) ? 'filled' : 'outline'"
             />
           </n-icon>
           <n-icon
@@ -268,6 +269,27 @@
               <n-text>
                 {{ $t("general.name.album") }}: {{ drawerData.album.name }}
               </n-text>
+            </div>
+            <div
+              v-if="router.currentRoute.value.name === 'user-cloud'"
+              class="item"
+              @click="
+                () => {
+                  router.push({
+                    path: '/search/songs',
+                    query: {
+                      keywords: drawerData.name,
+                      page: 1,
+                    },
+                  });
+                  drawerShow = false;
+                }
+              "
+            >
+              <n-icon size="20">
+                <Search theme="filled" />
+              </n-icon>
+              <n-text>{{ $t("menu.search") }}</n-text>
             </div>
             <div
               v-if="router.currentRoute.value.name === 'user-cloud'"

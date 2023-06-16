@@ -19,6 +19,19 @@
           :placeholder="$t('other.asIdDes')"
           :show-button="false"
         />
+        <n-popover trigger="hover" :keep-alive-on-hover="false">
+          <template #trigger>
+            <n-button
+              style="margin-left: 12px"
+              @click="toSearch(cloudMatchBeforeData.name)"
+            >
+              <template #icon>
+                <n-icon :component="Search" />
+              </template>
+            </n-button>
+          </template>
+          {{ $t("menu.search") }}
+        </n-popover>
         <n-button
           style="margin-left: 12px"
           :disabled="!cloudMatchValue.asid"
@@ -61,6 +74,7 @@
 import { setCloudMatch } from "@/api/user";
 import { userStore } from "@/store";
 import { useI18n } from "vue-i18n";
+import { Search } from "@icon-park/vue-next";
 import SmallSongData from "@/components/DataList/SmallSongData.vue";
 
 const { t } = useI18n();
@@ -100,6 +114,11 @@ const setCloudMatchBtn = (data) => {
       $message.error(t("other.matchError"));
     }
   }
+};
+
+// 同名搜索
+const toSearch = (name) => {
+  window.open(`/search/songs?keywords=${name}&page=1`);
 };
 
 // 开启歌曲纠正

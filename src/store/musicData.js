@@ -311,7 +311,13 @@ const useMusicDataStore = defineStore("musicData", {
         }
       } else {
         console.log("该歌曲暂无歌词");
-        this.playSongLyric = [];
+        this.playSongLyric = {
+          lrc: [],
+          yrc: [],
+          hasTran: false,
+          hasTran: false,
+          hasYrc: false,
+        };
       }
     },
     // 歌曲播放进度
@@ -339,7 +345,7 @@ const useMusicDataStore = defineStore("musicData", {
       const setting = settingStore();
       const lrcType = !this.playSongLyric.hasYrc || !setting.showYrc;
       const lyrics = lrcType ? this.playSongLyric.lrc : this.playSongLyric.yrc;
-      const index = lyrics.findIndex((v) => v.time >= value.currentTime);
+      const index = lyrics?.findIndex((v) => v?.time >= value?.currentTime);
       this.playSongLyricIndex = index === -1 ? lyrics.length - 1 : index - 1;
     },
     // 设置当前播放模式
@@ -415,10 +421,12 @@ const useMusicDataStore = defineStore("musicData", {
     },
     // 添加歌曲至播放列表
     addSongToPlaylists(value, play = true) {
+      // 停止当前播放
+      if (typeof $player !== "undefined") soundStop($player);
+      // 判断与上一次播放歌曲是否一致
       const index = this.persistData.playlists.findIndex(
         (o) => o.id === value.id
       );
-      // 判断与上一次播放歌曲是否一致
       try {
         if (
           value.id !==

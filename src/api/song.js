@@ -98,6 +98,7 @@ export const getMusicNewLyric = (id) => {
 export const getMusicDetail = (ids) => {
   return axios({
     method: "GET",
+    hiddenBar: true,
     url: "/song/detail",
     params: {
       ids,
@@ -142,6 +143,7 @@ export const getSimiSong = (id) => {
 export const getSongDownload = (id, br = 999000) => {
   return axios({
     method: "GET",
+    hiddenBar: true,
     url: "/song/download/url",
     params: {
       id,
