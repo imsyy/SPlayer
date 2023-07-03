@@ -114,7 +114,7 @@ const renderIcon = (icon) => {
   return () => {
     return h(
       NIcon,
-      { style: { transform: "translateX(2px)" } },
+      { style: { transform: "translateX(2px) translateY(1px)" } },
       {
         default: () => icon,
       }
@@ -257,7 +257,7 @@ const changeDropdownOptions = () => {
       label: () => {
         return h(
           NText,
-          { style: { transform: "translateX(2px)" } },
+          { style: { transform: "translateX(2px) translateY(1px)" } },
           {
             default: () =>
               setting.getSiteTheme == "light"
@@ -270,7 +270,7 @@ const changeDropdownOptions = () => {
       icon: () => {
         return h(
           NIcon,
-          { style: { transform: "translateX(2px)" } },
+          { style: { transform: "translateX(2px) translateY(1px)" } },
           {
             default: () =>
               setting.getSiteTheme == "light" ? h(Moon) : h(SunOne),
@@ -292,7 +292,7 @@ const changeDropdownOptions = () => {
       label: () => {
         return h(
           NText,
-          { style: { transform: "translateX(2px)" } },
+          { style: { transform: "translateX(2px) translateY(1px)" } },
           {
             default: () =>
               user.userLogin ? t("nav.avatar.logout") : t("nav.avatar.login"),
@@ -303,7 +303,7 @@ const changeDropdownOptions = () => {
       icon: () => {
         return h(
           NIcon,
-          { style: { transform: "translateX(2px)" } },
+          { style: { transform: "translateX(2px) translateY(1px)" } },
           {
             default: () => (user.userLogin ? h(Logout) : h(Login)),
           }

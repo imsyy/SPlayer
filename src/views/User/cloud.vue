@@ -37,7 +37,7 @@
             {{
               $t("general.name.cloudUsed", {
                 used: (100 / (cloudSpace[1] / cloudSpace[0])).toFixed(),
-                remaining: cloudSpace[1] - cloudSpace[0],
+                remaining: (cloudSpace[1] - cloudSpace[0]).toFixed(),
               })
             }}
           </n-text>
