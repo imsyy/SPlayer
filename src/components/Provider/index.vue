@@ -71,12 +71,21 @@ const osThemeChange = (val) => {
 
 // 配置主题色
 const changeThemeColor = (val) => {
-  const color = themeColorData[val];
-  console.log("当前主题色：" + val, color);
-  themeOverrides.value = {
-    common: color,
-  };
-  setting.themeData = color;
+  let color = null;
+  if (val !== "custom") {
+    color = themeColorData[val];
+    console.log("当前主题色：" + val, color);
+    themeOverrides.value = {
+      common: color,
+    };
+    setting.themeData = color;
+  } else {
+    color = setting.themeData;
+    console.log("当前主题色为自定义：" + val, color);
+    themeOverrides.value = {
+      common: color,
+    };
+  }
   setCssVariable("--main-color", color.primaryColor);
   setCssVariable("--main-second-color", color.primaryColor + "1f");
   setCssVariable("--main-boxshadow-color", color.primaryColor + "26");
@@ -124,6 +133,10 @@ watch(
 watch(
   () => setting.themeType,
   (val) => changeThemeColor(val)
+);
+watch(
+  () => setting.themeData,
+  (val) => changeThemeColor(val.label)
 );
 
 onMounted(() => {

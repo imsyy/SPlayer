@@ -223,13 +223,14 @@
             </template>
             {{ $t("general.name.playlists") }}
           </n-popover>
-          <n-popover
-            trigger="hover"
-            placement="top-start"
-            :keep-alive-on-hover="false"
-          >
-            <template #trigger>
-              <div class="volume">
+
+          <div class="volume">
+            <n-popover
+              trigger="hover"
+              placement="top-start"
+              :keep-alive-on-hover="false"
+            >
+              <template #trigger>
                 <n-icon
                   size="28"
                   :component="
@@ -243,23 +244,23 @@
                   "
                   @click.stop="volumeMute"
                 />
-                <n-slider
-                  class="volmePg"
-                  v-model:value="persistData.playVolume"
-                  :tooltip="false"
-                  :min="0"
-                  :max="1"
-                  :step="0.01"
-                  @click.stop
-                />
-              </div>
-            </template>
-            {{
-              persistData.playVolume > 0
-                ? $t("general.name.mute")
-                : $t("general.name.unmute")
-            }}
-          </n-popover>
+              </template>
+              {{
+                persistData.playVolume > 0
+                  ? $t("general.name.mute")
+                  : $t("general.name.unmute")
+              }}
+            </n-popover>
+            <n-slider
+              class="volmePg"
+              v-model:value="persistData.playVolume"
+              :tooltip="false"
+              :min="0"
+              :max="1"
+              :step="0.01"
+              @click.stop
+            />
+          </div>
         </div>
       </div>
     </n-card>

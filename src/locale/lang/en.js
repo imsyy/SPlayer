@@ -190,6 +190,7 @@ export default {
       mute: "Mute",
       unmute: "Unmute",
       customTheme: "Custom theme",
+      primaryColor: "Primary Color",
     },
     dialog: {
       check: "Check",

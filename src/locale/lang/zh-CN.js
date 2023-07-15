@@ -188,6 +188,7 @@ export default {
       mute: "静音",
       unmute: "取消静音",
       customTheme: "自定义主题",
+      primaryColor: "主色",
     },
     dialog: {
       check: "检查",
