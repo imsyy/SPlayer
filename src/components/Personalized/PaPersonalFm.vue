@@ -1,71 +1,74 @@
 <template>
-  <div
-    class="papersonalfm"
-    v-if="music.getPersonalFmData?.id"
-    :style="`background-image: url(${music.getPersonalFmData.album.picUrl.replace(
-      /^http:/,
-      'https:'
-    )}?param=300y300)`"
-  >
-    <div class="gray" />
-    <img
-      class="pic"
-      :src="
-        music.getPersonalFmData.album.picUrl.replace(/^http:/, 'https:') +
-        '?param=300y300'
-      "
-      alt="pic"
-    />
-    <div class="data">
-      <div class="info">
-        <span
-          class="name text-hidden"
-          @click="router.push(`/song?id=${music.getPersonalFmData.id}`)"
-        >
-          {{ music.getPersonalFmData.name }}
-        </span>
-        <AllArtists
-          class="text-hidden"
-          :artistsData="music.getPersonalFmData.artist"
-        />
-      </div>
-      <div class="controls">
-        <n-icon
-          class="state"
-          size="46"
-          :component="
-            music.getPersonalFmMode
-              ? music.getPlayState
-                ? PauseCircleFilled
-                : PlayCircleFilled
-              : PlayCircleFilled
-          "
-          @click="fmPlayOrPause"
-        />
-        <n-icon
-          class="next"
-          size="30"
-          :component="SkipNextRound"
-          @click="fmNext"
-        />
-        <n-icon
-          class="dislike"
-          size="20"
-          :component="ThumbDownRound"
-          @click="music.setFmDislike(music.getPersonalFmData.id)"
-        />
-        <div class="radio">
-          <div class="icon">
-            <n-icon size="20" :component="RadioFilled" />
-            <span>{{ $t("home.modules.papersonalfm.title") }}</span>
-          </div>
-          <span class="tip" v-if="!user.userLogin">
-            {{ $t("home.modules.papersonalfm.subtitle") }}
+  <Transition mode="out-in">
+    <div
+      v-if="music.getPersonalFmData?.id"
+      class="papersonalfm"
+      :style="`background-image: url(${music.getPersonalFmData.album.picUrl.replace(
+        /^http:/,
+        'https:'
+      )}?param=300y300)`"
+    >
+      <div class="gray" />
+      <img
+        class="pic"
+        :src="
+          music.getPersonalFmData.album.picUrl.replace(/^http:/, 'https:') +
+          '?param=300y300'
+        "
+        alt="pic"
+      />
+      <div class="data">
+        <div class="info">
+          <span
+            class="name text-hidden"
+            @click="router.push(`/song?id=${music.getPersonalFmData.id}`)"
+          >
+            {{ music.getPersonalFmData.name }}
           </span>
+          <AllArtists
+            class="text-hidden"
+            :artistsData="music.getPersonalFmData.artist"
+          />
+        </div>
+        <div class="controls">
+          <n-icon
+            class="state"
+            size="46"
+            :component="
+              music.getPersonalFmMode
+                ? music.getPlayState
+                  ? PauseCircleFilled
+                  : PlayCircleFilled
+                : PlayCircleFilled
+            "
+            @click="fmPlayOrPause"
+          />
+          <n-icon
+            class="next"
+            size="30"
+            :component="SkipNextRound"
+            @click="fmNext"
+          />
+          <n-icon
+            class="dislike"
+            size="20"
+            :component="ThumbDownRound"
+            @click="music.setFmDislike(music.getPersonalFmData.id)"
+          />
+          <div class="radio">
+            <div class="icon">
+              <n-icon size="20" :component="RadioFilled" />
+              <span>{{ $t("home.modules.papersonalfm.title") }}</span>
+            </div>
+            <span class="tip" v-if="!user.userLogin">
+              {{ $t("home.modules.papersonalfm.subtitle") }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+    <n-skeleton v-else class="papersonalfm" />
+  </Transition>
 </template>
 
 <script setup>

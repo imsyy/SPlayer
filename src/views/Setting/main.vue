@@ -164,12 +164,38 @@
       :title="$t('general.name.customTheme')"
       :bordered="false"
     >
+      <n-form class="color-custom" :model="customColorData">
+        <n-form-item
+          :label="$t('general.name.primaryColor')"
+          path="primaryColor"
+        >
+          <n-color-picker v-model:value="customColorData.primaryColor" />
+        </n-form-item>
+        <n-form-item
+          :label="$t('general.name.primaryColor') + ' Hover'"
+          path="primaryColorHover"
+        >
+          <n-color-picker v-model:value="customColorData.primaryColorHover" />
+        </n-form-item>
+        <n-form-item
+          :label="$t('general.name.primaryColor') + ' Suppl'"
+          path="primaryColorSuppl"
+        >
+          <n-color-picker v-model:value="customColorData.primaryColorSuppl" />
+        </n-form-item>
+        <n-form-item
+          :label="$t('general.name.primaryColor') + ' Pressed'"
+          path="primaryColorPressed"
+        >
+          <n-color-picker v-model:value="customColorData.primaryColorPressed" />
+        </n-form-item>
+      </n-form>
       <template #footer>
         <n-space justify="end">
           <n-button @click="showThemeCustom = false">
             {{ $t("general.dialog.cancel") }}
           </n-button>
-          <n-button type="primary">
+          <n-button type="primary" @click="setThemeCustom">
             {{ $t("general.name.customTheme") }}
           </n-button>
         </n-space>
@@ -211,8 +237,33 @@ const { locale, t } = useI18n();
 
 // 自定义主题
 const showThemeCustom = ref(false);
+const customColorData = ref({
+  primaryColor: null,
+  primaryColorHover: null,
+  primaryColorSuppl: null,
+  primaryColorPressed: null,
+});
+
 const openThemeCustom = () => {
   showThemeCustom.value = true;
+  customColorData.value = {
+    primaryColor: themeData.value.primaryColor,
+    primaryColorHover: themeData.value.primaryColorHover,
+    primaryColorSuppl: themeData.value.primaryColorSuppl,
+    primaryColorPressed: themeData.value.primaryColorPressed,
+  };
+};
+
+// 确认自定义颜色
+const setThemeCustom = () => {
+  console.log(customColorData.value);
+  themeType.value = "custom";
+  themeData.value = {
+    label: "custom",
+    name: t("general.name.customTheme"),
+    ...customColorData.value,
+  };
+  showThemeCustom.value = false;
 };
 
 // UNM 开关显示

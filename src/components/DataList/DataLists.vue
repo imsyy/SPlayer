@@ -618,7 +618,7 @@ const openDrawer = (data) => {
 // 播放并添加
 const playSong = (data, song) => {
   console.log(data, song);
-  if (music.getPersonalFmMode) {
+  if (music.getPersonalFmMode && typeof $player !== "undefined") {
     soundStop($player);
     music.setPersonalFmMode(false);
   }
