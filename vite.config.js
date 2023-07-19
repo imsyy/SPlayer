@@ -87,7 +87,7 @@ export default ({ mode }) =>
       }),
     ],
     server: {
-      port: 2048,
+      port: 25536,
       open: true,
       http: true,
       ssr: false,

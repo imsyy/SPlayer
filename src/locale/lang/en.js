@@ -370,5 +370,7 @@ export default {
     lyricsBlur: "Lyric Blur",
     lyricsBlurTip:
       "Blur lyrics other than the currently playing ones, experimental feature",
+    bottomClick: "Bottomclick to expand Player ",
+    bottomClickTip: "It may cause mistouch, please open with caution ",
   },
 };

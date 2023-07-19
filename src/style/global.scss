@@ -113,6 +113,22 @@ body,
   }
 }
 
+// NSlider
+.n-slider {
+  &:hover {
+    .n-slider-rail {
+      .n-slider-rail__fill {
+        background-color: var(--main-color);
+      }
+    }
+  }
+  .n-slider-rail {
+    .n-slider-rail__fill {
+      background-color: var(--main-color);
+    }
+  }
+}
+
 // 文本超出隐藏
 .text-hidden {
   display: -webkit-box !important;

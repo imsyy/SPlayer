@@ -4,6 +4,7 @@
       v-show="music.getPlaylists[0] && music.showPlayBar"
       class="player"
       content-style="padding: 0"
+      @click.stop="setting.bottomClick ? music.setBigPlayerState(true) : null"
     >
       <div class="slider">
         <span>{{ music.getPlaySongTime.songTimePlayed }}</span>
@@ -223,7 +224,6 @@
             </template>
             {{ $t("general.name.playlists") }}
           </n-popover>
-
           <div class="volume">
             <n-popover
               trigger="hover"
