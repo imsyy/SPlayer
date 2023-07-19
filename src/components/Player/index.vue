@@ -208,7 +208,7 @@
                     ? ShuffleOne
                     : PlayOnce
                 "
-                @click="music.setPlaySongMode()"
+                @click.stop="music.setPlaySongMode()"
               />
             </div>
           </n-dropdown>

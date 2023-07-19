@@ -382,41 +382,53 @@ const useMusicDataStore = defineStore("musicData", {
     },
     // 上下曲调整
     setPlaySongIndex(type) {
+      // 如果 $player 未定义，返回 false
       if (typeof $player === "undefined") return false;
+      // 停止播放当前歌曲
       soundStop($player);
-      this.isLoadingSong = true;
+      // 根据播放模式设置加载状态
+      if (this.persistData.playSongMode !== "single") {
+        this.isLoadingSong = true;
+      }
+      // 如果是个人 FM 模式，设置个人 FM 数据
       if (this.persistData.personalFmMode) {
         this.setPersonalFmData();
       } else {
-        let listLength = this.persistData.playlists.length;
-        let listMode = this.persistData.playSongMode;
-        // 根据当前播放模式调整
+        const listLength = this.persistData.playlists.length;
+        const listMode = this.persistData.playSongMode;
+        // 根据当前播放模式调整播放索引
         if (listMode === "normal") {
           this.persistData.playSongIndex += type === "next" ? 1 : -1;
         } else if (listMode === "random") {
           this.persistData.playSongIndex = Math.floor(
             Math.random() * listLength
           );
-        } else if (listMode === "single" && typeof $player !== "undefined") {
-          soundStop($player);
+        } else if (listMode === "single") {
+          // 单曲循环模式
+          console.log("单曲循环模式");
           fadePlayOrPause($player, "play", this.persistData.playVolume);
         } else {
+          // 未知播放模式，显示错误消息
           $message.error(getLanguageData("playError"));
         }
-        // 判断是否处于最后/第一首
-        if (this.persistData.playSongIndex < 0) {
-          this.persistData.playSongIndex = listLength - 1;
-        } else if (this.persistData.playSongIndex >= listLength) {
-          this.persistData.playSongIndex = 0;
-          soundStop($player);
-          fadePlayOrPause($player, "play", this.persistData.playVolume);
+        // 检查播放索引是否越界，并根据情况进行处理
+        if (listMode !== "single") {
+          if (this.persistData.playSongIndex < 0) {
+            this.persistData.playSongIndex = listLength - 1;
+          } else if (this.persistData.playSongIndex >= listLength) {
+            this.persistData.playSongIndex = 0;
+            soundStop($player);
+            fadePlayOrPause($player, "play", this.persistData.playVolume);
+          }
+          // 如果播放列表长度大于 1，则停止播放当前歌曲
+          if (listLength > 1) {
+            soundStop($player);
+          }
+          // 在下一个事件循环中设置播放状态
+          nextTick().then(() => {
+            this.setPlayState(true);
+          });
         }
-        if (listMode !== "single" && listLength > 1) {
-          soundStop($player);
-        }
-        nextTick().then(() => {
-          this.setPlayState(true);
-        });
       }
     },
     // 添加歌曲至播放列表
