@@ -93,13 +93,22 @@
                         music.getPlaySongLyricIndex != -1 &&
                         music.getPlaySongLyric?.lrc[0]
                       "
-                      class="lrc text-hidden"
-                      :depth="3"
-                      v-html="
-                        music.getPlaySongLyric.lrc[music.getPlaySongLyricIndex]
-                          .content
-                      "
-                    />
+                      class="lrc"
+                    >
+                      <Transition name="fade" mode="out-in">
+                        <n-text
+                          class="text-hidden"
+                          :key="music.getPlaySongLyricIndex"
+                          :depth="3"
+                        >
+                          {{
+                            music.getPlaySongLyric.lrc[
+                              music.getPlaySongLyricIndex
+                            ]?.content
+                          }}
+                        </n-text>
+                      </Transition>
+                    </n-text>
                     <AllArtists
                       v-else
                       class="text-hidden"
