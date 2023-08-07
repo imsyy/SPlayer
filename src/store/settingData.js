@@ -63,6 +63,8 @@ const useSettingDataStore = defineStore("settingData", {
       memoryLastPlaybackPosition: true,
       // 语言
       language: "zh-CN",
+      // 底栏点击展开播放器
+      bottomClick: false,
     };
   },
   getters: {

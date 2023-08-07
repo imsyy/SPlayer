@@ -353,5 +353,7 @@ export default {
     positionCenter: "居中",
     lyricsBlur: "歌词模糊",
     lyricsBlurTip: "除当前播放歌词外模糊显示，实验性功能",
+    bottomClick: "点击底栏展开播放器",
+    bottomClickTip: "可能会造成误触，请谨慎开启",
   },
 };
