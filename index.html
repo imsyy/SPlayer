@@ -3,17 +3,16 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" href="<%- logo %>" />
-  <link rel="apple-touch-icon" href="<%- appleLogo %>" />
-  <link rel="bookmark" href="<%- appleLogo %>" />
-  <link rel="apple-touch-icon-precomposed" sizes="200x200" href="<%- appleLogo %>" />
+  <link rel="icon" href="%VITE_SITE_LOGO%" />
+  <link rel="apple-touch-icon" href="%VITE_SITE_APPLE_LOGO%" />
+  <link rel="bookmark" href="%VITE_SITE_APPLE_LOGO%" />
+  <link rel="apple-touch-icon-precomposed" sizes="200x200" href="%VITE_SITE_APPLE_LOGO%" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" /> -->
-  <title><%- title %></title>
-  <meta name="apple-mobile-web-app-title" content="<%- title %>" />
-  <meta name="author" content="<%- author %>" />
-  <meta name="keywords" content="<%- keywords %>" />
-  <meta name="description" content="<%- description %>" />
+  <title>%VITE_SITE_TITLE%</title>
+  <meta name="apple-mobile-web-app-title" content="%VITE_SITE_TITLE%" />
+  <meta name="author" content="%VITE_SITE_ANTHOR%" />
+  <meta name="keywords" content="%VITE_SITE_KEYWORDS%" />
+  <meta name="description" content="%VITE_SITE_DES%" />
   <meta name="theme-color" content="#ffffff" />
   <!-- HarmonyOS Sans -->
   <link rel="stylesheet" href="https://s1.hdslb.com/bfs/static/jinkela/long/font/regular.css" />
@@ -28,18 +27,6 @@
       "https://support.dmeng.net/upgrade-your-browser.html?referrer=" +
       encodeURIComponent(window.location.href);
   </script>
-  <% if (tongji) { %>
-  <!-- 百度统计 -->
-  <script>
-    var _hmt = _hmt || [];
-    (function() {
-      var hm = document.createElement("script");
-      hm.src = "https://hm.baidu.com/hm.js?<%- tongji %>";
-      var s = document.getElementsByTagName("script")[0];
-      s.parentNode.insertBefore(hm, s);
-    })();
-  </script>
-  <% } %>
   <style>
     noscript {
       width: 100%;
@@ -67,8 +54,8 @@
 <body>
   <div id="app"></div>
   <noscript>
-    <img src="<%- logo %>" alt="logo" />
-    <p class="title"><%- title %></p>
+    <img src="%VITE_SITE_LOGO%" alt="logo" />
+    <p class="title">%VITE_SITE_TITLE%</p>
     <p class="tip">请开启 JavaScript</p>
   </noscript>
   <script type="module" src="/src/main.js"></script>

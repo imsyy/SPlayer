@@ -8,6 +8,7 @@
 
 ## 说明
 
+- 本项目将会在未来进行重构（好大的屎山啊）
 - 本项目采用 [Vue 3](https://cn.vuejs.org/) 全家桶和 [Naïve UI](https://www.naiveui.com/) 组件库及 `SCSS` 开发
 - 目前主要以 `Web` 端为主，可能暂时不会考虑使用 `Electron` 构建客户端
 - 仅对移动端做了基础适配，**不保证功能全部可用**
@@ -20,7 +21,7 @@
 ## 🎉 功能
 
 - 支持扫码登录
-- 支持手机号登录（上游接口暂时无法使用）
+- 支持手机号登录
 - 自动进行每日签到及云贝签到
 - 支持 [UnblockNeteaseMusic](https://github.com/UnblockNeteaseMusic/server)，自动替换变灰歌曲
   - 由于酷我音源不支持 `https`，故网页端替换可能不全面

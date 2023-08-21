@@ -1,6 +1,6 @@
 {
   "name": "splayer",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "author": "imsyy",
   "home": "https://imsyy.top",
   "github": "https://github.com/imsyy/SPlayer",
@@ -24,7 +24,6 @@
     "screenfull": "^6.0.2",
     "swiper": "^9.3.2",
     "throttle-debounce": "^5.0.0",
-    "vite-plugin-html": "^3.2.0",
     "vue": "^3.2.45",
     "vue-i18n": "^9.2.2",
     "vue-router": "^4.1.6",
@@ -38,8 +37,8 @@
     "naive-ui": "^2.34.4",
     "unplugin-auto-import": "^0.12.0",
     "unplugin-vue-components": "^0.22.11",
-    "vite": "^4.3.8",
+    "vite": "^4.4.9",
     "vite-plugin-compression": "^0.5.1",
-    "vite-plugin-pwa": "^0.15.0"
+    "vite-plugin-pwa": "^0.16.4"
   }
 }
