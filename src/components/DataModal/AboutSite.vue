@@ -15,7 +15,7 @@
           v&nbsp;{{ packageJson.version }}
         </n-text>
       </div>
-      <n-blockquote>
+   <!--   <n-blockquote>
         <n-text class="power">
           Copyright&nbsp;©&nbsp;2020 - {{ new Date().getFullYear() }}
           <n-a
@@ -45,7 +45,7 @@
         Github
       </n-button>
     </div>
-  </n-modal>
+  </n-modal> -->
 </template>
 
 <script setup>
