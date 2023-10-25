@@ -35,16 +35,10 @@
             :foreground="setting.themeData.primaryColor"
           />
         </n-card>
-        <span class="tip">{{ qrText }}</span>
+        <span class="tip">{{ loginStatus }}</span>
       </n-tab-pane>
       <n-tab-pane name="phone" :tab="$t('login.phone')">
-        <n-alert
-          style="width: 100%; margin-top: -20px; margin-bottom: 12px"
-          type="warning"
-        >
-          {{ $t("login.canNotUse") }}
-        </n-alert>
-        <!-- <n-form
+        <n-form
           class="phone"
           ref="phoneFormRef"
           :model="phoneFormData"
@@ -83,10 +77,10 @@
           </n-form-item>
           <n-form-item>
             <n-button style="width: 100%" type="primary" @click="phoneLogin">
-              {{$t("login.login")}}
+              {{ $t("login.login") }}
             </n-button>
           </n-form-item>
-        </n-form> -->
+        </n-form>
       </n-tab-pane>
       <n-tab-pane name="email" :tab="$t('login.email')">
         <n-alert
@@ -126,7 +120,7 @@ const { numberRule, mobileRule } = formRules();
 
 // 二维码数据
 const qrImg = ref(null);
-const qrText = ref(t("login.qrText1"));
+const loginStatus = ref(t("login.loginStatus1"));
 
 // 手机号登录数据
 const phoneFormRef = ref(null);
@@ -139,7 +133,7 @@ const phoneFormRules = {
   captcha: numberRule,
 };
 const captchaTimeOut = ref(null);
-const captchaText = ref("获取验证码");
+const captchaText = ref(t("login.getCode"));
 const captchaDisabled = ref(false);
 
 // 定时器
@@ -157,15 +151,15 @@ const saveLoginData = (data) => {
     if (res.data.profile) {
       user.setUserData(res.data.profile);
       user.userLogin = true;
-      qrText.value = t("login.qrText4");
-      $message.success(t("login.qrText4"));
+      loginStatus.value = t("login.loginStatus4");
+      $message.success(t("login.loginStatus4"));
       // 自动签到
       if ($signIn) $signIn();
       clearInterval(qrCheckInterval.value);
       router.push("/user");
     } else {
       user.userLogOut();
-      $message.error(t("login.qrText5"));
+      $message.error(t("login.loginStatus5"));
       getQrKeyData();
     }
   });
@@ -188,7 +182,7 @@ const getQrKeyData = () => {
           qrImg.value = `https://music.163.com/login?codekey=${res.data.unikey}`;
           checkQrState(res.data.unikey);
         } else {
-          $message.error(t("login.qrText6"));
+          $message.error(t("login.loginStatus6"));
         }
       });
     }
@@ -204,14 +198,14 @@ const checkQrState = (key) => {
       if (res.code == 800) {
         getQrKeyData();
         loginStateMessage.value = null;
-        qrText.value = t("login.qrText2");
+        loginStatus.value = t("login.loginStatus2");
       } else if (res.code == 801) {
         loginStateMessage.value = null;
-        qrText.value = t("login.qrText1");
+        loginStatus.value = t("login.loginStatus1");
       } else if (res.code == 802) {
-        qrText.value = t("login.qrText3");
+        loginStatus.value = t("login.loginStatus3");
         if (!loginStateMessage.value) {
-          loginStateMessage.value = $message.loading(t("login.qrText3"), {
+          loginStateMessage.value = $message.loading(t("login.loginStatus3"), {
             duration: 0,
           });
         }
@@ -229,13 +223,13 @@ const getCaptcha = (data) => {
   phoneFormRef.value?.validate(
     (errors) => {
       if (errors) {
-        $message.error("请输入正确的手机号");
+      $message.error(t("general.message.needCheck"));
       } else {
         console.log(data + "发送验证码");
         sentCaptcha(data).then((res) => {
           console.log(res);
           if (res.code == 200) {
-            $message.success("验证码发送成功");
+            $message.success(t("login.codeSuccess"));
             let countDown = 60;
             captchaDisabled.value = true;
             captchaTimeOut.value = setInterval(() => {
@@ -243,12 +237,12 @@ const getCaptcha = (data) => {
               captchaText.value = countDown + "s";
               if (countDown === 0) {
                 clearInterval(captchaTimeOut.value);
-                captchaText.value = "重新获取";
+                captchaText.value = t("login.getCodeAgain");
                 captchaDisabled.value = false;
               }
             }, 1000);
           } else {
-            $message.error("验证码发送失败，请重试");
+            $message.error(t("login.codeError"));
           }
         });
       }
@@ -265,24 +259,39 @@ const phoneLogin = (e) => {
   phoneFormRef.value?.validate((errors) => {
     if (!errors) {
       console.log("通过");
-      verifyCaptcha(
-        phoneFormData._value.phone,
-        phoneFormData._value.captcha
-      ).then((res) => {
-        console.log(res);
-        if (res.code == 200) {
-          toLogin(
-            phoneFormData._value.phone,
-            phoneFormData._value.captcha
-          ).then((res) => {
-            console.log(res);
-            // 暂时不支持，等支持了再写
-          });
-        }
-      });
+      verifyCaptcha(phoneFormData._value.phone, phoneFormData._value.captcha)
+        .then((res) => {
+          console.log(res);
+          if (res.code == 200) {
+            toLogin(
+              phoneFormData._value.phone,
+              phoneFormData._value.captcha
+            ).then((res) => {
+              console.log(res);
+              if (res.profile) {
+                saveLoginData(res);
+                user.setUserData(res.profile);
+                user.userLogin = true;
+                $message.success(t("login.loginStatus4"));
+                // 自动签到
+                if ($signIn) $signIn();
+                router.push("/user");
+              } else {
+                user.userLogOut();
+                $message.error(t("login.loginStatus5"));
+                phoneFormData.value.captcha = null;
+              }
+            });
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          $loadingBar.error();
+          $message.error(t("login.loginStatus5"));
+        });
     } else {
       $loadingBar.error();
-      $message.error("请检查您的输入");
+      $message.error(t("general.message.needCheck"));
     }
   });
 };

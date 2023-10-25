@@ -2,7 +2,6 @@ import { fileURLToPath, URL } from "node:url";
 import { defineConfig, loadEnv } from "vite";
 import { NaiveUiResolver } from "unplugin-vue-components/resolvers";
 import { VitePWA } from "vite-plugin-pwa";
-import { createHtmlPlugin } from "vite-plugin-html";
 import vue from "@vitejs/plugin-vue";
 import viteCompression from "vite-plugin-compression";
 import AutoImport from "unplugin-auto-import/vite";
@@ -28,21 +27,6 @@ export default ({ mode }) =>
       }),
       Components({
         resolvers: [NaiveUiResolver()],
-      }),
-      createHtmlPlugin({
-        minify: true,
-        template: "index.html",
-        inject: {
-          data: {
-            logo: loadEnv(mode, process.cwd()).VITE_SITE_LOGO,
-            appleLogo: loadEnv(mode, process.cwd()).VITE_SITE_APPLE_LOGO,
-            title: loadEnv(mode, process.cwd()).VITE_SITE_TITLE,
-            author: loadEnv(mode, process.cwd()).VITE_SITE_ANTHOR,
-            keywords: loadEnv(mode, process.cwd()).VITE_SITE_KEYWORDS,
-            description: loadEnv(mode, process.cwd()).VITE_SITE_DES,
-            tongji: loadEnv(mode, process.cwd()).VITE_SITE_BAIDUTONGJI,
-          },
-        },
       }),
       // PWA
       VitePWA({
