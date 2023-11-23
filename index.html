@@ -1,63 +1,23 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html>
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" href="%VITE_SITE_LOGO%" />
-  <link rel="apple-touch-icon" href="%VITE_SITE_APPLE_LOGO%" />
-  <link rel="bookmark" href="%VITE_SITE_APPLE_LOGO%" />
-  <link rel="apple-touch-icon-precomposed" sizes="200x200" href="%VITE_SITE_APPLE_LOGO%" />
+  <link rel="icon" href="%RENDERER_VITE_SITE_LOGO%" />
+  <link rel="apple-touch-icon" href="%RENDERER_VITE_SITE_APPLE_LOGO%" />
+  <link rel="bookmark" href="%RENDERER_VITE_SITE_APPLE_LOGO%" />
+  <link rel="apple-touch-icon-precomposed" sizes="200x200" href="%RENDERER_VITE_SITE_APPLE_LOGO%" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>%VITE_SITE_TITLE%</title>
-  <meta name="apple-mobile-web-app-title" content="%VITE_SITE_TITLE%" />
-  <meta name="author" content="%VITE_SITE_ANTHOR%" />
-  <meta name="keywords" content="%VITE_SITE_KEYWORDS%" />
-  <meta name="description" content="%VITE_SITE_DES%" />
+  <title>%RENDERER_VITE_SITE_TITLE%</title>
+  <meta name="apple-mobile-web-app-title" content="%RENDERER_VITE_SITE_TITLE%" />
+  <meta name="author" content="%RENDERER_VITE_SITE_ANTHOR%" />
+  <meta name="keywords" content="%RENDERER_VITE_SITE_KEYWORDS%" />
+  <meta name="description" content="%RENDERER_VITE_SITE_DES%" />
   <meta name="theme-color" content="#ffffff" />
-  <!-- HarmonyOS Sans -->
-  <link rel="stylesheet" href="https://s1.hdslb.com/bfs/static/jinkela/long/font/regular.css" />
-  <!-- IE Out -->
-  <script>
-    if (
-      /*@cc_on!@*/
-      false ||
-      (!!window.MSInputMethodContext && !!document.documentMode)
-    )
-      window.location.href =
-      "https://support.dmeng.net/upgrade-your-browser.html?referrer=" +
-      encodeURIComponent(window.location.href);
-  </script>
-  <style>
-    noscript {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: calc(100vh - 16px);
-      font-family: "HarmonyOS_Regular", sans-serif;
-    }
-
-    noscript .title {
-      font-size: 30px;
-      font-weight: bold;
-      margin-top: 50px;
-    }
-
-    noscript .tip {
-      opacity: 0.6;
-      margin: 0;
-    }
-  </style>
 </head>
 
 <body>
   <div id="app"></div>
-  <noscript>
-    <img src="%VITE_SITE_LOGO%" alt="logo" />
-    <p class="title">%VITE_SITE_TITLE%</p>
-    <p class="tip">请开启 JavaScript</p>
-  </noscript>
   <script type="module" src="/src/main.js"></script>
 </body>
 

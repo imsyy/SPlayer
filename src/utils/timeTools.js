@@ -1,4 +1,29 @@
-import getLanguageData from "./getLanguageData";
+/**
+ * 获取根据当前时间的问候语
+ * @returns {string} 当前时间对应的问候语
+ */
+export const getGreetings = () => {
+  const hour = new Date().getHours();
+  let hello;
+  if (hour < 6) {
+    hello = "凌晨好";
+  } else if (hour < 9) {
+    hello = "早上好";
+  } else if (hour < 12) {
+    hello = "上午好";
+  } else if (hour < 14) {
+    hello = "中午好";
+  } else if (hour < 17) {
+    hello = "下午好";
+  } else if (hour < 19) {
+    hello = "傍晚好";
+  } else if (hour < 22) {
+    hello = "晚上好";
+  } else {
+    hello = "夜深了";
+  }
+  return hello;
+};
 
 /**
  * 歌曲时长时间戳转换
@@ -19,7 +44,7 @@ export const getSongTime = (mss) => {
  * @param {number} mss - 时间戳
  * @returns {string} - 日期字符串
  */
-export const getLongTime = (mss) => {
+export const getTimestampTime = (mss) => {
   const date = new Date(parseInt(mss));
   const y = date.getFullYear();
   const m = `0${date.getMonth() + 1}`.slice(-2);
@@ -28,78 +53,56 @@ export const getLongTime = (mss) => {
 };
 
 /**
- * 将时间戳转化为对应的时间格式
+ * 歌曲播放时间转换
+ * @param {number} num 歌曲播放时间，单位为秒
+ * @returns {string} 格式为 "mm:ss" 的字符串
+ */
+export const getSongPlayTime = (num) => {
+  const minutes = String(Math.floor(num / 60)).padStart(2, "0");
+  const seconds = String(Math.floor(num % 60)).padStart(2, "0");
+  return `${minutes}:${seconds}`;
+};
+
+/**
+ * 将评论时间戳转化为对应的时间格式
  * @param {number} t - 时间戳，单位为毫秒
  * @returns {string} - 转换后的时间字符串
  */
 export const getCommentTime = (t) => {
   // 获取当前 Unix 时间戳
-  const nowDate = new Date().getTime();
+  const nowDate = new Date();
   // 获取今天 23:59:59.999 时间戳
-  const todayLast = new Date(new Date().setHours(23, 59, 59, 999)).getTime();
-
+  const todayLast = new Date(
+    nowDate.getFullYear(),
+    nowDate.getMonth(),
+    nowDate.getDate(),
+    23,
+    59,
+    59,
+    999,
+  ).getTime();
   // 将传入的时间戳转换为 Date 对象
   const userDate = new Date(Number(t));
   // 获取评论时间的小时和分钟数，并进行补零处理
-  const UH =
-    userDate.getHours() < 10 ? `0${userDate.getHours()}` : userDate.getHours();
-  const Um =
-    userDate.getMinutes() < 10
-      ? `0${userDate.getMinutes()}`
-      : userDate.getMinutes();
+  const UH = userDate.getHours() < 10 ? `0${userDate.getHours()}` : userDate.getHours();
+  const Um = userDate.getMinutes() < 10 ? `0${userDate.getMinutes()}` : userDate.getMinutes();
   // 判断时间差
   if (nowDate - t <= 60000) {
-    return getLanguageData("just");
+    return "刚刚发布";
   } else if (nowDate - t > 60000 && nowDate - t <= 3600000) {
     const pastTimeUnix = nowDate - t;
     const pastTime = new Date(Number(pastTimeUnix));
-    return `${pastTime.getMinutes("yesterday")} ${getLanguageData(
-      "minutesAgo"
-    )}`;
+    return `${pastTime.getMinutes()} 分钟前`;
   } else if (todayLast - t > 3600000 && todayLast - t <= 86400000) {
     return `${UH}:${Um}`;
-  } else if (todayLast - t > 86400000 && todayLast - t <= 172800000) {
-    return `${getLanguageData("yesterday")} ${UH}:${Um}`;
-  } else if (todayLast - t > 172800000 && todayLast - t <= 31557600000) {
-    return `${userDate.getMonth() + 1}${getLanguageData(
-      "month"
-    )}${userDate.getDate()}${getLanguageData("day")}`;
+  } else if (nowDate.getFullYear() === userDate.getFullYear()) {
+    // 如果在今年，不显示年份
+    return `${userDate.getMonth() + 1}月${userDate.getDate()}日 ${UH}:${Um}`;
+  } else if (todayLast - t <= 172800000) {
+    return `昨天 ${UH}:${Um}`;
   } else {
-    return `${userDate.getFullYear()}${getLanguageData("year")}${
+    return `${userDate.getFullYear()}年${
       userDate.getMonth() + 1
-    }${getLanguageData("month")}${userDate.getDate()}${getLanguageData("day")}`;
+    }月${userDate.getDate()}日 ${UH}:${Um}`;
   }
-};
-
-/**
- * 过万/亿数字转化
- * @param {number} num 需要格式化的数字
- * @returns {string|number} 格式化后的字符串或原样返回的数字
- */
-export const formatNumber = (num) => {
-  const n = Number(num);
-  if (n === 0 || n < 10000) {
-    return n;
-  } else if (n < 100000000) {
-    const numString = (n / 10000).toFixed(1);
-    return numString.endsWith(".0")
-      ? numString.slice(0, -2) + getLanguageData("million")
-      : numString + getLanguageData("million");
-  } else {
-    const numString = (n / 100000000).toFixed(1);
-    return numString.endsWith(".0")
-      ? numString.slice(0, -2) + getLanguageData("billion")
-      : numString + getLanguageData("billion");
-  }
-};
-
-/**
- * 歌曲播放时间转换
- * @param {number} num 歌曲播放时间，单位为秒
- * @returns {string} 格式为 "mm:ss" 的字符串
- */
-export const getSongPlayingTime = (num) => {
-  const minutes = String(Math.floor(num / 60)).padStart(2, "0");
-  const seconds = String(Math.floor(num % 60)).padStart(2, "0");
-  return `${minutes}:${seconds}`;
 };

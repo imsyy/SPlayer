@@ -6,60 +6,57 @@ import axios from "@/utils/request";
 
 /**
  * 获取歌单分类信息
- * @param {boolean} [highquality=false] - 是否为精品歌单标签
+ * @param {boolean} [hq=false] - 是否为精品歌单
  */
-export const getPlayListCatlist = (highquality = false) => {
+export const getPlayListCatlist = (hq = false) => {
   return axios({
     method: "GET",
-    url: `/playlist/${highquality ? "highquality/tags" : "catlist"}`,
+    url: `/playlist/${hq ? "highquality/tags" : "catlist"}`,
   });
 };
 
 /**
- * 获取歌单分类列表
+ * 获取分类歌单列表
  * @param {string} [cat='全部'] - 歌单分类
- * @param {number} [limit=30] - 返回数量，默认30
+ * @param {number} [limit=50] - 返回数量，默认50
  * @param {number} [offset=0] - 偏移数量，默认0
+ * @param {boolean} [hq=false] - 是否为精品歌单
+ * @param {boolean} [before] - 分页参数,取上一页最后一个歌单的 updateTime 获取下一页数据
  */
-export const getTopPlaylist = (cat = "全部", limit = 30, offset = 0) => {
+export const getDscPlaylist = (cat = "全部", limit = 50, offset = 0, hq = false, before) => {
+  const url = hq ? "/top/playlist/highquality" : "/top/playlist";
   return axios({
     method: "GET",
-    url: "/top/playlist",
+    url,
     params: {
       cat,
       limit,
-      offset,
+      ...(!hq && { offset }),
+      ...(hq && { before }),
     },
   });
 };
 
 /**
- * 获取精品歌单列表
- * @param {string} [cat='全部'] - 歌单分类
- * @param {number} [limit=30] - 返回数量，默认30
- * @param {number} [before] - 上一页最后一个歌单的updateTime，用于翻页
+ * 获取专辑排行榜数据
+ * @param {boolean} [detail=true] 是否获取详情数据，默认为 true
  */
-export const getHighqualityPlaylist = (cat = "全部", limit = 30, before) => {
+export const getTopPlaylist = (detail = true) => {
+  const url = detail ? "/toplist/detail" : "/toplist";
   return axios({
     method: "GET",
-    url: "/top/playlist/highquality",
-    params: {
-      cat,
-      limit,
-      before,
-    },
+    url,
   });
 };
 
 /**
  * 获取歌单详情
- * @param {number} id - 歌单id
+ * @param {number} id - 歌单 id
  */
 export const getPlayListDetail = (id) => {
   return axios({
     method: "GET",
     url: "/playlist/detail",
-    withCredentials: false,
     params: {
       id,
       timestamp: new Date().getTime(),
@@ -87,9 +84,29 @@ export const getAllPlayList = (id, limit = 30, offset = 0) => {
 };
 
 /**
- * 新建歌单（登录后调用）
+ * 获取心动模式播放列表
+ * @param {number} id - 歌曲 id
+ * @param {number} pid - 歌单 id
+ * @param {number} sid - 要开始播放的歌曲的 id
+ * @param {number} [offset=0] - 偏移数量，默认0
+ */
+export const getHeartRateList = (id, pid, sid) => {
+  return axios({
+    method: "GET",
+    url: "/playmode/intelligence/list",
+    params: {
+      id,
+      pid,
+      sid,
+      timestamp: new Date().getTime(),
+    },
+  });
+};
+
+/**
+ * 新建歌单
  * @param {string} name 歌单名称
- * @param {boolean} privacy 是否设置为隐私，默认为false（公开）
+ * @param {boolean} privacy 是否设置为隐私，默认为 false（公开）
  */
 export const createPlaylist = (name, privacy = false) => {
   return axios({
@@ -104,8 +121,8 @@ export const createPlaylist = (name, privacy = false) => {
 };
 
 /**
- * 删除歌单（登录后调用）
- * @param {number} id - 歌单id
+ * 删除歌单
+ * @param {number} id - 歌单 id
  */
 export const delPlayList = (id) => {
   return axios({
@@ -119,8 +136,8 @@ export const delPlayList = (id) => {
 };
 
 /**
- * 更新歌单信息（登录后调用）
- * @param {number} id - 歌单id
+ * 更新歌单信息
+ * @param {number} id - 歌单 id
  * @param {string} name - 歌单名称
  * @param {string|null} [desc=null] - 歌单描述，可选
  * @param {string|null} [tags=null] - 歌单标签，可选，多个用 `;` 隔开，只能用官方规定标签
@@ -140,8 +157,23 @@ export const playlistUpdate = (id, name, desc = null, tags = null) => {
 };
 
 /**
+ * 公开隐私歌单
+ * @param {number} id - 歌单 id
+ */
+export const setPlaylistPrivacy = (id) => {
+  return axios({
+    method: "GET",
+    url: "/playlist/privacy",
+    params: {
+      id,
+      timestamp: new Date().getTime(),
+    },
+  });
+};
+
+/**
  * 向歌单中添加或删除歌曲
- * @param {number} pid - 歌单id
+ * @param {number} pid - 歌单 id
  * @param {Array<number>} tracks - 要添加或删除的歌曲id数组
  * @param {string} [op='add'] - 操作类型，可选，默认为添加
  */

@@ -1,55 +1,52 @@
-import { createRouter, createWebHistory } from "vue-router";
-import routes from "./routes";
-import { getLoginState } from "@/api/login";
-import { userStore, musicStore } from "@/store";
+import { nextTick } from "vue";
+import { createRouter, createWebHashHistory } from "vue-router";
+import { checkPlatform } from "@/utils/helper";
+import { isLogin } from "@/utils/auth";
+import routes from "@/router/routes";
 
+// 基础配置
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: routes,
+  history: createWebHashHistory(import.meta.env.BASE_URL),
+  routes,
 });
+
+// 页面回顶
+const scrollToTop = () => {
+  nextTick().then(() => {
+    const mainLayout = document.getElementById("main-layout");
+    mainLayout?.scrollIntoView({ behavior: "smooth" });
+  });
+};
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
-  const user = userStore();
-  const music = musicStore();
-  // 关闭播放器
-  music.setBigPlayerState(false);
   // 开始进度条
-  if (typeof $loadingBar !== "undefined") $loadingBar.start();
+  if (to.path !== from.path) {
+    if (typeof $loadingBar !== "undefined" && !checkPlatform.electron()) {
+      $loadingBar.start();
+    }
+  }
   // 判断是否需要登录
   if (to.meta.needLogin) {
-    getLoginState()
-      .then((res) => {
-        if (res.data?.profile && user.userLogin) {
-          user.setUserData(res.data.profile);
-          if (!Object.keys(user.getUserOtherData).length) {
-            user.setUserOtherData();
-          }
-          next();
-        } else {
-          $message.error(
-            localStorage.getItem("cookie")
-              ? "登录过期，请重新登录"
-              : "请登录账号后使用"
-          );
-          user.userLogOut();
-          next("/login");
-        }
-      })
-      .catch((err) => {
-        $message.error("请求发生错误");
-        console.error("请求发生错误" + err);
-        next("/500");
-        return false;
-      });
+    if (isLogin()) {
+      next();
+    } else {
+      $message.warning("请登录后使用");
+      if (typeof $loadingBar !== "undefined" && !checkPlatform.electron()) {
+        $loadingBar.error();
+      }
+      if (typeof $changeLogin !== "undefined") $changeLogin();
+    }
   } else {
-    if (!Object.keys(user.getUserOtherData).length) user.setUserOtherData();
     next();
   }
 });
 
 router.afterEach(() => {
-  if (typeof $loadingBar !== "undefined") $loadingBar.finish();
+  // 结束进度条
+  if (typeof $loadingBar !== "undefined" && !checkPlatform.electron()) $loadingBar.finish();
+  // 页面回顶
+  scrollToTop();
 });
 
 export default router;

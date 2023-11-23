@@ -1,33 +1,13 @@
 <template>
-  <n-result
-    class="error"
-    status="500"
-    :title="$t('state.error')"
-    :description="$t('state.errorDesc')"
-  >
+  <n-result class="error" status="500" title="服务器错误" description="服务器寄了，等会再试吧">
     <template #footer>
-      <n-button type="primary" @click="router.push('/')">{{
-        $t("general.name.reload")
-      }}</n-button>
+      <n-button type="primary" @click="router.push('/')"> 重新载入 </n-button>
     </template>
   </n-result>
 </template>
 
 <script setup>
 import { useRouter } from "vue-router";
+
 const router = useRouter();
-
-onMounted(() => {
-  $setSiteTitle("500");
-});
 </script>
-
-<style lang="scss" scoped>
-.error {
-  height: calc(100vh - 208px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
-</style>

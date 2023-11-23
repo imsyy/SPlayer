@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * 将歌词接口数据解析出对应数据
  * @param {string} data 接口数据
@@ -52,7 +53,7 @@ const parseLyric = (data) => {
       ? parseOtherLrc(result.yrc, parseLrc(lrcData.ytlrc), "tran")
       : result.yrc;
     result.yrc = lrcData.yromalrc
-      ? parseOtherLrc(result.yrc, parseLrc(lrcData.yromalrc), "roma")
+      ? parseOtherLrc(result.yrc, parseLrc(lrcData.yromalrc, false), "roma")
       : result.yrc;
   }
   console.log(result);
@@ -71,10 +72,7 @@ const parseOtherLrc = (lrc, tranLrc, name) => {
   if (lyric[0] && tranLyric[0]) {
     lyric.forEach((v) => {
       tranLyric.forEach((x) => {
-        if (
-          Number(v.time) === Number(x.time) ||
-          Math.abs(Number(v.time) - Number(x.time)) < 0.6
-        ) {
+        if (Number(v.time) === Number(x.time) || Math.abs(Number(v.time) - Number(x.time)) < 0.6) {
           v[name] = x.content;
         }
       });
@@ -88,11 +86,13 @@ const parseOtherLrc = (lrc, tranLrc, name) => {
  * @param {string} lyrics 歌词字符串
  * @returns {Array} 歌词对象数组
  */
-const parseLrc = (lyrics) => {
+const parseLrc = (lyrics, isTrim = true) => {
   if (!lyrics) return [];
   try {
     // 匹配时间轴和歌词文本的正则表达式
     const regex = /^\[([^\]]+)\]\s*(.+?)\s*$/;
+    // 匹配歌曲信息的正则表达式
+    const infoRegex = /\].*[:：-]/;
     // 将歌词字符串按行分割为数组
     const lines = lyrics.split("\n");
     // 对每一行进行转换
@@ -101,15 +101,18 @@ const parseLrc = (lyrics) => {
       .filter((line) => regex.test(line))
       // 转换时间轴和歌词文本为对象
       .map((line) => {
+        // 过滤掉包含信息的文本
+        if (infoRegex.test(line)) return null;
+        // 继续解析
         const [, time, text] = line.match(regex);
         const parts = time.split(":");
         const seconds =
           Number(parts[0]) * 60 +
           Number(parts[1]) +
           (parts.length > 2 ? Number(parts[2]) / 1000 : 0);
-        return { time: Number(seconds.toFixed(2)), content: text.trim() };
+        return { time: Number(seconds.toFixed(2)), content: isTrim ? text.trim() : text };
       })
-      .filter((c) => c.content.trim() !== "");
+      .filter((c) => c && c.content.trim() !== "");
     // 检查是否为纯音乐，是则返回空数组
     if (parsedLyrics.length && /纯音乐，请欣赏/.test(parsedLyrics[0].content)) {
       console.log("该歌曲为纯音乐");
@@ -150,9 +153,15 @@ const parseYrc = (lyrics) => {
         if (!content) {
           return null;
         }
+        // 去除歌曲信息
+        const contentInfoReg = /\s*[^:：\n]*[:：]\s*.+/;
+        const contentFilter = content.replace(/\(\d+,\d+,\d+\)/g, "");
+        if (!contentFilter || contentInfoReg.test(contentFilter)) {
+          return null;
+        }
         // 对歌词内容中的时间戳和歌词内容分离
         const contentArray = content
-          .split(/(\([1-9]\d*,[1-9]\d*,\d*\)[^\(]*)/g)
+          .split(/(\([1-9]\d*,[1-9]\d*,\d*\)[^(]*)/g)
           .filter((c) => c.trim())
           .map((c) => {
             // 匹配当前片段中的时间戳信息
@@ -163,14 +172,16 @@ const parseYrc = (lyrics) => {
             }
             // 解构出时间戳，持续时间和歌词内容
             const [_, time, duration] = timeMatch;
-            const content = c.replace(timeReg, "");
-            if (!content) {
+            const contentReg = /\(\d+,\d+,\d+\)/g;
+            const content = c.replace(timeReg, "").replace(contentReg, "");
+            if (!content || !content.trim()) {
               return null;
             }
             return {
-              time: Number(time) / 1000 + 0.1,
+              time: Number(time) / 1000,
               duration: Number(duration) / 1000,
-              content,
+              content: content.trim(),
+              endsWithSpace: content.endsWith(" "),
             };
           })
           .filter((c) => c);

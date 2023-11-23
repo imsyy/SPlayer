@@ -1,107 +1,106 @@
+<!-- 搜索 - 歌单 -->
 <template>
-  <div class="playlists">
-    <CoverLists :listData="searchData" />
-    <Pagination
-      v-if="searchData[0]"
-      :pageNumber="pageNumber"
-      :totalCount="totalCount"
-      @pageSizeChange="pageSizeChange"
-      @pageNumberChange="pageNumberChange"
-    />
+  <div class="search-playlists">
+    <Transition name="fade" mode="out-in">
+      <div v-if="searchData !== 'empty'" class="list">
+        <!-- 列表 -->
+        <MainCover :data="searchData" />
+        <!-- 分页 -->
+        <Pagination
+          v-if="searchData?.length"
+          :totalCount="totalCount"
+          :pageNumber="pageNumber"
+          @pageNumberChange="pageNumberChange"
+        />
+      </div>
+      <n-empty
+        v-else
+        :description="`很抱歉，未能找到与 ${searchKeywords} 相关的任何歌单`"
+        style="margin-top: 60px"
+        size="large"
+      >
+        <template #icon>
+          <n-icon>
+            <SvgIcon icon="search-off" />
+          </n-icon>
+        </template>
+      </n-empty>
+    </Transition>
   </div>
 </template>
 
 <script setup>
-import { getSearchData } from "@/api/search";
+import { getSearchRes } from "@/api/search";
 import { useRouter } from "vue-router";
-import { formatNumber } from "@/utils/timeTools";
-import { useI18n } from "vue-i18n";
-import CoverLists from "@/components/DataList/CoverLists.vue";
-import Pagination from "@/components/Pagination/index.vue";
+import { siteSettings } from "@/stores";
+import formatData from "@/utils/formatData";
 
-const { t } = useI18n();
 const router = useRouter();
+const settings = siteSettings();
 
 // 搜索数据
-const searchKeywords = ref(router.currentRoute.value.query.keywords);
 const searchData = ref([]);
 const totalCount = ref(0);
-const pagelimit = ref(30);
-const pageNumber = ref(
-  router.currentRoute.value.query.page
-    ? Number(router.currentRoute.value.query.page)
-    : 1
-);
+const searchKeywords = ref(router.currentRoute.value.query?.keywords || "");
+const pageNumber = ref(Number(router.currentRoute.value.query?.page) || 1);
 
 // 获取搜索数据
-const getSearchDataList = (keywords, limit = 30, offset = 0, type = 1000) => {
-  getSearchData(keywords, limit, offset, type).then((res) => {
-    console.log(res);
-    // 数据总数
-    totalCount.value = res.result.playlistCount;
-    // 列表数据
+const getSearchResData = (
+  keywords = searchKeywords.value,
+  limit = settings.loadSize,
+  offset = 0,
+  type = 1000,
+) => {
+  try {
     searchData.value = [];
-    if (res.result.playlists) {
-      res.result.playlists.forEach((v) => {
-        searchData.value.push({
-          id: v.id,
-          cover: v.coverImgUrl,
-          name: v.name,
-          artist: v.creator,
-          playCount: formatNumber(v.playCount),
-        });
-      });
-    } else {
-      $message.error(t("general.message.acquisitionFailed"));
-    }
-    // 请求后回顶
-    if (typeof $scrollToTop !== "undefined") $scrollToTop();
-  });
-};
-
-// 监听路由参数变化
-watch(
-  () => router.currentRoute.value,
-  (val) => {
-    searchKeywords.value = val.query.keywords;
-    pageNumber.value = Number(val.query.page ? val.query.page : 1);
-    if (val.name == "s-playlists") {
-      getSearchDataList(
-        searchKeywords.value,
-        pagelimit.value,
-        (pageNumber.value - 1) * pagelimit.value
-      );
-    }
+    getSearchRes(keywords, limit, offset, type).then((res) => {
+      console.log(res);
+      // 数据总数
+      totalCount.value = res.result.playlistCount;
+      if (res.result.playlistCount === 0) return (searchData.value = "empty");
+      // 处理数据
+      searchData.value = formatData(res.result.playlists);
+    });
+  } catch (error) {
+    console.error("搜索出现错误：", error);
+    $message.error("搜索出现错误");
   }
-);
-
-// 每页个数数据变化
-const pageSizeChange = (val) => {
-  console.log(val);
-  pagelimit.value = val;
-  getSearchDataList(
-    searchKeywords.value,
-    val,
-    (pageNumber.value - 1) * pagelimit.value
-  );
 };
 
-// 当前页数数据变化
-const pageNumberChange = (val) => {
+// 页数变化
+const pageNumberChange = (page) => {
   router.push({
     path: "/search/playlists",
     query: {
       keywords: searchKeywords.value,
-      page: val,
+      page: page,
     },
   });
 };
 
-onMounted(() => {
-  getSearchDataList(
+// 监听路由变化
+watch(
+  () => router.currentRoute.value,
+  (val) => {
+    if (val.name == "sea-playlists") {
+      // 更改参数
+      pageNumber.value = Number(val.query?.page) || 1;
+      searchKeywords.value = val.query?.keywords || "";
+      // 调用接口
+      getSearchResData(
+        searchKeywords.value,
+        settings.loadSize,
+        (pageNumber.value - 1) * settings.loadSize,
+      );
+    }
+  },
+);
+
+onBeforeMount(() => {
+  getSearchResData(
     searchKeywords.value,
-    pagelimit.value,
-    (pageNumber.value - 1) * pagelimit.value
+    settings.loadSize,
+    (pageNumber.value - 1) * settings.loadSize,
   );
 });
 </script>

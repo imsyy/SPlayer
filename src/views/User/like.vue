@@ -1,20 +1,6 @@
+<!-- 用户 - 喜欢的音乐 -->
 <template>
-  <div class="like">
-    <CoverLists :listData="user.getUserPlayLists.like" />
-  </div>
+  <div class="user-like">喜欢的音乐</div>
 </template>
 
-<script setup>
-import { userStore } from "@/store";
-import { useI18n } from "vue-i18n";
-import CoverLists from "@/components/DataList/CoverLists.vue";
-
-const { t } = useI18n();
-const user = userStore();
-
-onMounted(() => {
-  $setSiteTitle(t("nav.user") + " - " + t("nav.userChildren.like"));
-  if (!user.getUserPlayLists.has && !user.getUserPlayLists.isLoading)
-    user.setUserPlayLists();
-});
-</script>
+<script setup></script>

@@ -1,25 +1,22 @@
+<!-- 发现 - 主页面 -->
 <template>
   <div class="discover">
-    <n-text class="title">{{ $t("nav.discover") }}</n-text>
-    <n-tabs
-      class="main-tab"
-      type="segment"
-      @update:value="tabChange"
-      v-model:value="tabValue"
-    >
-      <n-tab name="playlists">{{ $t("nav.discoverChildren.playlists") }}</n-tab>
-      <n-tab name="toplists">{{ $t("nav.discoverChildren.toplists") }}</n-tab>
-      <n-tab name="artists">{{ $t("nav.discoverChildren.artists") }}</n-tab>
+    <n-h1 class="title">发现音乐</n-h1>
+    <!-- 标签页 -->
+    <n-tabs v-model:value="tabValue" class="tabs" type="segment" @update:value="tabChange">
+      <n-tab name="dsc-playlists"> 歌单 </n-tab>
+      <n-tab name="dsc-toplists"> 排行榜 </n-tab>
+      <n-tab name="dsc-artists"> 歌手 </n-tab>
+      <n-tab name="dsc-new"> 最新音乐 </n-tab>
     </n-tabs>
-    <main class="content">
-      <router-view v-slot="{ Component }">
-        <keep-alive>
-          <Transition name="move" mode="out-in">
-            <component :is="Component" />
-          </Transition>
-        </keep-alive>
-      </router-view>
-    </main>
+    <!-- 路由页面 -->
+    <router-view v-slot="{ Component }">
+      <keep-alive>
+        <Transition name="router" mode="out-in">
+          <component :is="Component" />
+        </Transition>
+      </keep-alive>
+    </router-view>
   </div>
 </template>
 
@@ -28,48 +25,47 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-// Tab 默认选中
-const tabValue = ref(router.currentRoute.value.path.split("/")[2]);
+// 默认选中
+const tabValue = ref(router.currentRoute.value?.name ?? "dsc-playlists");
 
-// Tab 选项卡变化
-const tabChange = (value) => {
-  console.log(value);
+// 标签页切换
+const tabChange = (val) => {
+  const routerPath = val.replace(/^dsc-/, "");
   router.push({
-    path: `/discover/${value}`,
-    page: 1,
+    path: `/discover/${routerPath}`,
   });
 };
 
-// 监听路由参数变化
+// 监听路由变化
 watch(
   () => router.currentRoute.value,
-  (val) => {
-    tabValue.value = val.path.split("/")[2];
-  }
+  (val) => (tabValue.value = val?.name ?? "dsc-playlists"),
 );
 </script>
 
 <style lang="scss" scoped>
 .discover {
   .title {
-    display: block;
-    margin: 30px 0 20px;
-    font-size: 40px;
+    margin: 20px 0;
+    font-size: 36px;
     font-weight: bold;
   }
-  .content {
-    margin-top: 20px;
+  .tabs {
+    position: sticky;
+    top: 20px;
+    margin-bottom: 20px;
+    z-index: 2;
+    &::after {
+      content: "";
+      position: absolute;
+      top: -20px;
+      left: -25px;
+      width: calc(100% + 50px);
+      height: calc(100% + 40px);
+      background-color: var(--n-color);
+      backdrop-filter: blur(40px);
+      z-index: -1;
+    }
   }
-}
-// 路由跳转动画
-.move-enter-active,
-.move-leave-active {
-  transition: all 0.2s ease;
-}
-
-.move-enter-from,
-.move-leave-to {
-  opacity: 0;
-  transform: translateX(10px);
 }
 </style>

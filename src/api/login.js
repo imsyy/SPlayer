@@ -10,7 +10,7 @@ import axios from "@/utils/request";
 export const getQrKey = () => {
   return axios({
     method: "GET",
-    hiddenBar: true,
+    noCookie: true,
     url: "/login/qr/key",
     params: {
       timestamp: new Date().getTime(),
@@ -26,7 +26,7 @@ export const getQrKey = () => {
 export const qrCreate = (key, qrimg = true) => {
   return axios({
     method: "GET",
-    hiddenBar: true,
+    noCookie: true,
     url: "/login/qr/create",
     params: {
       key,
@@ -43,7 +43,7 @@ export const qrCreate = (key, qrimg = true) => {
 export const checkQr = (key) => {
   return axios({
     method: "GET",
-    hiddenBar: true,
+    noCookie: true,
     url: "/login/qr/check",
     params: {
       key,
@@ -60,7 +60,7 @@ export const checkQr = (key) => {
 export const toLogin = (phone, captcha) => {
   return axios({
     method: "GET",
-    hiddenBar: true,
+    noCookie: true,
     url: "/login/cellphone",
     params: {
       phone,
@@ -77,6 +77,7 @@ export const toLogin = (phone, captcha) => {
 export const sentCaptcha = (phone) => {
   return axios({
     method: "GET",
+    noCookie: true,
     url: "/captcha/sent",
     params: {
       phone,
@@ -93,7 +94,7 @@ export const sentCaptcha = (phone) => {
 export const verifyCaptcha = (phone, captcha) => {
   return axios({
     method: "GET",
-    hiddenBar: true,
+    noCookie: true,
     url: "/captcha/verify",
     params: {
       phone,
@@ -107,7 +108,6 @@ export const verifyCaptcha = (phone, captcha) => {
 export const getLoginState = () => {
   return axios({
     method: "GET",
-    hiddenBar: true,
     url: "/login/status",
     params: {
       timestamp: new Date().getTime(),
@@ -119,8 +119,20 @@ export const getLoginState = () => {
 export const refreshLogin = () => {
   return axios({
     method: "GET",
-    hiddenBar: true,
     url: "/login/refresh",
+    params: {
+      timestamp: new Date().getTime(),
+    },
+  });
+};
+
+/**
+ * 退出登录
+ */
+export const logOut = () => {
+  return axios({
+    method: "GET",
+    url: "/logout",
     params: {
       timestamp: new Date().getTime(),
     },

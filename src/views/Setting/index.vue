@@ -1,148 +1,639 @@
+<!-- 全局设置 -->
 <template>
   <div class="setting">
-    <div class="title">{{ $t("nav.avatar.setting") }}</div>
+    <n-h1 class="title">
+      <n-text>全局设置</n-text>
+      <n-text class="version" depth="3">v&nbsp;{{ packageJson.version }}</n-text>
+    </n-h1>
+    <!-- 导航栏 -->
     <n-tabs
-      class="main-tab"
-      type="segment"
-      @update:value="tabChange"
-      v-model:value="tabValue"
+      ref="setTabsRef"
+      v-model:value="setTabsValue"
+      type="line"
+      @update:value="settingTabChange"
     >
-      <n-tab name="main">{{ $t("setting.main") }}</n-tab>
-      <n-tab name="player">{{ $t("setting.player") }}</n-tab>
-      <n-tab name="other">{{ $t("general.type.other") }}</n-tab>
+      <n-tab name="setTab1"> 常规 </n-tab>
+      <n-tab name="setTab2"> 系统 </n-tab>
+      <n-tab name="setTab3"> 播放 </n-tab>
+      <n-tab name="setTab4"> 歌词 </n-tab>
+      <n-tab name="setTab5"> 下载 </n-tab>
+      <n-tab name="setTab6"> 其他 </n-tab>
     </n-tabs>
-    <main class="content">
-      <router-view v-slot="{ Component }">
-        <keep-alive>
-          <Transition name="move" mode="out-in">
-            <component :is="Component" />
-          </Transition>
-        </keep-alive>
-      </router-view>
-    </main>
+    <!-- 设置项 -->
+    <n-scrollbar
+      ref="setScrollRef"
+      :style="{
+        height: `calc(100vh - ${
+          Object.keys(music.getPlaySongData)?.length && status.showPlayBar ? 328 : 248
+        }px)`,
+      }"
+      class="all-set"
+      @scroll="allSetScroll"
+    >
+      <!-- 常规 -->
+      <div class="set-type">
+        <n-h3 prefix="bar"> 常规 </n-h3>
+        <n-card class="set-item">
+          <div class="name">明暗模式</div>
+          <n-select
+            v-model:value="themeType"
+            :options="[
+              {
+                label: '浅色模式',
+                value: 'light',
+              },
+              {
+                label: '深色模式',
+                value: 'dark',
+              },
+            ]"
+            class="set"
+            @update:value="themeAuto = false"
+          />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">明暗模式是否跟随系统</div>
+          <n-switch
+            v-model:value="themeAuto"
+            :round="false"
+            @update:value="
+              (val) => {
+                if (val) themeType = osThemeRef;
+              }
+            "
+          />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">显示搜索历史</div>
+          <n-switch v-model:value="searchHistory" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            自动签到
+            <n-text class="tip">在每日首次开启软件时自动签到</n-text>
+          </div>
+          <n-switch v-model:value="autoSignIn" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            <div class="dev">
+              主题色跟随歌曲封面
+              <n-tag :bordered="false" round size="small" type="warning">
+                开发中
+                <template #icon>
+                  <n-icon>
+                    <SvgIcon icon="code" />
+                  </n-icon>
+                </template>
+              </n-tag>
+            </div>
+            <n-text class="tip">主题色是否跟随封面，目前感觉不好看</n-text>
+          </div>
+          <n-switch
+            v-model:value="themeAutoCover"
+            :round="false"
+            @update:value="themeAutoCoverChange"
+          />
+        </n-card>
+      </div>
+      <!-- 系统 -->
+      <div v-if="checkPlatform.electron()" class="set-type">
+        <n-h3 prefix="bar"> 系统 </n-h3>
+        <n-card class="set-item">
+          <div class="name">关闭软件时</div>
+          <n-select
+            v-model:value="closeType"
+            :disabled="closeTip"
+            :options="[
+              {
+                label: '最小化到任务栏',
+                value: 'hide',
+              },
+              {
+                label: '直接退出',
+                value: 'close',
+              },
+            ]"
+            class="set"
+          />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">每次关闭前都进行提醒</div>
+          <n-switch v-model:value="closeTip" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">任务栏显示歌曲播放进度</div>
+          <n-switch
+            v-model:value="showTaskbarProgress"
+            :round="false"
+            @update:value="closeTaskbarProgress"
+          />
+        </n-card>
+      </div>
+      <div v-else class="set-type">
+        <n-h3 prefix="bar"> 系统 </n-h3>
+        <n-text>该设置项为桌面端独占功能</n-text>
+      </div>
+      <!-- 播放 -->
+      <div class="set-type">
+        <n-h3 prefix="bar"> 播放 </n-h3>
+        <n-card class="set-item">
+          <div class="name">
+            启动时自动播放
+            <n-text class="tip">程序启动时自动播放上次歌曲</n-text>
+          </div>
+          <n-switch v-model:value="autoPlay" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">记忆上次播放位置</div>
+          <n-switch v-model:value="memorySeek" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">音乐渐入渐出</div>
+          <n-switch v-model:value="songVolumeFade" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            在线播放音质
+            <n-text class="tip">
+              {{ songLevelData[songLevel].tip }}
+            </n-text>
+          </div>
+          <n-select v-model:value="songLevel" :options="Object.values(songLevelData)" class="set" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            底栏歌词显示
+            <n-text class="tip">是否在播放时将歌手信息更改为歌词</n-text>
+          </div>
+          <n-switch v-model:value="bottomLyricShow" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            播放背景样式
+            <n-text class="tip">
+              {{
+                playerBackgroundType === "animation"
+                  ? "流体效果，较消耗性能，请谨慎开启"
+                  : playerBackgroundType === "blur"
+                  ? "将封面模糊处理为背景"
+                  : "提取封面主色为渐变色"
+              }}
+            </n-text>
+          </div>
+          <n-select
+            v-model:value="playerBackgroundType"
+            :options="[
+              {
+                label: '流体效果',
+                value: 'animation',
+              },
+              {
+                label: '封面模糊',
+                value: 'blur',
+              },
+              {
+                label: '主色渐变',
+                value: 'gradient',
+              },
+            ]"
+            class="set"
+          />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            显示前奏倒计时
+            <n-text class="tip">部分歌曲前奏可能存在显示错误</n-text>
+          </div>
+          <n-switch v-model:value="countDownShow" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            尝试替换无法播放的歌曲
+            <n-text class="tip">
+              {{ checkPlatform.electron() ? "可能会造成音乐与原曲不符" : "客户端独占功能" }}
+            </n-text>
+          </div>
+          <n-switch
+            v-model:value="useUnmServer"
+            :disabled="!checkPlatform.electron()"
+            :round="false"
+          />
+        </n-card>
+      </div>
+      <!-- 歌词 -->
+      <div class="set-type">
+        <n-h3 prefix="bar"> 歌词 </n-h3>
+        <n-card
+          class="set-item"
+          :content-style="{
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+          }"
+        >
+          <div class="name">
+            歌词文本大小
+            <n-text :style="{ fontSize: lyricsFontSize + 'px', fontWeight: 'bold' }" class="tip">
+              我是一句歌词
+            </n-text>
+          </div>
+          <n-slider
+            v-model:value="lyricsFontSize"
+            :tooltip="false"
+            :max="56"
+            :min="36"
+            :step="1"
+            :marks="{
+              36: '最小',
+              46: '默认',
+              56: '最大',
+            }"
+          />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            智能暂停滚动
+            <n-text class="tip">鼠标移入歌词区域是否暂停滚动</n-text>
+          </div>
+          <n-switch v-model:value="lrcMousePause" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            歌词位置
+            <n-text class="tip">歌词的默认垂直位置</n-text>
+          </div>
+          <n-select
+            v-model:value="lyricsPosition"
+            :options="[
+              {
+                label: '居左',
+                value: 'left',
+              },
+              {
+                label: '居中',
+                value: 'center',
+              },
+              {
+                label: '居右',
+                value: 'right',
+              },
+            ]"
+            class="set"
+          />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            歌词滚动位置
+            <n-text class="tip">歌词高亮时所处的位置</n-text>
+          </div>
+          <n-select
+            v-model:value="lyricsBlock"
+            :options="[
+              {
+                label: '靠近顶部',
+                value: 'start',
+              },
+              {
+                label: '水平居中',
+                value: 'center',
+              },
+            ]"
+            class="set"
+          />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            <div class="dev">
+              是否显示逐字歌词
+              <n-tag :bordered="false" round size="small" type="warning">
+                开发中
+                <template #icon>
+                  <n-icon>
+                    <SvgIcon icon="code" />
+                  </n-icon>
+                </template>
+              </n-tag>
+            </div>
+            <n-text class="tip">是否在具有逐字歌词时显示</n-text>
+          </div>
+          <n-switch v-model:value="showYrc" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            <div class="dev">
+              是否显示逐字歌词动画
+              <n-tag :bordered="false" round size="small" type="warning">
+                开发中
+                <template #icon>
+                  <n-icon>
+                    <SvgIcon icon="code" />
+                  </n-icon>
+                </template>
+              </n-tag>
+            </div>
+            <n-text class="tip">开启后可能会造成卡顿等性能问题</n-text>
+          </div>
+          <n-switch v-model:value="showYrcAnimation" :disabled="!showYrc" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            显示歌词翻译
+            <n-text class="tip">是否在具有翻译歌词时显示</n-text>
+          </div>
+          <n-switch v-model:value="showTransl" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            显示歌词音译
+            <n-text class="tip">是否在具有音译歌词时显示</n-text>
+          </div>
+          <n-switch v-model:value="showRoma" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            歌词自动聚焦
+            <n-text class="tip">是否聚焦显示当前播放行，其他行将模糊显示</n-text>
+          </div>
+          <n-switch v-model:value="lyricsBlur" :round="false" />
+        </n-card>
+      </div>
+      <!-- 下载 -->
+      <div class="set-type">
+        <n-h3 prefix="bar"> 下载 </n-h3>
+        <n-card class="set-item">
+          <div class="name">
+            默认下载文件夹
+            <n-text class="tip">{{ downloadPath || "不设置则会每次选择保存位置" }}</n-text>
+          </div>
+          <n-space>
+            <Transition name="fade" mode="out-in">
+              <n-button
+                v-if="downloadPath"
+                type="error"
+                strong
+                secondary
+                @click="downloadPath = null"
+              >
+                清除
+              </n-button>
+            </Transition>
+            <n-button :disabled="!checkPlatform.electron()" strong secondary @click="choosePath">
+              更改
+            </n-button>
+          </n-space>
+        </n-card>
+      </div>
+      <!-- 其他 -->
+      <div class="set-type">
+        <n-h3 prefix="bar"> 其他 </n-h3>
+        <n-card class="set-item">
+          <div class="name">
+            默认加载数量
+            <n-text class="tip">在部分列表页面显示几条数据</n-text>
+          </div>
+          <n-select
+            v-model:value="loadSize"
+            :options="[
+              {
+                label: '少一点（ 30 条 ）',
+                value: 30,
+              },
+              {
+                label: '差不多刚刚好（ 50 条 ）',
+                value: 50,
+              },
+              {
+                label: '我要很多（ 100 条 ）',
+                value: 100,
+              },
+            ]"
+            class="set"
+            @update:value="themeAuto = false"
+          />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            程序重置
+            <n-text class="tip">若程序显示异常或出现问题时可尝试此操作</n-text>
+          </div>
+          <n-button strong secondary type="error" @click="resetApp"> 重置 </n-button>
+        </n-card>
+      </div>
+    </n-scrollbar>
   </div>
 </template>
 
 <script setup>
-import { useRouter } from "vue-router";
-import { useI18n } from "vue-i18n";
+import { storeToRefs } from "pinia";
+import { useOsTheme } from "naive-ui";
+import { siteSettings, siteStatus, musicData, siteData } from "@/stores";
+import { checkPlatform } from "@/utils/helper";
+import debounce from "@/utils/debounce";
+import packageJson from "@/../package.json";
 
-const { t } = useI18n();
-const router = useRouter();
+const music = musicData();
+const status = siteStatus();
+const data = siteData();
+const settings = siteSettings();
+const {
+  themeType,
+  themeTypeName,
+  themeAuto,
+  themeAutoCover,
+  closeTip,
+  closeType,
+  loadSize,
+  songVolumeFade,
+  autoPlay,
+  showYrc,
+  showYrcAnimation,
+  countDownShow,
+  playerBackgroundType,
+  useUnmServer,
+  showTransl,
+  showRoma,
+  songLevel,
+  showTaskbarProgress,
+  lyricsPosition,
+  lyricsBlock,
+  lrcMousePause,
+  lyricsFontSize,
+  lyricsBlur,
+  searchHistory,
+  autoSignIn,
+  bottomLyricShow,
+  downloadPath,
+  memorySeek,
+} = storeToRefs(settings);
 
-// Tab 默认选中
-const tabValue = ref(router.currentRoute.value.path.split("/")[2]);
+// 标签页数据
+const setTabsRef = ref(null);
+const setScrollRef = ref(null);
+const setTabsValue = ref("setTab1");
 
-// Tab 选项卡变化
-const tabChange = (value) => {
-  console.log(value);
-  router.push({
-    path: `/setting/${value}`,
-  });
+// 基础数据
+const osThemeRef = useOsTheme();
+
+// 音质数据
+const songLevelData = {
+  standard: {
+    label: "标准音质",
+    tip: "标准音质 128kbps",
+    value: "standard",
+  },
+  higher: {
+    label: "较高音质",
+    tip: "较高音质 328kbps",
+    value: "higher",
+  },
+  exhigh: {
+    label: "极高 HQ",
+    tip: "近 CD 品质的细节体验，最高 320kbps",
+    value: "exhigh",
+  },
+  lossless: {
+    label: "无损 SQ",
+    tip: "高保真无损音质，最高 48kHz/16bit",
+    value: "lossless",
+  },
+  hires: {
+    label: "高清臻音 Spatial Audio",
+    tip: "环绕声体验，声音听感增强，96kHz/24bit",
+    value: "hires",
+  },
+  jymaster: {
+    label: "超清母带 Master",
+    tip: "还原音频细节，192kHz/24bit",
+    value: "jymaster",
+  },
+  sky: {
+    label: "沉浸环绕声 Surround Audio",
+    tip: "沉浸式体验，最高 5.1 声道",
+    value: "sky",
+  },
 };
 
-// 监听路由参数变化
-watch(
-  () => router.currentRoute.value,
-  (val) => {
-    tabValue.value = val.path.split("/")[2];
-  }
-);
+// 封面自动跟随变化
+const themeAutoCoverChange = (val) => {
+  typeof $changeThemeColor !== "undefined" && val
+    ? $changeThemeColor(data.coverTheme, val)
+    : $changeThemeColor(themeTypeName.value, val);
+};
 
-onMounted(() => {
-  $setSiteTitle(t("nav.avatar.setting"));
-  // 回顶
-  if (typeof $scrollToTop !== "undefined") $scrollToTop();
-});
+// 标签页切换
+const settingTabChange = (name) => {
+  const index = Number(name.replace("setTab", ""));
+  const setDom = document.querySelectorAll(".set-type")?.[index - 1];
+  if (!setDom) return false;
+  // 滚动至设置分类
+  setDom.scrollIntoView({ behavior: "smooth" });
+};
+
+// 设置列表滚动
+const allSetScroll = debounce((e) => {
+  const distance = e.target.scrollTop + 30;
+  const allSetDom = document.querySelectorAll(".set-type");
+  allSetDom.forEach((v, i) => {
+    if (distance >= v.offsetTop) setTabsValue.value = `setTab${i + 1}`;
+  });
+}, 100);
+
+// 关闭任务栏进度
+const closeTaskbarProgress = (val) => {
+  if (!val) electron.ipcRenderer.send("setProgressBar", "close");
+};
+
+// 更改下载目录
+const choosePath = async () => {
+  const selectedDir = await electron.ipcRenderer.invoke("selectDir", true);
+  if (selectedDir) downloadPath.value = selectedDir;
+};
+
+// 程序重置
+const resetApp = () => {
+  $dialog.warning({
+    title: "程序重置",
+    content: "确认重置为默认状态？你的登录状态以及自定义设置都将丢失！",
+    positiveText: "重置",
+    negativeText: "取消",
+    onPositiveClick: () => {
+      $message.success("重置成功，正在重启");
+      localStorage.clear();
+      setTimeout(() => {
+        if (checkPlatform.electron()) {
+          electron.ipcRenderer.send("window-relaunch");
+        } else {
+          window.location.href = "/";
+        }
+      }, 1000);
+    },
+  });
+};
 </script>
 
 <style lang="scss" scoped>
 .setting {
+  max-width: 1200px;
+  margin: 0 auto;
   .title {
-    margin-top: 30px;
-    margin-bottom: 20px;
-    font-size: 40px;
-    font-weight: bold;
     display: flex;
-    align-items: center;
+    flex-direction: row;
+    align-items: flex-end;
+    height: 58px;
+    margin: 20px 0;
+    font-size: 36px;
+    font-weight: bold;
+    .version {
+      margin-left: 12px;
+      margin-bottom: 6px;
+      font-size: 18px;
+      font-weight: normal;
+    }
   }
-  .content {
-    margin-top: 20px;
-    :deep(.set-item) {
+  .n-tabs {
+    height: 42px;
+  }
+  .set-type {
+    padding-top: 30px;
+    .set-item {
       width: 100%;
       border-radius: 8px;
       margin-bottom: 12px;
-      .n-card__content {
+      &:last-child {
+        margin-bottom: 0;
+      }
+      :deep(.n-card__content) {
         display: flex;
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
-        .name {
-          font-size: 16px;
+      }
+      .name {
+        font-size: 16px;
+        display: flex;
+        flex-direction: column;
+        padding-right: 20px;
+        .dev {
           display: flex;
-          flex-direction: column;
-          padding-right: 20px;
-          .dev {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            .n-tag {
-              margin-left: 6px;
-            }
-          }
-          .tip {
-            font-size: 12px;
-            opacity: 0.8;
+          flex-direction: row;
+          align-items: center;
+          .n-tag {
+            margin-left: 6px;
           }
         }
-        .set {
-          width: 200px;
-          @media (max-width: 768px) {
-            width: 140px;
-            min-width: 140px;
-          }
+        .tip {
+          font-size: 12px;
+          opacity: 0.8;
         }
-        .more {
-          padding: 12px;
-          border-radius: 8px;
-          background-color: var(--n-border-color);
-          width: 100%;
-          margin-top: 12px;
-          box-sizing: border-box;
-          &.blur {
-            .lrc {
-              filter: blur(2px);
-              &.on {
-                filter: blur(0);
-              }
-            }
-          }
-          .lrc {
-            opacity: 0.6;
-            display: flex;
-            flex-direction: column;
-            transform: scale(0.95);
-            transition: all 0.3s;
-            &.on {
-              font-weight: bold;
-              opacity: 1;
-              transform: scale(1.05);
-            }
-          }
+      }
+      .set {
+        width: 200px;
+        @media (max-width: 768px) {
+          width: 140px;
+          min-width: 140px;
         }
       }
     }
   }
-}
-// 路由跳转动画
-.move-enter-active,
-.move-leave-active {
-  transition: all 0.2s ease;
-}
-
-.move-enter-from,
-.move-leave-to {
-  opacity: 0;
-  transform: translateX(10px);
 }
 </style>
