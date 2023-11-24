@@ -37,8 +37,6 @@
 <script setup>
 import { siteData, siteStatus } from "@/stores";
 import { useRouter } from "vue-router";
-import SearchHot from "@/components/search/searchHot";
-import SearchSuggestions from "@/components/search/searchSuggestions";
 
 const router = useRouter();
 const status = siteStatus();

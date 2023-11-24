@@ -30,7 +30,7 @@ import { isLogin } from "@/utils/auth";
 import { fadePlayOrPause, initPlayer } from "@/utils/Player";
 import formatData from "@/utils/formatData";
 import debounce from "@/utils/debounce";
-import SvgIcon from "@/components/global/svgIcon";
+import SvgIcon from "@/components/Global/SvgIcon";
 
 const router = useRouter();
 const data = siteData();

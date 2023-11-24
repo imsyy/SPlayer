@@ -47,7 +47,7 @@ import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { NIcon, NText, NNumberAnimation, NButton } from "naive-ui";
 import { siteData, siteSettings } from "@/stores";
-import SvgIcon from "@/components/global/svgIcon";
+import SvgIcon from "@/components/Global/SvgIcon";
 
 const data = siteData();
 const router = useRouter();

@@ -214,7 +214,7 @@ import { useRouter } from "vue-router";
 import { formatNumber } from "@/utils/helper";
 import formatData from "@/utils/formatData";
 import throttle from "@/utils/throttle";
-import SvgIcon from "@/components/global/svgIcon";
+import SvgIcon from "@/components/Global/SvgIcon";
 import Plyr from "plyr";
 import "plyr/dist/plyr.css";
 

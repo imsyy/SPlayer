@@ -195,7 +195,7 @@ import { fadePlayOrPause, initPlayer } from "@/utils/Player";
 import { isLogin } from "@/utils/auth";
 import debounce from "@/utils/debounce";
 import formatData from "@/utils/formatData";
-import SvgIcon from "@/components/global/svgIcon";
+import SvgIcon from "@/components/Global/SvgIcon";
 
 const router = useRouter();
 const data = siteData();

@@ -27,7 +27,7 @@ import { useRouter } from "vue-router";
 import { addSongToNext } from "@/utils/Player";
 import { setCloudDel } from "@/api/cloud";
 import { addSongToPlayList } from "@/api/playlist";
-import SvgIcon from "@/components/global/svgIcon";
+import SvgIcon from "@/components/Global/SvgIcon";
 
 const emit = defineEmits(["playSong"]);
 const router = useRouter();

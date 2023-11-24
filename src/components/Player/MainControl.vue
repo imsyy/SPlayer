@@ -315,7 +315,7 @@ import {
 } from "@/utils/Player";
 import { getSongPlayTime } from "@/utils/timeTools";
 import debounce from "@/utils/debounce";
-import SvgIcon from "@/components/global/svgIcon";
+import SvgIcon from "@/components/Global/SvgIcon";
 import VueSlider from "vue-slider-component";
 import "vue-slider-component/theme/default.css";
 

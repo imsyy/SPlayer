@@ -19,7 +19,7 @@
 import { NIcon } from "naive-ui";
 import { copyData } from "@/utils/helper";
 import { siteData } from "@/stores";
-import SvgIcon from "@/components/global/svgIcon";
+import SvgIcon from "@/components/Global/SvgIcon";
 
 const data = siteData();
 

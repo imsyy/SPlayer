@@ -58,7 +58,7 @@ import {
   soundStop,
   checkPlayer,
 } from "@/utils/Player";
-import SvgIcon from "@/components/global/svgIcon";
+import SvgIcon from "@/components/Global/SvgIcon";
 
 const music = musicData();
 const status = siteStatus();
