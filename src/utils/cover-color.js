@@ -5,8 +5,8 @@ import {
   Score,
 } from "@material/material-color-utilities";
 import { siteData, siteSettings } from "@/stores";
-import { getGradientFromPalette, argb2Rgb, rgb2Argb } from "@/utils/color-utils.js";
-import { chunk } from "@/utils/helper.js";
+import { getGradientFromPalette, argb2Rgb, rgb2Argb } from "@/utils/color-utils";
+import { chunk } from "@/utils/helper";
 import ColorThief from "colorthief";
 
 /**

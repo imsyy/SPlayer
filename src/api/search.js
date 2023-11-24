@@ -1,4 +1,4 @@
-import axios from "@/utils/request.js";
+import axios from "@/utils/request";
 
 /**
  * 搜索部分

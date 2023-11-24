@@ -1,9 +1,9 @@
 // 音乐数据
 import { defineStore } from "pinia";
-import { getPersonalFm, setFmToTrash } from "@/api/recommend.js";
-import { changePlayIndex } from "@/utils/player.js";
-// import { isLogin } from "@/utils/auth.js";
-import formatData from "@/utils/formatData.js";
+import { getPersonalFm, setFmToTrash } from "@/api/recommend";
+import { changePlayIndex } from "@/utils/Player";
+// import { isLogin } from "@/utils/auth";
+import formatData from "@/utils/formatData";
 
 const useMusicDataStore = defineStore("musicData", {
   state: () => {

@@ -1,4 +1,4 @@
-import { logOut } from "@/api/login.js";
+import { logOut } from "@/api/login";
 import { siteData } from "@/stores";
 import Cookies from "js-cookie";
 

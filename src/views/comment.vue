@@ -85,9 +85,9 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { getSongDetail } from "@/api/song.js";
-import { getComment, getHotComment } from "@/api/comment.js";
-import formatData from "@/utils/formatData.js";
+import { getSongDetail } from "@/api/song";
+import { getComment, getHotComment } from "@/api/comment";
+import formatData from "@/utils/formatData";
 
 const router = useRouter();
 

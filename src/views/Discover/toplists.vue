@@ -19,8 +19,8 @@
 </template>
 
 <script setup>
-import { getTopPlaylist } from "@/api/playlist.js";
-import formatData from "@/utils/formatData.js";
+import { getTopPlaylist } from "@/api/playlist";
+import formatData from "@/utils/formatData";
 
 // 排行榜数据
 const toplistData = ref({

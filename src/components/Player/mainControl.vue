@@ -312,9 +312,9 @@ import {
   setVolume,
   setVolumeMute,
   setRate,
-} from "@/utils/player.js";
-import { getSongPlayTime } from "@/utils/timeTools.js";
-import debounce from "@/utils/debounce.js";
+} from "@/utils/Player";
+import { getSongPlayTime } from "@/utils/timeTools";
+import debounce from "@/utils/debounce";
 import SvgIcon from "@/components/global/svgIcon";
 import VueSlider from "vue-slider-component";
 import "vue-slider-component/theme/default.css";

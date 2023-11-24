@@ -51,8 +51,8 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { siteData } from "@/stores";
-import { playlistUpdate } from "@/api/playlist.js";
-import { formRules } from "@/utils/formRules.js";
+import { playlistUpdate } from "@/api/playlist";
+import { formRules } from "@/utils/formRules";
 
 const data = siteData();
 const { textRule } = formRules();

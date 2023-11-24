@@ -1,4 +1,4 @@
-import { playOrPause, setVolume } from "@/utils/player.js";
+import { playOrPause, setVolume } from "@/utils/Player";
 import { musicData } from "@/stores";
 
 /**

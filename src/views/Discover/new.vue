@@ -50,8 +50,8 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { siteSettings } from "@/stores";
-import { getNewSong, getAllNewAlbum } from "@/api/recommend.js";
-import formatData from "@/utils/formatData.js";
+import { getNewSong, getAllNewAlbum } from "@/api/recommend";
+import formatData from "@/utils/formatData";
 
 const router = useRouter();
 const settings = siteSettings();

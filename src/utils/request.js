@@ -1,5 +1,5 @@
-import { checkPlatform } from "@/utils/helper.js";
-import { getCookie, isLogin } from "@/utils/auth.js";
+import { checkPlatform } from "@/utils/helper";
+import { getCookie, isLogin } from "@/utils/auth";
 import axios from "axios";
 
 // 全局地址

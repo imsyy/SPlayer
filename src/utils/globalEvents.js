@@ -1,5 +1,5 @@
-import { checkPlatform } from "@/utils/helper.js";
-import { playOrPause, changePlayIndex } from "@/utils/player.js";
+import { checkPlatform } from "@/utils/helper";
+import { playOrPause, changePlayIndex } from "@/utils/Player";
 
 const globalEvents = () => {
   if (!checkPlatform.electron()) return false;

@@ -57,8 +57,8 @@
 
 <script setup>
 import { siteStatus } from "@/stores";
-import { getSearchSuggest } from "@/api/search.js";
-import debounce from "@/utils/debounce.js";
+import { getSearchSuggest } from "@/api/search";
+import debounce from "@/utils/debounce";
 
 const status = siteStatus();
 const emit = defineEmits(["toSearch"]);

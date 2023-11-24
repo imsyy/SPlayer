@@ -205,15 +205,15 @@
 
 <script setup>
 import { NIcon } from "naive-ui";
-import { getVideoDetail, getVideoInfo, getVideoUrl, getSimiVideo } from "@/api/video.js";
-import { getComment, getHotComment } from "@/api/comment.js";
-import { resourceLike } from "@/api/other.js";
-import { fadePlayOrPause } from "@/utils/player.js";
+import { getVideoDetail, getVideoInfo, getVideoUrl, getSimiVideo } from "@/api/video";
+import { getComment, getHotComment } from "@/api/comment";
+import { resourceLike } from "@/api/other";
+import { fadePlayOrPause } from "@/utils/Player";
 import { siteStatus } from "@/stores";
 import { useRouter } from "vue-router";
-import { formatNumber } from "@/utils/helper.js";
-import formatData from "@/utils/formatData.js";
-import throttle from "@/utils/throttle.js";
+import { formatNumber } from "@/utils/helper";
+import formatData from "@/utils/formatData";
+import throttle from "@/utils/throttle";
 import SvgIcon from "@/components/global/svgIcon";
 import Plyr from "plyr";
 import "plyr/dist/plyr.css";

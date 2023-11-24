@@ -102,12 +102,12 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { likeComment } from "@/api/comment.js";
-import { getCommentTime } from "@/utils/timeTools.js";
-import { formatNumber } from "@/utils/helper.js";
-import { isLogin } from "@/utils/auth.js";
+import { likeComment } from "@/api/comment";
+import { getCommentTime } from "@/utils/timeTools";
+import { formatNumber } from "@/utils/helper";
+import { isLogin } from "@/utils/auth";
 import emojiData from "@/assets/emoji.json";
-import throttle from "@/utils/throttle.js";
+import throttle from "@/utils/throttle";
 
 const router = useRouter();
 const props = defineProps({

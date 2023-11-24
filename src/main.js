@@ -1,6 +1,6 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
-import { checkPlatform } from "@/utils/helper.js";
+import { checkPlatform } from "@/utils/helper";
 import App from "@/App.vue";
 import router from "@/router";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";

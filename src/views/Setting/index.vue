@@ -427,8 +427,8 @@
 import { storeToRefs } from "pinia";
 import { useOsTheme } from "naive-ui";
 import { siteSettings, siteStatus, musicData, siteData } from "@/stores";
-import { checkPlatform } from "@/utils/helper.js";
-import debounce from "@/utils/debounce.js";
+import { checkPlatform } from "@/utils/helper";
+import debounce from "@/utils/debounce";
 import packageJson from "@/../package.json";
 
 const music = musicData();

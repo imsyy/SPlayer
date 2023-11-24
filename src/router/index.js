@@ -1,8 +1,8 @@
 import { nextTick } from "vue";
 import { createRouter, createWebHashHistory } from "vue-router";
-import { checkPlatform } from "@/utils/helper.js";
-import { isLogin } from "@/utils/auth.js";
-import routes from "@/router/routes.js";
+import { checkPlatform } from "@/utils/helper";
+import { isLogin } from "@/utils/auth";
+import routes from "@/router/routes";
 
 // 基础配置
 const router = createRouter({

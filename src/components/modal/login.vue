@@ -44,8 +44,8 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { siteData } from "@/stores";
-import { getLoginState, refreshLogin } from "@/api/login.js";
-import { setCookies, toLogout, isLogin } from "@/utils/auth.js";
+import { getLoginState, refreshLogin } from "@/api/login";
+import { setCookies, toLogout, isLogin } from "@/utils/auth";
 
 const data = siteData();
 const { userData } = storeToRefs(data);

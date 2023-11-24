@@ -1,5 +1,5 @@
-import { checkPlatform } from "@/utils/helper.js";
-import { isLogin } from "@/utils/auth.js";
+import { checkPlatform } from "@/utils/helper";
+import { isLogin } from "@/utils/auth";
 
 const routes = [
   // 首页
@@ -104,7 +104,7 @@ const routes = [
     meta: {
       title: "视频播放器",
     },
-    component: () => import("@/views/videos/player.vue"),
+    component: () => import("@/views/videos/Player.vue"),
   },
   // 评论
   {

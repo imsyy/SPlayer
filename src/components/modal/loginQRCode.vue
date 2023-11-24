@@ -27,7 +27,7 @@
 </template>
 
 <script setup>
-import { getQrKey, checkQr } from "@/api/login.js";
+import { getQrKey, checkQr } from "@/api/login";
 import QrcodeVue from "qrcode.vue";
 
 const emit = defineEmits(["setLoginData"]);

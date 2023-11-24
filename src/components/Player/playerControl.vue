@@ -156,8 +156,8 @@
 import { storeToRefs } from "pinia";
 import { musicData, siteStatus, siteData } from "@/stores";
 import { useRouter } from "vue-router";
-import { playOrPause, fadePlayOrPause, setSeek, changePlayIndex } from "@/utils/player.js";
-import debounce from "@/utils/debounce.js";
+import { playOrPause, fadePlayOrPause, setSeek, changePlayIndex } from "@/utils/Player";
+import debounce from "@/utils/debounce";
 import VueSlider from "vue-slider-component";
 import "vue-slider-component/theme/default.css";
 

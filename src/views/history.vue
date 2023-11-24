@@ -38,7 +38,7 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { musicData } from "@/stores";
-import { fadePlayOrPause } from "@/utils/player.js";
+import { fadePlayOrPause } from "@/utils/Player";
 
 const music = musicData();
 const { playList, historyPlaylist, playIndex } = storeToRefs(music);
