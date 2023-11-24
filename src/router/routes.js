@@ -39,7 +39,7 @@ const routes = [
       {
         path: "Videos",
         name: "sea-Videos",
-        component: () => import("@/views/Search/Videos.vue"),
+        component: () => import("@/views/Search/videos.vue"),
       },
       {
         path: "playlists",
