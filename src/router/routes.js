@@ -104,7 +104,7 @@ const routes = [
     meta: {
       title: "视频播放器",
     },
-    component: () => import("@/views/Videos/Player.vue"),
+    component: () => import("@/views/Videos/player.vue"),
   },
   // 评论
   {
