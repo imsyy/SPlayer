@@ -18,33 +18,33 @@ const routes = [
     meta: {
       title: "搜索",
     },
-    component: () => import("@/views/search/index.vue"),
+    component: () => import("@/views/Search/index.vue"),
     redirect: "/search/songs",
     children: [
       {
         path: "songs",
         name: "sea-songs",
-        component: () => import("@/views/search/songs.vue"),
+        component: () => import("@/views/Search/songs.vue"),
       },
       {
         path: "artists",
         name: "sea-artists",
-        component: () => import("@/views/search/artists.vue"),
+        component: () => import("@/views/Search/artists.vue"),
       },
       {
         path: "albums",
         name: "sea-albums",
-        component: () => import("@/views/search/albums.vue"),
+        component: () => import("@/views/Search/albums.vue"),
       },
       {
-        path: "videos",
-        name: "sea-videos",
-        component: () => import("@/views/search/videos.vue"),
+        path: "Videos",
+        name: "sea-Videos",
+        component: () => import("@/views/Search/Videos.vue"),
       },
       {
         path: "playlists",
         name: "sea-playlists",
-        component: () => import("@/views/search/playlists.vue"),
+        component: () => import("@/views/Search/playlists.vue"),
       },
     ],
   },
@@ -55,28 +55,28 @@ const routes = [
     meta: {
       title: "发现",
     },
-    component: () => import("@/views/discover/index.vue"),
-    redirect: "/discover/playlists",
+    component: () => import("@/views/Discover/index.vue"),
+    redirect: "/Discover/playlists",
     children: [
       {
         path: "playlists",
         name: "dsc-playlists",
-        component: () => import("@/views/discover/playlists.vue"),
+        component: () => import("@/views/Discover/playlists.vue"),
       },
       {
         path: "toplists",
         name: "dsc-toplists",
-        component: () => import("@/views/discover/toplists.vue"),
+        component: () => import("@/views/Discover/toplists.vue"),
       },
       {
         path: "artists",
         name: "dsc-artists",
-        component: () => import("@/views/discover/artists.vue"),
+        component: () => import("@/views/Discover/artists.vue"),
       },
       {
         path: "new",
         name: "dsc-new",
-        component: () => import("@/views/discover/new.vue"),
+        component: () => import("@/views/Discover/new.vue"),
       },
     ],
   },
@@ -87,13 +87,13 @@ const routes = [
     meta: {
       title: "视频",
     },
-    component: () => import("@/views/videos/index.vue"),
-    redirect: "/videos/list",
+    component: () => import("@/views/Videos/index.vue"),
+    redirect: "/Videos/list",
     children: [
       {
         path: "list",
         name: "video-list",
-        component: () => import("@/views/videos/list.vue"),
+        component: () => import("@/views/Videos/list.vue"),
       },
     ],
   },
@@ -104,7 +104,7 @@ const routes = [
     meta: {
       title: "视频播放器",
     },
-    component: () => import("@/views/videos/Player.vue"),
+    component: () => import("@/views/Videos/Player.vue"),
   },
   // 评论
   {
@@ -149,7 +149,7 @@ const routes = [
     meta: {
       title: "歌单",
     },
-    component: () => import("@/views/list/playlist.vue"),
+    component: () => import("@/views/List/playlist.vue"),
   },
   // 歌单 - 用户喜欢
   {
@@ -158,7 +158,7 @@ const routes = [
     meta: {
       title: "歌单",
     },
-    component: () => import("@/views/list/playlist.vue"),
+    component: () => import("@/views/List/playlist.vue"),
     beforeEnter: (_, __, next) => {
       if (isLogin()) {
         next();
@@ -176,7 +176,7 @@ const routes = [
     meta: {
       title: "歌单",
     },
-    component: () => import("@/views/list/album.vue"),
+    component: () => import("@/views/List/album.vue"),
   },
   // 本地歌曲
   {
@@ -186,7 +186,7 @@ const routes = [
       title: "本地歌曲",
       show: checkPlatform.electron(),
     },
-    component: () => import("@/views/local/index.vue"),
+    component: () => import("@/views/Local/index.vue"),
     beforeEnter: (to, from, next) => {
       if (checkPlatform.electron()) {
         next();
@@ -199,17 +199,17 @@ const routes = [
       {
         path: "songs",
         name: "local-songs",
-        component: () => import("@/views/local/songs.vue"),
+        component: () => import("@/views/Local/songs.vue"),
       },
       {
         path: "artists",
         name: "local-artists",
-        component: () => import("@/views/local/artists.vue"),
+        component: () => import("@/views/Local/artists.vue"),
       },
       {
         path: "albums",
         name: "local-albums",
-        component: () => import("@/views/local/albums.vue"),
+        component: () => import("@/views/Local/albums.vue"),
       },
     ],
   },
@@ -220,7 +220,7 @@ const routes = [
     meta: {
       title: "全局设置",
     },
-    component: () => import("@/views/setting/index.vue"),
+    component: () => import("@/views/Setting/index.vue"),
   },
   // 测试页面
   {
@@ -238,7 +238,7 @@ const routes = [
     meta: {
       title: "404",
     },
-    component: () => import("@/views/state/404.vue"),
+    component: () => import("@/views/State/404.vue"),
   },
   {
     path: "/403",
@@ -246,7 +246,7 @@ const routes = [
     meta: {
       title: "403",
     },
-    component: () => import("@/views/state/403.vue"),
+    component: () => import("@/views/State/403.vue"),
   },
   {
     path: "/500",
@@ -254,7 +254,7 @@ const routes = [
     meta: {
       title: "500",
     },
-    component: () => import("@/views/state/500.vue"),
+    component: () => import("@/views/State/500.vue"),
   },
   {
     path: "/:pathMatch(.*)",
