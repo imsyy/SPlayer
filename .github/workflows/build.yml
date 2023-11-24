@@ -8,7 +8,7 @@ on:
       - v*
 jobs:
   release:
-    name: build and release splayer app
+    name: Build and release splayer app
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -43,16 +43,20 @@ jobs:
         run: |
           npx rimraf "dist/!(*.dmg)"
 
-      - name: upload artifacts
+      - name: Upload artifacts
         uses: actions/upload-artifact@v3.0.0
         with:
           name: ${{ matrix.os }}
           path: dist
 
-      - name: release
+      - name: Release
         uses: softprops/action-gh-release@v0.1.14
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: "dist/**"
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
+# Add the following block to use Environment Files
+env:
+  GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
