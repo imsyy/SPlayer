@@ -147,8 +147,8 @@
 <script setup>
 import { musicData, indexedDBData } from "@/stores";
 import { useRouter } from "vue-router";
-import { fuzzySearch } from "@/utils/helper";
-import debounce from "@/utils/debounce";
+import { fuzzySearch } from "@/utils/helper.js";
+import debounce from "@/utils/debounce.js";
 
 const indexedDB = indexedDBData();
 const router = useRouter();

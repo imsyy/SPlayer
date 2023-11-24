@@ -52,8 +52,8 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { siteSettings } from "@/stores";
-import { getArtistList } from "@/api/artist";
-import formatData from "@/utils/formatData";
+import { getArtistList } from "@/api/artist.js";
+import formatData from "@/utils/formatData.js";
 
 const router = useRouter();
 const settings = siteSettings();

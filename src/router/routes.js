@@ -1,5 +1,5 @@
-import { checkPlatform } from "@/utils/helper";
-import { isLogin } from "@/utils/auth";
+import { checkPlatform } from "@/utils/helper.js";
+import { isLogin } from "@/utils/auth.js";
 
 const routes = [
   // 首页

@@ -221,14 +221,14 @@ import {
   delPlayList,
   setPlaylistPrivacy,
   likePlaylist,
-} from "@/api/playlist";
-import { getSongDetail } from "@/api/song";
-import { formatNumber, fuzzySearch } from "@/utils/helper";
-import { isLogin } from "@/utils/auth";
-import { getTimestampTime } from "@/utils/timeTools";
-import { fadePlayOrPause, initPlayer } from "@/utils/player";
-import debounce from "@/utils/debounce";
-import formatData from "@/utils/formatData";
+} from "@/api/playlist.js";
+import { getSongDetail } from "@/api/song.js";
+import { formatNumber, fuzzySearch } from "@/utils/helper.js";
+import { isLogin } from "@/utils/auth.js";
+import { getTimestampTime } from "@/utils/timeTools.js";
+import { fadePlayOrPause, initPlayer } from "@/utils/player.js";
+import debounce from "@/utils/debounce.js";
+import formatData from "@/utils/formatData.js";
 import SvgIcon from "@/components/global/svgIcon";
 
 const router = useRouter();

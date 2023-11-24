@@ -55,12 +55,12 @@
 
 <script setup>
 import { storeToRefs } from "pinia";
-import { isLogin } from "@/utils/auth";
+import { isLogin } from "@/utils/auth.js";
 import { useRouter } from "vue-router";
 import { siteData, siteSettings } from "@/stores";
-import { getSongDetail, getSongDownload } from "@/api/song";
-import { downloadFile } from "@/utils/helper";
-import formatData from "@/utils/formatData";
+import { getSongDetail, getSongDownload } from "@/api/song.js";
+import { downloadFile } from "@/utils/helper.js";
+import formatData from "@/utils/formatData.js";
 
 const router = useRouter();
 const data = siteData();

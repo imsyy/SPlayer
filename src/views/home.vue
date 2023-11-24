@@ -52,12 +52,12 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
-import { getGreetings } from "@/utils/timeTools";
-import { getDailyRec, getPersonalized, getTopArtists, getNewAlbum } from "@/api/recommend";
+import { getGreetings } from "@/utils/timeTools.js";
+import { getDailyRec, getPersonalized, getTopArtists, getNewAlbum } from "@/api/recommend.js";
 import { siteData } from "@/stores";
-import { getCacheData } from "@/utils/helper";
-import { isLogin } from "@/utils/auth";
-import formatData from "@/utils/formatData";
+import { getCacheData } from "@/utils/helper.js";
+import { isLogin } from "@/utils/auth.js";
+import formatData from "@/utils/formatData.js";
 
 const data = siteData();
 const router = useRouter();

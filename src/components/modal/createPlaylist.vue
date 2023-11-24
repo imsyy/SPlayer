@@ -37,7 +37,7 @@
 
 <script setup>
 import { siteData } from "@/stores";
-import { createPlaylist } from "@/api/playlist";
+import { createPlaylist } from "@/api/playlist.js";
 
 const data = siteData();
 

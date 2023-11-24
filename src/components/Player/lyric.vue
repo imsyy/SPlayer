@@ -127,7 +127,7 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { musicData, siteSettings, siteStatus } from "@/stores";
-import { setSeek, fadePlayOrPause } from "@/utils/player";
+import { setSeek, fadePlayOrPause } from "@/utils/player.js";
 
 // eslint-disable-next-line no-unused-vars
 const props = defineProps({

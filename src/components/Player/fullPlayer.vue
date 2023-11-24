@@ -175,7 +175,7 @@ import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { musicData, siteStatus, siteSettings, siteData } from "@/stores";
 import screenfull from "screenfull";
-import throttle from "@/utils/throttle";
+import throttle from "@/utils/throttle.js";
 
 const router = useRouter();
 const data = siteData();

@@ -57,7 +57,7 @@ import {
   changePlayIndex,
   soundStop,
   checkPlayer,
-} from "@/utils/player";
+} from "@/utils/player.js";
 import SvgIcon from "@/components/global/svgIcon";
 
 const music = musicData();

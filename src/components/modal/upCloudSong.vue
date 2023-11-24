@@ -86,7 +86,7 @@
 </template>
 
 <script setup>
-import { upCloudSong } from "@/api/cloud";
+import { upCloudSong } from "@/api/cloud.js";
 
 // 弹窗数据
 const upSongModalShow = ref(false);

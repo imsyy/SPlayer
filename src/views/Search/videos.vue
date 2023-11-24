@@ -30,10 +30,10 @@
 </template>
 
 <script setup>
-import { getSearchRes } from "@/api/search";
+import { getSearchRes } from "@/api/search.js";
 import { useRouter } from "vue-router";
 import { siteSettings } from "@/stores";
-import formatData from "@/utils/formatData";
+import formatData from "@/utils/formatData.js";
 
 const router = useRouter();
 const settings = siteSettings();

@@ -113,8 +113,8 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { siteData, siteSettings } from "@/stores";
-import { getDscPlaylist } from "@/api/playlist";
-import formatData from "@/utils/formatData";
+import { getDscPlaylist } from "@/api/playlist.js";
+import formatData from "@/utils/formatData.js";
 
 const data = siteData();
 const settings = siteSettings();

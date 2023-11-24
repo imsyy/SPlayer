@@ -48,8 +48,8 @@
 
 <script setup>
 import { musicData, siteStatus } from "@/stores";
-import { getLocalCoverData } from "@/utils/helper";
-import debounce from "@/utils/debounce";
+import { getLocalCoverData } from "@/utils/helper.js";
+import debounce from "@/utils/debounce.js";
 
 const music = musicData();
 const status = siteStatus();

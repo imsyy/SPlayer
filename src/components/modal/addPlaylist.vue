@@ -65,8 +65,8 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { siteData } from "@/stores";
-import { addSongToPlayList } from "@/api/playlist";
-import { isLogin } from "@/utils/auth";
+import { addSongToPlayList } from "@/api/playlist.js";
+import { isLogin } from "@/utils/auth.js";
 
 const data = siteData();
 const { userLikeData, userData } = storeToRefs(data);

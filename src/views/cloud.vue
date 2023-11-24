@@ -79,11 +79,11 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { musicData, indexedDBData } from "@/stores";
-import { getUserCloud } from "@/api/cloud";
-import { fuzzySearch } from "@/utils/helper";
-import { fadePlayOrPause, initPlayer } from "@/utils/player";
-import debounce from "@/utils/debounce";
-import formatData from "@/utils/formatData";
+import { getUserCloud } from "@/api/cloud.js";
+import { fuzzySearch } from "@/utils/helper.js";
+import { fadePlayOrPause, initPlayer } from "@/utils/player.js";
+import debounce from "@/utils/debounce.js";
+import formatData from "@/utils/formatData.js";
 
 const music = musicData();
 const indexedDB = indexedDBData();

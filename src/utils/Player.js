@@ -1,12 +1,12 @@
 import { Howl, Howler } from "howler";
 import { musicData, siteStatus, siteSettings, siteData } from "@/stores";
-import { getSongUrl, getSongLyric, songScrobble } from "@/api/song";
-import { checkPlatform, getLocalCoverData } from "@/utils/helper";
-import { decode as base642Buffer } from "@/utils/base64";
-import { getSongPlayTime } from "@/utils/timeTools";
-import { getCoverGradient } from "@/utils/cover-color";
-import { isLogin } from "@/utils/auth";
-import parseLyric from "@/utils/parseLyric";
+import { getSongUrl, getSongLyric, songScrobble } from "@/api/song.js";
+import { checkPlatform, getLocalCoverData } from "@/utils/helper.js";
+import { decode as base642Buffer } from "@/utils/base64.js";
+import { getSongPlayTime } from "@/utils/timeTools.js";
+import { getCoverGradient } from "@/utils/cover-color.js";
+import { isLogin } from "@/utils/auth.js";
+import parseLyric from "@/utils/parseLyric.js";
 
 // 全局播放器
 let player;

@@ -71,8 +71,8 @@
 
 <script setup>
 import { siteData, siteStatus, siteSettings } from "@/stores";
-import { getSearchHot } from "@/api/search";
-import { getCacheData } from "@/utils/helper";
+import { getSearchHot } from "@/api/search.js";
+import { getCacheData } from "@/utils/helper.js";
 
 const data = siteData();
 const status = siteStatus();

@@ -84,10 +84,10 @@
 import { darkTheme } from "naive-ui";
 import { useRouter } from "vue-router";
 import { musicData, siteStatus, siteSettings } from "@/stores";
-import { initPlayer } from "@/utils/player";
-import { checkPlatform } from "@/utils/helper";
-import globalShortcut from "@/utils/globalShortcut";
-import globalEvents from "@/utils/globalEvents";
+import { initPlayer } from "@/utils/player.js";
+import { checkPlatform } from "@/utils/helper.js";
+import globalShortcut from "@/utils/globalShortcut.js";
+import globalEvents from "@/utils/globalEvents.js";
 
 const router = useRouter();
 const music = musicData();

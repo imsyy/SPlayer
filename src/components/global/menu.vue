@@ -24,12 +24,12 @@ import { storeToRefs } from "pinia";
 import { siteStatus, siteData, musicData } from "@/stores";
 import { NIcon, NText, NButton } from "naive-ui";
 import { useRouter, RouterLink } from "vue-router";
-import { getHeartRateList } from "@/api/playlist";
-import { checkPlatform } from "@/utils/helper";
-import { isLogin } from "@/utils/auth";
-import { fadePlayOrPause, initPlayer } from "@/utils/player";
-import formatData from "@/utils/formatData";
-import debounce from "@/utils/debounce";
+import { getHeartRateList } from "@/api/playlist.js";
+import { checkPlatform } from "@/utils/helper.js";
+import { isLogin } from "@/utils/auth.js";
+import { fadePlayOrPause, initPlayer } from "@/utils/player.js";
+import formatData from "@/utils/formatData.js";
+import debounce from "@/utils/debounce.js";
 import SvgIcon from "@/components/global/svgIcon";
 
 const router = useRouter();

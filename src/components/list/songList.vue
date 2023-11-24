@@ -187,7 +187,7 @@
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { siteData, siteSettings, musicData } from "@/stores";
-import { initPlayer, fadePlayOrPause, addSongToNext } from "@/utils/player";
+import { initPlayer, fadePlayOrPause, addSongToNext } from "@/utils/player.js";
 
 const router = useRouter();
 const music = musicData();

@@ -24,9 +24,9 @@ import { NIcon, NImage, NText } from "naive-ui";
 import { storeToRefs } from "pinia";
 import { musicData, siteData } from "@/stores";
 import { useRouter } from "vue-router";
-import { addSongToNext } from "@/utils/player";
-import { setCloudDel } from "@/api/cloud";
-import { addSongToPlayList } from "@/api/playlist";
+import { addSongToNext } from "@/utils/player.js";
+import { setCloudDel } from "@/api/cloud.js";
+import { addSongToPlayList } from "@/api/playlist.js";
 import SvgIcon from "@/components/global/svgIcon";
 
 const emit = defineEmits(["playSong"]);

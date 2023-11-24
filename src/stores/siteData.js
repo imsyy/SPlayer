@@ -1,7 +1,7 @@
 // 站点数据
 import { defineStore } from "pinia";
-import { getDailyRec } from "@/api/recommend";
-import { getPlayListCatlist } from "@/api/playlist";
+import { getDailyRec } from "@/api/recommend.js";
+import { getPlayListCatlist } from "@/api/playlist.js";
 import {
   getUserProfile,
   getUserDetail,
@@ -12,9 +12,9 @@ import {
   getUserArtist,
   getUserAlbum,
   getUserMv,
-} from "@/api/user";
-import { isLogin } from "@/utils/auth";
-import throttle from "@/utils/throttle";
+} from "@/api/user.js";
+import { isLogin } from "@/utils/auth.js";
+import throttle from "@/utils/throttle.js";
 
 const useSiteDataStore = defineStore("siteData", {
   state: () => {

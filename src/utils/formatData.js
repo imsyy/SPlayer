@@ -1,4 +1,4 @@
-import { getSongTime } from "@/utils/timeTools";
+import { getSongTime } from "@/utils/timeTools.js";
 
 /**
  * 格式化原始数据

@@ -123,11 +123,11 @@
 
 <script setup>
 import { storeToRefs } from "pinia";
-import { isLogin } from "@/utils/auth";
+import { isLogin } from "@/utils/auth.js";
 import { useRouter } from "vue-router";
 import { musicData, siteStatus, siteSettings } from "@/stores";
-import { playOrPause, initPlayer, changePlayIndex } from "@/utils/player";
-import debounce from "@/utils/debounce";
+import { playOrPause, initPlayer, changePlayIndex } from "@/utils/player.js";
+import debounce from "@/utils/debounce.js";
 
 const music = musicData();
 const status = siteStatus();
