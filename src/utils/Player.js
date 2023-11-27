@@ -232,13 +232,13 @@ export const createPlayer = async (src, autoPlay = true) => {
       status.playLoading = false;
       // 发送歌曲名
       if (checkPlatform.electron()) {
-        const toolTip =
+        const songName =
           playSongData.name +
           " - " +
           (Array.isArray(playSongData.artists)
             ? playSongData.artists.map((ar) => ar.name).join(" / ")
             : playSongData.artists || "未知歌手");
-        electron.ipcRenderer.send("sendSongName", toolTip);
+        electron.ipcRenderer.send("songNameChange", songName);
       }
       // 听歌打卡
       if (isLogin() && !playSongData?.path) {
@@ -256,6 +256,10 @@ export const createPlayer = async (src, autoPlay = true) => {
       setAllInterval();
       // 更改状态
       status.playState = true;
+      // 发送状态
+      if (checkPlatform.electron()) {
+        electron.ipcRenderer.send("songStateChange", true);
+      }
     });
     // 暂停播放
     player?.on("pause", () => {
@@ -263,6 +267,10 @@ export const createPlayer = async (src, autoPlay = true) => {
       cleanAllInterval();
       // 更改状态
       status.playState = false;
+      // 发送状态
+      if (checkPlatform.electron()) {
+        electron.ipcRenderer.send("songStateChange", false);
+      }
     });
     // 结束播放
     player?.on("end", () => {
@@ -272,6 +280,10 @@ export const createPlayer = async (src, autoPlay = true) => {
       cleanAllInterval();
       // 下一曲
       changePlayIndex();
+      // 发送状态
+      if (checkPlatform.electron()) {
+        electron.ipcRenderer.send("songStateChange", false);
+      }
     });
     // 加载失败
     player?.on("loaderror", (_, errCode) => {

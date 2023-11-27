@@ -1,6 +1,10 @@
 import { join } from "path";
 import { Tray, Menu, app, ipcMain, nativeImage, nativeTheme } from "electron";
 
+// 当前播放歌曲数据
+let playSongName = "当前暂无播放歌曲";
+let playSongState = false;
+
 /**
  * 创建系统自定义信息
  * @param {BrowserWindow} win - 程序窗口
@@ -12,12 +16,16 @@ const createSystemInfo = (win) => {
   const mainTray = new Tray(join(__dirname, "../../public/images/logo/favicon.png"));
   // 给托盘图标设置气球提示
   mainTray.setToolTip(app.getName());
-  // 歌曲改变时
-  ipcMain.on("sendSongName", (_, val) => {
+  // 歌曲数据改变时
+  ipcMain.on("songNameChange", (_, val) => {
+    playSongName = val;
     // 托盘图标标题
     mainTray.setToolTip(val);
     // 更改应用标题
     win.setTitle(val);
+  });
+  ipcMain.on("songStateChange", (_, val) => {
+    playSongState = val;
   });
   // 左键事件
   mainTray.on("click", () => {
@@ -47,11 +55,12 @@ const createTrayMenu = (win) => {
   // 返回菜单
   return [
     {
-      label: `显示 ${import.meta.env.MAIN_VITE_TITLE ?? "SPlayer"}`,
+      label: playSongName,
       icon: createIcon("open"),
       click() {
         win.show();
         win.focus();
+        win.webContents.send("showPlayer");
       },
     },
     {
@@ -65,8 +74,8 @@ const createTrayMenu = (win) => {
       },
     },
     {
-      label: "播放 / 暂停",
-      icon: createIcon("play"),
+      label: playSongState ? "暂停" : "播放",
+      icon: createIcon(playSongState ? "pause" : "play"),
       click: () => {
         win.webContents.send("playOrPause");
       },
@@ -85,7 +94,7 @@ const createTrayMenu = (win) => {
       label: "全局设置",
       icon: createIcon("setting"),
       click: () => {
-        console.log(111);
+        win.webContents.send("setting");
       },
     },
     {

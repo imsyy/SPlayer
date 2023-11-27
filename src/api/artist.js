@@ -25,3 +25,17 @@ export const getArtistList = (type = -1, area = -1, offset = 0, initial = -1, li
     },
   });
 };
+
+/**
+ * 获取歌手详情
+ * @param {number} id - 歌手id
+ */
+export const getArtistDetail = (id) => {
+  return axios({
+    method: "GET",
+    url: "/artist/detail",
+    params: {
+      id,
+    },
+  });
+};

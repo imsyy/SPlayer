@@ -68,6 +68,7 @@ const formatData = (data, type = "playlist", noTracks = false) => {
         return {
           id: v.id,
           name: v.name,
+          description: v.briefDesc,
           cover,
           coverSize,
           alias: v.alias,

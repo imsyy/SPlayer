@@ -185,6 +185,14 @@ const jumpLink = (data, type) => {
           },
         });
         break;
+      case "artist":
+        router.push({
+          path: "/artist",
+          query: {
+            id: data?.id,
+          },
+        });
+        break;
       default:
         break;
     }

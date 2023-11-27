@@ -118,7 +118,7 @@ onMounted(() => {
   // 主播放器
   initPlayer(settings.autoPlay);
   // 全局事件
-  globalEvents();
+  globalEvents(router);
   // 键盘监听
   window.addEventListener("keyup", globalShortcut);
 });

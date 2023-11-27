@@ -37,8 +37,8 @@ const routes = [
         component: () => import("@/views/Search/albums.vue"),
       },
       {
-        path: "Videos",
-        name: "sea-Videos",
+        path: "videos",
+        name: "sea-videos",
         component: () => import("@/views/Search/videos.vue"),
       },
       {
@@ -88,7 +88,7 @@ const routes = [
       title: "视频",
     },
     component: () => import("@/views/Videos/index.vue"),
-    redirect: "/Videos/list",
+    redirect: "/videos/list",
     children: [
       {
         path: "list",
@@ -177,6 +177,38 @@ const routes = [
       title: "歌单",
     },
     component: () => import("@/views/List/album.vue"),
+  },
+  // 歌手
+  {
+    path: "/artist",
+    name: "artist",
+    meta: {
+      title: "歌手",
+    },
+    component: () => import("@/views/Artist/index.vue"),
+    redirect: "/artist/hot",
+    children: [
+      {
+        path: "hot",
+        name: "ar-hot",
+        component: () => import("@/views/Artist/hot.vue"),
+      },
+      {
+        path: "songs",
+        name: "ar-songs",
+        component: () => import("@/views/Artist/songs.vue"),
+      },
+      {
+        path: "albums",
+        name: "ar-albums",
+        component: () => import("@/views/Artist/albums.vue"),
+      },
+      {
+        path: "videos",
+        name: "ar-videos",
+        component: () => import("@/views/Artist/videos.vue"),
+      },
+    ],
   },
   // 本地歌曲
   {

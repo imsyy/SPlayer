@@ -446,19 +446,19 @@ const likeOrDislike = debounce(async (id) => {
 // 监听路由变化
 watch(
   () => router.currentRoute.value,
-  (val) => {
+  async (val) => {
     if (val.name === "playlist" || val.name === "like-songs") {
       playlistId.value =
         router.currentRoute.value.name === "like-songs"
           ? userLikeData.value.playlists?.[0]?.id || null
           : val.query?.id;
-      getPlayListDetailData(playlistId.value);
+      await getPlayListDetailData(playlistId.value);
     }
   },
 );
 
-onBeforeMount(() => {
-  getPlayListDetailData(playlistId.value);
+onBeforeMount(async () => {
+  await getPlayListDetailData(playlistId.value);
 });
 </script>
 

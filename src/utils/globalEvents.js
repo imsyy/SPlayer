@@ -1,15 +1,26 @@
 import { checkPlatform } from "@/utils/helper";
 import { playOrPause, changePlayIndex } from "@/utils/Player";
+import { siteStatus } from "@/stores";
+import "vue-slider-component/theme/default.css";
 
-const globalEvents = () => {
+const globalEvents = (router) => {
   if (!checkPlatform.electron()) return false;
+  // 显示播放器
+  electron.ipcRenderer.on("showPlayer", () => {
+    const status = siteStatus();
+    status.showFullPlayer = true;
+  });
   // 播放或暂停
   electron.ipcRenderer.on("playOrPause", () => {
     playOrPause();
   });
   // 上一曲或下一曲
   electron.ipcRenderer.on("playNextOrPrev", (_, val) => {
-    changePlayIndex(val);
+    changePlayIndex(val, true);
+  });
+  // 全局设置
+  electron.ipcRenderer.on("setting", () => {
+    if (router) router.push("/setting");
   });
 };
 

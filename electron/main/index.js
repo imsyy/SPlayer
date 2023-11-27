@@ -49,7 +49,7 @@ const createWindow = () => {
   // 窗口准备就绪时显示窗口
   mainWindow.on("ready-to-show", () => {
     mainWindow.show();
-    mainWindow.maximize();
+    // mainWindow.maximize();
   });
 
   // 设置窗口打开处理程序
