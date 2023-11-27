@@ -102,7 +102,7 @@ const formatData = (data, type = "playlist", noTracks = false) => {
           artists: v.artists,
           desc: v.copywriter,
           cover,
-          coverSize: getCoverUrl(v.picUrl || v.cover, "464y260"),
+          coverSize: getCoverUrl(v.imgurl16v9 || v.picUrl || v.cover, "464y260"),
           duration: v.duration,
           playCount: v.playCount,
         };

@@ -1,7 +1,7 @@
 # 应用程序的唯一标识符
-appId: com.splayer-imsyy.app
+appId: com.imsyy.splayer
 # 应用程序的产品名称
-productName: splayer-desktop-dev
+productName: splayer-desktop
 # 构建资源所在的目录
 directories:
   buildResources: build
@@ -18,7 +18,7 @@ asarUnpack:
 # Windows 平台配置
 win:
   # 可执行文件名
-  executableName: splayer-desktop-dev
+  executableName: splayer-desktop
   # 应用程序的图标文件路径
   icon: public/images/logo/favicon_256.png
   # 构建的目标类型
@@ -37,7 +37,7 @@ nsis:
   # 创建桌面图标
   createDesktopShortcut: always
   # 是否允许 UAC 提升权限
-  allowElevation: false
+  allowElevation: true
   # 是否允许用户更改安装目录
   allowToChangeInstallationDirectory: true
 # macOS 平台配置
@@ -64,7 +64,7 @@ linux:
     - snap
     - deb
   # 维护者信息
-  maintainer: electronjs.org
+  maintainer: imsyy.top
   # 应用程序类别
   category: Utility
 # AppImage 配置
@@ -76,6 +76,8 @@ npmRebuild: false
 # 自动更新的配置
 publish:
   # 更新提供商
-  provider: generic
+  provider: github
   # 自动更新检查的 URL
-  url: https://example.com/auto-updates
+  # url: https://example.com/auto-updates
+  owner: "imsyy"
+  repo: "splayer"

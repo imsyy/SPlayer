@@ -3,9 +3,11 @@ import { app, protocol, shell, BrowserWindow, globalShortcut } from "electron";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 import { startNcmServer } from "@main/startNcmServer";
 import { startMainServer } from "@main/startMainServer";
-import createSystemInfo from "@main/createSystemInfo";
-import createGlobalShortcut from "@main/createGlobalShortcut";
+import { configureAutoUpdater } from "@main/utils/checkUpdates";
+import createSystemInfo from "@main/utils/createSystemInfo";
+import createGlobalShortcut from "@main/utils/createGlobalShortcut";
 import mainIpcMain from "@main/mainIpcMain";
+import log from "electron-log";
 
 // 主窗口
 let mainWindow;
@@ -20,6 +22,14 @@ const gotTheLock = app.requestSingleInstanceLock();
 protocol.registerSchemesAsPrivileged([
   { scheme: "imsyy-splayer", privileges: { standard: true, secure: true } },
 ]);
+
+// 配置 log
+log.transports.file.resolvePathFn = () =>
+  join(app.getPath("documents"), "/SPlayer/splayer-log.txt");
+// 设置日志文件的最大大小为 10 MB
+log.transports.file.maxSize = 10 * 1024 * 1024;
+// 绑定 console.log
+console.log = log.log.bind(log);
 
 // 创建主窗口
 const createWindow = () => {
@@ -84,7 +94,7 @@ app.whenReady().then(async () => {
   if (!gotTheLock) {
     // 如果获取不到单例锁，表示已经有一个实例在运行
     app.quit();
-    console.error("已有一个程序正在运行");
+    log.error("已有一个程序正在运行");
     return false;
   }
 
@@ -128,6 +138,9 @@ app.whenReady().then(async () => {
 
   // 注册快捷键
   createGlobalShortcut(mainWindow);
+
+  // 检测更新
+  configureAutoUpdater(process.platform);
 });
 
 // 将要退出

@@ -109,7 +109,12 @@
                   music.getPlaySongData?.artists && Array.isArray(music.getPlaySongData.artists)
                 "
               >
-                <n-text v-for="ar in music.getPlaySongData.artists" :key="ar.id" class="ar">
+                <n-text
+                  v-for="ar in music.getPlaySongData.artists"
+                  :key="ar.id"
+                  class="ar"
+                  @click.stop="router.push(`/artist?id=${ar.id}`)"
+                >
                   {{ ar.name }}
                 </n-text>
               </template>

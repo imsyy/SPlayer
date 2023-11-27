@@ -2,7 +2,7 @@
 <template>
   <Transition name="fade" mode="out-in" @after-enter="checkHasPlaying">
     <div v-if="data !== 'empty' && data?.length && data[0] !== 'empty'" class="song-list">
-      <div class="song-list-header">
+      <div v-if="showTitle" class="song-list-header">
         <n-text class="num" depth="3"> # </n-text>
         <n-text :class="{ info: true, 'has-cover': data[0].cover && showCover }" depth="3">
           歌曲
@@ -113,7 +113,12 @@
           </div>
           <!-- 歌手 -->
           <div v-if="Array.isArray(item.artists)" class="artist">
-            <n-text v-for="ar in item.artists" :key="ar.id" class="ar">
+            <n-text
+              v-for="ar in item.artists"
+              :key="ar.id"
+              class="ar"
+              @click.stop="router.push(`/artist?id=${ar.id}`)"
+            >
               {{ ar.name }}
             </n-text>
           </div>
@@ -227,6 +232,11 @@ const props = defineProps({
   },
   // 是否显示专辑
   showAlbum: {
+    type: Boolean,
+    default: true,
+  },
+  // 是否显示表头
+  showTitle: {
     type: Boolean,
     default: true,
   },

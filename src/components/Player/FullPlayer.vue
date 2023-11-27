@@ -120,15 +120,25 @@
                 </div>
               </n-popover>
             </div>
-            <span v-if="music.getPlaySongData.alia" class="alia">{{
-              music.getPlaySongData.alia
-            }}</span>
+            <span v-if="music.getPlaySongData.alia" class="alia">
+              {{ music.getPlaySongData.alia }}
+            </span>
             <div class="artist">
               <n-icon depth="3" size="20">
                 <SvgIcon icon="account-music" />
               </n-icon>
               <div v-if="Array.isArray(music.getPlaySongData.artists)" class="all-ar">
-                <span v-for="ar in music.getPlaySongData.artists" :key="ar.id" class="ar">
+                <span
+                  v-for="ar in music.getPlaySongData.artists"
+                  :key="ar.id"
+                  class="ar"
+                  @click.stop="
+                    () => {
+                      showFullPlayer = false;
+                      router.push(`/artist?id=${ar.id}`);
+                    }
+                  "
+                >
                   {{ ar.name }}
                 </span>
               </div>

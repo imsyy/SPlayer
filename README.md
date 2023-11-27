@@ -29,7 +29,7 @@
 - 自动进行每日签到及云贝签到
 - 封面主题色自适应
 - 本地歌曲管理及分类 ~~以及音乐标签编辑~~
-- 支持 [UnblockNeteaseMusic](https://github.com/UnblockNeteaseMusic/server)，自动替换变灰歌曲（客户端独占功能）
+- **支持播放部分无版权歌曲（可能会与原曲不匹配，客户端独占功能）**
 - 下载歌曲（最高支持 Hi-Res）
 - 新建歌单及歌单编辑
 - 收藏 / 取消收藏歌单或歌手
@@ -48,11 +48,13 @@
 - 支持评论区及评论点赞
 - 明暗模式自动 / 手动切换
 - ~~移动端基础适配~~
-- `i18n` 支持（暂时去除，感觉不需要）
+- ~~`i18n` 支持~~
 
 #### 待办
 
-- [ ] 电台节目支持
+- [ ] 完善音乐频谱
+- [ ] 添加桌面歌词
+- [ ] 多种布局方式
 - [ ] 发表评论
 
 ## 😍 Screenshots
@@ -62,35 +64,42 @@
 <details>
 <summary>主页面</summary>
 
-![主页面](/screenshots/SPlayer%20-%20%E4%B8%BB%E9%A1%B5%E9%9D%A2.jpg)
+![主页面](/screenshots/SPlayer%20-%20主页面.jpg)
 
 </details>
 
 <details>
 <summary>播放页面</summary>
 
-![播放页面](/screenshots/SPlayer%20-%20%E6%92%AD%E6%94%BE%E9%A1%B5%E9%9D%A2.jpg)
+![播放页面](/screenshots/SPlayer%20-%20播放页面.jpg)
 
 </details>
 
 <details>
 <summary>发现页面</summary>
 
-![发现页面](/screenshots/SPlayer%20-%20%E5%8F%91%E7%8E%B0%E9%A1%B5%E9%9D%A2.jpg)
+![发现页面](/screenshots/SPlayer%20-%20发现页面.jpg)
 
 </details>
 
 <details>
 <summary>歌单页面</summary>
 
-> 待装修
+![发现页面](/screenshots/SPlayer%20-%20歌单页面.jpg)
 
 </details>
 
 <details>
 <summary>评论页面</summary>
 
-> 待装修
+![发现页面](/screenshots/SPlayer%20-%20评论页面.jpg)
+
+</details>
+
+<details>
+<summary>本地音乐</summary>
+
+![发现页面](/screenshots/SPlayer%20-%20本地音乐.jpg)
 
 </details>
 
@@ -139,6 +148,10 @@ npm build
 ```
 
 构建完成后可将生成的 `out/renderer` 文件夹内的文件上传至服务器
+
+若使用的为第三方部署平台，比如 `Vercel`，请将 `Build and Output Settings` 中的 `Output Directory` 改为 `out/renderer`
+
+![build](/screenshots/build.png)
 
 ### 构建客户端
 

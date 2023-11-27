@@ -1,10 +1,14 @@
 {
   "name": "splayer",
-  "version": "2.0.0-beta.1",
-  "description": "An Electron application with Vue",
+  "version": "2.0.0-beta.2",
+  "description": "A minimalist music player",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://www.electronjs.org",
+  "author": "imsyy",
+  "home": "https://imsyy.top",
+  "github": "https://github.com/imsyy/SPlayer",
+  "engines": {
+    "node": ">=16.16.0"
+  },
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts,.vue --fix",
@@ -24,6 +28,7 @@
     "axios": "^1.4.0",
     "colorthief": "^2.4.0",
     "electron-dl": "^3.5.1",
+    "electron-updater": "^6.1.7",
     "express": "^4.18.2",
     "express-http-proxy": "^1.6.3",
     "howler": "^2.2.3",
@@ -46,6 +51,7 @@
     "@vue/eslint-config-prettier": "^8.0.0",
     "electron": "^25.6.0",
     "electron-builder": "^24.6.3",
+    "electron-log": "^5.0.1",
     "electron-vite": "^1.0.27",
     "eslint": "^8.47.0",
     "eslint-plugin-vue": "^9.17.0",

@@ -56,7 +56,7 @@
               <n-text class="add-desc">{{ item.desc }}</n-text>
             </div>
             <!-- 播放按钮 -->
-            <n-icon class="play" @click.stop>
+            <n-icon class="play">
               <SvgIcon :icon="type !== 'artist' ? 'play-circle' : 'account-music'" />
             </n-icon>
           </div>

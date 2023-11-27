@@ -431,11 +431,11 @@ const likeOrDislike = debounce(async (id) => {
     const type = isLikeOrDislike(id) ? 1 : 2;
     const result = await likePlaylist(type, id);
     if (result.code === 200) {
-      $message.success(type === 1 ? "收藏" : "取消收藏" + "成功");
+      $message.success((type === 1 ? "收藏" : "取消收藏") + "成功");
       // 更新用户歌单
       await data.setUserLikePlaylists();
     } else {
-      $message.error(type === 1 ? "收藏" : "取消收藏" + "失败，请重试");
+      $message.error((type === 1 ? "收藏" : "取消收藏") + "失败，请重试");
     }
   } catch (error) {
     console.error("收藏出错：", error);
