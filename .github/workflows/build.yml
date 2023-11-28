@@ -12,6 +12,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+    outputs:
+      artifacts: ${{ steps.upload.outputs.artifacts }}
+    needs: release
 
     strategy:
       fail-fast: false
@@ -44,15 +47,12 @@ jobs:
 
       - name: Upload artifacts
         id: upload
-        outputs:
-          artifacts: ${{ steps.upload.outputs.artifacts }}
         uses: actions/upload-artifact@v3.0.0
         with:
           name: ${{ matrix.os }}
           path: dist
 
       - name: Release
-        needs: release
         uses: softprops/action-gh-release@v0.1.14
         if: startsWith(github.ref, 'refs/tags/v')
         with:
