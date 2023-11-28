@@ -1,20 +1,14 @@
-name: Build
+name: Build Dev
 
 on:
   push:
     branches:
       - dev
-    tags:
-      - v*
+
 jobs:
   release:
-    name: Build and release electron app
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest]
+    name: Build and electron app
+    runs-on: windows-latest
 
     steps:
       - name: Check out git repository
@@ -29,20 +23,18 @@ jobs:
         run: npm install
 
       - name: Build Electron App
-        if: matrix.os == 'windows-latest'
         run: npm run build:win
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
-      - name: Cleanup Artifacts for Windows
-        if: matrix.os == 'windows-latest'
+      - name: Cleanup Artifacts
         run: |
           npx rimraf "dist/!(*.exe)"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3.0.0
         with:
-          name: ${{ matrix.os }}
+          name: SPlayer-dev
           path: dist
 
       - name: Create a release
@@ -51,5 +43,3 @@ jobs:
         with:
           draft: true
           files: "dist/**"
-        env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}

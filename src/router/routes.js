@@ -254,6 +254,15 @@ const routes = [
     },
     component: () => import("@/views/Setting/index.vue"),
   },
+  // 单曲页面
+  {
+    path: "/song",
+    name: "song",
+    meta: {
+      title: "全局设置",
+    },
+    component: () => import("@/views/song.vue"),
+  },
   // 测试页面
   {
     path: "/test",

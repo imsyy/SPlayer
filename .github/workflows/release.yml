@@ -1,4 +1,4 @@
-name: release
+name: Build Release
 
 on:
   push:
@@ -6,92 +6,95 @@ on:
       - v*
 
 jobs:
-  mac_release:
-    runs-on: macos-latest
-    timeout-minutes: 30
-
-    steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2
-        with:
-          node-version: 16.x
-          cache: npm
-
-      - run: npm ci
-      - run: npm run build:mac
-
-      - name: Upload binaries
-        uses: actions/upload-artifact@v2
-        with:
-          name: mac-release
-          path: release/*/*.*
-
-      - name: Create a release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          draft: true
-          files: release/mac-release/*.*
-
-  windows_release:
+  build-windows:
+    name: Build for Windows
     runs-on: windows-latest
-    timeout-minutes: 30
-
     steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v2
+      - name: Check out git repository
+        uses: actions/checkout@v3.0.0
 
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v3.0.0
         with:
-          node-version: 16.x
-          cache: npm
+          node-version: "16.x"
 
-      - run: npm ci
-      - run: npm run build:win
+      - name: Install Dependencies
+        run: npm install
 
-      - name: Upload binaries
-        uses: actions/upload-artifact@v2
+      - name: Build Electron App for Windows
+        run: npm run build:win
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v3.0.0
         with:
-          name: windows-release
-          path: release/*/*.*
+          name: SPlayer-Windows
+          path: dist/*.exe
 
-      - name: Create a release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+  build-macos:
+    name: Build for macOS
+    runs-on: macos-latest
+    steps:
+      - name: Check out git repository
+        uses: actions/checkout@v3.0.0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3.0.0
         with:
-          draft: true
-          files: release/windows-release/*.*
+          node-version: "16.x"
 
-  linux_release:
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Electron App for macOS
+        run: npm run build:mac
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v3.0.0
+        with:
+          name: SPlayer-macOS
+          path: dist/*.dmg
+
+  build-linux:
+    name: Build for Linux
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
     steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v2
+      - name: Check out git repository
+        uses: actions/checkout@v3.0.0
 
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v3.0.0
         with:
-          node-version: 16.x
-          cache: npm
+          node-version: "16.x"
 
-      - run: npm ci
-      - run: npm run build:linux
+      - name: Install Dependencies
+        run: npm install
 
-      - name: Upload binaries
-        uses: actions/upload-artifact@v2
+      - name: Build Electron App for Linux
+        run: npm run build:linux
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v3.0.0
         with:
-          name: linux-release
-          path: release/*/*.*
+          name: SPlayer-Linux
+          path: dist/*.AppImage
 
+  create-release:
+    needs: [build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3.0.0
+        
       - name: Create a release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           draft: true
-          files: release/linux-release/*.*
+          files: "dist/**"
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}

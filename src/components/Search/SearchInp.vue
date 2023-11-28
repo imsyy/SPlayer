@@ -92,10 +92,28 @@ const toSearch = (val, type = "song") => {
         },
       });
       break;
+    // 单曲
+    case "songs":
+      router.push({
+        path: "/song",
+        query: {
+          id: val,
+        },
+      });
+      break;
     // 专辑
     case "albums":
       router.push({
         path: "/album",
+        query: {
+          id: val,
+        },
+      });
+      break;
+    // 歌手
+    case "artists":
+      router.push({
+        path: "/artist",
         query: {
           id: val,
         },
