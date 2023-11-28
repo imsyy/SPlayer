@@ -12,20 +12,22 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@master
+        uses: actions/setup-node@v2
         with:
           node-version: 16.x
           cache: npm
 
-      - run: npm ci
-      - run: npm run build:mac
-        shell: bash
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build for macOS
+        run: npm run build:mac
 
       - name: Upload binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: splayer-macos
           path: release/*/splayer-mac-*-universal.dmg
@@ -37,20 +39,22 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@master
+        uses: actions/setup-node@v2
         with:
           node-version: 16.x
           cache: npm
 
-      - run: npm ci
-      - run: npm run build:win
-        shell: bash
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build for Windows
+        run: npm run build:win
 
       - name: Upload binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: splayer-windows
           path: release/*/*Setup*.exe
@@ -62,20 +66,22 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@master
+        uses: actions/setup-node@v2
         with:
           node-version: 16.x
           cache: npm
 
-      - run: npm ci
-      - run: npm run build:linux
-        shell: bash
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build for Linux
+        run: npm run build:linux
 
       - name: Upload binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: splayer-linux
           path: |

@@ -2,8 +2,6 @@ name: release
 
 on:
   push:
-    branches:
-      - master
     tags:
       - v*
 
@@ -14,29 +12,29 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@master
+        uses: actions/setup-node@v2
         with:
           node-version: 16.x
           cache: npm
 
       - run: npm ci
       - run: npm run build:mac
-        shell: bash
 
       - name: Upload binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
+          name: mac-release
           path: release/*/*.*
-          if-no-files-found: ignore
+
       - name: Create a release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           draft: true
-          files: release/*/*.*
+          files: release/mac-release/*.*
 
   windows_release:
     runs-on: windows-latest
@@ -44,30 +42,29 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@master
+        uses: actions/setup-node@v2
         with:
           node-version: 16.x
           cache: npm
 
       - run: npm ci
       - run: npm run build:win
-        shell: bash
 
       - name: Upload binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
+          name: windows-release
           path: release/*/*.*
-          if-no-files-found: ignore
 
       - name: Create a release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           draft: true
-          files: release/*/*.*
+          files: release/windows-release/*.*
 
   linux_release:
     runs-on: ubuntu-latest
@@ -75,27 +72,26 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@master
+        uses: actions/setup-node@v2
         with:
           node-version: 16.x
           cache: npm
 
       - run: npm ci
       - run: npm run build:linux
-        shell: bash
 
       - name: Upload binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
+          name: linux-release
           path: release/*/*.*
-          if-no-files-found: ignore
 
       - name: Create a release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           draft: true
-          files: release/*/*.*
+          files: release/linux-release/*.*
