@@ -50,7 +50,7 @@
     "@vitejs/plugin-vue": "^4.3.1",
     "@vue/eslint-config-prettier": "^8.0.0",
     "electron": "^25.6.0",
-    "electron-builder": "^24.6.3",
+    "electron-builder": "^24.6.4",
     "electron-log": "^5.0.1",
     "electron-vite": "^1.0.27",
     "eslint": "^8.47.0",

@@ -23,7 +23,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v3.0.0
         with:
-          node-version: "18.12.0"
+          node-version: "16.x"
 
       - name: Install Dependencies
         run: npm install
