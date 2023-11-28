@@ -28,15 +28,21 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Build Electron App
-        run: |
-          if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            npm run build:win
-          elif [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
-            npm run build:linux
-          elif [ "${{ matrix.os }}" == "macos-latest" ]; then
-            npm run build:mac
-          fi
+      - name: Build Electron App For Win
+        if: matrix.os == 'windows-latest'
+        run: npm run build:win
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Build Electron App For Mac
+        if: matrix.os == 'macos-latest'
+        run: npm run build:mac
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Build Electron App For Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: npm run build:linux
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
