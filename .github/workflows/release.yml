@@ -1,12 +1,14 @@
-name: dev build
+name: release
 
 on:
   push:
     branches:
-      - dev
+      - master
+    tags:
+      - v*
 
 jobs:
-  mac_build:
+  mac_release:
     runs-on: macos-latest
     timeout-minutes: 30
 
@@ -27,11 +29,16 @@ jobs:
       - name: Upload binaries
         uses: actions/upload-artifact@v3
         with:
-          name: splayer-macos
-          path: release/*/splayer-mac-*-universal.dmg
+          path: release/*/*.*
           if-no-files-found: ignore
+      - name: Create a release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          draft: true
+          files: release/*/*.*
 
-  windows_build:
+  windows_release:
     runs-on: windows-latest
     timeout-minutes: 30
 
@@ -52,11 +59,17 @@ jobs:
       - name: Upload binaries
         uses: actions/upload-artifact@v3
         with:
-          name: splayer-windows
-          path: release/*/*Setup*.exe
+          path: release/*/*.*
           if-no-files-found: ignore
 
-  linux_build:
+      - name: Create a release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          draft: true
+          files: release/*/*.*
+
+  linux_release:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -77,8 +90,12 @@ jobs:
       - name: Upload binaries
         uses: actions/upload-artifact@v3
         with:
-          name: splayer-linux
-          path: |
-            splayer*.AppImage
-            splayer*.tar.gz
+          path: release/*/*.*
           if-no-files-found: ignore
+
+      - name: Create a release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          draft: true
+          files: release/*/*.*

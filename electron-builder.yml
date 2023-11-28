@@ -2,6 +2,7 @@
 appId: com.imsyy.splayer
 # 应用程序的产品名称
 productName: splayer-desktop
+copyright: 'Copyright © imsyy 2023'
 # 构建资源所在的目录
 directories:
   buildResources: build
@@ -52,6 +53,8 @@ mac:
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   # 是否启用应用程序的 Notarization（苹果的安全审核）
   notarize: false
+  darkModeSupport: true
+  category: public.app-category.music
 # macOS 平台的 DMG 配置
 dmg:
   # DMG 文件的生成名称
@@ -63,10 +66,12 @@ linux:
     - AppImage
     - snap
     - deb
+    - rpm
+    - tar.gz
   # 维护者信息
   maintainer: imsyy.top
   # 应用程序类别
-  category: Utility
+  category: Audio;Music
 # AppImage 配置
 appImage:
   #  AppImage 文件的生成名称
