@@ -1,4 +1,4 @@
-name: Release
+name: Build
 
 on:
   push:
@@ -8,13 +8,13 @@ on:
       - v*
 jobs:
   release:
-    name: Build and release splayer app
+    name: Build and release electron app
     runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest]
+        os: [windows-latest, macos-latest, ubuntu-latest]
 
     steps:
       - name: Check out git repository
@@ -29,7 +29,14 @@ jobs:
         run: npm install
 
       - name: Build Electron App
-        run: npm run build:win
+        run: |
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            npm run build:win
+          elif [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+            npm run build:linux
+          elif [ "${{ matrix.os }}" == "macos-latest" ]; then
+            npm run build:mac
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
@@ -56,7 +63,3 @@ jobs:
           files: "dist/**"
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-
-# Add the following block to use Environment Files
-env:
-  GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
