@@ -31,14 +31,20 @@ jobs:
       - name: Build Electron App For Win
         if: matrix.os == 'windows-latest'
         run: npm run build:win
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Build Electron App For Mac
         if: matrix.os == 'macos-latest'
         run: npm run build:mac
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Build Electron App For Linux
         if: matrix.os == 'ubuntu-latest'
         run: npm run build:linux
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Cleanup Artifacts for Windows
         if: matrix.os == 'windows-latest'
@@ -62,3 +68,5 @@ jobs:
         with:
           draft: true
           files: "dist/**"
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
