@@ -10,11 +10,14 @@ jobs:
   release:
     name: Build and release electron app
     runs-on: ${{ matrix.os }}
+    env:
+      GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
+        build: [win, mac, linux]
 
     steps:
       - name: Check out git repository
@@ -28,44 +31,29 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Build Electron App For Win
-        if: matrix.os == 'windows-latest'
-        run: npm run build:win
-        env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+      - name: Build Electron App
+        run: npm run build:${{ matrix.build }}
 
-      - name: Build Electron App For Mac
-        if: matrix.os == 'macos-latest'
-        run: npm run build:mac
-        env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: Build Electron App For Linux
-        if: matrix.os == 'ubuntu-latest'
-        run: npm run build:linux
-        env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: Cleanup Artifacts for Windows
-        if: matrix.os == 'windows-latest'
+      - name: Cleanup Artifacts
         run: |
-          npx rimraf "dist/!(*.exe)"
-
-      - name: Cleanup Artifacts for MacOS
-        if: matrix.os == 'macos-latest'
-        run: |
-          npx rimraf "dist/!(*.dmg)"
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            npx rimraf "dist/!(*.exe)"
+          elif [ "${{ matrix.os }}" == "macos-latest" ]; then
+            npx rimraf "dist/!(*.dmg)"
+          fi
 
       - name: Upload artifacts
+        id: upload
+        outputs:
+          artifacts: ${{ steps.upload.outputs.artifacts }}
         uses: actions/upload-artifact@v3.0.0
         with:
           name: ${{ matrix.os }}
           path: dist
 
       - name: Release
+        needs: release
         uses: softprops/action-gh-release@v0.1.14
         if: startsWith(github.ref, 'refs/tags/v')
         with:
-          files: "dist/**"
-        env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          files: ${{ needs.release.outputs.artifacts }}
