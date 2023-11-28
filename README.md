@@ -14,7 +14,7 @@
 > - 新增支持播放与管理本地歌曲
 >
 - 本项目采用 [Vue 3](https://cn.vuejs.org/) 全家桶和 [Naïve UI](https://www.naiveui.com/) 组件库及 [Electron](https://www.electronjs.org/zh/docs/latest/) 开发
-- 支持网页端与客户端，由于暂无其他平台，目前仅适配 `Win` 和 `Linux`
+- 支持网页端与客户端，由于设备有限，目前仅适配 `Win`，其他平台可自行构建
 - ~~仅对移动端做了基础适配，**不保证功能全部可用**~~
 - 欢迎各位大佬指点和 `Star` 哦 😍
 
