@@ -1,5 +1,5 @@
 import { join } from "path";
-import { app, protocol, shell, BrowserWindow, globalShortcut } from "electron";
+import { app, shell, BrowserWindow, globalShortcut } from "electron";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 import { startNcmServer } from "@main/startNcmServer";
 import { startMainServer } from "@main/startMainServer";
@@ -17,11 +17,6 @@ process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = "true";
 
 // 单例锁
 const gotTheLock = app.requestSingleInstanceLock();
-
-// 注册自定义协议
-protocol.registerSchemesAsPrivileged([
-  { scheme: "imsyy-splayer", privileges: { standard: true, secure: true } },
-]);
 
 // 配置 log
 log.transports.file.resolvePathFn = () =>
@@ -98,6 +93,9 @@ app.whenReady().then(async () => {
     return false;
   }
 
+  // 注册应用协议
+  app.setAsDefaultProtocolClient("splayer");
+
   // 初始化完成并准备创建浏览器窗口
   // 为 Windows 设置应用程序用户模型 ID
   electronApp.setAppUserModelId("com.electron");
@@ -120,7 +118,6 @@ app.whenReady().then(async () => {
 
   // 自定义协议
   app.on("open-url", (_, url) => {
-    // 在这里处理自定义协议的事件，比如打开相应的窗口或执行其他操作
     console.log("Received custom protocol URL:", url);
   });
 

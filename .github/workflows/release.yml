@@ -1,3 +1,5 @@
+# Release 发行版本部署
+## 多端部署
 name: Build Release
 
 on:
@@ -6,95 +8,134 @@ on:
       - v*
 
 jobs:
+  # Windows
   build-windows:
     name: Build for Windows
     runs-on: windows-latest
     steps:
+      # 检出 Git 仓库
       - name: Check out git repository
-        uses: actions/checkout@v3.0.0
-
+        uses: actions/checkout@v4.1.1
+      # 安装 Node.js
       - name: Install Node.js
-        uses: actions/setup-node@v3.0.0
+        uses: actions/setup-node@v4.0.0
         with:
-          node-version: "16.x"
-
+          node-version: "18.x"
+      # 安装项目依赖
       - name: Install Dependencies
         run: npm install
-
+      # 构建 Electron App
       - name: Build Electron App for Windows
-        run: npm run build:win
+        run: npm run build:win || true
+        shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-
+      # 上传构建产物
       - name: Upload Windows artifact
-        uses: actions/upload-artifact@v3.0.0
+        uses: actions/upload-artifact@v3.1.3
         with:
-          name: SPlayer-Windows
-          path: dist/*.exe
-
+          name: SPlarer-Win
+          if-no-files-found: ignore
+          path: |
+            dist/*.exe
+            dist/*.msi
+      # 创建 GitHub Release
+      - name: Release
+        uses: softprops/action-gh-release@v0.1.14
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          draft: true
+          files: |
+            dist/*.exe
+            dist/*.msi
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+  # Mac
   build-macos:
     name: Build for macOS
     runs-on: macos-latest
     steps:
+      # 检出 Git 仓库
       - name: Check out git repository
-        uses: actions/checkout@v3.0.0
-
+        uses: actions/checkout@v4.1.1
+      # 安装 Node.js
       - name: Install Node.js
-        uses: actions/setup-node@v3.0.0
+        uses: actions/setup-node@v4.0.0
         with:
-          node-version: "16.x"
-
+          node-version: "18.x"
+        # 安装项目依赖
       - name: Install Dependencies
         run: npm install
-
+      # 构建 Electron App
       - name: Build Electron App for macOS
-        run: npm run build:mac
+        run: npm run build:mac || true
+        shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-
+      # 上传构建产物
       - name: Upload macOS artifact
-        uses: actions/upload-artifact@v3.0.0
+        uses: actions/upload-artifact@v3.1.3
         with:
-          name: SPlayer-macOS
-          path: dist/*.dmg
-
-  build-linux:
-    name: Build for Linux
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out git repository
-        uses: actions/checkout@v3.0.0
-
-      - name: Install Node.js
-        uses: actions/setup-node@v3.0.0
-        with:
-          node-version: "16.x"
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Build Electron App for Linux
-        run: npm run build:linux
-        env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: Upload Linux artifact
-        uses: actions/upload-artifact@v3.0.0
-        with:
-          name: SPlayer-Linux
-          path: dist/*.AppImage
-
-  create-release:
-    needs: [build-windows, build-macos, build-linux]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v3.0.0
-        
-      - name: Create a release
-        uses: softprops/action-gh-release@v1
+          name: SPlarer-Macos
+          if-no-files-found: ignore
+          path: |
+            dist/*.dmg
+            dist/*.zip
+      # 创建 GitHub Release
+      - name: Release
+        uses: softprops/action-gh-release@v0.1.14
+        if: startsWith(github.ref, 'refs/tags/v')
         with:
           draft: true
-          files: "dist/**"
+          files: |
+            dist/*.dmg
+            dist/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+  # Linux
+  build-linux:
+    name: Build for Linux
+    runs-on: ubuntu-22.04
+    steps:
+      # 检出 Git 仓库
+      - name: Check out git repository
+        uses: actions/checkout@v4.1.1
+      # 安装 Node.js
+      - name: Install Node.js
+        uses: actions/setup-node@v4.0.0
+        with:
+          node-version: "18.x"
+      # 更新 Ubuntu 软件源
+      - name: Ubuntu Update with sudo
+        run: sudo apt-get update
+      # 安装项目依赖
+      - name: Install Dependencies
+        run: npm install
+      # 构建 Electron App
+      - name: Build Electron App for Linux
+        run: npm run build:linux || true
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+      # 上传构建产物
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v3.1.3
+        with:
+          name: SPlarer-Linux
+          if-no-files-found: ignore
+          path: |
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.rpm
+      # 创建 GitHub Release
+      - name: Release
+        uses: softprops/action-gh-release@v0.1.14
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          draft: true
+          files: |
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.rpm
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}

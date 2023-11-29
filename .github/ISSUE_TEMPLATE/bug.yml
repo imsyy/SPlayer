@@ -18,6 +18,12 @@ body:
     validations:
       required: true
     attributes:
+      label: "当前 Node.js 及 npm 版本"
+      placeholder: "v18.16.0 / v9.6.7"
+  - type: input
+    validations:
+      required: true
+    attributes:
       label: "当前版本"
       placeholder: "v1.0.0"
   - type: textarea
