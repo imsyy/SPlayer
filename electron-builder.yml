@@ -19,7 +19,7 @@ asarUnpack:
 # Windows 平台配置
 win:
   # 可执行文件名
-  executableName: splayer-desktop
+  executableName: splayer
   # 应用程序的图标文件路径
   icon: public/images/logo/favicon_256.png
   # 构建类型
@@ -47,9 +47,9 @@ nsis:
 # macOS 平台配置
 mac:
   # 可执行文件名
-  executableName: splayer-desktop
+  executableName: splayer
   # 应用程序的图标文件路径
-  icon: public/images/logo/favicon_256.png
+  icon: public/images/logo/favicon_512.png
   # 权限继承的文件路径
   entitlementsInherit: build/entitlements.mac.plist
   # 扩展信息，如权限描述
@@ -69,13 +69,12 @@ dmg:
 # Linux 平台配置
 linux:
   # 可执行文件名
-  executableName: splayer-desktop
+  executableName: splayer
   # 应用程序的图标文件路径
   icon: public/images/logo/favicon_256.png
   # 构建类型
   target:
     - AppImage
-    - portable
     - snap
     - deb
     - rpm
