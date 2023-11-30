@@ -229,6 +229,13 @@ const jumpSeek = (time) => {
   fadePlayOrPause();
 };
 
+// 主进程调用歌词滚动
+if (typeof electron !== "undefined") {
+  electron.ipcRenderer.on("lyricsScroll", () => {
+    lyricsScroll(playSongLyricIndex.value);
+  });
+}
+
 // 监听歌词滚动
 watch(
   () => playSongLyricIndex.value,

@@ -96,6 +96,9 @@ class MainProcess {
       // mainWindow.maximize();
     });
 
+    // 主窗口事件
+    this.mainWindowEvents();
+
     // 设置窗口打开处理程序
     this.mainWindow.webContents.setWindowOpenHandler((details) => {
       shell.openExternal(details.url);
@@ -153,13 +156,30 @@ class MainProcess {
       // 注销全部快捷键
       globalShortcut.unregisterAll();
     });
-
     // 当所有窗口都关闭时退出应用，macOS 除外
     app.on("window-all-closed", () => {
       if (process.platform !== "darwin") {
         app.quit();
       }
     });
+  }
+
+  // 主窗口事件
+  mainWindowEvents() {
+    this.mainWindow.on("show", () => {
+      console.info("窗口展示");
+      this.mainWindow.webContents.send("lyricsScroll");
+    });
+    // this.mainWindow.on("hide", () => {
+    //   console.info("窗口隐藏");
+    // });
+    this.mainWindow.on("focus", () => {
+      console.info("窗口获得焦点");
+      this.mainWindow.webContents.send("lyricsScroll");
+    });
+    // this.mainWindow.on("blur", () => {
+    //   console.info("窗口失去焦点");
+    // });
   }
 }
 

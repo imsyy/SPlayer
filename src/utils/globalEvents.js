@@ -1,7 +1,6 @@
 import { checkPlatform } from "@/utils/helper";
 import { playOrPause, changePlayIndex } from "@/utils/Player";
 import { siteStatus } from "@/stores";
-import "vue-slider-component/theme/default.css";
 
 const globalEvents = (router) => {
   if (!checkPlatform.electron()) return false;

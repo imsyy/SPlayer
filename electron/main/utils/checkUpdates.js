@@ -1,29 +1,30 @@
-const { autoUpdater } = require("electron-updater");
+import { dialog, shell } from "electron";
+import { is } from "@electron-toolkit/utils";
+import { autoUpdater } from "electron-updater";
 
-const checkForUpdates = () => {
-  autoUpdater.checkForUpdates();
+// 更新弹窗
+const hasNewVersion = (info) => {
+  dialog
+    .showMessageBox({
+      title: "发现新版本 v" + info.version,
+      message: "发现新版本 v" + info.version,
+      detail: "是否前往 GitHub 下载新版本安装包？",
+      buttons: ["前往", "取消"],
+      type: "question",
+      noLink: true,
+    })
+    .then((result) => {
+      if (result.response === 0) {
+        shell.openExternal("https://github.com/imsyy/SPlayer/releases");
+      }
+    });
 };
 
 export const configureAutoUpdater = () => {
-  checkForUpdates();
-
-  // 监听检查更新的事件
-  autoUpdater.on("checking-for-update", () => {
-    console.log("Checking for update...");
-  });
-
+  if (is.dev) return false;
+  autoUpdater.checkForUpdatesAndNotify();
+  // 若有更新
   autoUpdater.on("update-available", (info) => {
-    console.log("Update available:", info);
-  });
-
-  autoUpdater.on("update-not-available", () => {
-    console.log("Update not available.");
-  });
-
-  autoUpdater.on("update-downloaded", () => {
-    console.log("Update downloaded. Ready to install.");
-
-    // 在需要的时候，触发安装更新
-    autoUpdater.quitAndInstall();
+    hasNewVersion(info);
   });
 };
