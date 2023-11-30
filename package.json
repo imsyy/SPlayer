@@ -1,6 +1,6 @@
 {
   "name": "splayer",
-  "version": "2.0.0-beta.2",
+  "version": "2.0.0-beta.3",
   "description": "A minimalist music player",
   "main": "./out/main/index.js",
   "author": "imsyy",

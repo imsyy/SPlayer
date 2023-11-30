@@ -1,5 +1,5 @@
 import { join } from "path";
-import { app, shell, BrowserWindow, globalShortcut } from "electron";
+import { app, protocol, shell, BrowserWindow, globalShortcut } from "electron";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 import { startNcmServer } from "@main/startNcmServer";
 import { startMainServer } from "@main/startMainServer";
@@ -21,8 +21,8 @@ const gotTheLock = app.requestSingleInstanceLock();
 // 配置 log
 log.transports.file.resolvePathFn = () =>
   join(app.getPath("documents"), "/SPlayer/splayer-log.txt");
-// 设置日志文件的最大大小为 10 MB
-log.transports.file.maxSize = 10 * 1024 * 1024;
+// 设置日志文件的最大大小为 2 MB
+log.transports.file.maxSize = 2 * 1024 * 1024;
 // 绑定 console.log
 console.log = log.log.bind(log);
 
@@ -87,14 +87,17 @@ const createWindow = () => {
 app.whenReady().then(async () => {
   // 尝试获取单例锁
   if (!gotTheLock) {
-    // 如果获取不到单例锁，表示已经有一个实例在运行
     app.quit();
-    log.error("已有一个程序正在运行");
+    log.error("已有一个程序正在运行，本次启动阻止");
     return false;
   }
 
   // 注册应用协议
   app.setAsDefaultProtocolClient("splayer");
+  // 应用程序准备好之前注册
+  protocol.registerSchemesAsPrivileged([
+    { scheme: "app", privileges: { secure: true, standard: true } },
+  ]);
 
   // 初始化完成并准备创建浏览器窗口
   // 为 Windows 设置应用程序用户模型 ID
@@ -104,6 +107,15 @@ app.whenReady().then(async () => {
   app.on("browser-window-created", (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
+
+  // 启动网易云 API
+  await startNcmServer({
+    port: import.meta.env.MAIN_VITE_SERVER_PORT,
+    host: import.meta.env.MAIN_VITE_SERVER_HOST,
+  });
+
+  // 非开发环境启动代理
+  if (!is.dev) await startMainServer();
 
   // 创建主窗口
   createWindow();
@@ -121,17 +133,8 @@ app.whenReady().then(async () => {
     console.log("Received custom protocol URL:", url);
   });
 
-  // 启动网易云 API
-  await startNcmServer({
-    port: import.meta.env.MAIN_VITE_SERVER_PORT,
-    host: import.meta.env.MAIN_VITE_SERVER_HOST,
-  });
-
   // 引入主 Ipc
   mainIpcMain(mainWindow);
-
-  // 非开发环境启动代理
-  if (!is.dev) await startMainServer();
 
   // 注册快捷键
   createGlobalShortcut(mainWindow);

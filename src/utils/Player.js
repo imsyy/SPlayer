@@ -64,7 +64,13 @@ export const initPlayer = async (playNow = false) => {
           createPlayer(url);
         } else {
           status.playUseOtherSource = false;
-          changePlayIndex("next", true);
+          // 是否为最后一首
+          if (playIndex === playList.length - 1) {
+            status.playState = false;
+            $message.warning("当前列表歌曲无法播放，请更换歌曲");
+          } else {
+            changePlayIndex("next", true);
+          }
         }
       }
       // 下一曲
