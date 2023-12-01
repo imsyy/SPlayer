@@ -23,7 +23,7 @@ const mainIpcMain = (win) => {
   ipcMain.on("window-maxOrRestore", (ev) => {
     const winSizeState = win.isMaximized();
     winSizeState ? win.restore() : win.maximize();
-    ev.reply("window-state", win.isMaximized());
+    ev.reply("windowState", win.isMaximized());
   });
   ipcMain.on("window-restore", () => {
     win.restore();

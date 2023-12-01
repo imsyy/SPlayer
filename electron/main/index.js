@@ -7,6 +7,7 @@ import { configureAutoUpdater } from "@main/utils/checkUpdates";
 import createSystemInfo from "@main/utils/createSystemInfo";
 import createGlobalShortcut from "@main/utils/createGlobalShortcut";
 import mainIpcMain from "@main/mainIpcMain";
+import Store from "electron-store";
 import log from "electron-log";
 
 // 屏蔽报错
@@ -17,8 +18,11 @@ log.transports.file.resolvePathFn = () =>
   join(app.getPath("documents"), "/SPlayer/splayer-log.txt");
 // 设置日志文件的最大大小为 2 MB
 log.transports.file.maxSize = 2 * 1024 * 1024;
-// 绑定 console.log
-console.log = log.log.bind(log);
+// 绑定 console 事件
+console.error = log.error.bind(log);
+console.warn = log.warn.bind(log);
+console.info = log.info.bind(log);
+console.debug = log.debug.bind(log);
 
 // 主进程
 class MainProcess {
@@ -29,6 +33,14 @@ class MainProcess {
     this.mainServer = null;
     // 网易云 API
     this.ncmServer = null;
+    // Store
+    this.store = new Store({
+      // 窗口大小
+      windowSize: {
+        width: { type: "number", default: 1280 },
+        height: { type: "number", default: 740 },
+      },
+    });
     // 初始化
     this.init();
   }
@@ -69,8 +81,8 @@ class MainProcess {
   createWindow() {
     // 创建浏览器窗口
     this.mainWindow = new BrowserWindow({
-      width: 1280, // 窗口宽度
-      height: 720, // 窗口高度
+      width: this.store.get("windowSize.width") || 1280, // 窗口宽度
+      height: this.store.get("windowSize.height") || 740, // 窗口高度
       minHeight: 700, // 最小高度
       minWidth: 1200, // 最小宽度
       center: true, // 是否出现在屏幕居中的位置
@@ -91,9 +103,10 @@ class MainProcess {
     });
 
     // 窗口准备就绪时显示窗口
-    this.mainWindow.on("ready-to-show", () => {
+    this.mainWindow.once("ready-to-show", () => {
       this.mainWindow.show();
       // mainWindow.maximize();
+      this.store.set("windowSize", this.mainWindow.getBounds());
     });
 
     // 主窗口事件
@@ -139,23 +152,28 @@ class MainProcess {
       // 注册快捷键
       createGlobalShortcut(this.mainWindow);
     });
+
     // 在开发模式下默认通过 F12 打开或关闭 DevTools
     app.on("browser-window-created", (_, window) => {
       optimizer.watchWindowShortcuts(window);
     });
+
     // 在 macOS 上，当单击 Dock 图标且没有其他窗口时，通常会重新创建窗口
     app.on("activate", () => {
       if (BrowserWindow.getAllWindows().length === 0) this.createWindow();
     });
+
     // 自定义协议
     app.on("open-url", (_, url) => {
       console.log("Received custom protocol URL:", url);
     });
+
     // 将要退出
     app.on("will-quit", () => {
       // 注销全部快捷键
       globalShortcut.unregisterAll();
     });
+
     // 当所有窗口都关闭时退出应用，macOS 除外
     app.on("window-all-closed", () => {
       if (process.platform !== "darwin") {
@@ -167,19 +185,36 @@ class MainProcess {
   // 主窗口事件
   mainWindowEvents() {
     this.mainWindow.on("show", () => {
-      console.info("窗口展示");
       this.mainWindow.webContents.send("lyricsScroll");
     });
+
     // this.mainWindow.on("hide", () => {
     //   console.info("窗口隐藏");
     // });
+
     this.mainWindow.on("focus", () => {
-      console.info("窗口获得焦点");
       this.mainWindow.webContents.send("lyricsScroll");
     });
+
     // this.mainWindow.on("blur", () => {
     //   console.info("窗口失去焦点");
     // });
+
+    this.mainWindow.on("maximize", () => {
+      this.mainWindow.webContents.send("windowState", true);
+    });
+
+    this.mainWindow.on("unmaximize", () => {
+      this.mainWindow.webContents.send("windowState", false);
+    });
+
+    this.mainWindow.on("resized", () => {
+      this.store.set("windowSize", this.mainWindow.getBounds());
+    });
+
+    this.mainWindow.on("moved", () => {
+      this.store.set("windowSize", this.mainWindow.getBounds());
+    });
   }
 }
 

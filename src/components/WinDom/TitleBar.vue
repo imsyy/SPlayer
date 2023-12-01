@@ -36,7 +36,7 @@
       title="关闭软件"
       transform-origin="center"
     >
-      <n-text>确认关闭软件吗？</n-text>
+      <n-text class="close-tip">确认关闭软件吗？</n-text>
       <n-checkbox v-model:checked="closeTipCheckbox"> 记住且不再询问 </n-checkbox>
       <template #footer>
         <n-space justify="space-between">
@@ -127,7 +127,7 @@ const closeCloseTip = (type) => {
 };
 
 // 窗口状态响应
-electron.ipcRenderer.on("window-state", (_, val) => {
+electron.ipcRenderer.on("windowState", (_, val) => {
   defaultWindowState.value = val;
 });
 
@@ -149,5 +149,9 @@ onBeforeUnmount(() => {
       margin-left: 0;
     }
   }
+}
+.close-tip {
+  font-size: 16px;
+  margin-bottom: 8px;
 }
 </style>

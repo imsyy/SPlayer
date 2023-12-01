@@ -63,12 +63,14 @@ export const initPlayer = async (playNow = false) => {
           status.playUseOtherSource = true;
           createPlayer(url);
         } else {
+          isPlayEnd = true;
           status.playUseOtherSource = false;
           // 是否为最后一首
           if (playIndex === playList.length - 1) {
             status.playState = false;
             $message.warning("当前列表歌曲无法播放，请更换歌曲");
           } else {
+            $message.error("该歌曲暂无音源，跳至下一首");
             changePlayIndex("next", true);
           }
         }
@@ -159,7 +161,6 @@ const getFromUnblockMusic = async (data, status, playNow) => {
     // 调用解灰
     let musicUrl = await electron.ipcRenderer.invoke("getMusicNumUrl", JSON.stringify(data));
     if (!musicUrl) {
-      $message.error("该歌曲暂无音源");
       status.playLoading = false;
       return null;
     }
@@ -372,7 +373,6 @@ export const changePlayIndex = async (type = "next", play = false) => {
     const songData = playList?.[music.playIndex];
     if (songData) {
       music.playSongData = songData;
-      console.log(songData);
       // 渐出音乐
       if (!isPlayEnd) await fadePlayOrPause("pause");
       // 初始化播放器

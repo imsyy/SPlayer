@@ -342,27 +342,30 @@ const playAllSongs = async () => {
   if (!playListData.value) return false;
   // 关闭心动模式
   playHeartbeatMode.value = false;
+  // 更改模式和歌单
+  playMode.value = "normal";
+  playList.value = playListData.value.slice();
   // 是否处于歌单内
   const songId = music.getPlaySongData?.id;
-  const isHas = playListData.value.some((song) => song.id === songId);
+  const existingIndex = playListData.value.findIndex((song) => song.id === songId);
   // 若不处于
-  if (!isHas || !songId) {
+  if (existingIndex === -1 || !songId) {
     console.log("不在歌单内");
-    // 更改模式
-    playMode.value = "normal";
-    playList.value = playListData.value.slice();
     playSongData.value = playListData.value[0];
     playIndex.value = 0;
     // 初始化播放器
     initPlayer(true);
   } else {
+    console.log("处于歌单内");
+    playSongData.value = playListData.value[existingIndex];
+    playIndex.value = existingIndex;
     // 播放
     await fadePlayOrPause();
   }
   $message.info("已开始播放", { showIcon: false });
 };
 
-// 本地歌曲模糊搜索
+// 歌曲模糊搜索
 const localSearch = debounce((val) => {
   const searchValue = val?.trim();
   // 是否为空

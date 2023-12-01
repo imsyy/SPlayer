@@ -21,7 +21,9 @@
         <n-tab-pane name="login-qr" tab="扫码登录">
           <loginQRCode @setLoginData="setLoginData" />
         </n-tab-pane>
-        <n-tab-pane name="login-phone" tab="验证码登录"> 444 </n-tab-pane>
+        <n-tab-pane name="login-phone" tab="验证码登录">
+          <loginPhone />
+        </n-tab-pane>
       </n-tabs>
       <!-- 关闭登录弹窗 -->
       <n-button
@@ -168,7 +170,7 @@ onBeforeMount(() => {
   .close {
     position: absolute;
     bottom: -58px;
-    background-color: var(--n-color-embedded);
+    background-color: var(--n-color-modal);
     &:hover {
       background-color: var(--n-color-embedded);
     }

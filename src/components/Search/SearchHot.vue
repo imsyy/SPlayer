@@ -180,6 +180,7 @@ onBeforeMount(() => {
       margin-top: 8px;
       .n-tag {
         font-size: 13px;
+        background-color: var(--n-action-color);
         transition:
           background-color 0.3s,
           transform 0.3s,

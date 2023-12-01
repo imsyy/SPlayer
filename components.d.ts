@@ -15,6 +15,7 @@ declare module 'vue' {
     DownloadSong: typeof import('./src/components/Modal/DownloadSong.vue')['default']
     FullPlayer: typeof import('./src/components/Player/FullPlayer.vue')['default']
     Login: typeof import('./src/components/Modal/Login.vue')['default']
+    LoginPhone: typeof import('./src/components/Modal/LoginPhone.vue')['default']
     LoginQRCode: typeof import('./src/components/Modal/LoginQRCode.vue')['default']
     Lyric: typeof import('./src/components/Player/Lyric.vue')['default']
     MainControl: typeof import('./src/components/Player/MainControl.vue')['default']

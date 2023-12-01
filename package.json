@@ -28,6 +28,7 @@
     "axios": "^1.4.0",
     "colorthief": "^2.4.0",
     "electron-dl": "^3.5.1",
+    "electron-store": "^8.1.0",
     "electron-updater": "^6.1.7",
     "express": "^4.18.2",
     "express-http-proxy": "^1.6.3",
