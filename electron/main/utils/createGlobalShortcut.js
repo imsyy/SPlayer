@@ -7,7 +7,7 @@ import { globalShortcut } from "electron";
 const createGlobalShortcut = (win) => {
   // 刷新程序
   globalShortcut.register("CommandOrControl+R", () => {
-    win?.reload();
+    if (win && win.isFocused()) win?.reload();
   });
 };
 

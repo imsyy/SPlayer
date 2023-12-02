@@ -68,6 +68,7 @@
           <!-- 播放暂停 -->
           <n-button
             :loading="playLoading"
+            :keyboard="false"
             class="play-control"
             strong
             secondary

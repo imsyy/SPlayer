@@ -14,6 +14,8 @@ const createSystemInfo = (win) => {
   app.setUserTasks([]);
   // 系统托盘
   const mainTray = new Tray(join(__dirname, "../../public/images/logo/favicon.png"));
+  // 默认托盘菜单
+  Menu.setApplicationMenu(Menu.buildFromTemplate(createTrayMenu(win)));
   // 给托盘图标设置气球提示
   mainTray.setToolTip(app.getName());
   // 歌曲数据改变时
@@ -36,6 +38,10 @@ const createSystemInfo = (win) => {
   mainTray.on("right-click", () => {
     mainTray.popUpContextMenu(Menu.buildFromTemplate(createTrayMenu(win)));
   });
+  // linux 右键菜单
+  if (process.platform === "linux") {
+    mainTray.setContextMenu(Menu.buildFromTemplate(createTrayMenu(win)));
+  }
 };
 
 // 生成右键菜单
@@ -69,6 +75,7 @@ const createTrayMenu = (win) => {
     {
       label: "上一曲",
       icon: createIcon("prev"),
+      accelerator: "CommandOrControl+Left",
       click: () => {
         win.webContents.send("playNextOrPrev", "prev");
       },
@@ -76,6 +83,7 @@ const createTrayMenu = (win) => {
     {
       label: playSongState ? "暂停" : "播放",
       icon: createIcon(playSongState ? "pause" : "play"),
+      accelerator: "Space",
       click: () => {
         win.webContents.send("playOrPause");
       },
@@ -83,6 +91,7 @@ const createTrayMenu = (win) => {
     {
       label: "下一曲",
       icon: createIcon("next"),
+      accelerator: "CommandOrControl+Right",
       click: () => {
         win.webContents.send("playNextOrPrev", "next");
       },

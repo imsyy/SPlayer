@@ -42,18 +42,38 @@ class MainProcess {
       },
     });
     // 初始化
-    this.init();
+    this.checkApp().then((lockObtained) => {
+      if (lockObtained) {
+        this.init();
+      }
+    });
+  }
+
+  // 检查上次程序
+  async checkApp() {
+    if (!app.requestSingleInstanceLock()) {
+      log.error("已有一个程序正在运行，本次启动阻止");
+      app.quit();
+      // 未获得锁
+      return false;
+    }
+    // 聚焦到当前程序
+    else {
+      app.on("second-instance", () => {
+        if (this.mainWindow) {
+          this.mainWindow.show();
+          if (this.mainWindow.isMinimized()) this.mainWindow.restore();
+          this.mainWindow.focus();
+        }
+      });
+      // 获得锁
+      return true;
+    }
   }
 
   // 初始化程序
   async init() {
     log.info("主进程初始化");
-
-    // 单例锁
-    if (!app.requestSingleInstanceLock()) {
-      app.quit();
-      log.error("已有一个程序正在运行，本次启动阻止");
-    }
 
     // 启动网易云 API
     this.ncmServer = await startNcmServer({

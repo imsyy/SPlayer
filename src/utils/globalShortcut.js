@@ -12,10 +12,10 @@ const globalShortcut = (e) => {
   e.stopPropagation();
 
   // 播放或暂停
-  if (e.ctrlKey && e.code === "Space") playOrPause();
+  if (e.code === "Space") playOrPause();
 
   // 调整音量
-  if (e.ctrlKey && (e.code === "ArrowUp" || e.code === "ArrowDown")) {
+  if (e.code === "ArrowUp" || e.code === "ArrowDown") {
     const music = musicData();
     const volume = music.playVolume;
     const delta = e.code === "ArrowUp" ? 0.1 : -0.1;

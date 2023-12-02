@@ -94,6 +94,27 @@ const music = musicData();
 const status = siteStatus();
 const settings = siteSettings();
 
+// 公告数据
+const annShow =
+  import.meta.env.RENDERER_VITE_ANN_TITLE && import.meta.env.RENDERER_VITE_ANN_CONTENT
+    ? true
+    : false;
+const annType = import.meta.env.RENDERER_VITE_ANN_TYPE;
+const annTitle = import.meta.env.RENDERER_VITE_ANN_TITLE;
+const annContene = import.meta.env.RENDERER_VITE_ANN_CONTENT;
+const annDuration = Number(import.meta.env.RENDERER_VITE_ANN_DURATION);
+
+// 显示公告
+const showAnnouncements = () => {
+  if (annShow) {
+    $notification[annType]({
+      content: annTitle,
+      meta: annContene,
+      duration: annDuration,
+    });
+  }
+};
+
 // 网络无法连接
 const canNotConnect = (error) => {
   console.error("网络连接错误：", error.message);
@@ -120,11 +141,13 @@ onMounted(() => {
   // 全局事件
   globalEvents(router);
   // 键盘监听
-  window.addEventListener("keyup", globalShortcut);
+  if (!checkPlatform.electron()) window.addEventListener("keyup", globalShortcut);
+  // 显示公告
+  showAnnouncements();
 });
 
 onUnmounted(() => {
-  window.removeEventListener("keyup", globalShortcut);
+  if (!checkPlatform.electron()) window.removeEventListener("keyup", globalShortcut);
 });
 </script>
 

@@ -28,6 +28,14 @@
     </div>
     <!-- 搜索框 -->
     <SearchInp />
+    <!-- GitHub -->
+    <n-button class="github" circle quaternary @click="openGithub">
+      <template #icon>
+        <n-icon size="20">
+          <SvgIcon icon="github" />
+        </n-icon>
+      </template>
+    </n-button>
     <!-- 用户信息 -->
     <userData />
   </nav>
@@ -36,12 +44,19 @@
 <script setup>
 import { siteStatus } from "@/stores";
 import { useRouter } from "vue-router";
+import packageJson from "@/../package.json";
 
 const router = useRouter();
 const status = siteStatus();
 
 // 站点信息
 const siteName = import.meta.env.RENDERER_VITE_SITE_TITLE;
+
+// 打开 GitHub
+const openGithub = () => {
+  console.log(packageJson.github);
+  window.open(packageJson.github);
+};
 </script>
 
 <style lang="scss" scoped>
@@ -100,6 +115,10 @@ const siteName = import.meta.env.RENDERER_VITE_SITE_TITLE;
         font-size: 24px;
       }
     }
+  }
+  .github {
+    margin-left: 12px;
+    -webkit-app-region: no-drag;
   }
 }
 </style>
