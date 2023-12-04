@@ -46,9 +46,6 @@ const useSiteDataStore = defineStore("siteData", {
         catList: [], // 普通分类
         hqCatList: [], // 精品分类
       },
-      // 封面主题
-      coverTheme: {},
-      coverBackground: null,
     };
   },
   getters: {

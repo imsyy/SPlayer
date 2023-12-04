@@ -25,6 +25,9 @@ const useSiteStatusStore = defineStore("siteStatus", {
       playSeek: 0,
       // 是否下一首
       hasNextSong: false,
+      // 封面主题
+      coverTheme: {},
+      coverBackground: null,
     };
   },
   getters: {},

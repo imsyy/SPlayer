@@ -1,6 +1,6 @@
 import { join } from "path";
 import { app, protocol, shell, BrowserWindow, globalShortcut } from "electron";
-import { optimizer, is } from "@electron-toolkit/utils";
+import { platform, optimizer, is } from "@electron-toolkit/utils";
 import { startNcmServer } from "@main/startNcmServer";
 import { startMainServer } from "@main/startMainServer";
 import { configureAutoUpdater } from "@main/utils/checkUpdates";
@@ -49,7 +49,7 @@ class MainProcess {
     });
   }
 
-  // 检查上次程序
+  // 单例锁
   async checkApp() {
     if (!app.requestSingleInstanceLock()) {
       log.error("已有一个程序正在运行，本次启动阻止");
@@ -164,7 +164,7 @@ class MainProcess {
       // 创建主窗口
       this.createWindow();
       // 检测更新
-      configureAutoUpdater(process.platform);
+      configureAutoUpdater();
       // 创建系统信息
       createSystemInfo(this.mainWindow);
       // 引入主 Ipc
@@ -173,7 +173,7 @@ class MainProcess {
       createGlobalShortcut(this.mainWindow);
     });
 
-    // 在开发模式下默认通过 F12 打开或关闭 DevTools
+    // 开发环境下 F12 打开控制台
     app.on("browser-window-created", (_, window) => {
       optimizer.watchWindowShortcuts(window);
     });
@@ -196,7 +196,7 @@ class MainProcess {
 
     // 当所有窗口都关闭时退出应用，macOS 除外
     app.on("window-all-closed", () => {
-      if (process.platform !== "darwin") {
+      if (!platform.isMacOS) {
         app.quit();
       }
     });

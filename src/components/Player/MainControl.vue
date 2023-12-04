@@ -171,7 +171,7 @@
         <!-- 播放暂停 -->
         <n-button
           :loading="playLoading"
-          :keyboard="false"
+          tag="div"
           type="primary"
           class="play-control"
           strong

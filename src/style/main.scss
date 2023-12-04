@@ -12,7 +12,6 @@ body,
   height: 100vh;
   font-family: "HarmonyOS_Regular", sans-serif !important;
   overflow: hidden;
-  background-color: var(--main-color-bg) !important;
 }
 
 // n-text
@@ -167,14 +166,5 @@ body,
 .n-image-preview-container {
   .n-image-preview-overlay {
     backdrop-filter: blur(16px);
-  }
-}
-
-// n-switch
-.n-switch {
-  &.n-switch--active {
-    .n-switch__rail {
-      background-color: var(--main-second-color);
-    }
   }
 }

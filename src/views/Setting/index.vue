@@ -1,6 +1,6 @@
 <!-- 全局设置 -->
 <template>
-  <div class="setting">
+  <div :class="{ setting: true, 'use-cover': themeAutoCover }">
     <n-h1 class="title">
       <n-text>全局设置</n-text>
       <n-text class="version" depth="3">v&nbsp;{{ packageJson.version }}</n-text>
@@ -24,7 +24,7 @@
       ref="setScrollRef"
       :style="{
         height: `calc(100vh - ${
-          Object.keys(music.getPlaySongData)?.length && status.showPlayBar ? 328 : 248
+          Object.keys(music.getPlaySongData)?.length && showPlayBar ? 328 : 248
         }px)`,
       }"
       class="all-set"
@@ -92,6 +92,7 @@
           <n-switch
             v-model:value="themeAutoCover"
             :round="false"
+            :disabled="Object.keys(coverTheme)?.length === 0"
             @update:value="themeAutoCoverChange"
           />
         </n-card>
@@ -387,6 +388,10 @@
       <div class="set-type">
         <n-h3 prefix="bar"> 其他 </n-h3>
         <n-card class="set-item">
+          <div class="name">是否显示 GitHub 仓库按钮</div>
+          <n-switch v-model:value="showGithub" :round="false" />
+        </n-card>
+        <n-card class="set-item">
           <div class="name">
             默认加载数量
             <n-text class="tip">在部分列表页面显示几条数据</n-text>
@@ -426,15 +431,15 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { useOsTheme } from "naive-ui";
-import { siteSettings, siteStatus, musicData, siteData } from "@/stores";
+import { siteSettings, siteStatus, musicData } from "@/stores";
 import { checkPlatform } from "@/utils/helper";
 import debounce from "@/utils/debounce";
 import packageJson from "@/../package.json";
 
 const music = musicData();
 const status = siteStatus();
-const data = siteData();
 const settings = siteSettings();
+const { showPlayBar, coverTheme } = storeToRefs(status);
 const {
   themeType,
   themeTypeName,
@@ -464,6 +469,7 @@ const {
   bottomLyricShow,
   downloadPath,
   memorySeek,
+  showGithub,
 } = storeToRefs(settings);
 
 // 标签页数据
@@ -515,9 +521,9 @@ const songLevelData = {
 
 // 封面自动跟随变化
 const themeAutoCoverChange = (val) => {
-  typeof $changeThemeColor !== "undefined" && val
-    ? $changeThemeColor(data.coverTheme, val)
-    : $changeThemeColor(themeTypeName.value, val);
+  if ($changeThemeColor !== "undefined" && Object.keys(coverTheme.value)?.length) {
+    $changeThemeColor(val ? coverTheme.value : themeTypeName.value, val);
+  }
 };
 
 // 标签页切换
@@ -631,6 +637,15 @@ const resetApp = () => {
         @media (max-width: 768px) {
           width: 140px;
           min-width: 140px;
+        }
+      }
+    }
+  }
+  &.use-cover {
+    .n-switch {
+      &.n-switch--active {
+        :deep(.n-switch__rail) {
+          background-color: var(--main-second-color);
         }
       }
     }

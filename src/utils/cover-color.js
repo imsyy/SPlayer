@@ -4,7 +4,7 @@ import {
   Hct,
   Score,
 } from "@material/material-color-utilities";
-import { siteData, siteSettings } from "@/stores";
+import { siteSettings, siteStatus } from "@/stores";
 import { getGradientFromPalette, argb2Rgb, rgb2Argb } from "@/utils/color-utils";
 import { chunk } from "@/utils/helper";
 import ColorThief from "colorthief";
@@ -45,7 +45,7 @@ export const getCoverGradient = (coverSrc) => {
  */
 const calcAccentColor = (dom) => {
   // pinia
-  const data = siteData();
+  const status = siteStatus();
   const settings = siteSettings();
   // 创建一个用于提取颜色的 canvas
   const canvas = document.createElement("canvas");
@@ -77,11 +77,11 @@ const calcAccentColor = (dom) => {
   const top = ranked[0];
   const theme = themeFromSourceColor(top);
   // 错误 error, 中性 neutral, 中性的变体 neutralVariant, 主要的 primary, 二次 secondary, 三级 tertiary
-  const variant = window.accentColorVariant ?? "secondary";
+  const variant = "secondary";
   // 更新主题色
-  data.coverTheme = {
-    light: {
-      light: getAccentColor(theme.schemes.dark[variant]),
+  status.coverTheme = {
+    dark: {
+      dark: getAccentColor(theme.schemes.dark[variant]),
       primary: getAccentColor(
         Hct.from(theme.palettes[variant].hue, theme.palettes[variant].chroma, 100).toInt(),
       ),
@@ -94,9 +94,12 @@ const calcAccentColor = (dom) => {
       bg: getAccentColor(
         Hct.from(theme.palettes.secondary.hue, theme.palettes.secondary.chroma, 90).toInt(),
       ),
+      mainBg: getAccentColor(
+        Hct.from(theme.palettes.secondary.hue, theme.palettes.secondary.chroma, 10).toInt(),
+      ),
     },
-    dark: {
-      dark: getAccentColor(theme.schemes.dark[variant]),
+    light: {
+      light: getAccentColor(theme.schemes.light[variant]),
       primary: getAccentColor(
         Hct.from(theme.palettes[variant].hue, theme.palettes[variant].chroma, 20).toInt(),
       ),
@@ -110,13 +113,13 @@ const calcAccentColor = (dom) => {
         Hct.from(theme.palettes.secondary.hue, theme.palettes.secondary.chroma, 20).toInt(),
       ),
       mainBg: getAccentColor(
-        Hct.from(theme.palettes.secondary.hue, theme.palettes.secondary.chroma, 10).toInt(),
+        Hct.from(theme.palettes.secondary.hue, theme.palettes.secondary.chroma, 100).toInt(),
       ),
     },
   };
   // 尝试更新主题色
   if (typeof $changeThemeColor !== "undefined" && settings.themeAutoCover) {
-    $changeThemeColor(data.coverTheme, settings.themeAutoCover);
+    $changeThemeColor(status.coverTheme, settings.themeAutoCover);
   }
 };
 
@@ -125,17 +128,18 @@ const calcAccentColor = (dom) => {
  */
 const useGreyAccentColor = () => {
   // pinia
-  const data = siteData();
-  data.coverTheme = {
-    light: {
-      light: getAccentColor(rgb2Argb(120, 120, 120)),
+  const status = siteStatus();
+  status.coverTheme = {
+    dark: {
+      dark: getAccentColor(rgb2Argb(120, 120, 120)),
       primary: getAccentColor(rgb2Argb(250, 250, 250)),
       shade: getAccentColor(rgb2Argb(40, 40, 40)),
       shadeTwo: getAccentColor(rgb2Argb(20, 20, 20)),
       bg: getAccentColor(rgb2Argb(190, 190, 190)),
+      mainBg: getAccentColor(rgb2Argb(11, 11, 11)),
     },
-    dark: {
-      dark: getAccentColor(rgb2Argb(150, 150, 150)),
+    light: {
+      light: getAccentColor(rgb2Argb(150, 150, 150)),
       primary: getAccentColor(rgb2Argb(10, 10, 10)),
       shade: getAccentColor(rgb2Argb(210, 210, 210)),
       shadeTwo: getAccentColor(rgb2Argb(255, 255, 255)),

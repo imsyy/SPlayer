@@ -1,5 +1,5 @@
 import { Howl, Howler } from "howler";
-import { musicData, siteStatus, siteSettings, siteData } from "@/stores";
+import { musicData, siteStatus, siteSettings } from "@/stores";
 import { getSongUrl, getSongLyric, songScrobble } from "@/api/song";
 import { checkPlatform, getLocalCoverData } from "@/utils/helper";
 import { decode as base642Buffer } from "@/utils/base64";
@@ -673,17 +673,17 @@ const initMediaSession = async (data, islocal, cover) => {
  * @returns {string} - 主要颜色的RGB十六进制表示
  */
 const getColorMainColor = async (islocal, cover) => {
-  const data = siteData();
+  const status = siteStatus();
   try {
     // 获取封面图像的URL
-    if (!cover) return (data.coverColor = {});
+    if (!cover) return (status.coverColor = {});
     const colorUrl = islocal ? cover : cover.s;
     // 获取渐变色背景
     const gradientColor = await getCoverGradient(colorUrl);
-    data.coverBackground = gradientColor;
+    status.coverBackground = gradientColor;
   } catch (error) {
     console.error("封面颜色获取失败：", error);
-    data.coverColor = {};
+    status.coverColor = {};
   }
 };
 

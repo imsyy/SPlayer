@@ -29,25 +29,28 @@
     <!-- 搜索框 -->
     <SearchInp />
     <!-- GitHub -->
-    <n-button class="github" circle quaternary @click="openGithub">
-      <template #icon>
-        <n-icon size="20">
-          <SvgIcon icon="github" />
-        </n-icon>
-      </template>
-    </n-button>
+    <Transition name="fade" mode="out-in">
+      <n-button v-if="setting.showGithub" class="github" circle quaternary @click="openGithub">
+        <template #icon>
+          <n-icon size="20">
+            <SvgIcon icon="github" />
+          </n-icon>
+        </template>
+      </n-button>
+    </Transition>
     <!-- 用户信息 -->
     <userData />
   </nav>
 </template>
 
 <script setup>
-import { siteStatus } from "@/stores";
+import { siteStatus, siteSettings } from "@/stores";
 import { useRouter } from "vue-router";
 import packageJson from "@/../package.json";
 
 const router = useRouter();
 const status = siteStatus();
+const setting = siteSettings();
 
 // 站点信息
 const siteName = import.meta.env.RENDERER_VITE_SITE_TITLE;

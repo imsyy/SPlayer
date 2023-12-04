@@ -2,21 +2,21 @@
 <template>
   <div class="title-bar">
     <n-divider vertical />
-    <n-button class="bar-icon" quaternary circle @click="windowMin">
+    <n-button class="bar-icon" tag="div" quaternary circle @click="windowMin">
       <template #icon>
         <n-icon :depth="2">
           <SvgIcon icon="window-minimize" />
         </n-icon>
       </template>
     </n-button>
-    <n-button class="bar-icon" quaternary circle @click="maxOrRestore">
+    <n-button class="bar-icon" tag="div" quaternary circle @click="maxOrRestore">
       <template #icon>
         <n-icon :depth="2">
           <SvgIcon :icon="defaultWindowState ? 'window-restore' : 'window-maximize'" />
         </n-icon>
       </template>
     </n-button>
-    <n-button class="bar-icon" quaternary circle @click="openCloseTip">
+    <n-button class="bar-icon" tag="div" quaternary circle @click="openCloseTip">
       <template #icon>
         <n-icon :depth="2">
           <SvgIcon icon="window-close" />

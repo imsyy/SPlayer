@@ -1,7 +1,7 @@
 <template>
   <Provider>
     <!-- 主框架 -->
-    <n-layout :class="['all-layout', status.showFullPlayer ? 'full-player' : null]">
+    <n-layout class="all-layout">
       <!-- 导航栏 -->
       <n-layout-header bordered>
         <MainNav />
@@ -182,9 +182,6 @@ onUnmounted(() => {
     .main-layout {
       padding: 24px;
     }
-  }
-  &.full-player {
-    transform: scale(0.95);
   }
 }
 </style>

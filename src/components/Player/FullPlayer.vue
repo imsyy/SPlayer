@@ -4,8 +4,8 @@
     <div
       v-if="showFullPlayer"
       :style="{
-        '--cover-main-color': `rgb(${coverTheme?.dark?.shadeTwo})` || '#efefef',
-        '--cover-second-color': `rgba(${coverTheme?.dark?.shadeTwo}, 0.14)` || '#efefef14',
+        '--cover-main-color': `rgb(${coverTheme?.light?.shadeTwo})` || '#efefef',
+        '--cover-second-color': `rgba(${coverTheme?.light?.shadeTwo}, 0.14)` || '#efefef14',
         '--cover-bg': coverBackground,
         cursor: playerControlShow ? 'auto' : 'none',
       }"
@@ -183,20 +183,24 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
-import { musicData, siteStatus, siteSettings, siteData } from "@/stores";
+import { musicData, siteStatus, siteSettings } from "@/stores";
 import screenfull from "screenfull";
 import throttle from "@/utils/throttle";
 
 const router = useRouter();
-const data = siteData();
 const music = musicData();
 const status = siteStatus();
 const settings = siteSettings();
 const { playList, playSongLyric } = storeToRefs(music);
 const { playerBackgroundType, showYrc } = storeToRefs(settings);
-const { coverTheme, coverBackground } = storeToRefs(data);
-const { playerControlShow, controlTimeOut, showFullPlayer, playUseOtherSource } =
-  storeToRefs(status);
+const {
+  playerControlShow,
+  controlTimeOut,
+  showFullPlayer,
+  playUseOtherSource,
+  coverTheme,
+  coverBackground,
+} = storeToRefs(status);
 
 // 全屏状态
 const screenfullStatus = ref(false);

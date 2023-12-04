@@ -1,4 +1,5 @@
 import { join } from "path";
+import { platform } from "@electron-toolkit/utils";
 import { Tray, Menu, app, ipcMain, nativeImage, nativeTheme } from "electron";
 
 // 当前播放歌曲数据
@@ -39,7 +40,7 @@ const createSystemInfo = (win) => {
     mainTray.popUpContextMenu(Menu.buildFromTemplate(createTrayMenu(win)));
   });
   // linux 右键菜单
-  if (process.platform === "linux") {
+  if (platform.isLinux) {
     mainTray.setContextMenu(Menu.buildFromTemplate(createTrayMenu(win)));
   }
 };
@@ -75,7 +76,7 @@ const createTrayMenu = (win) => {
     {
       label: "上一曲",
       icon: createIcon("prev"),
-      accelerator: "CommandOrControl+Left",
+      accelerator: "CmdOrCtrl+Left",
       click: () => {
         win.webContents.send("playNextOrPrev", "prev");
       },
@@ -83,7 +84,7 @@ const createTrayMenu = (win) => {
     {
       label: playSongState ? "暂停" : "播放",
       icon: createIcon(playSongState ? "pause" : "play"),
-      accelerator: "Space",
+      accelerator: "CmdOrCtrl+Space",
       click: () => {
         win.webContents.send("playOrPause");
       },
@@ -91,7 +92,7 @@ const createTrayMenu = (win) => {
     {
       label: "下一曲",
       icon: createIcon("next"),
-      accelerator: "CommandOrControl+Right",
+      accelerator: "CmdOrCtrl+Right",
       click: () => {
         win.webContents.send("playNextOrPrev", "next");
       },
