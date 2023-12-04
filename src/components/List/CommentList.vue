@@ -293,7 +293,7 @@ const toLikeComment = throttle(
         width: 100%;
         padding: 4px 8px;
         border-radius: 8px;
-        background-color: var(--n-border-color);
+        background-color: var(--main-second-color);
         font-size: 13px;
         margin-top: 6px;
         box-sizing: border-box;

@@ -68,61 +68,105 @@
       <div
         :class="{
           content: true,
-          'no-lrc': !playSongLyric.lrc?.[0] && playSongLyric.lrc?.length <= 4,
+          'no-lrc': !isHasLrc,
         }"
       >
         <!-- 封面 -->
+        <PlayerCover />
+        <!-- 信息 -->
         <Transition name="fade" mode="out-in">
-          <div :key="music.getPlaySongData.id" class="cover">
-            <n-image
-              :src="
-                music.getPlaySongData?.coverSize?.l ||
-                music.getPlaySongData?.cover ||
-                music.getPlaySongData?.localCover
-              "
-              class="cover-img"
-              preview-disabled
-              @load="
-                (e) => {
-                  e.target.style.opacity = 1;
-                }
-              "
-            >
-              <template #placeholder>
-                <div class="cover-loading">
-                  <img class="loading-img" src="/images/pic/song.jpg?assest" alt="loading-img" />
+          <div v-if="playCoverType === 'cover' || !isHasLrc" :class="['data', playCoverType]">
+            <div class="desc">
+              <div class="title">
+                <span class="name">{{ music.getPlaySongData.name || "未知曲目" }}</span>
+                <n-popover :show-arrow="false" placement="right-start" trigger="hover" raw>
+                  <template #trigger>
+                    <n-tag
+                      v-show="playUseOtherSource"
+                      :style="{
+                        color: `rgb(${coverTheme?.light?.shadeTwo})` || '#efefef',
+                        backgroundColor:
+                          `rgba(${coverTheme?.light?.shadeTwo}, 0.14)` || '#efefef14',
+                      }"
+                      round
+                    >
+                      其他音源
+                    </n-tag>
+                  </template>
+                  <div
+                    :style="{
+                      color: `rgb(${coverTheme?.light?.shadeTwo})` || '#efefef',
+                      backgroundColor: `rgba(${coverTheme?.light?.shadeTwo}, 0.14)` || '#efefef14',
+                    }"
+                    class="title-tip"
+                  >
+                    <span>该歌曲暂时无法播放，为您采用其他音源，可能会与原曲存在差别</span>
+                  </div>
+                </n-popover>
+              </div>
+              <span v-if="music.getPlaySongData.alia" class="alia">
+                {{ music.getPlaySongData.alia }}
+              </span>
+              <div class="artist">
+                <n-icon depth="3" size="20">
+                  <SvgIcon icon="account-music" />
+                </n-icon>
+                <div v-if="Array.isArray(music.getPlaySongData.artists)" class="all-ar">
+                  <span
+                    v-for="ar in music.getPlaySongData.artists"
+                    :key="ar.id"
+                    class="ar"
+                    @click.stop="
+                      () => {
+                        showFullPlayer = false;
+                        router.push(`/artist?id=${ar.id}`);
+                      }
+                    "
+                  >
+                    {{ ar.name }}
+                  </span>
                 </div>
-              </template>
-            </n-image>
-            <!-- 封面背板 -->
-            <n-image
-              class="cover-shadow"
-              preview-disabled
-              :src="
-                music.getPlaySongData?.coverSize?.l ||
-                music.getPlaySongData?.cover ||
-                music.getPlaySongData?.localCover
-              "
-            />
+                <div v-else class="all-ar">
+                  <span class="ar"> {{ music.getPlaySongData.artists || "未知艺术家" }} </span>
+                </div>
+              </div>
+              <div
+                class="album"
+                @click.stop="
+                  () => {
+                    if (typeof music.getPlaySongData.album !== 'string') {
+                      showFullPlayer = false;
+                      router.push(`/album?id=${music.getPlaySongData?.album.id}`);
+                    }
+                  }
+                "
+              >
+                <n-icon depth="3" size="20">
+                  <SvgIcon icon="album" />
+                </n-icon>
+                <span v-if="music.getPlaySongData.album" class="al">
+                  {{
+                    typeof music.getPlaySongData.album === "string"
+                      ? music.getPlaySongData.album
+                      : music.getPlaySongData.album.name
+                  }}
+                </span>
+                <span v-else class="album">未知专辑</span>
+              </div>
+            </div>
           </div>
         </Transition>
-        <!-- 信息 -->
-        <div class="data">
-          <div class="desc">
-            <div class="title">
-              <n-text>{{ music.getPlaySongData.name || "未知曲目" }}</n-text>
-              <n-popover :show-arrow="false" placement="right-start" trigger="hover" raw>
-                <template #trigger>
-                  <n-tag v-show="playUseOtherSource" round> 其他音源 </n-tag>
-                </template>
-                <div class="title-tip">
-                  <n-text>该歌曲暂时无法播放，为您采用其他音源，可能会与原曲存在差别</n-text>
-                </div>
-              </n-popover>
-            </div>
-            <span v-if="music.getPlaySongData.alia" class="alia">
+      </div>
+      <div class="right">
+        <!-- 唱片模式下信息 -->
+        <div v-if="playCoverType === 'record'" class="data">
+          <div class="name">
+            <span class="name-text">{{ music.getPlaySongData.name || "未知曲目" }}</span>
+            <span v-if="music.getPlaySongData.alia" class="name-alias">
               {{ music.getPlaySongData.alia }}
             </span>
+          </div>
+          <div class="other">
             <div class="artist">
               <n-icon depth="3" size="20">
                 <SvgIcon icon="account-music" />
@@ -171,9 +215,9 @@
             </div>
           </div>
         </div>
+        <!-- 歌词 -->
+        <Lyric :cursorShow="playerControlShow" />
       </div>
-      <!-- 歌词 -->
-      <Lyric :cursorShow="playerControlShow" />
       <!-- 控制中心 -->
       <PlayerControl v-show="playerControlShow" />
     </div>
@@ -192,7 +236,7 @@ const music = musicData();
 const status = siteStatus();
 const settings = siteSettings();
 const { playList, playSongLyric } = storeToRefs(music);
-const { playerBackgroundType, showYrc } = storeToRefs(settings);
+const { playerBackgroundType, showYrc, playCoverType } = storeToRefs(settings);
 const {
   playerControlShow,
   controlTimeOut,
@@ -201,6 +245,11 @@ const {
   coverTheme,
   coverBackground,
 } = storeToRefs(status);
+
+// 是否有歌词
+const isHasLrc = computed(() => {
+  return playSongLyric.value.lrc?.[0] && playSongLyric.value.lrc?.length > 4;
+});
 
 // 全屏状态
 const screenfullStatus = ref(false);
@@ -375,44 +424,6 @@ onUnmounted(() => {
     &.no-lrc {
       transform: translateX(50%);
     }
-    .cover {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 70%;
-      max-width: 55vh;
-      height: auto;
-      aspect-ratio: 1 / 1;
-      .cover-img {
-        width: 100%;
-        height: 100%;
-        border-radius: 32px;
-        overflow: hidden;
-        z-index: 1;
-        box-shadow: 0 0 10px 6px #00000008;
-        transition: opacity 0.1s ease-in-out;
-        :deep(img) {
-          width: 100%;
-          height: 100%;
-          opacity: 0;
-          transition: opacity 0.3s ease-in-out;
-        }
-      }
-      .cover-shadow {
-        position: absolute;
-        top: 12px;
-        height: 100%;
-        width: 100%;
-        filter: blur(20px) opacity(0.6);
-        transform: scale(0.95);
-        z-index: 0;
-        :deep(img) {
-          width: 100%;
-          height: 100%;
-        }
-      }
-    }
     .data {
       width: 70%;
       max-width: 55vh;
@@ -426,14 +437,14 @@ onUnmounted(() => {
           display: flex;
           align-items: center;
           margin-left: 4px;
-          .n-text {
+          .name {
             font-size: 26px;
             font-weight: bold;
             color: var(--cover-main-color);
             -webkit-line-clamp: 2;
           }
           .n-tag {
-            margin-left: 6px;
+            margin-left: 12px;
             cursor: pointer;
           }
         }
@@ -498,6 +509,88 @@ onUnmounted(() => {
           }
         }
       }
+      &.record {
+        margin-top: 60px;
+        .desc {
+          align-items: center;
+        }
+      }
+    }
+  }
+  .right {
+    width: 50%;
+    .data {
+      padding: 0 24px;
+      margin-bottom: 40px;
+      .name {
+        display: flex;
+        flex-direction: column;
+        font-size: 30px;
+        font-weight: bold;
+        .name-text {
+          -webkit-line-clamp: 2;
+        }
+        .name-alias {
+          margin-top: 6px;
+          font-size: 18px;
+          font-weight: normal;
+          opacity: 0.6;
+        }
+      }
+      .other {
+        display: flex;
+        flex-direction: column;
+        margin-top: 8px;
+        font-size: 16px;
+        .n-icon {
+          margin-right: 4px;
+          color: var(--cover-main-color);
+        }
+        .artist {
+          display: flex;
+          align-items: center;
+          margin-right: 12px;
+          .all-ar {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+            word-break: break-all;
+            .ar {
+              opacity: 0.7;
+              display: inline-flex;
+              transition: opacity 0.3s;
+              cursor: pointer;
+              &::after {
+                content: "/";
+                margin: 0 4px;
+                transition: none;
+              }
+              &:last-child {
+                &::after {
+                  display: none;
+                }
+              }
+              &:hover {
+                opacity: 1;
+              }
+            }
+          }
+        }
+        .album {
+          display: flex;
+          align-items: center;
+          margin-top: 4px;
+          .al {
+            opacity: 0.7;
+            transition: opacity 0.3s;
+            cursor: pointer;
+            &:hover {
+              opacity: 1;
+            }
+          }
+        }
+      }
     }
   }
   // 全局
@@ -513,7 +606,6 @@ onUnmounted(() => {
 .title-tip {
   width: 200px;
   padding: 12px 20px;
-  background-color: var(--main-second-color);
   border-radius: 12px;
   .n-text {
     display: initial;

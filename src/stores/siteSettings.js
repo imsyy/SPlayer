@@ -18,6 +18,7 @@ const useSiteSettingsStore = defineStore("siteSettings", {
       themeTypeData: {},
       themeAutoCover: true, // 主题色跟随封面
       // 播放部分
+      playCoverType: "cover", // 播放器样式
       songLevel: "exhigh", // 歌曲音质
       autoPlay: false, // 程序启动时自动播放
       songVolumeFade: true, // 歌曲渐入渐出

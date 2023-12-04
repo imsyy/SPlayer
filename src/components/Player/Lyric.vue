@@ -4,7 +4,7 @@
     :style="{
       cursor: cursorShow ? 'pointer' : 'none',
     }"
-    :class="['lyric', `lyric-${lyricsPosition}`]"
+    :class="['lyric', `lyric-${lyricsPosition}`, playCoverType]"
     @mouseenter="lrcMouseStatus = lrcMousePause ? true : false"
     @mouseleave="lrcAllLeave"
   >
@@ -13,6 +13,8 @@
         v-if="playSongLyric.lrc?.[0] && playSongLyric.lrc?.length > 4"
         :key="playSongLyric.lrc?.[0]"
         class="lyric-all"
+        @after-enter="lyricsScroll(playSongLyricIndex)"
+        @after-leave="lyricsScroll(playSongLyricIndex)"
       >
         <n-scrollbar ref="lyricScroll" style="width: 100%">
           <!-- 普通歌词 -->
@@ -154,6 +156,7 @@ const {
   lyricsBlur,
   showTransl,
   showRoma,
+  playCoverType,
 } = storeToRefs(settings);
 
 // 歌词滚动数据
@@ -188,14 +191,14 @@ const getYrcStyle = (wordData, lyricIndex) => {
     // 如果当前歌词索引与播放歌曲的歌词索引不匹配
     if (playSongLyricIndex.value !== lyricIndex) {
       return {
-        transitionDuration: `0ms, 0ms, 0.5s`,
+        transitionDuration: `0ms, 0ms, 0.35s`,
         transitionDelay: `0ms`,
       };
     }
     // 如果播放状态不是加载中，且当前单词的时间加上持续时间减去播放进度大于 0
     if (status.playLoading === false && wordData.time + wordData.duration - playSeek.value > 0) {
       return {
-        transitionDuration: `0s, 0s, 0.5s`,
+        transitionDuration: `0s, 0s, 0.35s`,
         transitionDelay: `0ms`,
         WebkitMaskPositionX: `${
           100 - Math.max(((playSeek.value - wordData.time) / wordData.duration) * 100, 0)
@@ -204,7 +207,7 @@ const getYrcStyle = (wordData, lyricIndex) => {
     }
     // 如果以上条件都不满足
     return {
-      transitionDuration: `${wordData.duration}ms, ${wordData.duration * 0.8}ms, 0.5s`,
+      transitionDuration: `${wordData.duration}ms, ${wordData.duration * 0.8}ms, 0.35s`,
       transitionDelay: `${wordData.time - playSeek.value}ms, ${
         wordData.time - playSeek.value + wordData.duration * 0.5
       }ms, 0ms`,
@@ -251,7 +254,7 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .lyric {
-  width: 50%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -283,7 +286,6 @@ onMounted(() => {
     padding-left: 10px;
     padding-right: 80px;
   }
-
   .fade-enter-active {
     transition-delay: 0.3s;
   }
@@ -312,9 +314,9 @@ onMounted(() => {
     transform: scale(0.86);
     transform-origin: left center;
     transition:
-      filter 0.3s,
-      opacity 0.3s,
-      transform 0.3s ease-in-out;
+      filter 0.35s,
+      opacity 0.35s,
+      transform 0.35s ease-in-out;
     .lrc-content {
       font-size: 46px;
       font-weight: bold;
@@ -347,7 +349,7 @@ onMounted(() => {
           );
           -webkit-mask-size: 220% 100%;
           -webkit-mask-repeat: no-repeat;
-          transition: all 0.3s;
+          transition: all 0.35s;
         }
         &.end-with-space {
           margin-right: 12px;
@@ -360,12 +362,14 @@ onMounted(() => {
     .lrc-fy {
       margin-top: 8px;
       font-size: 30px;
-      opacity: 0.6;
+      opacity: 0.3;
+      transition: opacity 0.35s;
     }
     .lrc-roma {
       margin-top: 4px;
       font-size: 20px;
-      opacity: 0.6;
+      opacity: 0.3;
+      transition: opacity 0.35s;
     }
     &.islrc {
       opacity: 0.3;
@@ -420,8 +424,8 @@ onMounted(() => {
         z-index: 0;
         transform: scale(1.05);
         transition:
-          transform 0.3s ease,
-          opacity 0.3s ease;
+          transform 0.35s ease,
+          opacity 0.35s ease;
         pointer-events: none;
       }
       &:hover {
@@ -466,6 +470,16 @@ onMounted(() => {
       align-items: flex-end;
       .lrc-content {
         justify-content: flex-end;
+      }
+    }
+  }
+  &.record {
+    height: calc(80vh - 200px);
+    .lrc-line {
+      margin-bottom: -20px;
+      transform: scale(0.76);
+      &.on {
+        transform: scale(0.9);
       }
     }
   }

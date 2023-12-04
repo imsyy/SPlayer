@@ -171,6 +171,26 @@
         </n-card>
         <n-card class="set-item">
           <div class="name">
+            播放器样式
+            <n-text class="tip"> 播放器左侧区域样式 </n-text>
+          </div>
+          <n-select
+            v-model:value="playCoverType"
+            :options="[
+              {
+                label: '封面模式',
+                value: 'cover',
+              },
+              {
+                label: '唱片模式',
+                value: 'record',
+              },
+            ]"
+            class="set"
+          />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
             播放背景样式
             <n-text class="tip">
               {{
@@ -470,6 +490,7 @@ const {
   downloadPath,
   memorySeek,
   showGithub,
+  playCoverType,
 } = storeToRefs(settings);
 
 // 标签页数据

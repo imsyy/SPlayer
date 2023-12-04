@@ -6,7 +6,7 @@
     class="main-menu"
     :root-indent="36"
     :indent="0"
-    :collapsed="status.asideMenuCollapsed"
+    :collapsed="asideMenuCollapsed.value"
     :defaultExpandedKeys="['user-playlists', 'favorite-playlists']"
     :collapsed-width="64"
     :collapsed-icon-size="22"
@@ -36,6 +36,7 @@ const router = useRouter();
 const data = siteData();
 const music = musicData();
 const status = siteStatus();
+const { asideMenuCollapsed } = storeToRefs(status);
 const { userData, userLikeData } = storeToRefs(data);
 const { playList, playListOld, playIndex, playSongData, playHeartbeatMode, playMode } =
   storeToRefs(music);
@@ -90,7 +91,7 @@ const menuOptions = computed(() => [
     label: "在线音乐",
     key: "online",
     children: [],
-    show: !status.asideMenuCollapsed,
+    show: !asideMenuCollapsed.value,
   },
   {
     label: () =>
@@ -143,7 +144,7 @@ const menuOptions = computed(() => [
     label: "我的音乐",
     key: "user",
     children: [],
-    show: !status.asideMenuCollapsed,
+    show: !asideMenuCollapsed.value,
   },
   {
     label: () =>
@@ -157,19 +158,33 @@ const menuOptions = computed(() => [
           menuid: "like-songs",
         },
         () => [
-          h(NText, null, () => ["喜欢的音乐"]),
-          h(NButton, {
-            size: "small",
-            type: "tertiary",
-            round: true,
-            strong: true,
-            secondary: true,
-            renderIcon: renderIcon("heartbit", "26"),
-            onclick: (event) => {
-              event.stopPropagation();
-              startHeartRate();
+          h(
+            "div",
+            {
+              style: {
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              },
             },
-          }),
+            [
+              h("span", null, ["喜欢的音乐"]),
+              h(NButton, {
+                size: "small",
+                type: "tertiary",
+                round: true,
+                strong: true,
+                secondary: true,
+                class: asideMenuCollapsed.value ? "heart-rate-btn collapsed" : "heart-rate-btn",
+                renderIcon: renderIcon("heartbit", "26"),
+                onclick: (event) => {
+                  event.stopPropagation();
+                  startHeartRate();
+                },
+              }),
+            ],
+          ),
         ],
       ),
     key: "like-songs",
@@ -222,8 +237,8 @@ const menuOptions = computed(() => [
     key: "divider-2",
     type: "divider",
   },
-  { ...userPlaylists.value, show: !status.asideMenuCollapsed },
-  { ...favoritePlaylists.value, show: !status.asideMenuCollapsed },
+  { ...userPlaylists.value, show: !asideMenuCollapsed.value },
+  { ...favoritePlaylists.value, show: !asideMenuCollapsed.value },
 ]);
 
 // 更改用户的歌单
@@ -442,6 +457,25 @@ onMounted(() => {
           }
         }
       }
+    }
+  }
+}
+</style>
+
+<!-- 特殊样式 -->
+<style lang="scss">
+.heart-rate-btn {
+  &:hover {
+    background-color: var(--main-second-color) !important;
+    color: var(--main-color) !important;
+  }
+  &.collapsed {
+    margin-left: 12px;
+    background-color: #efefef40;
+    color: #efefef;
+    &:hover {
+      background-color: #efefef60 !important;
+      color: #efefef !important;
     }
   }
 }

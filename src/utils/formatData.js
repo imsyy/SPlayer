@@ -57,7 +57,7 @@ const formatData = (data, type = "playlist", noTracks = false) => {
           cover,
           coverSize,
           mv: v.mv,
-          alia: v.alias?.[0] || v.transNames?.[0],
+          alia: v.alia?.[0] || v.alias?.[0] || v.transNames?.[0],
           fee: v.fee,
           pc: v.pc,
           size: v.size,
