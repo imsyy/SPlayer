@@ -90,7 +90,7 @@ const checkQrStatus = (key) => {
             // 是否含有 MUSIC_U
             if (res.cookie && res.cookie.includes("MUSIC_U")) {
               // 储存登录信息
-              emit("setLoginData", res, "qrcode");
+              emit("setLoginData", res);
             } else {
               $message.error("登录出错，请重试");
               getQrData();

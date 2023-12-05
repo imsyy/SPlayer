@@ -37,7 +37,7 @@ const data = siteData();
 const music = musicData();
 const status = siteStatus();
 const { asideMenuCollapsed } = storeToRefs(status);
-const { userData, userLikeData } = storeToRefs(data);
+const { userData, userLikeData, userLoginStatus } = storeToRefs(data);
 const { playList, playListOld, playIndex, playSongData, playHeartbeatMode, playMode } =
   storeToRefs(music);
 
@@ -178,8 +178,7 @@ const menuOptions = computed(() => [
                 secondary: true,
                 class: asideMenuCollapsed.value ? "heart-rate-btn collapsed" : "heart-rate-btn",
                 renderIcon: renderIcon("heartbit", "26"),
-                onclick: (event) => {
-                  event.stopPropagation();
+                onclick: () => {
                   startHeartRate();
                 },
               }),
@@ -243,7 +242,12 @@ const menuOptions = computed(() => [
 
 // 更改用户的歌单
 const changeUserPlaylists = (data) => {
-  if (!isLogin() || !data?.length) return false;
+  // 未登录
+  if (!isLogin() || !data?.length) {
+    userPlaylists.value.children = [];
+    favoritePlaylists.value.children = [];
+    return false;
+  }
   // 用户 id
   const userId = userData.value?.userId;
   // 创建的歌单
@@ -400,6 +404,10 @@ watch(
   (val) => {
     changeUserPlaylists(val);
   },
+);
+watch(
+  () => userLoginStatus.value,
+  () => changeUserPlaylists(userLikeData.value.playlists),
 );
 
 onMounted(() => {

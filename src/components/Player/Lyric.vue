@@ -362,13 +362,13 @@ onMounted(() => {
     .lrc-fy {
       margin-top: 8px;
       font-size: 30px;
-      opacity: 0.3;
+      opacity: 0.6;
       transition: opacity 0.35s;
     }
     .lrc-roma {
       margin-top: 4px;
       font-size: 20px;
-      opacity: 0.3;
+      opacity: 0.6;
       transition: opacity 0.35s;
     }
     &.islrc {
@@ -378,10 +378,10 @@ onMounted(() => {
       .lrc-content {
         display: flex;
         flex-wrap: wrap;
-        .lrc-fy,
-        .lrc-roma {
-          opacity: 0.3;
-        }
+      }
+      .lrc-fy,
+      .lrc-roma {
+        opacity: 0.3;
       }
     }
     &.on {
@@ -476,7 +476,7 @@ onMounted(() => {
   &.record {
     height: calc(80vh - 200px);
     .lrc-line {
-      margin-bottom: -20px;
+      margin-bottom: -12px;
       transform: scale(0.76);
       &.on {
         transform: scale(0.9);

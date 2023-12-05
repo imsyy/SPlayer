@@ -22,7 +22,7 @@
           <loginQRCode @setLoginData="setLoginData" />
         </n-tab-pane>
         <n-tab-pane name="login-phone" tab="验证码登录">
-          <loginPhone />
+          <loginPhone @setLoginData="setLoginData" />
         </n-tab-pane>
       </n-tabs>
       <!-- 关闭登录弹窗 -->
@@ -74,6 +74,7 @@ const openLoginModal = () => {
 
 // 储存登录信息
 const setLoginData = async (loginData) => {
+  console.log(loginData);
   if (!loginData) return false;
   if (loginData.code === 200) {
     // 关闭登录弹窗

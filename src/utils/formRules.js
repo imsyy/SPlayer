@@ -17,7 +17,7 @@ const formRules = () => {
     // 邮箱验证
     emailRule: {
       required: true,
-      validator(rule, value) {
+      validator(_, value) {
         if (!value) {
           return new Error("请输入电子邮箱");
         } else if (
@@ -35,14 +35,10 @@ const formRules = () => {
     mobileRule: {
       key: "phone",
       required: true,
-      validator(rule, value) {
+      validator(_, value) {
         if (!value) {
           return new Error("请输入手机号码");
-        } else if (
-          !/^(?:(?:\+|00)86)?1(?:(?:3[\d])|(?:4[5-79])|(?:5[0-35-9])|(?:6[5-7])|(?:7[0-8])|(?:8[\d])|(?:9[1589]))\d{8}$/.test(
-            value,
-          )
-        ) {
+        } else if (!/^(?:(?:\+|00)86)?1[3-9]\d{9}$/.test(value)) {
           return new Error("请输入正确的手机号码");
         }
         return true;
@@ -52,5 +48,4 @@ const formRules = () => {
   };
 };
 
-// 导出所有规则
 export { formRules };
