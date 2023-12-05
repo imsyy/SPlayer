@@ -189,12 +189,12 @@ const openDownloadModal = (data) => {
       router.currentRoute.value.name === "cloud" ||
       data?.fee === 0 ||
       data?.pc ||
-      userData.detail?.profile?.vipType !== 0
+      userData.value.detail?.profile?.vipType !== 0
     ) {
       return toDownload();
     }
     // 权限不足
-    if (data?.fee !== 0 && userData.detail?.profile?.vipType !== 11 && !data?.pc) {
+    if (data?.fee !== 0 && userData.value.detail?.profile?.vipType !== 11 && !data?.pc) {
       return $message.warning("账号会员等级不足，请提升权限");
     }
     $message.warning("账号会员等级不足，请提升权限");

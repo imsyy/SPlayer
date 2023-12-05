@@ -159,7 +159,7 @@
       </div>
       <div class="right">
         <!-- 唱片模式下信息 -->
-        <div v-if="playCoverType === 'record'" class="data">
+        <div v-if="playCoverType === 'record' && isHasLrc" class="data">
           <div class="name">
             <span class="name-text">{{ music.getPlaySongData.name || "未知曲目" }}</span>
             <span v-if="music.getPlaySongData.alia" class="name-alias">
