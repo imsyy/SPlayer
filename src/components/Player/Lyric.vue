@@ -474,7 +474,8 @@ onMounted(() => {
     }
   }
   &.record {
-    height: calc(80vh - 200px);
+    height: calc(100vh - 340px);
+    margin-bottom: 20px;
     .lrc-line {
       margin-bottom: -12px;
       transform: scale(0.76);

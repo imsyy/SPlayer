@@ -676,14 +676,14 @@ const getColorMainColor = async (islocal, cover) => {
   const status = siteStatus();
   try {
     // 获取封面图像的URL
-    if (!cover) return (status.coverColor = {});
+    if (!cover) return (status.coverTheme = {});
     const colorUrl = islocal ? cover : cover.s;
     // 获取渐变色背景
     const gradientColor = await getCoverGradient(colorUrl);
     status.coverBackground = gradientColor;
   } catch (error) {
     console.error("封面颜色获取失败：", error);
-    status.coverColor = {};
+    status.coverTheme = {};
   }
 };
 

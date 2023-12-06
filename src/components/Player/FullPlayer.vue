@@ -510,7 +510,7 @@ onUnmounted(() => {
         }
       }
       &.record {
-        margin-top: 60px;
+        margin-top: 20px;
         .desc {
           align-items: center;
         }
@@ -520,8 +520,8 @@ onUnmounted(() => {
   .right {
     width: 50%;
     .data {
-      padding: 0 24px;
-      margin-bottom: 40px;
+      padding: 0 80px 0 24px;
+      margin-bottom: 26px;
       .name {
         display: flex;
         flex-direction: column;

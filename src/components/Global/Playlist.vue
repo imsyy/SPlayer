@@ -1,15 +1,16 @@
 <!-- 全局播放列表 -->
 <template>
   <n-drawer
-    v-model:show="status.playListShow"
-    :class="status.showFullPlayer ? 'main-playlist player' : 'main-playlist'"
+    v-model:show="playListShow"
+    :class="showFullPlayer ? 'main-playlist full-player' : 'main-playlist'"
     :style="{
-      '--color': coverColor,
-      '--color-bg': coverColor + '14',
+      '--cover-main-color': `rgb(${coverTheme?.light?.shadeTwo})` || '#efefef',
+      '--cover-second-color': `rgba(${coverTheme?.light?.shadeTwo}, 0.14)` || '#efefef14',
     }"
+    :auto-focus="false"
     @after-enter="playlistOpen"
-    @after-leave="status.playListShow = false"
-    @mask-click="status.playListShow = false"
+    @after-leave="playListShow = false"
+    @mask-click="playListShow = false"
   >
     <n-drawer-content :native-scrollbar="false" closable>
       <template #header>
@@ -62,7 +63,8 @@ import SvgIcon from "@/components/Global/SvgIcon";
 
 const music = musicData();
 const status = siteStatus();
-const { coverColor, playSongData, playList, playIndex, playMode } = storeToRefs(music);
+const { playSongData, playList, playIndex, playMode } = storeToRefs(music);
+const { coverTheme, showFullPlayer, playListShow } = storeToRefs(status);
 
 // 抽屉开启
 const playlistOpen = () => {
@@ -95,7 +97,7 @@ const createSongs = (song, index) => {
       class: {
         songs: true,
         play: playSongData.value?.id === song?.id,
-        player: status.showFullPlayer,
+        player: showFullPlayer.value,
       },
       onClick: () => {
         playSong(song, index);
@@ -343,7 +345,7 @@ const removeSong = async (index) => {
   .n-scrollbar-content {
     padding: 16px !important;
   }
-  &.player {
+  &.full-player {
     background-color: transparent;
     box-shadow: none;
     .n-drawer-header {
