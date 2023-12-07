@@ -62,6 +62,20 @@
   transform: translateY(100%);
 }
 
+// left
+.left-enter-active,
+.left-leave-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    transform 0.3s,
+    opacity 0.3s;
+}
+.left-enter-from,
+.left-leave-to {
+  transform: translateX(-100%);
+}
+
 @keyframes skeleton-loading {
   0% {
     background-position: 100% 50%;

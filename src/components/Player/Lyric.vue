@@ -4,7 +4,7 @@
     :style="{
       cursor: cursorShow ? 'pointer' : 'none',
     }"
-    :class="['lyric', `lyric-${lyricsPosition}`, playCoverType]"
+    :class="['lyric', `lyric-${lyricsPosition}`, { pure: pureLyricMode }, playCoverType]"
     @mouseenter="lrcMouseStatus = lrcMousePause ? true : false"
     @mouseleave="lrcAllLeave"
   >
@@ -34,6 +34,11 @@
               :id="'lrc' + index"
               :key="index"
               :class="{ 'lrc-line': true, on: Number(playSongLyricIndex) === index, islrc: true }"
+              :style="{
+                filter: lyricsBlur
+                  ? `blur(${Math.min(Math.abs(Number(playSongLyricIndex) - index) * 1.5, 10)}px)`
+                  : 'blur(0)',
+              }"
               @click.stop="jumpSeek(item?.time)"
             >
               <!-- 歌词 -->
@@ -143,7 +148,7 @@ const props = defineProps({
 const music = musicData();
 const settings = siteSettings();
 const status = siteStatus();
-const { playSeek } = storeToRefs(status);
+const { playSeek, pureLyricMode } = storeToRefs(status);
 const { playSongLyric, playSongLyricIndex } = storeToRefs(music);
 const {
   showYrc,
@@ -244,6 +249,10 @@ watch(
   () => playSongLyricIndex.value,
   (val) => lyricsScroll(val),
 );
+watch(
+  () => pureLyricMode.value,
+  () => lyricsScroll(playSongLyricIndex.value),
+);
 
 onMounted(() => {
   nextTick().then(() => {
@@ -282,6 +291,9 @@ onMounted(() => {
     hsla(0, 0%, 100%, 0.6) 85%,
     hsla(0, 0%, 100%, 0)
   );
+  :deep(.n-scrollbar-rail) {
+    display: none;
+  }
   :deep(.n-scrollbar-content) {
     padding-left: 10px;
     padding-right: 80px;
@@ -443,18 +455,19 @@ onMounted(() => {
       }
     }
   }
-  &.lyric-center {
+  &.lyric-center,
+  &.pure {
     span {
-      text-align: center;
+      text-align: center !important;
     }
     .placeholder {
-      justify-content: center;
+      justify-content: center !important;
     }
     .lrc-line {
-      transform-origin: center;
-      align-items: center;
+      transform-origin: center !important;
+      align-items: center !important;
       .lrc-content {
-        justify-content: center;
+        justify-content: center !important;
       }
     }
   }
@@ -473,7 +486,13 @@ onMounted(() => {
       }
     }
   }
-  &.record {
+  &.pure {
+    :deep(.n-scrollbar-content) {
+      padding: 0 80px;
+    }
+  }
+  &.record,
+  &.pure {
     height: calc(100vh - 340px);
     margin-bottom: 20px;
     .lrc-line {

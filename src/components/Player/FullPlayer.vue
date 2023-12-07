@@ -11,7 +11,6 @@
       }"
       class="full-player"
       @mousemove="controlShowChange"
-      @mouseleave="playerControlShow = false"
     >
       <!-- 遮罩 -->
       <Transition name="fade" mode="out-in">
@@ -49,7 +48,12 @@
       <!-- 按钮 -->
       <Transition name="fade" mode="out-in">
         <div v-show="playerControlShow" class="menu">
-          <div class="left"></div>
+          <div class="left">
+            <!-- 歌词模式 -->
+            <div v-if="isHasLrc" class="n-icon" @click="pureLyricMode = !pureLyricMode">
+              <n-text>词</n-text>
+            </div>
+          </div>
           <div class="right">
             <!-- 全屏切换 -->
             <n-icon @click.stop="screenfullChange">
@@ -68,6 +72,7 @@
       <div
         :class="{
           content: true,
+          pure: pureLyricMode && isHasLrc,
           'no-lrc': !isHasLrc,
         }"
       >
@@ -157,9 +162,17 @@
           </div>
         </Transition>
       </div>
-      <div class="right">
+      <div
+        :class="{
+          right: true,
+          pure: pureLyricMode && isHasLrc,
+        }"
+      >
         <!-- 唱片模式下信息 -->
-        <div v-if="playCoverType === 'record' && isHasLrc" class="data">
+        <div
+          v-if="(pureLyricMode && isHasLrc) || (playCoverType === 'record' && isHasLrc)"
+          class="data"
+        >
           <div class="name">
             <span class="name-text">{{ music.getPlaySongData.name || "未知曲目" }}</span>
             <span v-if="music.getPlaySongData.alia" class="name-alias">
@@ -244,6 +257,7 @@ const {
   playUseOtherSource,
   coverTheme,
   coverBackground,
+  pureLyricMode,
 } = storeToRefs(status);
 
 // 是否有歌词
@@ -388,6 +402,17 @@ onUnmounted(() => {
       justify-content: flex-end;
       flex: 1;
     }
+    .left {
+      justify-content: flex-start;
+      .n-icon {
+        margin-left: 0;
+        margin-right: 12px;
+        .n-text {
+          font-size: 26px;
+          font-weight: bold;
+        }
+      }
+    }
     .n-icon {
       margin-left: 12px;
       width: 40px;
@@ -420,10 +445,10 @@ onUnmounted(() => {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    transition: transform 0.3s;
-    &.no-lrc {
-      transform: translateX(50%);
-    }
+    transition:
+      transform 0.3s,
+      width 0.3s,
+      opacity 0.3s;
     .data {
       width: 70%;
       max-width: 55vh;
@@ -510,15 +535,30 @@ onUnmounted(() => {
         }
       }
       &.record {
+        width: 100%;
         margin-top: 20px;
         .desc {
           align-items: center;
+          .title {
+            .name {
+              text-align: center;
+            }
+          }
         }
       }
+    }
+    &.no-lrc {
+      transform: translateX(50%);
+    }
+    &.pure {
+      width: 0;
+      opacity: 0;
+      transform: translateX(-100%);
     }
   }
   .right {
     width: 50%;
+    transition: width 0.3s;
     .data {
       padding: 0 80px 0 24px;
       margin-bottom: 26px;
@@ -589,6 +629,22 @@ onUnmounted(() => {
               opacity: 1;
             }
           }
+        }
+      }
+    }
+    &.pure {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      .data {
+        padding: 0 80px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        .other,
+        .name {
+          align-items: center;
         }
       }
     }

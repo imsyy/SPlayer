@@ -28,6 +28,8 @@ const useSiteStatusStore = defineStore("siteStatus", {
       // 封面主题
       coverTheme: {},
       coverBackground: null,
+      // 纯净歌词模式
+      pureLyricMode: false,
     };
   },
   getters: {},
@@ -37,7 +39,7 @@ const useSiteStatusStore = defineStore("siteStatus", {
     {
       key: "siteStatus",
       storage: localStorage,
-      paths: ["asideMenuCollapsed"],
+      paths: ["asideMenuCollapsed", "pureLyricMode"],
     },
   ],
 });
