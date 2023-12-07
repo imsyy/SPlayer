@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 转到讨论区
+    url: https://github.com/imsyy/SPlayer/discussions
+    about: Issues 用于反馈 Bug, 新的功能建议和提问答疑请到讨论区发起
+  - name: 提问的艺术
+    url: https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md
+    about: 默认所有 Issues 发起者均已了解此处的内容

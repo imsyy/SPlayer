@@ -17,6 +17,8 @@
   <AddPlaylist ref="addPlaylistRef" />
   <!-- 下载歌曲 -->
   <DownloadSong ref="downloadSongRef" />
+  <!-- 云盘歌曲纠正 -->
+  <CloudSongMatch ref="cloudSongMatchRef" />
 </template>
 
 <script setup>
@@ -27,6 +29,7 @@ import { useRouter } from "vue-router";
 import { addSongToNext } from "@/utils/Player";
 import { setCloudDel } from "@/api/cloud";
 import { addSongToPlayList } from "@/api/playlist";
+import { copyData } from "@/utils/helper";
 import SvgIcon from "@/components/Global/SvgIcon";
 
 const emit = defineEmits(["playSong"]);
@@ -45,6 +48,7 @@ const dropdownOptions = ref(null);
 // 子组件
 const addPlaylistRef = ref(null);
 const downloadSongRef = ref(null);
+const cloudSongMatchRef = ref(null);
 
 // 图标渲染
 const renderIcon = (icon, size, translate = 0) => {
@@ -184,6 +188,17 @@ const openDropdown = (e, data, song, index, sourceId) => {
           icon: renderIcon("video"),
         },
         {
+          key: "copy",
+          label: "复制歌曲 ID",
+          props: {
+            onClick: () => {
+              const songId = song?.id?.toString();
+              copyData(songId);
+            },
+          },
+          icon: renderIcon("content-copy"),
+        },
+        {
           key: "line-cloud",
           type: "divider",
           show: isCloud || isUserPlaylist || isLocalSong,
@@ -198,6 +213,17 @@ const openDropdown = (e, data, song, index, sourceId) => {
             },
           },
           icon: renderIcon("delete"),
+        },
+        {
+          key: "edit",
+          label: "云盘歌曲纠正",
+          show: isCloud,
+          props: {
+            onClick: () => {
+              cloudSongMatchRef.value?.openCloudSongMatch(song, index);
+            },
+          },
+          icon: renderIcon("edit"),
         },
         {
           key: "delete",

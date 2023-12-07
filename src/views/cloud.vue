@@ -181,6 +181,10 @@ onBeforeMount(() => {
   getUserCloudDataList();
   getUserCloudData();
 });
+
+onMounted(() => {
+  window.$refreshCloudList = getUserCloudDataList;
+});
 </script>
 
 <style lang="scss" scoped>
