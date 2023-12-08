@@ -202,7 +202,7 @@ const useSiteDataStore = defineStore("siteData", {
         $message.error("用户喜欢专辑加载失败");
       }
     },
-    // 更改用户喜欢歌手
+    // 更改用户喜欢视频
     async setUserLikeMvs() {
       try {
         if (!isLogin()) return false;

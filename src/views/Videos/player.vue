@@ -47,12 +47,7 @@
       <Transition name="fade" mode="out-in">
         <div :key="videoData?.id" class="menu">
           <!-- 点赞 -->
-          <n-button
-            :type="videoData?.liked ? 'primary' : 'default'"
-            :title="`点赞数：${videoData?.likedCount}`"
-            quaternary
-            @click="videoLike"
-          >
+          <n-button quaternary @click="videoLike">
             <template #icon>
               <n-icon>
                 <SvgIcon :icon="videoData?.liked ? 'thumb-up' : 'thumb-up-outline'" />
@@ -65,13 +60,21 @@
             }}
           </n-button>
           <!-- 收藏 -->
-          <n-button quaternary>
+          <n-button quaternary @click="videoCollection">
             <template #icon>
               <n-icon>
-                <SvgIcon icon="folder-plus-outline" />
+                <SvgIcon
+                  :icon="
+                    isLikeOrDislike(videoData?.id) ? 'favorite-outline-rounded' : 'favorite-rounded'
+                  "
+                />
               </n-icon>
             </template>
-            {{ formatNumber(videoData?.subCount || 0) }}
+            {{
+              isLikeOrDislike(videoData?.id)
+                ? formatNumber(videoData?.subCount || 0)
+                : videoData?.subCount || 0
+            }}
           </n-button>
           <!-- 分享 -->
           <n-button quaternary>
@@ -177,7 +180,13 @@
             </n-image>
             <div class="desc">
               <n-text class="name">{{ item.name }}</n-text>
-              <n-button class="open" size="small" tertiary round>
+              <n-button
+                class="open"
+                size="small"
+                tertiary
+                round
+                @click="router.push(`/artist?id=${item.id}`)"
+              >
                 <template #icon>
                   <n-icon size="14">
                     <SvgIcon icon="account-music" />
@@ -205,24 +214,36 @@
 
 <script setup>
 import { NIcon } from "naive-ui";
-import { getVideoDetail, getVideoInfo, getVideoUrl, getSimiVideo } from "@/api/video";
+import { storeToRefs } from "pinia";
+import {
+  getVideoDetail,
+  getVideoInfo,
+  getVideoUrl,
+  getSimiVideo,
+  likeVideo,
+  likeMv,
+} from "@/api/video";
 import { getComment, getHotComment } from "@/api/comment";
 import { resourceLike } from "@/api/other";
 import { fadePlayOrPause } from "@/utils/Player";
-import { siteStatus } from "@/stores";
+import { siteStatus, siteData } from "@/stores";
 import { useRouter } from "vue-router";
 import { formatNumber } from "@/utils/helper";
+import { isLogin } from "@/utils/auth";
 import formatData from "@/utils/formatData";
 import throttle from "@/utils/throttle";
 import SvgIcon from "@/components/Global/SvgIcon";
 import Plyr from "plyr";
 import "plyr/dist/plyr.css";
 
-const router = useRouter();
+const data = siteData();
 const status = siteStatus();
+const router = useRouter();
+const { userLikeData } = storeToRefs(data);
 
 // 视频 id
 const videoId = ref(router.currentRoute.value.query.id);
+const isVideo = ref(router.currentRoute.value.query.is_video);
 
 // 播放器数据
 const videoData = ref(null);
@@ -350,6 +371,15 @@ const getVideoData = async (id) => {
   }
 };
 
+// 判断收藏还是取消
+const isLikeOrDislike = (id) => {
+  const mvs = userLikeData.value.mvs;
+  if (mvs.length) {
+    return !mvs.some((item) => Number(item.vid) === Number(id));
+  }
+  return true;
+};
+
 // 获取相关视频
 const getSimiVideoData = async (id) => {
   simiVideo.value = null;
@@ -362,6 +392,7 @@ const getSimiVideoData = async (id) => {
 const videoLike = throttle(
   async () => {
     try {
+      if (!isLogin()) return $message.warning("请登录后使用");
       const isLike = videoData.value?.liked;
       if (isLike === undefined || !videoData.value?.id) return false;
       // 点赞或取消
@@ -373,6 +404,30 @@ const videoLike = throttle(
       }
     } catch (error) {
       console.error("点赞出错：", error);
+    }
+  },
+  3000,
+  "请稍后再操作",
+);
+
+// 视频收藏
+const videoCollection = throttle(
+  async () => {
+    try {
+      if (!isLogin()) return $message.warning("请登录后使用");
+      const id = videoData.value.id;
+      const type = isLikeOrDislike(id) ? 1 : 2;
+      const result = isVideo.value ? await likeVideo(type, id) : await likeMv(type, id);
+      if (result.code === 200) {
+        $message.success((type === 1 ? "收藏" : "取消收藏") + "成功");
+        // 更新用户专辑
+        if (!isVideo.value) await data.setUserLikeMvs();
+      } else {
+        $message.error((type === 1 ? "收藏" : "取消收藏") + "失败，请重试");
+      }
+    } catch (error) {
+      console.error("收藏出错：", error);
+      $message.error("收藏操作出现错误");
     }
   },
   3000,
@@ -430,6 +485,7 @@ watch(
       videoData.value = null;
       simiVideo.value = null;
       videoId.value = val.query.id;
+      isVideo.value = val.query.is_video;
       commentData.value = null;
       hotCommentData.value = null;
       commentPage.value = 1;

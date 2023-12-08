@@ -70,7 +70,7 @@
             <!-- 歌手 -->
             <div v-if="item.artists" class="artists">
               <n-text v-for="ar in item.artists" :key="ar.id" class="ar">
-                {{ ar.name }}
+                {{ ar.name || ar.userName }}
               </n-text>
             </div>
             <!-- 歌曲数量 -->
@@ -297,8 +297,10 @@ const jumpLink = (data, type) => {
         word-break: break-all;
         .ar {
           display: inline-flex;
-          color: var(--n-close-icon-color);
-          transition: color 0.3s;
+          opacity: 0.6;
+          transition:
+            color 0.3s,
+            opacity 0.3s;
           cursor: pointer;
           &::after {
             content: "/";
@@ -311,10 +313,7 @@ const jumpLink = (data, type) => {
             }
           }
           &:hover {
-            color: var(--n-code-text-color);
-            &::after {
-              color: var(--n-close-icon-color);
-            }
+            opacity: 0.8;
           }
         }
       }

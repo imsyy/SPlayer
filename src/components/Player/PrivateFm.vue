@@ -70,7 +70,7 @@
         <div class="control">
           <!-- 播放暂停 -->
           <n-button
-            :loading="playLoading"
+            :loading="playMode === 'fm' && playLoading"
             class="play-control"
             color="#efefef"
             type="primary"

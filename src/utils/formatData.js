@@ -18,6 +18,7 @@ const formatData = (data, type = "playlist", noTracks = false) => {
     const imgUrl =
       v &&
       (v.picUrl ||
+        v.coverUrl ||
         v.coverImgUrl ||
         v.cover ||
         (v.album && v.album.picUrl) ||
@@ -97,14 +98,14 @@ const formatData = (data, type = "playlist", noTracks = false) => {
       // mv
       case "mv":
         return {
-          id: v.id,
-          name: v.name,
-          artists: v.artists,
+          id: v.id || v.vid,
+          name: v.name || v.title,
+          artists: v.artists || v.creator,
           desc: v.copywriter,
           cover,
-          coverSize: getCoverUrl(v.imgurl16v9 || v.picUrl || v.cover, "464y260"),
-          duration: v.duration,
-          playCount: v.playCount,
+          coverSize: getCoverUrl(cover, "464y260"),
+          duration: v.duration || v.durationms,
+          playCount: v.playCount || v.playTime,
         };
       default:
         return null;

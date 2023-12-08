@@ -195,6 +195,20 @@ const menuOptions = computed(() => [
         RouterLink,
         {
           to: {
+            name: "like",
+          },
+        },
+        () => ["我的收藏"],
+      ),
+    key: "like",
+    icon: renderIcon("star"),
+  },
+  {
+    label: () =>
+      h(
+        RouterLink,
+        {
+          to: {
             name: "local",
           },
         },

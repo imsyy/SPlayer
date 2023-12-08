@@ -23,7 +23,7 @@
       </template>
       <!-- 提示 -->
       <n-alert v-if="playList?.length >= 400" class="alert" :show-icon="false">
-        因歌单数量过大，无法自动定位，请手动查找
+        当前歌曲过多，无法自动定位，请手动查找
       </n-alert>
       <Transition name="fade" mode="out-in">
         <n-data-table

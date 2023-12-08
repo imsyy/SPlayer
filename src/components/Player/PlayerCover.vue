@@ -198,7 +198,7 @@ const { playState } = storeToRefs(status);
       .cover-loading {
         position: absolute;
         height: 100%;
-        margin-bottom: 0;
+        padding-bottom: 0;
         .loading-img {
           top: auto;
         }

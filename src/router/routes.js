@@ -210,6 +210,42 @@ const routes = [
       },
     ],
   },
+  // 我的收藏
+  {
+    path: "/like",
+    name: "like",
+    meta: {
+      title: "我的收藏",
+    },
+    component: () => import("@/views/Like/index.vue"),
+    beforeEnter: (_, __, next) => {
+      if (isLogin()) {
+        next();
+      } else {
+        if (typeof $changeLogin !== "undefined") $changeLogin();
+        $message.error("请登录后使用");
+        $loadingBar.error();
+      }
+    },
+    redirect: "/like/albums",
+    children: [
+      {
+        path: "albums",
+        name: "like-albums",
+        component: () => import("@/views/Like/albums.vue"),
+      },
+      {
+        path: "artists",
+        name: "like-artists",
+        component: () => import("@/views/Like/artists.vue"),
+      },
+      {
+        path: "videos",
+        name: "like-videos",
+        component: () => import("@/views/Like/videos.vue"),
+      },
+    ],
+  },
   // 本地歌曲
   {
     path: "/local",
