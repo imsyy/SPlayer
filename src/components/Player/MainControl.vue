@@ -780,11 +780,15 @@ watch(
     bottom: 0;
   }
   &.no-sider {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 10vw;
-    @media (max-width: 1200px) {
-      padding: 0 5vw;
+    padding: 0;
+    .player {
+      width: auto;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 10vw;
+      @media (max-width: 1200px) {
+        padding: 0 5vw;
+      }
     }
   }
 }

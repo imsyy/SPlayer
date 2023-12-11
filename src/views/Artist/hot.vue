@@ -27,6 +27,7 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { getArtistSongs } from "@/api/artist";
+import { getSongDetail } from "@/api/song";
 import formatData from "@/utils/formatData";
 
 const router = useRouter();
@@ -41,7 +42,14 @@ const getArtistHotData = async (id) => {
     artistHotSongs.value = null;
     // 获取热门歌曲
     const result = await getArtistSongs(id);
-    artistHotSongs.value = formatData(result.hotSongs, "song");
+    // 处理数据
+    if (result.hotSongs?.[0]?.al?.picUrl) {
+      artistHotSongs.value = formatData(result.hotSongs, "song");
+      return true;
+    }
+    const ids = result.hotSongs.map((song) => song.id).join(",");
+    const songsDetail = await getSongDetail(ids);
+    artistHotSongs.value = formatData(songsDetail.songs, "song");
   } catch (error) {
     console.error("获取歌手热门数据失败：", error);
   }

@@ -32,7 +32,12 @@
           </n-text>
           <n-text v-if="albumDetail.alia" class="alia" depth="3">{{ albumDetail.alia }}</n-text>
           <div v-if="albumDetail.artists" class="creator">
-            <n-text v-for="(item, index) in albumDetail.artists" :key="index" class="ar">
+            <n-text
+              v-for="(item, index) in albumDetail.artists"
+              :key="index"
+              class="ar"
+              @click="router.push(`/artist?id=${item.id}`)"
+            >
               {{ item.name }}
             </n-text>
           </div>

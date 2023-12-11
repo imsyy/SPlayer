@@ -15,8 +15,8 @@ dependencies:
     specifier: ^0.2.7
     version: 0.2.7
   NeteaseCloudMusicApi:
-    specifier: ^4.13.5
-    version: 4.13.5
+    specifier: ^4.13.6
+    version: 4.13.6
   axios:
     specifier: ^1.4.0
     version: 1.4.0
@@ -1076,8 +1076,8 @@ packages:
     requiresBuild: true
     dev: true
 
-  /NeteaseCloudMusicApi@4.13.5:
-    resolution: {integrity: sha512-UjaZeODKHBpSm/L4oxS1l5C7WGddoIhvmQ1BPknMZx32SmJRGUtNUKYWIGmVuO9uemtobLfPOhI7owNAzn2Udg==}
+  /NeteaseCloudMusicApi@4.13.6:
+    resolution: {integrity: sha512-dK6vReOVYBhOuUSocex1M3FNfRnJJvGmTfCavqXkSFguS+PyyeP7D6JDmF0NVqMskwE7r1uT2yqrozDnBA/Syw==}
     engines: {node: '>=12'}
     hasBin: true
     dependencies:
