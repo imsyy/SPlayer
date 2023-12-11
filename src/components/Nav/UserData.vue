@@ -53,6 +53,7 @@ const data = siteData();
 const router = useRouter();
 const settings = siteSettings();
 const { userLoginStatus, userData, userLikeData } = storeToRefs(data);
+const { themeType } = storeToRefs(settings);
 
 // 菜单数据
 const userMenuShow = ref(false);
@@ -120,9 +121,9 @@ const userMenuOptions = computed(() => [
     key: "d1",
   },
   {
-    label: settings.themeType === "dark" ? "浅色模式" : "深色模式",
+    label: themeType.value === "dark" ? "浅色模式" : "深色模式",
     key: "darkOrlight",
-    icon: renderIcon(settings.themeType === "dark" ? "round-wb-sunny" : "round-dark-mode"),
+    icon: renderIcon(themeType.value === "dark" ? "round-wb-sunny" : "round-dark-mode"),
   },
   {
     label: "全局设置",
@@ -143,7 +144,7 @@ const userMenuSelect = (key) => {
   switch (key) {
     // 明暗切换
     case "darkOrlight":
-      settings.setThemeType(settings.themeType === "light" ? "dark" : "light");
+      settings.setThemeType(themeType.value === "light" ? "dark" : "light");
       break;
     // 登录登出
     case "logoutOrlogin":

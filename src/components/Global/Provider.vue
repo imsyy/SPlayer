@@ -81,7 +81,7 @@ const changeThemeColor = (val, isCover = false) => {
     const coverAutobgCover = isCover
       ? themeType.value === "dark"
         ? val.light.bg
-        : "239, 239, 239"
+        : "250, 250, 252"
       : null;
     // 更新主题覆盖
     themeOverrides.value = {
@@ -95,7 +95,7 @@ const changeThemeColor = (val, isCover = false) => {
               textColor1: `rgba(${mainColorData.bg}, 0.9)`,
               textColor2: `rgba(${mainColorData.bg}, 0.82)`,
               textColor3: `rgba(${mainColorData.bg}, 0.52)`,
-              bodyColor: `rgba(${val.dark.mainBg}, 0.52)`,
+              bodyColor: `rgb(${val.dark.mainBg})`,
               cardColor: `rgb(${coverAutobgCover})`,
               tagColor: `rgb(${coverAutobgCover})`,
               modalColor: `rgb(${coverAutobgCover})`,

@@ -5,29 +5,29 @@
       <!-- 导航栏 -->
       <n-layout-header bordered>
         <MainNav />
-        <TitleBar v-if="checkPlatform.electron()" />
       </n-layout-header>
-      <!-- 主内容 -->
+      <!-- 主内容 - 有侧边栏 -->
       <n-layout
+        v-if="showSider"
         :class="{
           'body-layout': true,
-          'player-bar': Object.keys(music.playSongData)?.length && status.showPlayBar,
+          'player-bar': Object.keys(music.getPlaySongData)?.length && showPlayBar,
         }"
         position="absolute"
         has-sider
       >
         <!-- 侧边栏 -->
         <n-layout-sider
-          class="main-sider"
-          :collapsed="status.asideMenuCollapsed"
+          :collapsed="asideMenuCollapsed"
           :native-scrollbar="false"
           :collapsed-width="64"
           :width="240"
+          class="main-sider"
           show-trigger="bar"
           collapse-mode="width"
           bordered
-          @collapse="status.asideMenuCollapsed = true"
-          @expand="status.asideMenuCollapsed = false"
+          @collapse="asideMenuCollapsed = true"
+          @expand="asideMenuCollapsed = false"
         >
           <div class="sider-all">
             <Menu />
@@ -35,32 +35,29 @@
         </n-layout-sider>
         <!-- 页面区 -->
         <n-layout :native-scrollbar="false" embedded>
-          <main id="main-layout" class="main-layout">
-            {{ music.getplaySongData }}
-            <!-- 回顶 -->
-            <n-back-top bottom="110">
-              <n-icon size="26">
-                <SvgIcon icon="chevron-up" />
-              </n-icon>
-            </n-back-top>
-            <!-- 路由页面 -->
-            <router-view v-slot="{ Component }">
-              <keep-alive>
-                <Transition name="router" mode="out-in">
-                  <component :is="Component" />
-                </Transition>
-              </keep-alive>
-            </router-view>
-          </main>
+          <MainLayout />
         </n-layout>
       </n-layout>
+      <!-- 主内容 - 无侧边栏 -->
+      <n-layout-content
+        v-else
+        :class="{
+          'body-layout': true,
+          'player-bar': Object.keys(music.getPlaySongData)?.length && showPlayBar,
+        }"
+        :native-scrollbar="false"
+        position="absolute"
+        embedded
+      >
+        <MainLayout />
+      </n-layout-content>
     </n-layout>
     <!-- 主播放器 -->
     <MainControl />
     <!-- 全屏播放器 -->
     <FullPlayer />
     <!-- 全局播放列表 -->
-    <n-config-provider v-if="status.showFullPlayer" :theme="darkTheme">
+    <n-config-provider v-if="showFullPlayer" :theme="darkTheme">
       <Playlist />
     </n-config-provider>
     <Playlist v-else />
@@ -81,6 +78,7 @@
 </template>
 
 <script setup>
+import { storeToRefs } from "pinia";
 import { darkTheme } from "naive-ui";
 import { useRouter } from "vue-router";
 import { musicData, siteStatus, siteSettings } from "@/stores";
@@ -93,6 +91,8 @@ const router = useRouter();
 const music = musicData();
 const status = siteStatus();
 const settings = siteSettings();
+const { autoPlay, showSider } = storeToRefs(settings);
+const { showPlayBar, asideMenuCollapsed, showFullPlayer } = storeToRefs(status);
 
 // 公告数据
 const annShow =
@@ -123,12 +123,12 @@ const canNotConnect = (error) => {
     title: "网络连接错误",
     content: "网络连接错误，请检查您当前的网络状态",
     positiveText: "重试",
-    negativeText: "前往本地歌曲",
+    negativeText: checkPlatform.electron() ? "前往本地歌曲" : "取消",
     onPositiveClick: () => {
       location.reload();
     },
     onNegativeClick: () => {
-      router.push("/local");
+      if (checkPlatform.electron()) router.push("/local");
     },
   });
 };
@@ -137,7 +137,7 @@ onMounted(() => {
   // 挂载方法
   window.$canNotConnect = canNotConnect;
   // 主播放器
-  initPlayer(settings.autoPlay);
+  initPlayer(autoPlay.value);
   // 全局事件
   globalEvents(router);
   // 键盘监听
@@ -165,9 +165,6 @@ onUnmounted(() => {
   .body-layout {
     top: 60px;
     transition: bottom 0.3s;
-    &.player-bar {
-      bottom: 80px;
-    }
     .main-sider {
       :deep(.n-scrollbar-content) {
         height: 100%;
@@ -179,8 +176,8 @@ onUnmounted(() => {
         display: none;
       }
     }
-    .main-layout {
-      padding: 24px;
+    &.player-bar {
+      bottom: 80px;
     }
   }
 }

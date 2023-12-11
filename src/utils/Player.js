@@ -495,7 +495,7 @@ export const checkPlayer = () => {
  * 停止播放器
  */
 export const soundStop = () => {
-  player?.stop();
+  // player?.stop();
   // setSeek();
   Howler.unload();
 };

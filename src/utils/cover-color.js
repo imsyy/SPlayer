@@ -77,7 +77,7 @@ const calcAccentColor = (dom) => {
   const top = ranked[0];
   const theme = themeFromSourceColor(top);
   // 错误 error, 中性 neutral, 中性的变体 neutralVariant, 主要的 primary, 二次 secondary, 三级 tertiary
-  const variant = "secondary";
+  const variant = settings.themeAutoCoverType;
   // 更新主题色
   status.coverTheme = {
     dark: {
@@ -92,10 +92,10 @@ const calcAccentColor = (dom) => {
         Hct.from(theme.palettes[variant].hue, theme.palettes[variant].chroma, 15).toInt(),
       ),
       bg: getAccentColor(
-        Hct.from(theme.palettes.secondary.hue, theme.palettes.secondary.chroma, 90).toInt(),
+        Hct.from(theme.palettes[variant].hue, theme.palettes[variant].chroma, 90).toInt(),
       ),
       mainBg: getAccentColor(
-        Hct.from(theme.palettes.secondary.hue, theme.palettes.secondary.chroma, 10).toInt(),
+        Hct.from(theme.palettes[variant].hue, theme.palettes[variant].chroma, 10).toInt(),
       ),
     },
     light: {
@@ -110,10 +110,10 @@ const calcAccentColor = (dom) => {
         Hct.from(theme.palettes[variant].hue, theme.palettes[variant].chroma, 90).toInt(),
       ),
       bg: getAccentColor(
-        Hct.from(theme.palettes.secondary.hue, theme.palettes.secondary.chroma, 20).toInt(),
+        Hct.from(theme.palettes[variant].hue, theme.palettes[variant].chroma, 20).toInt(),
       ),
       mainBg: getAccentColor(
-        Hct.from(theme.palettes.secondary.hue, theme.palettes.secondary.chroma, 100).toInt(),
+        Hct.from(theme.palettes[variant].hue, theme.palettes[variant].chroma, 100).toInt(),
       ),
     },
   };
@@ -136,14 +136,14 @@ const useGreyAccentColor = () => {
       shade: getAccentColor(rgb2Argb(40, 40, 40)),
       shadeTwo: getAccentColor(rgb2Argb(20, 20, 20)),
       bg: getAccentColor(rgb2Argb(190, 190, 190)),
-      mainBg: getAccentColor(rgb2Argb(11, 11, 11)),
+      mainBg: getAccentColor(rgb2Argb(16, 16, 20)),
     },
     light: {
       light: getAccentColor(rgb2Argb(150, 150, 150)),
       primary: getAccentColor(rgb2Argb(10, 10, 10)),
       shade: getAccentColor(rgb2Argb(210, 210, 210)),
       shadeTwo: getAccentColor(rgb2Argb(255, 255, 255)),
-      bg: getAccentColor(rgb2Argb(50, 50, 50)),
+      bg: getAccentColor(rgb2Argb(24, 24, 28)),
       mainBg: getAccentColor(rgb2Argb(11, 11, 11)),
     },
   };

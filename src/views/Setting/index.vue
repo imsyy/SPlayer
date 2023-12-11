@@ -64,6 +64,13 @@
           />
         </n-card>
         <n-card class="set-item">
+          <div class="name">
+            开启侧边栏
+            <n-text class="tip">将导航栏放于侧边显示，可展开或收起</n-text>
+          </div>
+          <n-switch v-model:value="showSider" :round="false" />
+        </n-card>
+        <n-card class="set-item">
           <div class="name">显示搜索历史</div>
           <n-switch v-model:value="searchHistory" :round="false" />
         </n-card>
@@ -77,7 +84,7 @@
         <n-card class="set-item">
           <div class="name">
             <div class="dev">
-              主题色跟随歌曲封面
+              全局动态取色
               <n-tag :bordered="false" round size="small" type="warning">
                 开发中
                 <template #icon>
@@ -94,6 +101,49 @@
             :round="false"
             :disabled="Object.keys(coverTheme)?.length === 0"
             @update:value="themeAutoCoverChange"
+          />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            <div class="dev">
+              全局动态取色类别
+              <n-tag :bordered="false" round size="small" type="warning">
+                开发中
+                <template #icon>
+                  <n-icon>
+                    <SvgIcon icon="code" />
+                  </n-icon>
+                </template>
+              </n-tag>
+            </div>
+            <n-text class="tip">将在下一首播放或刷新时生效，不建议更改</n-text>
+          </div>
+          <n-select
+            v-model:value="themeAutoCoverType"
+            :disabled="!themeAutoCover"
+            :options="[
+              {
+                label: '中性',
+                value: 'neutral',
+              },
+              {
+                label: '中性变体',
+                value: 'neutralVariant',
+              },
+              {
+                label: '主要',
+                value: 'primary',
+              },
+              {
+                label: '次要',
+                value: 'secondary',
+              },
+              {
+                label: '次次要',
+                value: 'tertiary',
+              },
+            ]"
+            class="set"
           />
         </n-card>
       </div>
@@ -465,6 +515,8 @@ const {
   themeTypeName,
   themeAuto,
   themeAutoCover,
+  themeAutoCoverType,
+  showSider,
   closeTip,
   closeType,
   loadSize,

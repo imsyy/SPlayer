@@ -2,7 +2,14 @@
 <template>
   <div class="title-bar">
     <n-divider vertical />
-    <n-button class="bar-icon" tag="div" quaternary circle @click="windowMin">
+    <n-button
+      class="bar-icon"
+      tag="div"
+      style="margin-left: 0"
+      quaternary
+      circle
+      @click="windowMin"
+    >
       <template #icon>
         <n-icon :depth="2">
           <SvgIcon icon="window-minimize" />
@@ -138,16 +145,15 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .title-bar {
-  padding-right: 16px;
   display: flex;
   flex-direction: row;
   align-items: center;
   -webkit-app-region: no-drag;
+  .n-divider {
+    margin-left: 16px;
+  }
   .bar-icon {
     margin-left: 8px;
-    &:first-child {
-      margin-left: 0;
-    }
   }
 }
 .close-tip {

@@ -1,6 +1,6 @@
 <!-- 专辑页面 -->
 <template>
-  <div v-if="albumId" class="album">
+  <div v-if="albumId && Number(albumId)" class="album">
     <Transition name="fade" mode="out-in">
       <div v-if="albumDetail && Object.keys(albumDetail)?.length" class="detail">
         <div class="cover">

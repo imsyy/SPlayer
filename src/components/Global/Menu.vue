@@ -4,7 +4,7 @@
     ref="mainMenuRef"
     v-model:value="menuActiveKey"
     class="main-menu"
-    :root-indent="36"
+    :root-indent="showSider ? 36 : 28"
     :indent="0"
     :collapsed="asideMenuCollapsed.value"
     :defaultExpandedKeys="['user-playlists', 'favorite-playlists']"
@@ -36,7 +36,7 @@ const router = useRouter();
 const data = siteData();
 const music = musicData();
 const status = siteStatus();
-const { asideMenuCollapsed } = storeToRefs(status);
+const { asideMenuCollapsed, showSider } = storeToRefs(status);
 const { userData, userLikeData, userLoginStatus } = storeToRefs(data);
 const { playList, playListOld, playIndex, playSongData, playHeartbeatMode, playMode } =
   storeToRefs(music);

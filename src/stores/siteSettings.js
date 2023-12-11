@@ -11,12 +11,14 @@ const useSiteSettingsStore = defineStore("siteSettings", {
       searchHistory: true, // 搜索历史
       autoSignIn: true, // 自动签到
       showGithub: true,
+      showSider: true, // 显示侧边栏
       // 主题部分
       themeType: "dark",
       themeAuto: false,
       themeTypeName: "red",
       themeTypeData: {},
       themeAutoCover: true, // 主题色跟随封面
+      themeAutoCoverType: "secondary",
       // 播放部分
       playCoverType: "cover", // 播放器样式
       songLevel: "exhigh", // 歌曲音质

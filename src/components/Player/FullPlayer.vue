@@ -394,6 +394,7 @@ onUnmounted(() => {
     justify-content: space-between;
     z-index: 2;
     box-sizing: border-box;
+    -webkit-app-region: no-drag;
     .left,
     .right {
       display: flex;

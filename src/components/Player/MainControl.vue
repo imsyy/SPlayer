@@ -4,6 +4,7 @@
     :class="{
       'main-player': true,
       'show-bar': Object.keys(music.getPlaySongData)?.length && showPlayBar,
+      'no-sider': !showSider,
     }"
     content-style="padding: 0"
     @dblclick.stop="showFullPlayer = true"
@@ -344,7 +345,7 @@ const {
   playSongLyric,
 } = storeToRefs(music);
 const { playLoading, playState, playListShow, showPlayBar, showFullPlayer } = storeToRefs(status);
-const { showYrc, bottomLyricShow } = storeToRefs(settings);
+const { showYrc, bottomLyricShow, showSider } = storeToRefs(settings);
 
 // 子组件
 const addPlaylistRef = ref(null);
@@ -508,9 +509,6 @@ watch(
   padding: 0 15px;
   z-index: 2;
   transition: bottom 0.3s;
-  &.show-bar {
-    bottom: 0;
-  }
   .slider {
     position: absolute;
     top: -11px;
@@ -776,6 +774,17 @@ watch(
           cursor: pointer;
         }
       }
+    }
+  }
+  &.show-bar {
+    bottom: 0;
+  }
+  &.no-sider {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 10vw;
+    @media (max-width: 1200px) {
+      padding: 0 5vw;
     }
   }
 }
