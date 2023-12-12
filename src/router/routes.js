@@ -244,6 +244,11 @@ const routes = [
         name: "like-videos",
         component: () => import("@/views/Like/videos.vue"),
       },
+      {
+        path: "playlists",
+        name: "like-playlists",
+        component: () => import("@/views/Like/playlists.vue"),
+      },
     ],
   },
   // 本地歌曲

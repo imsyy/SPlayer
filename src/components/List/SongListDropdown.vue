@@ -188,16 +188,36 @@ const openDropdown = (e, data, song, index, sourceId) => {
           icon: renderIcon("video"),
         },
         {
-          key: "copy",
-          label: "复制歌曲 ID",
-          props: {
-            onClick: () => {
-              const songId = song?.id?.toString();
-              copyData(songId);
+          label: "更多操作",
+          key: "others",
+          show: !isLocalSong,
+          icon: renderIcon("more"),
+          children: [
+            {
+              key: "copy",
+              label: "复制歌曲 ID",
+              props: {
+                onClick: () => {
+                  const songId = song?.id?.toString();
+                  copyData(songId);
+                },
+              },
+              icon: renderIcon("content-copy"),
             },
-          },
-          icon: renderIcon("content-copy"),
+            {
+              key: "share",
+              label: "分享歌曲链接",
+              props: {
+                onClick: () => {
+                  const shareUrl = `https://music.163.com/song?id=${song?.id?.toString()}`;
+                  copyData(shareUrl, "复制歌曲链接");
+                },
+              },
+              icon: renderIcon("share"),
+            },
+          ],
         },
+
         {
           key: "line-cloud",
           type: "divider",

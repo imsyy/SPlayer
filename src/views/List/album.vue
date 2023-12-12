@@ -107,6 +107,7 @@
           :disabled="albumData === 'empty'"
           type="primary"
           class="play"
+          tag="div"
           circle
           strong
           secondary
@@ -118,7 +119,7 @@
             </n-icon>
           </template>
         </n-button>
-        <n-button size="large" round strong secondary @click="likeOrDislike(albumId)">
+        <n-button size="large" tag="div" round strong secondary @click="likeOrDislike(albumId)">
           <template #icon>
             <n-icon>
               <SvgIcon
@@ -129,7 +130,7 @@
           {{ isLikeOrDislike(albumId) ? "收藏专辑" : "取消收藏" }}
         </n-button>
         <n-dropdown :options="moreOptions" trigger="hover" placement="bottom-start">
-          <n-button size="large" circle strong secondary>
+          <n-button size="large" tag="div" circle strong secondary>
             <template #icon>
               <n-icon>
                 <SvgIcon icon="format-list-bulleted" />

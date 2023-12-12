@@ -114,6 +114,7 @@
             :disabled="playListData === 'empty'"
             type="primary"
             class="play"
+            tag="div"
             circle
             strong
             secondary
@@ -128,6 +129,7 @@
           <n-button
             v-if="isUserPLayList"
             size="large"
+            tag="div"
             round
             strong
             secondary
@@ -140,7 +142,15 @@
             </template>
             编辑歌单
           </n-button>
-          <n-button v-else size="large" round strong secondary @click="likeOrDislike(playlistId)">
+          <n-button
+            v-else
+            size="large"
+            tag="div"
+            round
+            strong
+            secondary
+            @click="likeOrDislike(playlistId)"
+          >
             <template #icon>
               <n-icon>
                 <SvgIcon
@@ -153,7 +163,7 @@
             {{ isLikeOrDislike(playlistId) ? "收藏歌单" : "取消收藏" }}
           </n-button>
           <n-dropdown :options="moreOptions" trigger="hover" placement="bottom-start">
-            <n-button size="large" circle strong secondary>
+            <n-button size="large" tag="div" circle strong secondary>
               <template #icon>
                 <n-icon>
                   <SvgIcon icon="format-list-bulleted" />

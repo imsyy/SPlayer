@@ -69,7 +69,12 @@
             </n-text>
             <!-- 歌手 -->
             <div v-if="item.artists" class="artists">
-              <n-text v-for="ar in item.artists" :key="ar.id" class="ar">
+              <n-text
+                v-for="ar in item.artists"
+                :key="ar.id"
+                class="ar"
+                @click.stop="router.push(`/artist?id=${ar.id}`)"
+              >
                 {{ ar.name || ar.userName }}
               </n-text>
             </div>

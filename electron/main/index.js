@@ -76,10 +76,14 @@ class MainProcess {
     log.info("主进程初始化");
 
     // 启动网易云 API
-    this.ncmServer = await startNcmServer({
-      port: import.meta.env.MAIN_VITE_SERVER_PORT,
-      host: import.meta.env.MAIN_VITE_SERVER_HOST,
-    });
+    try {
+      this.ncmServer = await startNcmServer({
+        port: import.meta.env.MAIN_VITE_SERVER_PORT,
+        host: import.meta.env.MAIN_VITE_SERVER_HOST,
+      });
+    } catch (error) {
+      console.error("启动网易云 API 失败:", error);
+    }
 
     // 非开发环境启动代理
     if (!is.dev) {

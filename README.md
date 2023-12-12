@@ -1,10 +1,11 @@
 > [!IMPORTANT]
-> ## 🎉 当前项目正在重构中 🎉
+> ## 严肃警告
 >
-> - 目前版本进入维护模式，仅在遇到重大问题时会进行修复
-> - 支持客户端与网页端
-> - 支持现有版本所有功能
-> - 新增支持播放与管理本地歌曲
+> - 请务必遵守 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) 许可协议
+> - 在您的修改、演绎、分发或派生项目中，必须同样采用 **CC BY-NC-SA 4.0** 许可协议，**并在适当的位置包含本项目的许可和版权信息**
+> - **禁止用于售卖或其他商业用途**，如若发现，作者保留追究法律责任的权利
+> - 若发现未遵守 **CC BY-NC-SA 4.0** 许可协议的行为，**本项目将永久停更**
+> - 感谢您的尊重与理解
 
 <div align="center">
 <img alt="logo" height="80" src="./public/images/logo/favicon.png" />
@@ -191,16 +192,6 @@ pnpm build:mac
 - [BlurLyric](https://github.com/Project-And-Factory/BlurLyric)
 - [Vue-mmPlayer](https://github.com/maomao1996/Vue-mmPlayer)
 
-## 📜 开源许可
-
-- **本项目仅供个人学习研究使用，禁止用于商业及非法用途**
-- 本项目基于 [GNU General Public License version 3](https://opensource.org/license/gpl-3-0/) 许可进行开源
-  1. **修改和分发：** 任何对本项目的修改和分发都必须基于 GPL Version 3 进行，源代码必须一并提供
-  2. **派生作品：** 任何派生作品必须同样采用 GPL Version 3，并在适当的地方注明原始项目的许可证
-  3. **免责声明：** 根据 GPL Version 3，本项目不提供任何明示或暗示的担保。请详细阅读 GPL Version 3以了解完整的免责声明内容
-  4. **社区参与：** 欢迎社区的参与和贡献，我们鼓励开发者一同改进和维护本项目
-  5. **许可证链接：** 请阅读 [GNU General Public License version 3](https://opensource.org/license/gpl-3-0/) 了解更多详情
-
 ## 📢 免责声明
 
 本项目部分功能使用了网易云音乐的第三方 API 服务，**仅供个人学习研究使用，禁止用于商业及非法用途**
@@ -210,3 +201,15 @@ pnpm build:mac
 请使用者在使用本项目时遵守相关法律法规，**不要将本项目用于任何商业及非法用途。如有违反，一切后果由使用者自负。** 同时，使用者应该自行承担因使用本项目而带来的风险和责任。本项目开发者不对本项目所提供的服务和内容做出任何保证
 
 感谢您的理解
+
+## 📜 开源许可
+
+- **本项目仅供个人学习研究使用，禁止用于商业及非法用途**
+- 本项目基于 [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/) 许可进行开源
+  1. **修改和分发：** 任何对本项目的修改和分发都必须基于 CC BY-NC-SA 4.0 进行，源代码必须一并提供
+  2. **派生作品：** 任何派生作品必须同样采用 CC BY-NC-SA 4.0，并在适当的地方注明原始项目的许可证
+  3. **免责声明：** 根据 CC BY-NC-SA 4.0，本项目不提供任何明示或暗示的担保。请详细阅读 [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/) 以了解完整的免责声明内容
+  4. **社区参与：** 欢迎社区的参与和贡献，我们鼓励开发者一同改进和维护本项目
+  5. **许可证链接：** 请阅读 [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/) 了解更多详情
+
+<p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/"><a property="dct:title" rel="cc:attributionURL" href="https://github.com/imsyy/SPlayer">SPlayer</a> by <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://github.com/imsyy">imsyy</a> is licensed under <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC BY-NC-SA 4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a></p>

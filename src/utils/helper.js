@@ -94,20 +94,20 @@ export const getLocalCoverData = async (path, isAlbum = false) => {
 /**
  * 内容复制
  */
-export const copyData = async (data) => {
+export const copyData = async (data, info) => {
   try {
     const isElectron = checkPlatform.electron();
     // electron
     if (isElectron) {
       const result = await electron.ipcRenderer.invoke("copyData", data);
-      result ? $message.success("复制成功") : $message.error("复制失败");
+      result ? $message.success(`${info || "复制"}成功`) : $message.error(`${info || "复制"}失败`);
     }
     // 浏览器端
     else {
       if (navigator.clipboard) {
         try {
           await navigator.clipboard.writeText(data);
-          $message.success("复制成功");
+          $message.success(`${info || "复制"}成功`);
         } catch (error) {
           console.error("复制出错：", error);
           $message.error("复制失败");
@@ -120,7 +120,9 @@ export const copyData = async (data) => {
         textArea.select();
         try {
           const successful = document.execCommand("copy");
-          successful ? $message.success("复制成功") : $message.error("复制失败");
+          successful
+            ? $message.success(`${info || "复制"}成功`)
+            : $message.error(`${info || "复制"}失败`);
         } catch (err) {
           console.error("复制出错：", err);
           $message.error("复制失败");

@@ -4,6 +4,7 @@
     <!-- 标签页 -->
     <n-tabs v-model:value="tabValue" class="tabs" type="segment" @update:value="tabChange">
       <n-tab name="like-albums"> 专辑 </n-tab>
+      <n-tab name="like-playlists"> 歌单 </n-tab>
       <n-tab name="like-artists"> 歌手 </n-tab>
       <n-tab name="like-videos"> 视频 </n-tab>
     </n-tabs>

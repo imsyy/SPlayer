@@ -47,6 +47,7 @@ const formatData = (data, type = "playlist", noTracks = false) => {
           updateTime: v.updateTime || v.trackNumberUpdateTime,
           description: v.description,
           tags: v.tags || v.algTags,
+          userId: v.userId,
         };
       // 歌曲
       case "song":
