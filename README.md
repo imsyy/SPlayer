@@ -1,10 +1,10 @@
 > [!IMPORTANT]
 > ## 严肃警告
 >
-> - 请务必遵守 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) 许可协议
-> - 在您的修改、演绎、分发或派生项目中，必须同样采用 **CC BY-NC-SA 4.0** 许可协议，**并在适当的位置包含本项目的许可和版权信息**
+> - 请务必遵守 [GNU Affero General Public License (AGPL-3.0)](https://www.gnu.org/licenses/agpl-3.0.html) 许可协议
+> - 在您的修改、演绎、分发或派生项目中，必须同样采用 **AGPL-3.0** 许可协议，**并在适当的位置包含本项目的许可和版权信息**
 > - **禁止用于售卖或其他商业用途**，如若发现，作者保留追究法律责任的权利
-> - 若发现未遵守 **CC BY-NC-SA 4.0** 许可协议的行为，**本项目将永久停更**
+> - 若发现未遵守 **AGPL-3.0** 许可协议的行为，**本项目将永久停更**
 > - 感谢您的尊重与理解
 
 <div align="center">
@@ -205,11 +205,10 @@ pnpm build:mac
 ## 📜 开源许可
 
 - **本项目仅供个人学习研究使用，禁止用于商业及非法用途**
-- 本项目基于 [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/) 许可进行开源
-  1. **修改和分发：** 任何对本项目的修改和分发都必须基于 CC BY-NC-SA 4.0 进行，源代码必须一并提供
-  2. **派生作品：** 任何派生作品必须同样采用 CC BY-NC-SA 4.0，并在适当的地方注明原始项目的许可证
-  3. **免责声明：** 根据 CC BY-NC-SA 4.0，本项目不提供任何明示或暗示的担保。请详细阅读 [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/) 以了解完整的免责声明内容
-  4. **社区参与：** 欢迎社区的参与和贡献，我们鼓励开发者一同改进和维护本项目
-  5. **许可证链接：** 请阅读 [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/) 了解更多详情
-
-<p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/"><a property="dct:title" rel="cc:attributionURL" href="https://github.com/imsyy/SPlayer">SPlayer</a> by <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://github.com/imsyy">imsyy</a> is licensed under <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC BY-NC-SA 4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a></p>
+- 本项目基于 [GNU Affero General Public License (AGPL-3.0)](https://www.gnu.org/licenses/agpl-3.0.html) 许可进行开源
+  1. **修改和分发：** 任何对本项目的修改和分发都必须基于 AGPL-3.0 进行，源代码必须一并提供
+  2. **派生作品：** 任何派生作品必须同样采用 AGPL-3.0，并在适当的地方注明原始项目的许可证
+  3. **注明原作者：** 在任何修改、派生作品或其他分发中，必须在适当的位置明确注明原作者及其贡献
+  4. **免责声明：** 根据 AGPL-3.0，本项目不提供任何明示或暗示的担保。请详细阅读 [GNU Affero General Public License (AGPL-3.0)](https://www.gnu.org/licenses/agpl-3.0.html) 以了解完整的免责声明内容
+  5. **社区参与：** 欢迎社区的参与和贡献，我们鼓励开发者一同改进和维护本项目
+  6. **许可证链接：** 请阅读 [GNU Affero General Public License (AGPL-3.0)](https://www.gnu.org/licenses/agpl-3.0.html) 了解更多详情
