@@ -19,6 +19,8 @@ const createSystemInfo = (win) => {
   Menu.setApplicationMenu(Menu.buildFromTemplate(createTrayMenu(win)));
   // 给托盘图标设置气球提示
   mainTray.setToolTip(app.getName());
+  // 自定义任务栏缩略图
+  createThumbar(win);
   // 歌曲数据改变时
   ipcMain.on("songNameChange", (_, val) => {
     playSongName = val;
@@ -29,6 +31,11 @@ const createSystemInfo = (win) => {
   });
   ipcMain.on("songStateChange", (_, val) => {
     playSongState = val;
+    createThumbar(win);
+  });
+  // 监听系统主题改变
+  nativeTheme.on("updated", () => {
+    createThumbar(win);
   });
   // 左键事件
   mainTray.on("click", () => {
@@ -45,20 +52,22 @@ const createSystemInfo = (win) => {
   }
 };
 
-// 生成右键菜单
-const createTrayMenu = (win) => {
+// 生成图标
+const createIcon = (name) => {
   // 系统是否为暗色
   const isDarkMode = nativeTheme.shouldUseDarkColors;
-  // 生成图标
-  const createIcon = (name) => {
-    return nativeImage
-      .createFromPath(
-        isDarkMode
-          ? join(__dirname, `../../public/images/icon/${name}-dark.png`)
-          : join(__dirname, `../../public/images/icon/${name}-light.png`),
-      )
-      .resize({ width: 16, height: 16 });
-  };
+  // 返回图标
+  return nativeImage
+    .createFromPath(
+      isDarkMode
+        ? join(__dirname, `../../public/images/icon/${name}-dark.png`)
+        : join(__dirname, `../../public/images/icon/${name}-light.png`),
+    )
+    .resize({ width: 16, height: 16 });
+};
+
+// 生成右键菜单
+const createTrayMenu = (win) => {
   // 返回菜单
   return [
     {
@@ -120,6 +129,34 @@ const createTrayMenu = (win) => {
       },
     },
   ];
+};
+
+// 自定义任务栏缩略图 - Win
+const createThumbar = (win) => {
+  win.setThumbarButtons([]);
+  win.setThumbarButtons([
+    {
+      tooltip: "上一曲",
+      icon: createIcon("prev"),
+      click: () => {
+        win.webContents.send("playNextOrPrev", "prev");
+      },
+    },
+    {
+      tooltip: playSongState ? "暂停" : "播放",
+      icon: createIcon(playSongState ? "pause" : "play"),
+      click() {
+        win.webContents.send("playOrPause");
+      },
+    },
+    {
+      tooltip: "下一曲",
+      icon: createIcon("next"),
+      click: () => {
+        win.webContents.send("playNextOrPrev", "next");
+      },
+    },
+  ]);
 };
 
 export default createSystemInfo;

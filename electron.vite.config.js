@@ -6,6 +6,7 @@ import {
   splitVendorChunkPlugin,
 } from "electron-vite";
 import { NaiveUiResolver } from "unplugin-vue-components/resolvers";
+import { VitePWA } from "vite-plugin-pwa";
 import vue from "@vitejs/plugin-vue";
 import AutoImport from "unplugin-auto-import/vite";
 import Components from "unplugin-vue-components/vite";
@@ -71,6 +72,52 @@ export default defineConfig(({ mode }) => {
         viteCompression(),
         // splitVendorChunkPlugin
         splitVendorChunkPlugin(),
+        // PWA
+        VitePWA({
+          registerType: "autoUpdate",
+          workbox: {
+            clientsClaim: true,
+            skipWaiting: true,
+            cleanupOutdatedCaches: true,
+            runtimeCaching: [
+              {
+                urlPattern: /(.*?)\.(woff2|woff|ttf)/,
+                handler: "CacheFirst",
+                options: {
+                  cacheName: "file-cache",
+                },
+              },
+              {
+                urlPattern: /(.*?)\.(webp|png|jpe?g|svg|gif|bmp|psd|tiff|tga|eps)/,
+                handler: "CacheFirst",
+                options: {
+                  cacheName: "image-cache",
+                },
+              },
+            ],
+          },
+          manifest: {
+            name: loadEnv(mode, process.cwd()).RENDERER_VITE_SITE_TITLE,
+            short_name: loadEnv(mode, process.cwd()).RENDERER_VITE_SITE_TITLE,
+            description: loadEnv(mode, process.cwd()).RENDERER_VITE_SITE_DES,
+            display: "standalone",
+            start_url: "/",
+            theme_color: "#fff",
+            background_color: "#efefef",
+            icons: [
+              {
+                src: "/images/logo/favicon.png",
+                sizes: "200x200",
+                type: "image/png",
+              },
+              {
+                src: "/images/logo/favicon_512.png",
+                sizes: "512x512",
+                type: "image/png",
+              },
+            ],
+          },
+        }),
       ],
       // 服务器配置
       server: {
@@ -101,6 +148,9 @@ export default defineConfig(({ mode }) => {
         },
         sourcemap: false,
         win: {
+          icon: resolve(__dirname, "/public/images/logo/favicon.png"),
+        },
+        linux: {
           icon: resolve(__dirname, "/public/images/logo/favicon.png"),
         },
       },

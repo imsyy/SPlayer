@@ -6,9 +6,11 @@
   "author": "imsyy",
   "home": "https://imsyy.top",
   "github": "https://github.com/imsyy/SPlayer",
+  "repository": "github:imsyy/SPlayer",
   "engines": {
     "node": ">=16.16.0"
   },
+  "packageManager": "pnpm@8.12.0",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts,.vue --fix",
@@ -51,13 +53,13 @@
     "@vitejs/plugin-vue": "^4.3.1",
     "@vue/eslint-config-prettier": "^8.0.0",
     "ajv": "^8.12.0",
-    "electron": "^25.6.0",
-    "electron-builder": "^24.6.4",
+    "electron": "^27.0.0",
+    "electron-builder": "^24.9.1",
     "electron-log": "^5.0.1",
-    "electron-vite": "^1.0.27",
+    "electron-vite": "^1.0.29",
     "eslint": "^8.47.0",
     "eslint-plugin-vue": "^9.17.0",
-    "naive-ui": "^2.34.4",
+    "naive-ui": "^2.35.0",
     "prettier": "^3.0.2",
     "sass": "^1.66.1",
     "terser": "^5.19.2",
@@ -65,6 +67,7 @@
     "unplugin-vue-components": "^0.25.1",
     "vite": "^4.4.9",
     "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-pwa": "^0.17.4",
     "vue": "^3.3.4"
   }
 }

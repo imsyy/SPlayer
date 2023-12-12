@@ -105,6 +105,7 @@ const openDropdown = (e, data, song, index, sourceId) => {
       (playlist) => playlist.userId === userId,
     );
     // 当前状态
+    const isFm = playMode.value === "fm";
     const isLocalSong = song?.path ? true : false;
     const isCloud = router.currentRoute.value.name === "cloud";
     const isUserPlaylist = sourceId !== 0 && userPlaylistsData.some((pl) => pl.id == sourceId);
@@ -136,7 +137,7 @@ const openDropdown = (e, data, song, index, sourceId) => {
         {
           key: "next-play",
           label: "下一首播放",
-          show: playSongData.value?.id === song.id || playMode.value === "fm" ? false : true,
+          show: playSongData.value?.id !== song.id && !isFm,
           props: {
             onClick: () => {
               addSongToNext(song);

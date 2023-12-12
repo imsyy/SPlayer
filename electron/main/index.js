@@ -41,10 +41,12 @@ class MainProcess {
         height: { type: "number", default: 740 },
       },
     });
+    // 设置应用程序名称
+    if (process.platform === "win32") app.setAppUserModelId(app.getName());
     // 初始化
-    this.checkApp().then((lockObtained) => {
+    this.checkApp().then(async (lockObtained) => {
       if (lockObtained) {
-        this.init();
+        await this.init();
       }
     });
   }
@@ -86,9 +88,10 @@ class MainProcess {
     }
 
     // 非开发环境启动代理
-    if (!is.dev) {
-      this.mainServer = await startMainServer();
-    }
+    // if (!is.dev) {
+    //   this.mainServer = await startMainServer();
+    // }
+    this.mainServer = await startMainServer();
 
     // 注册应用协议
     app.setAsDefaultProtocolClient("splayer");
@@ -131,6 +134,8 @@ class MainProcess {
       this.mainWindow.show();
       // mainWindow.maximize();
       this.store.set("windowSize", this.mainWindow.getBounds());
+      // 创建系统信息
+      createSystemInfo(this.mainWindow);
     });
 
     // 主窗口事件
@@ -148,9 +153,10 @@ class MainProcess {
       this.mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL);
     }
     // 生产模式
-    else {
-      this.mainWindow.loadURL(`http://127.0.0.1:${import.meta.env.MAIN_VITE_MAIN_PORT ?? 7899}`);
-    }
+    // else {
+    //   this.mainWindow.loadURL(`http://127.0.0.1:${import.meta.env.MAIN_VITE_MAIN_PORT ?? 7899}`);
+    // }
+    this.mainWindow.loadURL(`http://127.0.0.1:${import.meta.env.MAIN_VITE_MAIN_PORT ?? 7899}`);
 
     // 监听关闭
     this.mainWindow.on("close", (event) => {
@@ -164,13 +170,11 @@ class MainProcess {
 
   // 主应用程序事件
   mainAppEvents() {
-    app.on("ready", async () => {
+    app.whenReady().then(async () => {
       // 创建主窗口
       this.createWindow();
       // 检测更新
       configureAutoUpdater();
-      // 创建系统信息
-      createSystemInfo(this.mainWindow);
       // 引入主 Ipc
       mainIpcMain(this.mainWindow);
       // 注册快捷键
