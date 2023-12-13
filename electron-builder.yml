@@ -23,9 +23,7 @@ win:
   # 应用程序的图标文件路径
   icon: public/images/logo/favicon_256.png
   # 构建类型
-  target:
-    - nsis
-    - portable
+  target: nsis
   # 管理员权限
   requestedExecutionLevel: highestAvailable
 # NSIS 安装器配置
@@ -75,7 +73,6 @@ linux:
   # 构建类型
   target:
     - AppImage
-    - snap
     - deb
     - rpm
     - tar.gz

@@ -39,15 +39,18 @@ jobs:
           path: |
             dist/*.exe
             dist/*.msi
+            dist/latest.yml
       # 创建 GitHub Release
       - name: Release
         uses: softprops/action-gh-release@v0.1.15
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           draft: true
+          if-no-files-found: ignore
           files: |
             dist/*.exe
             dist/*.msi
+            dist/latest.yml
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
   # Mac
@@ -81,15 +84,18 @@ jobs:
           path: |
             dist/*.dmg
             dist/*.zip
+            dist/latest-mac.yml
       # 创建 GitHub Release
       - name: Release
         uses: softprops/action-gh-release@v0.1.15
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           draft: true
+          if-no-files-found: ignore
           files: |
             dist/*.dmg
             dist/*.zip
+            dist/latest-mac.yml
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
   # Linux
@@ -127,15 +133,20 @@ jobs:
             dist/*.AppImage
             dist/*.deb
             dist/*.rpm
+            dist/*.tar.gz
+            dist/latest-linux.yml
       # 创建 GitHub Release
       - name: Release
         uses: softprops/action-gh-release@v0.1.15
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           draft: true
+          if-no-files-found: ignore
           files: |
             dist/*.AppImage
             dist/*.deb
             dist/*.rpm
+            dist/*.tar.gz
+            dist/latest-linux.yml
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}

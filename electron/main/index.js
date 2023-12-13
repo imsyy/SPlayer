@@ -88,10 +88,9 @@ class MainProcess {
     }
 
     // 非开发环境启动代理
-    // if (!is.dev) {
-    //   this.mainServer = await startMainServer();
-    // }
-    this.mainServer = await startMainServer();
+    if (!is.dev) {
+      this.mainServer = await startMainServer();
+    }
 
     // 注册应用协议
     app.setAsDefaultProtocolClient("splayer");
@@ -153,10 +152,9 @@ class MainProcess {
       this.mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL);
     }
     // 生产模式
-    // else {
-    //   this.mainWindow.loadURL(`http://127.0.0.1:${import.meta.env.MAIN_VITE_MAIN_PORT ?? 7899}`);
-    // }
-    this.mainWindow.loadURL(`http://127.0.0.1:${import.meta.env.MAIN_VITE_MAIN_PORT ?? 7899}`);
+    else {
+      this.mainWindow.loadURL(`http://127.0.0.1:${import.meta.env.MAIN_VITE_MAIN_PORT ?? 7899}`);
+    }
 
     // 监听关闭
     this.mainWindow.on("close", (event) => {
