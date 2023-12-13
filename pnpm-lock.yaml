@@ -15,7 +15,7 @@ dependencies:
     specifier: ^0.2.7
     version: 0.2.7
   NeteaseCloudMusicApi:
-    specifier: git+git@github.com:imsyy/NeteaseCloudMusicApi.git
+    specifier: github:imsyy/NeteaseCloudMusicApi
     version: git@github.com+imsyy/NeteaseCloudMusicApi/fa5c733895bfe6cbf55380c2d7072f367bf6a09b
   axios:
     specifier: ^1.4.0
