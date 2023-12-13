@@ -15,8 +15,8 @@ dependencies:
     specifier: ^0.2.7
     version: 0.2.7
   NeteaseCloudMusicApi:
-    specifier: github:imsyy/NeteaseCloudMusicApi
-    version: git@github.com+imsyy/NeteaseCloudMusicApi/fa5c733895bfe6cbf55380c2d7072f367bf6a09b
+    specifier: git+https://github.com/imsyy/NeteaseCloudMusicApi.git
+    version: github.com/imsyy/NeteaseCloudMusicApi/fa5c733895bfe6cbf55380c2d7072f367bf6a09b
   axios:
     specifier: ^1.4.0
     version: 1.4.0
@@ -7306,8 +7306,8 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  git@github.com+imsyy/NeteaseCloudMusicApi/fa5c733895bfe6cbf55380c2d7072f367bf6a09b:
-    resolution: {commit: fa5c733895bfe6cbf55380c2d7072f367bf6a09b, repo: git@github.com:imsyy/NeteaseCloudMusicApi.git, type: git}
+  github.com/imsyy/NeteaseCloudMusicApi/fa5c733895bfe6cbf55380c2d7072f367bf6a09b:
+    resolution: {tarball: https://codeload.github.com/imsyy/NeteaseCloudMusicApi/tar.gz/fa5c733895bfe6cbf55380c2d7072f367bf6a09b}
     name: NeteaseCloudMusicApi
     version: 4.13.8
     engines: {node: '>=12'}
