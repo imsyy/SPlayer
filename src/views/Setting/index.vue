@@ -402,7 +402,7 @@
                 </template>
               </n-tag>
             </div>
-            <n-text class="tip">开启后可能会造成卡顿等性能问题</n-text>
+            <n-text class="tip">可能会造成卡顿等性能问题，请确保显卡为 GTX 2060 及以上</n-text>
           </div>
           <n-switch v-model:value="showYrcAnimation" :disabled="!showYrc" :round="false" />
         </n-card>

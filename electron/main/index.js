@@ -155,15 +155,6 @@ class MainProcess {
     else {
       this.mainWindow.loadURL(`http://127.0.0.1:${import.meta.env.MAIN_VITE_MAIN_PORT ?? 7899}`);
     }
-
-    // 监听关闭
-    this.mainWindow.on("close", (event) => {
-      if (!app.isQuiting) {
-        event.preventDefault();
-        this.mainWindow.hide();
-      }
-      return false;
-    });
   }
 
   // 主应用程序事件
@@ -240,6 +231,19 @@ class MainProcess {
 
     this.mainWindow.on("moved", () => {
       this.store.set("windowSize", this.mainWindow.getBounds());
+    });
+
+    // 窗口关闭
+    this.mainWindow.on("close", (event) => {
+      if (platform.isLinux) {
+        app.quit();
+      } else {
+        if (!app.isQuiting) {
+          event.preventDefault();
+          this.mainWindow.hide();
+        }
+        return false;
+      }
     });
   }
 }

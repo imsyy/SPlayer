@@ -12,6 +12,7 @@
     :collapsed-icon-size="22"
     :options="menuOptions"
     @contextmenu="openSideDropdown($event)"
+    @update:value="checkMenuItem"
   />
   <!-- 右键菜单 -->
   <CoverDropdown ref="coverDropdownRef" />
@@ -36,10 +37,17 @@ const router = useRouter();
 const data = siteData();
 const music = musicData();
 const status = siteStatus();
-const { asideMenuCollapsed, showSider } = storeToRefs(status);
+const { asideMenuCollapsed, showSider, showFullPlayer } = storeToRefs(status);
 const { userData, userLikeData, userLoginStatus } = storeToRefs(data);
-const { playList, playListOld, playIndex, playSongData, playHeartbeatMode, playMode } =
-  storeToRefs(music);
+const {
+  playList,
+  playListOld,
+  playIndex,
+  playSongData,
+  playHeartbeatMode,
+  playMode,
+  privateFmSong,
+} = storeToRefs(music);
 
 // 子组件
 const coverDropdownRef = ref(null);
@@ -120,6 +128,25 @@ const menuOptions = computed(() => [
       ),
     key: "discover",
     icon: renderIcon("discover-fill"),
+  },
+  {
+    label: "私人漫游",
+    key: "fm",
+    icon: renderIcon("radio"),
+  },
+  {
+    label: () =>
+      h(
+        RouterLink,
+        {
+          to: {
+            name: "record",
+          },
+        },
+        () => ["播客电台"],
+      ),
+    key: "record",
+    icon: renderIcon("record"),
   },
   {
     label: () =>
@@ -314,10 +341,24 @@ const changeUserPlaylists = (data) => {
 };
 
 // 选中菜单项
-const checkMenuItem = (key) => {
-  console.log(key);
+const checkMenuItem = async (key) => {
   // 例外路由
   const otherRouter = ["search", "videos-player", "playlist", "like-songs"];
+  // 私人漫游
+  if (key === "fm") {
+    if (!privateFmSong.value || !Object.keys(privateFmSong.value)?.length) {
+      return $message.error("开启私人漫游出错，请重试");
+    }
+    if (playMode.value === "fm") {
+      fadePlayOrPause();
+    } else {
+      // 更改播放模式
+      playMode.value = "fm";
+      await initPlayer(true);
+    }
+    showFullPlayer.value = true;
+    $message.info("已开启私人漫游", { icon: renderIcon("radio") });
+  }
   // 特殊处理
   if (!key) {
     menuActiveKey.value = "home";

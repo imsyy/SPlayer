@@ -286,6 +286,23 @@ const routes = [
       },
     ],
   },
+  // 播客
+  {
+    path: "/record",
+    name: "record",
+    meta: {
+      title: "播客",
+    },
+    component: () => import("@/views/Record/index.vue"),
+    redirect: "/record/hot",
+    children: [
+      {
+        path: "hot",
+        name: "record-hot",
+        component: () => import("@/views/Record/hot.vue"),
+      },
+    ],
+  },
   // 全局设置
   {
     path: "/setting",

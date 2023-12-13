@@ -34,7 +34,6 @@ export const getArtistDetail = (id) => {
   return axios({
     method: "GET",
     url: "/artist/detail",
-    noCookie: true,
     params: {
       id,
     },
