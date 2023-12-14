@@ -6,6 +6,7 @@
       v-model:value="searchInputValue"
       :class="status.searchInputFocus ? 'input focus' : 'input'"
       :input-props="{ autoComplete: false }"
+      :allow-input="noSideSpace"
       placeholder="搜索音乐 / 视频"
       round
       clearable
@@ -28,9 +29,9 @@
       />
     </Transition>
     <!-- 热搜榜及历史 -->
-    <SearchHot :searchValue="searchInputValue" @toSearch="toSearch" />
+    <SearchHot :searchValue="searchInputValue?.trim()" @toSearch="toSearch" />
     <!-- 搜索建议 -->
-    <SearchSuggestions :searchValue="searchInputValue" @toSearch="toSearch" />
+    <SearchSuggestions :searchValue="searchInputValue?.trim()" @toSearch="toSearch" />
   </div>
 </template>
 
@@ -49,7 +50,10 @@ const data = siteData();
 const { playSongData } = storeToRefs(music);
 
 const searchInpRef = ref(null);
-const searchInputValue = ref(null);
+const searchInputValue = ref("");
+
+// 搜索框输入限制
+const noSideSpace = (value) => !value.startsWith(" ") && !value.endsWith(" ");
 
 // 搜索框 focus
 const searchInputFocus = () => {

@@ -48,7 +48,7 @@ const playAllSongs = async () => {
   console.log(historyPlaylist.value);
   playList.value = historyPlaylist.value;
   playIndex.value = 0;
-  await fadePlayOrPause();
+  fadePlayOrPause();
   $message.info("已开始播放", { showIcon: false });
 };
 

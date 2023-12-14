@@ -1,50 +1,48 @@
 <!-- 播放器 - 专辑封面 -->
 <template>
-  <Transition name="fade" mode="out-in">
-    <div :key="music.getPlaySongData.id || playCoverType" :class="['cover', playCoverType]">
-      <!-- 指针 -->
-      <img
-        v-if="playCoverType === 'record'"
-        :class="{ pointer: true, play: playState }"
-        src="/images/pic/pointer.png?assest"
-        alt="pointer"
-      />
-      <!-- 专辑图片 -->
-      <n-image
-        :src="
-          music.getPlaySongData?.coverSize?.l ||
-          music.getPlaySongData?.cover ||
-          music.getPlaySongData?.localCover
-        "
-        :style="{
-          animationPlayState: playState ? 'running' : 'paused',
-        }"
-        class="cover-img"
-        preview-disabled
-        @load="
-          (e) => {
-            e.target.style.opacity = 1;
-          }
-        "
-      >
-        <template #placeholder>
-          <div class="cover-loading">
-            <img class="loading-img" src="/images/pic/song.jpg?assest" alt="loading-img" />
-          </div>
-        </template>
-      </n-image>
-      <!-- 封面背板 -->
-      <n-image
-        class="cover-shadow"
-        preview-disabled
-        :src="
-          music.getPlaySongData?.coverSize?.l ||
-          music.getPlaySongData?.cover ||
-          music.getPlaySongData?.localCover
-        "
-      />
-    </div>
-  </Transition>
+  <div :class="['cover', playCoverType]">
+    <!-- 指针 -->
+    <img
+      v-if="playCoverType === 'record'"
+      :class="{ pointer: true, play: playState }"
+      src="/images/pic/pointer.png?assest"
+      alt="pointer"
+    />
+    <!-- 专辑图片 -->
+    <n-image
+      :src="
+        music.getPlaySongData?.coverSize?.l ||
+        music.getPlaySongData?.cover ||
+        music.getPlaySongData?.localCover
+      "
+      :style="{
+        animationPlayState: playState ? 'running' : 'paused',
+      }"
+      class="cover-img"
+      preview-disabled
+      @load="
+        (e) => {
+          e.target.style.opacity = 1;
+        }
+      "
+    >
+      <template #placeholder>
+        <div class="cover-loading">
+          <img class="loading-img" src="/images/pic/song.jpg?assest" alt="loading-img" />
+        </div>
+      </template>
+    </n-image>
+    <!-- 封面背板 -->
+    <n-image
+      class="cover-shadow"
+      preview-disabled
+      :src="
+        music.getPlaySongData?.coverSize?.l ||
+        music.getPlaySongData?.cover ||
+        music.getPlaySongData?.localCover
+      "
+    />
+  </div>
 </template>
 
 <script setup>

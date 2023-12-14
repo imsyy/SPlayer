@@ -3,7 +3,15 @@
   <div :class="{ setting: true, 'use-cover': themeAutoCover }">
     <n-h1 class="title">
       <n-text>全局设置</n-text>
-      <n-text class="version" depth="3">v&nbsp;{{ packageJson.version }}</n-text>
+      <div class="copyright" @click="jump">
+        <div class="author">
+          <n-icon depth="3" size="18">
+            <SvgIcon icon="github" />
+          </n-icon>
+          <n-text class="author-text" depth="3">{{ packageJson.author }}</n-text>
+        </div>
+        <n-text class="version" depth="3">v&nbsp;{{ packageJson.version }}</n-text>
+      </div>
     </n-h1>
     <!-- 导航栏 -->
     <n-tabs
@@ -191,9 +199,11 @@
         <n-card class="set-item">
           <div class="name">
             启动时自动播放
-            <n-text class="tip">程序启动时自动播放上次歌曲</n-text>
+            <n-text class="tip">
+              {{ checkPlatform.electron() ? "程序启动时自动播放上次歌曲" : "客户端独占功能" }}
+            </n-text>
           </div>
-          <n-switch v-model:value="autoPlay" :round="false" />
+          <n-switch v-model:value="autoPlay" :disabled="!checkPlatform.electron()" :round="false" />
         </n-card>
         <n-card class="set-item">
           <div class="name">记忆上次播放位置</div>
@@ -628,6 +638,11 @@ const choosePath = async () => {
   if (selectedDir) downloadPath.value = selectedDir;
 };
 
+// 跳转
+const jump = () => {
+  window.open(packageJson.github);
+};
+
 // 程序重置
 const resetApp = () => {
   $dialog.warning({
@@ -662,11 +677,29 @@ const resetApp = () => {
     margin: 20px 0;
     font-size: 36px;
     font-weight: bold;
-    .version {
+    .copyright {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
       margin-left: 12px;
       margin-bottom: 6px;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: normal;
+      cursor: pointer;
+      .author {
+        display: flex;
+        align-items: center;
+        &::after {
+          content: "/";
+          transform: translateY(2px);
+          font-size: 14px;
+          margin: 0 6px;
+          opacity: 0.6;
+        }
+        .author-text {
+          margin-left: 6px;
+        }
+      }
     }
   }
   .n-tabs {

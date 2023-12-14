@@ -133,6 +133,11 @@ const canNotConnect = (error) => {
   });
 };
 
+// 网页端键盘事件
+const handleKeyUp = (event) => {
+  globalShortcut(event, router);
+};
+
 onMounted(() => {
   // 挂载方法
   window.$canNotConnect = canNotConnect;
@@ -141,13 +146,15 @@ onMounted(() => {
   // 全局事件
   globalEvents(router);
   // 键盘监听
-  if (!checkPlatform.electron()) window.addEventListener("keyup", globalShortcut);
+  if (!checkPlatform.electron()) {
+    window.addEventListener("keyup", handleKeyUp);
+  }
   // 显示公告
   showAnnouncements();
 });
 
 onUnmounted(() => {
-  if (!checkPlatform.electron()) window.removeEventListener("keyup", globalShortcut);
+  if (!checkPlatform.electron()) window.removeEventListener("keyup", handleKeyUp);
 });
 </script>
 

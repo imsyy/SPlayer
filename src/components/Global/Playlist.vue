@@ -52,13 +52,7 @@
 import { NText, NIcon } from "naive-ui";
 import { storeToRefs } from "pinia";
 import { musicData, siteStatus } from "@/stores";
-import {
-  initPlayer,
-  fadePlayOrPause,
-  changePlayIndex,
-  soundStop,
-  checkPlayer,
-} from "@/utils/Player";
+import { initPlayer, fadePlayOrPause, changePlayIndex, soundStop } from "@/utils/Player";
 import SvgIcon from "@/components/Global/SvgIcon";
 
 const music = musicData();
@@ -155,8 +149,6 @@ const playSong = async (song, index) => {
   } else {
     console.log("与当前播放歌曲不一致");
     playSongData.value = song;
-    // 渐出音乐
-    if (checkPlayer()) await fadePlayOrPause("pause");
     // 初始化播放器
     initPlayer(true);
   }

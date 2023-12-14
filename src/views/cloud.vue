@@ -167,7 +167,7 @@ const playAllSongs = async () => {
     initPlayer(true);
   } else {
     // 播放
-    await fadePlayOrPause();
+    fadePlayOrPause();
   }
   $message.info("已开始播放", { showIcon: false });
 };

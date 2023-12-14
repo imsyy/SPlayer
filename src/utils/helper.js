@@ -340,3 +340,18 @@ export const downloadFile = async (data, song, path = null) => {
     return false;
   }
 };
+
+/**
+ * 将字节数格式化为可读的大小字符串。
+ * @param {number} bytes - 要格式化的字节数
+ * @param {number} [decimals=2] - 小数点位数
+ * @returns {string} - 格式化后的大小字符串（例如，"10 KB"）
+ */
+export const formatBytes = (bytes, decimals = 2) => {
+  if (bytes === 0) return "0 K";
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ["K", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+};

@@ -406,7 +406,7 @@ const openSideDropdown = (e) => {
 const startHeartRate = debounce(async () => {
   try {
     if (!isLogin()) return false;
-    if (playHeartbeatMode.value) return await fadePlayOrPause();
+    if (playHeartbeatMode.value) return fadePlayOrPause();
     // 基础数据
     const likeSongs = userLikeData.value.songs;
     const songId = playSongData.value?.id;

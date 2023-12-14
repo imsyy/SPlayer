@@ -338,7 +338,7 @@ export const changePlayIndex = async (type = "next", play = false) => {
   if (playMode === "fm") {
     await music.setPersonalFm(true);
     // 渐出音乐
-    if (!isPlayEnd) await fadePlayOrPause("pause");
+    if (!isPlayEnd) fadePlayOrPause("pause");
     // 初始化播放器
     initPlayer(play);
     return true;
@@ -374,7 +374,7 @@ export const changePlayIndex = async (type = "next", play = false) => {
     if (songData) {
       music.playSongData = songData;
       // 渐出音乐
-      if (!isPlayEnd) await fadePlayOrPause("pause");
+      if (!isPlayEnd) fadePlayOrPause("pause");
       // 初始化播放器
       initPlayer(play);
     } else {
@@ -430,34 +430,25 @@ export const addSongToNext = (data, play = false) => {
 export const fadePlayOrPause = (type = "play") => {
   const settings = siteSettings();
   const duration = settings.songVolumeFade ? 300 : 0;
-  return new Promise((resolve) => {
-    const music = musicData();
-    // 渐入
-    if (type === "play") {
-      if (player?.playing()) {
-        resolve();
-        return;
-      }
-      player?.play();
-      // 更新播放进度
-      setAllInterval();
-      player?.once("play", () => {
-        player?.fade(0, music.playVolume, duration);
-        player?.once("fade", () => {
-          resolve();
-        });
-      });
-    }
-    // 渐出
-    else if (type === "pause") {
-      player?.fade(music.playVolume, 0, duration);
-      player?.once("fade", () => {
-        player?.pause();
-        cleanAllInterval();
-        resolve();
-      });
-    }
-  });
+  const music = musicData();
+  // 渐入
+  if (type === "play") {
+    if (player?.playing()) return;
+    player?.play();
+    // 更新播放进度
+    setAllInterval();
+    player?.once("play", () => {
+      player?.fade(0, music.playVolume, duration);
+    });
+  }
+  // 渐出
+  else if (type === "pause") {
+    player?.fade(music.playVolume, 0, duration);
+    player?.once("fade", () => {
+      player?.pause();
+      cleanAllInterval();
+    });
+  }
 };
 
 /**
@@ -465,7 +456,7 @@ export const fadePlayOrPause = (type = "play") => {
  */
 export const playOrPause = async () => {
   const status = player?.playing();
-  await fadePlayOrPause(status ? "pause" : "play");
+  fadePlayOrPause(status ? "pause" : "play");
 };
 
 /**
@@ -652,10 +643,10 @@ const initMediaSession = async (data, islocal, cover) => {
     });
     // 按键关联
     navigator.mediaSession.setActionHandler("play", async () => {
-      await fadePlayOrPause("play");
+      fadePlayOrPause("play");
     });
     navigator.mediaSession.setActionHandler("pause", async () => {
-      await fadePlayOrPause("pause");
+      fadePlayOrPause("pause");
     });
     navigator.mediaSession.setActionHandler("previoustrack", () => {
       changePlayIndex("prev", true);

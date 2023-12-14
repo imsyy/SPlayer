@@ -279,7 +279,7 @@ const playAllSongs = async () => {
     playSongData.value = albumData.value[existingIndex];
     playIndex.value = existingIndex;
     // 播放
-    await fadePlayOrPause();
+    fadePlayOrPause();
   }
   $message.info("已开始播放", { showIcon: false });
 };

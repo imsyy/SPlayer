@@ -324,7 +324,7 @@ const initPlayer = () => {
   // 播放器事件
   player.value?.on("playing", async () => {
     status.showPlayBar = false;
-    await fadePlayOrPause("pause");
+    fadePlayOrPause("pause");
   });
   player.value?.on("pause", async () => {
     status.showPlayBar = true;

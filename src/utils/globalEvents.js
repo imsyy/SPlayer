@@ -2,6 +2,10 @@ import { checkPlatform } from "@/utils/helper";
 import { playOrPause, changePlayIndex } from "@/utils/Player";
 import { siteStatus } from "@/stores";
 
+/**
+ * 全局事件
+ * @param {import('vue-router').Router} router - router
+ */
 const globalEvents = (router) => {
   if (!checkPlatform.electron()) return false;
   // 显示播放器
