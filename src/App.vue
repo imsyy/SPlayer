@@ -79,13 +79,14 @@
 
 <script setup>
 import { storeToRefs } from "pinia";
-import { darkTheme } from "naive-ui";
+import { darkTheme, NButton } from "naive-ui";
 import { useRouter } from "vue-router";
 import { musicData, siteStatus, siteSettings } from "@/stores";
 import { initPlayer } from "@/utils/Player";
 import { checkPlatform } from "@/utils/helper";
 import globalShortcut from "@/utils/globalShortcut";
 import globalEvents from "@/utils/globalEvents";
+import packageJson from "@/../package.json";
 
 const router = useRouter();
 const music = musicData();
@@ -103,6 +104,45 @@ const annType = import.meta.env.RENDERER_VITE_ANN_TYPE;
 const annTitle = import.meta.env.RENDERER_VITE_ANN_TITLE;
 const annContene = import.meta.env.RENDERER_VITE_ANN_CONTENT;
 const annDuration = Number(import.meta.env.RENDERER_VITE_ANN_DURATION);
+
+// PWA
+if ("serviceWorker" in navigator) {
+  // 更新完成提醒
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (checkPlatform.electron()) {
+      $notification.create({
+        title: "🎉 更新提醒",
+        content: "检测到软件有更新，是否重新启动软件以应用更新？",
+        meta: "v " + (packageJson.version || "1.0.0"),
+        action: () =>
+          h(
+            NButton,
+            {
+              text: true,
+              type: "primary",
+              onClick: () => {
+                electron.ipcRenderer.send("window-relaunch");
+              },
+            },
+            {
+              default: () => "更新",
+            },
+          ),
+        onAfterLeave: () => {
+          $message.info("已取消本次更新，将在下次启动软件后生效", {
+            duration: 6000,
+          });
+        },
+      });
+    } else {
+      console.info("站点已更新，刷新后生效");
+      $message.info("站点已更新，刷新后生效", {
+        closable: true,
+        duration: 0,
+      });
+    }
+  });
+}
 
 // 显示公告
 const showAnnouncements = () => {

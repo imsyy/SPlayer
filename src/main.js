@@ -10,8 +10,10 @@ import packageJson from "@/../package.json";
 import "@/style/main.scss";
 import "@/style/animate.scss";
 
-// 根据设备类型动态添加
+// 是否为 Electron
 const isElectron = checkPlatform.electron();
+
+// 根据设备类型动态添加
 const linkElement = document.createElement("link");
 linkElement.rel = "stylesheet";
 linkElement.href = isElectron
@@ -21,9 +23,11 @@ document.head.appendChild(linkElement);
 document.body.classList.add(isElectron ? "electron" : null);
 
 // 程序重置
-window.$cleanAll = () => {
-  const isConfirmed = window.confirm(`确认要重置${isElectron ? "应用程序" : "该站点"}吗？`);
-  if (!isConfirmed) return false;
+window.$cleanAll = (tip = true) => {
+  if (tip) {
+    const isConfirmed = window.confirm(`确认要重置${isElectron ? "应用程序" : "该站点"}吗？`);
+    if (!isConfirmed) return false;
+  }
   // 清除 localStorage
   localStorage.clear();
   // 清除 IndexedDB 数据库

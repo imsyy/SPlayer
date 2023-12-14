@@ -50,5 +50,6 @@ module.exports = {
     $changeThemeColor: true,
     $canNotConnect: true,
     $refreshCloudList: true,
+    $cleanAll: true,
   },
 };

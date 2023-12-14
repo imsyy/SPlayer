@@ -651,8 +651,11 @@ const resetApp = () => {
     positiveText: "重置",
     negativeText: "取消",
     onPositiveClick: () => {
+      if (typeof $cleanAll === "undefined") {
+        return $message.error("重置操作出现错误，请重试");
+      }
+      $cleanAll(false);
       $message.success("重置成功，正在重启");
-      localStorage.clear();
       setTimeout(() => {
         if (checkPlatform.electron()) {
           electron.ipcRenderer.send("window-relaunch");
