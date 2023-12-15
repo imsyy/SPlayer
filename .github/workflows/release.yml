@@ -12,6 +12,7 @@ jobs:
   build-windows:
     name: Build for Windows
     runs-on: windows-latest
+    timeout-minutes: 30
     steps:
       # 检出 Git 仓库
       - name: Check out git repository
@@ -23,7 +24,12 @@ jobs:
           node-version: "18.x"
       # 复制环境变量文件
       - name: Copy .env.example
-        run: cp .env.example .env
+        run: |
+          if (-not (Test-Path .env)) {
+            Copy-Item .env.example .env
+          } else {
+            Write-Host ".env file already exists. Skipping the copy step."
+          }
       # 安装项目依赖
       - name: Install Dependencies
         run: npm install
@@ -39,27 +45,21 @@ jobs:
         with:
           name: SPlarer-Win
           if-no-files-found: ignore
-          path: |
-            dist/*.exe
-            dist/*.msi
-            dist/latest.yml
+          path: dist/*.*
       # 创建 GitHub Release
       - name: Release
         uses: softprops/action-gh-release@v0.1.15
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           draft: true
-          if-no-files-found: ignore
-          files: |
-            dist/*.exe
-            dist/*.msi
-            dist/latest.yml
+          files: dist/*.*
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
   # Mac
   build-macos:
     name: Build for macOS
     runs-on: macos-latest
+    timeout-minutes: 30
     steps:
       # 检出 Git 仓库
       - name: Check out git repository
@@ -71,7 +71,12 @@ jobs:
           node-version: "18.x"
       # 复制环境变量文件
       - name: Copy .env.example
-        run: cp .env.example .env
+        run: |
+          if [ ! -f .env ]; then
+            cp .env.example .env
+          else
+            echo ".env file already exists. Skipping the copy step."
+          fi
       # 安装项目依赖
       - name: Install Dependencies
         run: npm install
@@ -87,27 +92,21 @@ jobs:
         with:
           name: SPlarer-Macos
           if-no-files-found: ignore
-          path: |
-            dist/*.dmg
-            dist/*.zip
-            dist/latest-mac.yml
+          path: dist/*.*
       # 创建 GitHub Release
       - name: Release
         uses: softprops/action-gh-release@v0.1.15
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           draft: true
-          if-no-files-found: ignore
-          files: |
-            dist/*.dmg
-            dist/*.zip
-            dist/latest-mac.yml
+          files: dist/*.*
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
   # Linux
   build-linux:
     name: Build for Linux
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       # 检出 Git 仓库
       - name: Check out git repository
@@ -122,7 +121,12 @@ jobs:
         run: sudo apt-get update
       # 复制环境变量文件
       - name: Copy .env.example
-        run: cp .env.example .env
+        run: |
+          if [ ! -f .env ]; then
+            cp .env.example .env
+          else
+            echo ".env file already exists. Skipping the copy step."
+          fi
       # 安装项目依赖
       - name: Install Dependencies
         run: npm install
@@ -138,24 +142,13 @@ jobs:
         with:
           name: SPlarer-Linux
           if-no-files-found: ignore
-          path: |
-            dist/*.AppImage
-            dist/*.deb
-            dist/*.rpm
-            dist/*.tar.gz
-            dist/latest-linux.yml
+          path: dist/*.*
       # 创建 GitHub Release
       - name: Release
         uses: softprops/action-gh-release@v0.1.15
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           draft: true
-          if-no-files-found: ignore
-          files: |
-            dist/*.AppImage
-            dist/*.deb
-            dist/*.rpm
-            dist/*.tar.gz
-            dist/latest-linux.yml
+          files: dist/*.*
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
