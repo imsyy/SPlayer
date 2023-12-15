@@ -1,4 +1,5 @@
 > [!IMPORTANT]
+>
 > ## 严肃警告
 >
 > - 请务必遵守 [GNU Affero General Public License (AGPL-3.0)](https://www.gnu.org/licenses/agpl-3.0.html) 许可协议
@@ -119,68 +120,76 @@
 
 [Dev Workflow](https://github.com/imsyy/SPlayer/actions/workflows/build.yml)
 
-## ⚙️ 部署
+## ⚙️ Vercel 部署
 
-> Vercel 等托管平台可在 Fork 后一键导入并自动部署
+> 其他部署平台大致相同，在此不做说明
 
-### API 服务（客户端无需理会，如果需要网页端，则必需部署）
+1. 本程序依赖 [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi) 运行，请确保您已成功部署该项目，并成功取得在线访问地址
+2. 点击本仓库右上角的 `Fork`，复制本仓库到你的 `GitHub` 账号
+3. 复制 `/.env.example` 文件并重命名为 `/.env`
+4. 将 `.env` 文件中的 `RENDERER_VITE_SERVER_URL` 改为第一步得到的 API 地址
 
-> 本程序依赖 [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi) 运行，请确保您已成功部署该项目
+   ```js
+   RENDERER_VITE_SERVER_URL = "https://example.com";
+   ```
+5. 将 `Build and Output Settings` 中的 `Output Directory` 改为 `out/renderer`
 
-- 请在根目录下的 `.env` 文件中的 `RENDERER_VITE_SERVER_URL` 中填入 API 地址（必需）
+   ![build](/screenshots/build.png)
 
-```js
-RENDERER_VITE_SERVER_URL = "your api url";
-```
+6. 点击 `Deploy`，即可成功部署
 
-### 安装依赖
+## ⚙️ 服务器部署
 
-```bash
-pnpm install
-# 或者
-yarn install
-# 或者
-npm install
-```
+1. 重复 `⚙️ Vercel 部署` 中的 1 - 4 步骤
+2. 克隆仓库
 
-### 开发
+   > 将链接中的 example/repository.git 替换为你要克隆的实际仓库的地址
 
-```bash
-pnpm dev
-# 或者
-yarn dev
-# 或者
-npm dev
-```
+   ```bash
+   git clone https://github.com/example/repository.git
+   ```
 
-### 构建网页端
+3. 安装依赖
 
-```bash
-pnpm build
-# 或者
-yarn build
-# 或者
-npm build
-```
+   ```bash
+   pnpm install
+   # 或者
+   yarn install
+   # 或者
+   npm install
+   ```
 
-构建完成后可将生成的 `out/renderer` 文件夹内的文件上传至服务器
+4. 编译打包
 
-若使用的为第三方部署平台，比如 `Vercel`，请将 `Build and Output Settings` 中的 `Output Directory` 改为 `out/renderer`
+   ```bash
+   pnpm build
+   # 或者
+   yarn build
+   # 或者
+   npm build
+   ```
 
-![build](/screenshots/build.png)
+5. 将站点运行目录设置为 `out/renderer` 目录
 
-### 构建客户端
+## ⚙️ 本地部署
 
-```bash
-# win
-pnpm build:win
-# linux
-pnpm build:linux
-# mac
-pnpm build:mac
-```
+1. 本地部署需要用到 `Node.js`。可前往 [Node.js 官网](https://nodejs.org/zh-cn/) 下载安装包，请下载最新稳定版
+2. 安装 pnpm
 
-构建完成后可在 `dist` 文件夹中打开可执行文件来完成安装操作
+   ```bash
+   npm install pnpm -g
+   ```
+
+3. 克隆仓库并拉取至本地，此处不再赘述
+4. 使用 `pnpm install` 安装项目依赖（若安装过程中遇到网络错误，请使用国内镜像源替代，此处不再赘述）
+5. 复制 `/.env.example` 文件并重命名为 `/.env` 并修改配置
+6. 打包客户端，请依据你的系统类型来选择，打包成功后，会输出安装包或可执行文件在 `/dist` 目录中，可自行安装
+
+   | 命令 | 系统类型 |
+   | --- | --- |
+   | `pnpm build:win`  | Windows |
+   | `pnpm build:linux` | Linux |
+   | `pnpm build:mac`   | MacOS |
 
 ## 😘 鸣谢
 

@@ -21,6 +21,9 @@ jobs:
         uses: actions/setup-node@v4.0.0
         with:
           node-version: "18.x"
+      # 复制环境变量文件
+      - name: Copy .env.example
+        run: cp .env.example .env
       # 安装项目依赖
       - name: Install Dependencies
         run: npm install
@@ -66,7 +69,10 @@ jobs:
         uses: actions/setup-node@v4.0.0
         with:
           node-version: "18.x"
-        # 安装项目依赖
+      # 复制环境变量文件
+      - name: Copy .env.example
+        run: cp .env.example .env
+      # 安装项目依赖
       - name: Install Dependencies
         run: npm install
       # 构建 Electron App
@@ -114,6 +120,9 @@ jobs:
       # 更新 Ubuntu 软件源
       - name: Ubuntu Update with sudo
         run: sudo apt-get update
+      # 复制环境变量文件
+      - name: Copy .env.example
+        run: cp .env.example .env
       # 安装项目依赖
       - name: Install Dependencies
         run: npm install
