@@ -87,20 +87,27 @@ const changeThemeColor = (val, isCover = false) => {
     themeOverrides.value = {
       common:
         isCover && Object.keys(val)?.length
-          ? {
-              primaryColor,
-              primaryColorHover,
-              primaryColorPressed,
-              primaryColorSuppl,
-              textColor1: `rgba(${mainColorData.bg}, 0.9)`,
-              textColor2: `rgba(${mainColorData.bg}, 0.82)`,
-              textColor3: `rgba(${mainColorData.bg}, 0.52)`,
-              bodyColor: `rgb(${val.dark.mainBg})`,
-              cardColor: `rgb(${coverAutobgCover})`,
-              tagColor: `rgb(${coverAutobgCover})`,
-              modalColor: `rgb(${coverAutobgCover})`,
-              popoverColor: `rgb(${coverAutobgCover})`,
-            }
+          ? themeType.value === "dark"
+            ? {
+                primaryColor,
+                primaryColorHover,
+                primaryColorPressed,
+                primaryColorSuppl,
+                textColor1: `rgba(${mainColorData.bg}, 0.9)`,
+                textColor2: `rgba(${mainColorData.bg}, 0.82)`,
+                textColor3: `rgba(${mainColorData.bg}, 0.52)`,
+                bodyColor: `rgb(${val.dark.mainBg})`,
+                cardColor: `rgb(${coverAutobgCover})`,
+                tagColor: `rgb(${coverAutobgCover})`,
+                modalColor: `rgb(${coverAutobgCover})`,
+                popoverColor: `rgb(${coverAutobgCover})`,
+              }
+            : {
+                primaryColor,
+                primaryColorHover,
+                primaryColorPressed,
+                primaryColorSuppl,
+              }
           : mainColorData,
       Icon: { color: isCover ? primaryColor : null },
     };

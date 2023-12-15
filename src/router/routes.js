@@ -80,23 +80,6 @@ const routes = [
       },
     ],
   },
-  // 视频
-  {
-    path: "/videos",
-    name: "videos",
-    meta: {
-      title: "视频",
-    },
-    component: () => import("@/views/Videos/index.vue"),
-    redirect: "/videos/list",
-    children: [
-      {
-        path: "list",
-        name: "video-list",
-        component: () => import("@/views/Videos/list.vue"),
-      },
-    ],
-  },
   // 视频播放
   {
     path: "/videos-player",
@@ -104,7 +87,7 @@ const routes = [
     meta: {
       title: "视频播放器",
     },
-    component: () => import("@/views/Videos/player.vue"),
+    component: () => import("@/views/player.vue"),
   },
   // 评论
   {

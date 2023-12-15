@@ -139,6 +139,25 @@
           </n-text>
           <n-text v-else class="album">未知专辑</n-text>
         </template>
+        <!-- 操作 -->
+        <div class="action">
+          <!-- 喜欢歌曲 -->
+          <n-icon
+            :depth="dataStore.getSongIsLike(item?.id) ? 0 : 3"
+            class="favorite"
+            size="20"
+            @click.stop="
+              dataStore.changeLikeList(item?.id, !dataStore.getSongIsLike(item?.id), item?.path)
+            "
+            @dblclick.stop
+          >
+            <SvgIcon
+              :icon="
+                dataStore.getSongIsLike(item?.id) ? 'favorite-rounded' : 'favorite-outline-rounded'
+              "
+            />
+          </n-icon>
+        </div>
         <!-- 时长 -->
         <n-text v-if="item.duration" class="duration" depth="3">{{ item.duration }}</n-text>
         <n-text v-else class="duration"> -- </n-text>
@@ -481,6 +500,23 @@ onBeforeUnmount(() => {
       -webkit-line-clamp: 2;
       &:hover {
         color: var(--main-color);
+      }
+    }
+    .action {
+      width: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-evenly;
+      .favorite {
+        padding-top: 1px;
+        transition: transform 0.3s;
+        cursor: pointer;
+        &:hover {
+          transform: scale(1.15);
+        }
+        &:active {
+          transform: scale(1);
+        }
       }
     }
     .duration {

@@ -149,20 +149,6 @@ const menuOptions = computed(() => [
     icon: renderIcon("record"),
   },
   {
-    label: () =>
-      h(
-        RouterLink,
-        {
-          to: {
-            name: "videos",
-          },
-        },
-        () => ["视频"],
-      ),
-    key: "videos",
-    icon: renderIcon("video"),
-  },
-  {
     key: "divider-1",
     type: "divider",
   },
