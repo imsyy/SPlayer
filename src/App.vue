@@ -111,8 +111,8 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (checkPlatform.electron()) {
       $notification.create({
-        title: "🎉 更新提醒",
-        content: "检测到软件有更新，是否重新启动软件以应用更新？",
+        title: "🎉 有更新啦",
+        content: "检测到软件内资源有更新，是否重新启动软件以应用更新？",
         meta: "v " + (packageJson.version || "1.0.0"),
         action: () =>
           h(
@@ -129,14 +129,14 @@ if ("serviceWorker" in navigator) {
             },
           ),
         onAfterLeave: () => {
-          $message.info("已取消本次更新，将在下次启动软件后生效", {
+          $message.info("已取消本次更新，更新将在下次启动软件后生效", {
             duration: 6000,
           });
         },
       });
     } else {
-      console.info("站点已更新，刷新后生效");
-      $message.info("站点已更新，刷新后生效", {
+      console.info("站点资源有更新，请刷新以应用更新");
+      $message.info("站点资源有更新，请刷新以应用更新", {
         closable: true,
         duration: 0,
       });

@@ -1,55 +1,58 @@
-import { join } from "path";
-import { platform } from "@electron-toolkit/utils";
 import { Tray, Menu, app, ipcMain, nativeImage, nativeTheme } from "electron";
+import { join } from "path";
 
-// 当前播放歌曲数据
+// 当前歌曲数据
 let playSongName = "当前暂无播放歌曲";
 let playSongState = false;
 
 /**
- * 创建系统自定义信息
+ * 创建系统托盘
  * @param {BrowserWindow} win - 程序窗口
  */
-const createSystemInfo = (win) => {
-  // 弹出列表
-  app.setUserTasks([]);
+const createSystemTray = (win) => {
   // 系统托盘
-  const mainTray = new Tray(join(__dirname, "../../public/images/logo/favicon.png"));
-  // 默认托盘菜单
-  Menu.setApplicationMenu(Menu.buildFromTemplate(createTrayMenu(win)));
-  // 给托盘图标设置气球提示
+  const mainTray = new Tray(
+    nativeImage
+      .createFromPath(
+        join(
+          __dirname,
+          process.platform === "win32"
+            ? "../../public/images/icons/favicon.ico"
+            : "../../public/images/icons/favicon-32x32.png",
+        ),
+      )
+      .resize({
+        height: 32,
+        width: 32,
+      }),
+  );
+  // 应用内菜单
+  Menu.setApplicationMenu(createTrayMenu(win));
+  // 默认名称
+  win.setTitle(app.getName());
+  mainTray.setTitle(app.getName());
   mainTray.setToolTip(app.getName());
-  // 自定义任务栏缩略图
-  createThumbar(win);
-  // 歌曲数据改变时
+  // 左键事件
+  mainTray.on("click", () => win.show());
+  // 托盘菜单
+  mainTray.setContextMenu(createTrayMenu(win));
+  // 系统主题改变
+  nativeTheme.on("updated", () => {
+    mainTray.setContextMenu(createTrayMenu(win));
+  });
+  // 播放歌曲改变
   ipcMain.on("songNameChange", (_, val) => {
     playSongName = val;
-    // 托盘图标标题
-    mainTray.setToolTip(val);
-    // 更改应用标题
     win.setTitle(val);
+    mainTray.setTitle(val);
+    mainTray.setToolTip(val);
+    mainTray.setContextMenu(createTrayMenu(win));
   });
+  // 播放状态改变
   ipcMain.on("songStateChange", (_, val) => {
     playSongState = val;
-    createThumbar(win);
+    mainTray.setContextMenu(createTrayMenu(win));
   });
-  // 监听系统主题改变
-  nativeTheme.on("updated", () => {
-    createThumbar(win);
-  });
-  // 左键事件
-  mainTray.on("click", () => {
-    // 显示窗口
-    win.show();
-  });
-  // 右键事件
-  mainTray.on("right-click", () => {
-    mainTray.popUpContextMenu(Menu.buildFromTemplate(createTrayMenu(win)));
-  });
-  // linux 右键菜单
-  if (platform.isLinux) {
-    mainTray.setContextMenu(Menu.buildFromTemplate(createTrayMenu(win)));
-  }
 };
 
 // 生成图标
@@ -60,8 +63,8 @@ const createIcon = (name) => {
   return nativeImage
     .createFromPath(
       isDarkMode
-        ? join(__dirname, `../../public/images/icon/${name}-dark.png`)
-        : join(__dirname, `../../public/images/icon/${name}-light.png`),
+        ? join(__dirname, `../../public/images/icons/${name}-dark.png`)
+        : join(__dirname, `../../public/images/icons/${name}-light.png`),
     )
     .resize({ width: 16, height: 16 });
 };
@@ -69,7 +72,7 @@ const createIcon = (name) => {
 // 生成右键菜单
 const createTrayMenu = (win) => {
   // 返回菜单
-  return [
+  return Menu.buildFromTemplate([
     {
       label: playSongName,
       icon: createIcon("open"),
@@ -128,35 +131,7 @@ const createTrayMenu = (win) => {
         app.quit();
       },
     },
-  ];
-};
-
-// 自定义任务栏缩略图 - Win
-const createThumbar = (win) => {
-  win.setThumbarButtons([]);
-  win.setThumbarButtons([
-    {
-      tooltip: "上一曲",
-      icon: createIcon("prev"),
-      click: () => {
-        win.webContents.send("playNextOrPrev", "prev");
-      },
-    },
-    {
-      tooltip: playSongState ? "暂停" : "播放",
-      icon: createIcon(playSongState ? "pause" : "play"),
-      click() {
-        win.webContents.send("playOrPause");
-      },
-    },
-    {
-      tooltip: "下一曲",
-      icon: createIcon("next"),
-      click: () => {
-        win.webContents.send("playNextOrPrev", "next");
-      },
-    },
   ]);
 };
 
-export default createSystemInfo;
+export default createSystemTray;

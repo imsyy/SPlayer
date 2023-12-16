@@ -1,10 +1,10 @@
 import { join } from "path";
-import { app, protocol, shell, BrowserWindow, globalShortcut } from "electron";
+import { app, protocol, shell, BrowserWindow, globalShortcut, nativeImage } from "electron";
 import { platform, optimizer, is } from "@electron-toolkit/utils";
 import { startNcmServer } from "@main/startNcmServer";
 import { startMainServer } from "@main/startMainServer";
 import { configureAutoUpdater } from "@main/utils/checkUpdates";
-import createSystemInfo from "@main/utils/createSystemInfo";
+import createSystemTray from "@main/utils/createSystemTray";
 import createGlobalShortcut from "@main/utils/createGlobalShortcut";
 import mainIpcMain from "@main/mainIpcMain";
 import Store from "electron-store";
@@ -15,7 +15,7 @@ process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = "true";
 
 // 配置 log
 log.transports.file.resolvePathFn = () =>
-  join(app.getPath("documents"), "/SPlayer/splayer-log.txt");
+  join(app.getPath("documents"), "/SPlayer/SPlayer-log.txt");
 // 设置日志文件的最大大小为 2 MB
 log.transports.file.maxSize = 2 * 1024 * 1024;
 // 绑定 console 事件
@@ -93,7 +93,7 @@ class MainProcess {
     }
 
     // 注册应用协议
-    app.setAsDefaultProtocolClient("splayer");
+    app.setAsDefaultProtocolClient("SPlayer");
     // 应用程序准备好之前注册
     protocol.registerSchemesAsPrivileged([
       { scheme: "app", privileges: { secure: true, standard: true } },
@@ -107,6 +107,7 @@ class MainProcess {
   createWindow() {
     // 创建浏览器窗口
     this.mainWindow = new BrowserWindow({
+      title: app.getName() || "SPlayer",
       width: this.store.get("windowSize.width") || 1280, // 窗口宽度
       height: this.store.get("windowSize.height") || 740, // 窗口高度
       minHeight: 700, // 最小高度
@@ -117,7 +118,7 @@ class MainProcess {
       titleBarStyle: "customButtonsOnHover", // Macos 隐藏菜单栏
       autoHideMenuBar: true, // 失去焦点后自动隐藏菜单栏
       // 图标配置
-      icon: join(__dirname, "../../public/images/logo/favicon.png"),
+      icon: nativeImage.createFromPath(join(__dirname, "../../public/images/icons/favicon.png")),
       // 预加载
       webPreferences: {
         // devTools: is.dev, //是否开启 DevTools
@@ -133,8 +134,6 @@ class MainProcess {
       this.mainWindow.show();
       // mainWindow.maximize();
       this.store.set("windowSize", this.mainWindow.getBounds());
-      // 创建系统信息
-      createSystemInfo(this.mainWindow);
     });
 
     // 主窗口事件
@@ -166,6 +165,8 @@ class MainProcess {
       configureAutoUpdater();
       // 引入主 Ipc
       mainIpcMain(this.mainWindow);
+      // 系统托盘
+      createSystemTray(this.mainWindow);
       // 注册快捷键
       createGlobalShortcut(this.mainWindow);
     });

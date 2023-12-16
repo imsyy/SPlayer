@@ -1,3 +1,13 @@
+<div align="center">
+<img alt="logo" height="80" src="./public/images/icons/favicon.png" />
+<h2>SPlayer</h2>
+<p>一个简约的音乐播放器</p>
+<img alt="main" src="./screenshots/main.png" />
+</div>
+<br />
+
+## 说明
+
 > [!IMPORTANT]
 >
 > ## 严肃警告
@@ -7,16 +17,6 @@
 > - **禁止用于售卖或其他商业用途**，如若发现，作者保留追究法律责任的权利
 > - 若发现未遵守 **AGPL-3.0** 许可协议的行为，**本项目将永久停更**
 > - 感谢您的尊重与理解
-
-<div align="center">
-<img alt="logo" height="80" src="./public/images/logo/favicon.png" />
-<h2>SPlayer</h2>
-<p>一个简约的音乐播放器</p>
-<img alt="main" src="./screenshots/main.png" />
-</div>
-<br />
-
-## 说明
 
 - 本项目采用 [Vue 3](https://cn.vuejs.org/) 全家桶和 [Naïve UI](https://www.naiveui.com/) 组件库及 [Electron](https://www.electronjs.org/zh/docs/latest/) 开发
 - 支持网页端与客户端，由于设备有限，目前仅适配 `Win`，其他平台可自行构建

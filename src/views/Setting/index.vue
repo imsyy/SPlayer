@@ -206,8 +206,11 @@
           <n-switch v-model:value="autoPlay" :disabled="!checkPlatform.electron()" :round="false" />
         </n-card>
         <n-card class="set-item">
-          <div class="name">记忆上次播放位置</div>
-          <n-switch v-model:value="memorySeek" :round="false" />
+          <div class="name">
+            记忆上次播放位置
+            <n-text v-if="autoPlay" class="tip"> 与自动播放相冲突，已禁用 </n-text>
+          </div>
+          <n-switch v-model:value="memorySeek" :disabled="autoPlay" :round="false" />
         </n-card>
         <n-card class="set-item">
           <div class="name">音乐渐入渐出</div>

@@ -106,12 +106,22 @@ export default defineConfig(({ mode }) => {
             background_color: "#efefef",
             icons: [
               {
-                src: "/images/logo/favicon.png",
-                sizes: "200x200",
+                src: "/images/icons/favicon-32x32.png",
+                sizes: "32x32",
                 type: "image/png",
               },
               {
-                src: "/images/logo/favicon_512.png",
+                src: "/images/icons/favicon-96x96.png",
+                sizes: "96x96",
+                type: "image/png",
+              },
+              {
+                src: "/images/icons/favicon-256x256.png",
+                sizes: "256x256",
+                type: "image/png",
+              },
+              {
+                src: "/images/icons/favicon-512x512.png",
                 sizes: "512x512",
                 type: "image/png",
               },
@@ -147,12 +157,6 @@ export default defineConfig(({ mode }) => {
           },
         },
         sourcemap: false,
-        win: {
-          icon: resolve(__dirname, "/public/images/logo/favicon.png"),
-        },
-        linux: {
-          icon: resolve(__dirname, "/public/images/logo/favicon.png"),
-        },
       },
     },
   };

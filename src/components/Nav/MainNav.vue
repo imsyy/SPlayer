@@ -6,7 +6,7 @@
         :class="['logo', status.asideMenuCollapsed ? 'collapsed' : null]"
         @click="router.push('/')"
       >
-        <n-avatar class="logo-img" src="/images/logo/favicon.png?asset" />
+        <n-avatar class="logo-img" src="/images/icons/favicon.png?asset" />
         <Transition name="fade" mode="out-in">
           <n-text v-if="!status.asideMenuCollapsed && showSider" class="site-name">
             {{ siteName }}
