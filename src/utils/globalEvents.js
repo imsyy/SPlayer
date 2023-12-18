@@ -22,8 +22,10 @@ const globalEvents = (router) => {
     changePlayIndex(val, true);
   });
   // 全局设置
-  electron.ipcRenderer.on("setting", () => {
+  electron.ipcRenderer.on("open-setting", () => {
     if (router) router.push("/setting");
+    const status = siteStatus();
+    status.showFullPlayer = false;
   });
 };
 

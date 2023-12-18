@@ -34,6 +34,12 @@ const tabChange = (val) => {
     path: `/like/${routerPath}`,
   });
 };
+
+// 监听路由变化
+watch(
+  () => router.currentRoute.value,
+  (val) => (tabValue.value = val?.name ?? "like-playlists"),
+);
 </script>
 
 <style lang="scss" scoped>

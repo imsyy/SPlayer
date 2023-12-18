@@ -3,7 +3,7 @@
     <Transition name="fade" mode="out-in">
       <div v-if="userLikeData.albums?.length" class="list">
         <!-- 列表 -->
-        <MainCover :data="likeAlbumsData" type="album" />
+        <MainCover :data="userLikeData.albums" type="album" />
       </div>
       <n-empty
         v-else
@@ -19,13 +19,7 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { siteData } from "@/stores";
-import formatData from "@/utils/formatData";
 
 const data = siteData();
 const { userLikeData } = storeToRefs(data);
-
-// 处理专辑数据
-const likeAlbumsData = computed(() => {
-  return formatData(userLikeData.value.albums, "album");
-});
 </script>

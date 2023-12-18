@@ -14,6 +14,7 @@ import {
   getUserMv,
 } from "@/api/user";
 import { isLogin } from "@/utils/auth";
+import formatData from "@/utils/formatData";
 import throttle from "@/utils/throttle";
 
 const useSiteDataStore = defineStore("siteData", {
@@ -75,19 +76,10 @@ const useSiteDataStore = defineStore("siteData", {
           }
         } else {
           const res = await getDailyRec();
-          const data = res.data.dailySongs;
           const currentTime = new Date().getTime();
-          const formatData = data.map((v) => {
-            return {
-              id: v.id,
-              name: v.name,
-              artist: v.ar,
-              album: v.al,
-              cover: v.al.picUrl.replace(/^http:/, "https:"),
-              reason: v?.reason,
-            };
-          });
-          this.dailySongsData = { timestamp: currentTime, data: formatData };
+          const songsData = formatData(res.data.dailySongs, "song");
+          console.log(songsData);
+          this.dailySongsData = { timestamp: currentTime, data: songsData };
         }
       } catch (error) {
         showError(error, "每日推荐加载失败");
@@ -160,7 +152,7 @@ const useSiteDataStore = defineStore("siteData", {
         const number = createdPlaylistCount + subPlaylistCount ?? 50;
         // 获取数据
         getUserPlaylist(this.userData.userId, number).then((res) => {
-          this.userLikeData.playlists = res.playlist;
+          this.userLikeData.playlists = formatData(res.playlist);
         });
       } catch (error) {
         console.error("用户喜欢歌单加载失败：", error);
@@ -173,7 +165,7 @@ const useSiteDataStore = defineStore("siteData", {
         if (!isLogin()) return false;
         // 获取数据
         getUserArtist().then((res) => {
-          this.userLikeData.artists = res.data;
+          this.userLikeData.artists = formatData(res.data, "artist");
         });
       } catch (error) {
         console.error("用户喜欢歌手加载失败：", error);
@@ -191,9 +183,8 @@ const useSiteDataStore = defineStore("siteData", {
         // 获取数据
         while (totalCount === null || offset < totalCount) {
           const res = await getUserAlbum(50, offset);
-          res.data.forEach((v) => {
-            this.userLikeData.albums.push(v);
-          });
+          const albumsData = formatData(res.data, "album");
+          this.userLikeData.albums = this.userLikeData.albums.concat(albumsData);
           totalCount = res.count;
           offset += 50;
         }
@@ -208,7 +199,7 @@ const useSiteDataStore = defineStore("siteData", {
         if (!isLogin()) return false;
         // 获取数据
         getUserMv().then((res) => {
-          this.userLikeData.mvs = res.data;
+          this.userLikeData.mvs = formatData(res.data, "mv");
         });
       } catch (error) {
         console.error("用户喜欢歌手加载失败：", error);

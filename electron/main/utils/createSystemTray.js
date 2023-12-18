@@ -116,7 +116,9 @@ const createTrayMenu = (win) => {
       label: "全局设置",
       icon: createIcon("setting"),
       click: () => {
-        win.webContents.send("setting");
+        win.show();
+        win.focus();
+        win.webContents.send("open-setting");
       },
     },
     {

@@ -8,8 +8,7 @@
             v-for="(item, index) in ['我创建的', '我收藏的']"
             :key="index"
             :bordered="false"
-            :type="index === plTypeChoose ? 'primary' : 'default'"
-            class="tag"
+            :class="['tag', { choose: index === plTypeChoose }]"
             round
             @click="plTypeChange(index)"
           >
@@ -20,12 +19,16 @@
         <Transition name="fade" mode="out-in">
           <div v-if="plTypeChoose === 0" class="list">
             <MainCover
-              :data="likePlaylistsData.filter((playlist) => playlist.userId === userData?.userId)"
+              :data="
+                userLikeData.playlists.filter((playlist) => playlist.userId === userData?.userId)
+              "
             />
           </div>
           <div v-else class="list">
             <MainCover
-              :data="likePlaylistsData.filter((playlist) => playlist.userId !== userData?.userId)"
+              :data="
+                userLikeData.playlists.filter((playlist) => playlist.userId !== userData?.userId)
+              "
             />
           </div>
         </Transition>
@@ -45,7 +48,6 @@
 import { storeToRefs } from "pinia";
 import { siteData } from "@/stores";
 import { useRouter } from "vue-router";
-import formatData from "@/utils/formatData";
 
 const router = useRouter();
 const data = siteData();
@@ -53,11 +55,6 @@ const { userData, userLikeData } = storeToRefs(data);
 
 // 默认分类
 const plTypeChoose = ref(Number(router.currentRoute.value.query?.type) || 0);
-
-// 处理视频数据
-const likePlaylistsData = computed(() => {
-  return formatData(userLikeData.value.playlists);
-});
 
 // 默认分类变化
 const plTypeChange = (type) => {
@@ -99,6 +96,10 @@ watch(
       }
       &:active {
         transform: scale(0.95);
+      }
+      &.choose {
+        background-color: var(--main-second-color);
+        color: var(--main-color);
       }
     }
   }

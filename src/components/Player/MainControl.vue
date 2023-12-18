@@ -62,7 +62,9 @@
         </div>
         <div class="song-info">
           <div class="name">
-            <n-text class="text">{{ music.getPlaySongData?.name || "未知曲目" }}</n-text>
+            <n-text class="text">
+              {{ music.getPlaySongData?.name || "未知曲目" }}
+            </n-text>
             <!-- 喜欢歌曲 -->
             <n-icon
               class="favorite"
@@ -671,6 +673,7 @@ watch(
       .lrc-text {
         margin-top: 2px;
         font-size: 13px;
+        transition: opacity 0.1s ease-in-out;
         .space {
           margin-right: 4px;
         }

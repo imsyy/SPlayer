@@ -54,13 +54,15 @@ import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { getGreetings } from "@/utils/timeTools";
 import { getDailyRec, getPersonalized, getTopArtists, getNewAlbum } from "@/api/recommend";
-import { siteData } from "@/stores";
+import { siteData, siteSettings } from "@/stores";
 import { getCacheData } from "@/utils/helper";
 import { isLogin } from "@/utils/auth";
 import formatData from "@/utils/formatData";
 
 const data = siteData();
 const router = useRouter();
+const settings = siteSettings();
+const { showSider } = storeToRefs(settings);
 const { userLikeData, dailySongsData } = storeToRefs(data);
 
 // 每日推荐
@@ -71,7 +73,8 @@ const dailySongsCoverData = computed(() => {
   };
   if (isLogin() && dailySongsData.value.data?.length) {
     const randomIndex = Math.floor(Math.random() * dailySongsData.value.data.length);
-    dailySongsCover.cover = dailySongsData.value.data[randomIndex]?.cover + "?param=100y100";
+    dailySongsCover.cover =
+      dailySongsData.value.data[randomIndex]?.coverSize?.s || "/images/pic/like.jpg";
     return dailySongsCover;
   }
   dailySongsCover.cover = "/images/pic/cover-2.jpg";
@@ -85,8 +88,7 @@ const likeSongsCoverData = computed(() => {
     desc: "发现你独特的音乐品味",
   };
   if (isLogin() && userLikeData.value.playlists?.length) {
-    const coverUrl = userLikeData.value.playlists[0].coverImgUrl;
-    likeSongsCover.cover = coverUrl + "?param=100y100";
+    likeSongsCover.cover = userLikeData.value.playlists[0]?.coverSize?.s || "/images/pic/like.jpg";
     return likeSongsCover;
   }
   likeSongsCover.cover = "/images/pic/like.jpg";
@@ -98,13 +100,14 @@ const recommendData = ref({
   playlist: {
     name: "推荐歌单",
     loadingNum: 12,
+    columns: showSider.value ? undefined : "2 s:3 m:4 l:5 xl:6",
     data: [],
     to: "/discover/playlists",
   },
   artist: {
     name: "歌手推荐",
     type: "artist",
-    columns: "3 s:4 m:5 l:6",
+    columns: showSider.value ? "3 s:4 m:5 l:6" : "3 sm:4 m:5 l:6",
     loadingNum: 6,
     data: [],
     to: "/discover/artists",
@@ -177,7 +180,7 @@ const jumpPage = (key, id) => {
       router.push("/like-songs");
       break;
     case "daily-songs":
-      $message.warning("施工中（ 新建文件夹 ）");
+      router.push("/daily-songs");
       break;
     default:
       break;

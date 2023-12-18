@@ -71,10 +71,22 @@ const renderIcon = (icon) => {
 
 // 数量统计模块
 const createUserNumber = (num, text, duration = 1000) => {
-  return h("div", { className: "user-pl" }, [
-    h(NNumberAnimation, { from: 0, to: num, duration }),
-    h(NText, { depth: 3, style: { fontSize: "12px" } }, () => [text]),
-  ]);
+  return h(
+    "div",
+    {
+      className: "user-pl",
+      onclick: () => {
+        userMenuShow.value = false;
+        router.push(
+          `/like/${text === "歌单" ? "playlists?" : text === "专辑" ? "albums" : "artists"}`,
+        );
+      },
+    },
+    [
+      h(NNumberAnimation, { from: 0, to: num, duration }),
+      h(NText, { depth: 3, style: { fontSize: "12px" } }, () => [text]),
+    ],
+  );
 };
 
 // 生成导航栏用户信息
@@ -219,6 +231,7 @@ const userMenuSelect = (key) => {
     display: flex;
     flex-direction: row;
     align-items: center;
+    cursor: pointer;
     .user-pl {
       display: flex;
       flex-direction: column;

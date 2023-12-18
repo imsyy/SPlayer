@@ -1,5 +1,4 @@
 import { checkPlatform } from "@/utils/helper";
-import { isLogin } from "@/utils/auth";
 
 const routes = [
   // 首页
@@ -9,7 +8,7 @@ const routes = [
     meta: {
       title: "主页",
     },
-    component: () => import("@/views/home.vue"),
+    component: () => import("@/views/Home.vue"),
   },
   // 搜索
   {
@@ -87,7 +86,17 @@ const routes = [
     meta: {
       title: "视频播放器",
     },
-    component: () => import("@/views/player.vue"),
+    component: () => import("@/views/Player.vue"),
+  },
+  // 每日推荐
+  {
+    path: "/daily-songs",
+    name: "daily-songs",
+    meta: {
+      title: "每日推荐",
+      needLogin: true,
+    },
+    component: () => import("@/views/DailySongs.vue"),
   },
   // 评论
   {
@@ -96,7 +105,7 @@ const routes = [
     meta: {
       title: "评论",
     },
-    component: () => import("@/views/comment.vue"),
+    component: () => import("@/views/Comment.vue"),
   },
   // 最近播放
   {
@@ -105,7 +114,7 @@ const routes = [
     meta: {
       title: "最近播放",
     },
-    component: () => import("@/views/history.vue"),
+    component: () => import("@/views/History.vue"),
   },
   // 我的云盘
   {
@@ -113,17 +122,9 @@ const routes = [
     name: "cloud",
     meta: {
       title: "我的云盘",
+      needLogin: true,
     },
-    component: () => import("@/views/cloud.vue"),
-    beforeEnter: (_, __, next) => {
-      if (isLogin()) {
-        next();
-      } else {
-        if (typeof $changeLogin !== "undefined") $changeLogin();
-        $message.error("请登录后使用");
-        $loadingBar.error();
-      }
-    },
+    component: () => import("@/views/Cloud.vue"),
   },
   // 歌单
   {
@@ -140,17 +141,9 @@ const routes = [
     name: "like-songs",
     meta: {
       title: "歌单",
+      needLogin: true,
     },
     component: () => import("@/views/List/playlist.vue"),
-    beforeEnter: (_, __, next) => {
-      if (isLogin()) {
-        next();
-      } else {
-        if (typeof $changeLogin !== "undefined") $changeLogin();
-        $message.error("请登录后使用");
-        $loadingBar.error();
-      }
-    },
   },
   // 专辑
   {
@@ -199,17 +192,9 @@ const routes = [
     name: "like",
     meta: {
       title: "我的收藏",
+      needLogin: true,
     },
     component: () => import("@/views/Like/index.vue"),
-    beforeEnter: (_, __, next) => {
-      if (isLogin()) {
-        next();
-      } else {
-        if (typeof $changeLogin !== "undefined") $changeLogin();
-        $message.error("请登录后使用");
-        $loadingBar.error();
-      }
-    },
     redirect: "/like/albums",
     children: [
       {
@@ -240,16 +225,10 @@ const routes = [
     name: "local",
     meta: {
       title: "本地歌曲",
+      needLogin: true,
       show: checkPlatform.electron(),
     },
     component: () => import("@/views/Local/index.vue"),
-    beforeEnter: (to, from, next) => {
-      if (checkPlatform.electron()) {
-        next();
-      } else {
-        next("/403");
-      }
-    },
     redirect: "/local/songs",
     children: [
       {
@@ -302,7 +281,7 @@ const routes = [
     meta: {
       title: "全局设置",
     },
-    component: () => import("@/views/song.vue"),
+    component: () => import("@/views/Song.vue"),
   },
   // 测试页面
   {
@@ -311,7 +290,7 @@ const routes = [
     meta: {
       title: "测试页面",
     },
-    component: () => import("@/views/test.vue"),
+    component: () => import("@/views/Test.vue"),
   },
   // 状态页
   {

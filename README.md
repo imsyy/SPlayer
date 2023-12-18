@@ -10,7 +10,7 @@
 
 > [!IMPORTANT]
 >
-> ## 严肃警告
+> ### 严肃警告
 >
 > - 请务必遵守 [GNU Affero General Public License (AGPL-3.0)](https://www.gnu.org/licenses/agpl-3.0.html) 许可协议
 > - 在您的修改、演绎、分发或派生项目中，必须同样采用 **AGPL-3.0** 许可协议，**并在适当的位置包含本项目的许可和版权信息**
