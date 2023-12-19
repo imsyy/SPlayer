@@ -87,7 +87,7 @@ import formatData from "@/utils/formatData";
 
 const music = musicData();
 const indexedDB = indexedDBData();
-const { playList, playIndex, playSongData, playHeartbeatMode } = storeToRefs(music);
+const { playList, playIndex, playSongData, playHeartbeatMode, playMode } = storeToRefs(music);
 
 // 云盘数据
 const userCloudSpace = ref([]);
@@ -155,18 +155,21 @@ const playAllSongs = async () => {
   if (!userCloudData.value || !Object.keys(userCloudData.value).length) return false;
   // 关闭心动模式
   playHeartbeatMode.value = false;
+  // 更改模式和歌单
+  playMode.value = "normal";
+  playList.value = userCloudData.value.slice();
   // 是否处于歌单内
   const songId = playSongData.value?.id;
-  const isHas = userCloudData.value.some((song) => song.id === songId);
+  const existingIndex = userCloudData.value.findIndex((song) => song.id === songId);
   // 若不处于
-  if (!isHas) {
-    playList.value = userCloudData.value;
+  if (existingIndex === -1 || !songId) {
     playSongData.value = userCloudData.value[0];
     playIndex.value = 0;
     // 初始化播放器
     initPlayer(true);
   } else {
-    // 播放
+    playSongData.value = userCloudData.value[existingIndex];
+    playIndex.value = existingIndex;
     fadePlayOrPause();
   }
   $message.info("已开始播放", { showIcon: false });
