@@ -126,6 +126,7 @@ class MainProcess {
         sandbox: false,
         webSecurity: false,
         hardwareAcceleration: true,
+        nodeIntegration: true,
       },
     });
 

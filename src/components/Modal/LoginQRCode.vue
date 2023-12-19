@@ -2,17 +2,18 @@
 <template>
   <div class="login-qr">
     <div class="qr-img">
-      <n-skeleton v-if="!qrImg" class="qr" />
-      <QrcodeVue
-        v-else
-        :class="['qr', qrStatusCode === 802 ? 'hidden' : null]"
-        :value="qrImg"
-        :size="180"
-        :margin="4"
-        level="L"
-        foreground="#000"
-        background="#fff"
-      />
+      <Transition name="fade" mode="out-in">
+        <n-qr-code
+          v-if="qrImg"
+          :value="qrImg"
+          :class="['qr', qrStatusCode === 802 ? 'hidden' : null]"
+          :size="156"
+          :icon-size="30"
+          icon-src="/images/icons/favicon.png?asset"
+          error-correction-level="H"
+        />
+        <n-skeleton v-else class="qr" />
+      </Transition>
       <Transition name="fade" mode="out-in">
         <div v-if="qrStatusCode === 802" class="refresh" @click="getQrData">
           <n-icon size="22">
@@ -28,7 +29,6 @@
 
 <script setup>
 import { getQrKey, checkQr } from "@/api/login";
-import QrcodeVue from "qrcode.vue";
 
 const emit = defineEmits(["setLoginData"]);
 
@@ -133,6 +133,7 @@ onBeforeUnmount(() => {
       min-width: 180px;
       height: 180px;
       width: 180px;
+      box-sizing: border-box;
       transition: opacity 0.3s;
       &.hidden {
         opacity: 0.2;

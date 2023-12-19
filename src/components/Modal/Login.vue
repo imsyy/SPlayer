@@ -45,12 +45,15 @@
 
 <script setup>
 import { storeToRefs } from "pinia";
-import { siteData } from "@/stores";
+import { siteData, siteSettings } from "@/stores";
 import { getLoginState, refreshLogin } from "@/api/login";
 import { setCookies, toLogout, isLogin } from "@/utils/auth";
+import userSignIn from "@/utils/userSignIn";
 
 const data = siteData();
+const settings = siteSettings();
 const { userData } = storeToRefs(data);
+const { autoSignIn } = storeToRefs(settings);
 
 // 登录数据
 const loginModalShow = ref(false);
@@ -83,6 +86,9 @@ const setLoginData = async (loginData) => {
     setCookies(loginData.cookie);
     // 获取用户信息
     await data.setUserProfile();
+    await data.setDailySongsData();
+    // 签到
+    if (autoSignIn.value) await userSignIn();
     // 更改状态
     data.userLoginStatus = true;
     $message.success("登录成功");

@@ -53,6 +53,7 @@ export const toLogout = (show = true) => {
   logOut();
   removeCookie("MUSIC_U");
   removeCookie("__csrf");
+  sessionStorage.clear();
   // 去除用户信息
   data.userLoginStatus = false;
   data.userData = {};
@@ -61,6 +62,10 @@ export const toLogout = (show = true) => {
     playlists: [],
     albums: [],
     mvs: [],
+  };
+  data.dailySongsData = {
+    timestamp: null,
+    data: [],
   };
   if (show) $message.success("成功退出登录");
 };

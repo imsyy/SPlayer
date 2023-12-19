@@ -63,23 +63,21 @@ const useSiteDataStore = defineStore("siteData", {
           this.dailySongsData = { timestamp: null, data: [] };
           return false;
         }
-        const data = this.dailySongsData.data;
+        const songsData = this.dailySongsData.data;
         const timestamp = this.dailySongsData.timestamp;
-        if (data[0] && timestamp) {
-          console.log("触发日推缓存");
-          const currentTime = new Date().getTime();
-          const storedTime = parseInt(timestamp, 10);
-          const nextDay6AM = new Date(storedTime);
-          nextDay6AM.setHours(6, 0, 0, 0);
-          if (currentTime <= nextDay6AM.getTime()) {
-            return true;
-          }
+        // 下一天六点
+        const nextDay6AM = new Date(timestamp);
+        nextDay6AM.setDate(nextDay6AM.getDate() + 1);
+        nextDay6AM.setHours(6, 0, 0, 0);
+        console.log(songsData?.[0], timestamp, nextDay6AM.getTime());
+        if (songsData?.[0] && timestamp <= nextDay6AM.getTime()) {
+          console.log("日推缓存未过期，不更新");
+          return true;
         } else {
           const res = await getDailyRec();
-          const currentTime = new Date().getTime();
           const songsData = formatData(res.data.dailySongs, "song");
-          console.log(songsData);
-          this.dailySongsData = { timestamp: currentTime, data: songsData };
+          console.log("日推缓存不存在或已过期", songsData);
+          this.dailySongsData = { timestamp: new Date().getTime(), data: songsData };
         }
       } catch (error) {
         showError(error, "每日推荐加载失败");
@@ -126,8 +124,7 @@ const useSiteDataStore = defineStore("siteData", {
         ];
         await Promise.all(allUserLikeResult);
       } catch (error) {
-        console.error("用户信息加载失败：", error);
-        $message.error("用户信息加载失败");
+        showError(error, "用户信息加载失败");
       }
     },
     // 获取用户喜欢歌曲
@@ -139,8 +136,7 @@ const useSiteDataStore = defineStore("siteData", {
           this.userLikeData.songs = res.ids;
         });
       } catch (error) {
-        console.error("用户喜欢歌曲加载失败：", error);
-        $message.error("用户喜欢歌曲加载失败");
+        showError(error, "用户喜欢歌曲加载失败");
       }
     },
     // 获取用户喜欢歌单
@@ -155,8 +151,7 @@ const useSiteDataStore = defineStore("siteData", {
           this.userLikeData.playlists = formatData(res.playlist);
         });
       } catch (error) {
-        console.error("用户喜欢歌单加载失败：", error);
-        $message.error("用户喜欢歌单加载失败");
+        showError(error, "用户喜欢歌单加载失败");
       }
     },
     // 更改用户喜欢歌手
@@ -168,8 +163,7 @@ const useSiteDataStore = defineStore("siteData", {
           this.userLikeData.artists = formatData(res.data, "artist");
         });
       } catch (error) {
-        console.error("用户喜欢歌手加载失败：", error);
-        $message.error("用户喜欢歌手加载失败");
+        showError(error, "用户喜欢歌手加载失败");
       }
     },
     // 更改用户喜欢专辑
@@ -189,8 +183,7 @@ const useSiteDataStore = defineStore("siteData", {
           offset += 50;
         }
       } catch (error) {
-        console.error("用户喜欢专辑加载失败：", error);
-        $message.error("用户喜欢专辑加载失败");
+        showError(error, "用户喜欢专辑加载失败");
       }
     },
     // 更改用户喜欢视频
@@ -202,8 +195,7 @@ const useSiteDataStore = defineStore("siteData", {
           this.userLikeData.mvs = formatData(res.data, "mv");
         });
       } catch (error) {
-        console.error("用户喜欢歌手加载失败：", error);
-        $message.error("用户喜欢歌手加载失败");
+        showError(error, "用户喜欢歌手加载失败");
       }
     },
     // 查找歌曲是否处于喜欢列表
@@ -227,7 +219,7 @@ const useSiteDataStore = defineStore("siteData", {
 // 输出错误
 const showError = (error, msg, show = true) => {
   console.error(msg, error);
-  if (show) $message.error(msg);
+  if (show && typeof $message !== "undefined") $message.error(msg);
 };
 
 // 移入移除喜欢列表

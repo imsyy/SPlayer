@@ -48,6 +48,7 @@ import { useRouter } from "vue-router";
 import { NIcon, NText, NNumberAnimation, NButton } from "naive-ui";
 import { siteData, siteSettings } from "@/stores";
 import SvgIcon from "@/components/Global/SvgIcon";
+import userSignIn from "@/utils/userSignIn";
 
 const data = siteData();
 const router = useRouter();
@@ -60,9 +61,6 @@ const userMenuShow = ref(false);
 
 // 登录弹窗
 const loginRef = ref(null);
-
-// 是否签到
-const signInStatus = ref(false);
 
 // 图标渲染
 const renderIcon = (icon) => {
@@ -91,6 +89,8 @@ const createUserNumber = (num, text, duration = 1000) => {
 
 // 生成导航栏用户信息
 const createUserData = () => {
+  // 是否签到
+  const signInStatus = sessionStorage.getItem("lastSignInDate") ? true : false;
   return h(
     "div",
     { className: "nav-user-data" },
@@ -108,12 +108,14 @@ const createUserData = () => {
               NButton,
               {
                 round: true,
-                renderIcon: renderIcon(signInStatus.value ? "calendar-check" : "calendar-badge"),
-                onclick: () => {
-                  $message.warning("施工中（ 新建文件夹 ）");
+                renderIcon: renderIcon(signInStatus ? "calendar-check" : "calendar-badge"),
+                disabled: signInStatus,
+                onclick: async () => {
+                  userMenuShow.value = false;
+                  await userSignIn();
                 },
               },
-              () => [signInStatus.value ? "Lv." + userData.value.detail?.level || 1 : "立即签到"],
+              () => [signInStatus ? "今日已签到" : "立即签到"],
             ),
           ]),
         ]

@@ -79,11 +79,12 @@
 
 <script setup>
 import { storeToRefs } from "pinia";
-import { darkTheme, NButton } from "naive-ui";
 import { useRouter } from "vue-router";
+import { darkTheme, NButton } from "naive-ui";
 import { musicData, siteStatus, siteSettings } from "@/stores";
-import { initPlayer } from "@/utils/Player";
 import { checkPlatform } from "@/utils/helper";
+import { initPlayer } from "@/utils/Player";
+import userSignIn from "@/utils/userSignIn";
 import globalShortcut from "@/utils/globalShortcut";
 import globalEvents from "@/utils/globalEvents";
 import packageJson from "@/../package.json";
@@ -92,7 +93,7 @@ const router = useRouter();
 const music = musicData();
 const status = siteStatus();
 const settings = siteSettings();
-const { autoPlay, showSider } = storeToRefs(settings);
+const { autoPlay, showSider, autoSignIn } = storeToRefs(settings);
 const { showPlayBar, asideMenuCollapsed, showFullPlayer } = storeToRefs(status);
 
 // 公告数据
@@ -113,7 +114,7 @@ if ("serviceWorker" in navigator) {
       $notification.create({
         title: "🎉 有更新啦",
         content: "检测到软件内资源有更新，是否重新启动软件以应用更新？",
-        meta: "v " + (packageJson.version || "1.0.0"),
+        meta: "当前版本 v " + (packageJson.version || "1.0.0"),
         action: () =>
           h(
             NButton,
@@ -178,17 +179,19 @@ const handleKeyUp = (event) => {
   globalShortcut(event, router);
 };
 
-onMounted(() => {
+onMounted(async () => {
   // 挂载方法
   window.$canNotConnect = canNotConnect;
   // 主播放器
-  initPlayer(autoPlay.value);
+  await initPlayer(autoPlay.value);
   // 全局事件
   globalEvents(router);
   // 键盘监听
   if (!checkPlatform.electron()) {
     window.addEventListener("keyup", handleKeyUp);
   }
+  // 自动签到
+  if (autoSignIn.value) await userSignIn(settings);
   // 显示公告
   showAnnouncements();
 });

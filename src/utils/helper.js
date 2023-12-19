@@ -58,9 +58,8 @@ export const getCacheData = async (key, time, request, params) => {
  * @returns {Promise<string>} 返回封面的 Blob URL，如果没有封面数据则返回默认 URL
  */
 export const getLocalCoverData = async (path, isAlbum = false) => {
-  let blobUrl = null;
-
   try {
+    let blobUrl = null;
     const coverData = await electron.ipcRenderer.invoke("getMusicCover", path);
     if (coverData) {
       // 将 Uint8Array 数据转换为 Blob

@@ -42,7 +42,6 @@
     "pinia": "^2.1.6",
     "pinia-plugin-persistedstate": "^3.2.0",
     "plyr": "^3.7.8",
-    "qrcode.vue": "^3.4.1",
     "screenfull": "^6.0.2",
     "vue-router": "^4.2.4",
     "vue-slider-component": "4.1.0-beta.7"
@@ -59,7 +58,7 @@
     "electron-vite": "^1.0.29",
     "eslint": "^8.47.0",
     "eslint-plugin-vue": "^9.17.0",
-    "naive-ui": "^2.35.0",
+    "naive-ui": "^2.36.0",
     "prettier": "^3.0.2",
     "sass": "^1.66.1",
     "terser": "^5.19.2",

@@ -70,7 +70,6 @@ axios.interceptors.response.use(
         break;
       default:
         // 处理其他状态码或错误条件
-        $canNotConnect(error);
         console.error("未处理的错误：", error.message);
     }
     // 继续传递错误
