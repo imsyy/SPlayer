@@ -1,4 +1,5 @@
 import { userDailySignin } from "@/api/user";
+import { siteSettings } from "@/stores";
 import { isLogin } from "@/utils/auth";
 
 /**
@@ -6,7 +7,8 @@ import { isLogin } from "@/utils/auth";
  * https://github.com/Binaryify/NeteaseCloudMusicApi/issues/1387
  * 云贝签到本质上就是 Android 客户端每日签到
  */
-const userSignIn = async (settings) => {
+const userSignIn = async () => {
+  const settings = siteSettings();
   try {
     if (!isLogin()) return false;
     const today = new Date().toLocaleDateString();

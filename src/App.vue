@@ -191,7 +191,7 @@ onMounted(async () => {
     window.addEventListener("keyup", handleKeyUp);
   }
   // 自动签到
-  if (autoSignIn.value) await userSignIn(settings);
+  if (autoSignIn.value) await userSignIn();
   // 显示公告
   showAnnouncements();
 });
