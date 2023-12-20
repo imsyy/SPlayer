@@ -20,6 +20,7 @@ const formatData = (data, type = "playlist", noTracks = false) => {
       (v.picUrl ||
         v.coverUrl ||
         v.coverImgUrl ||
+        v.imgurl ||
         v.cover ||
         (v.album && v.album.picUrl) ||
         (v.al && (v.al.picUrl || v.al.xInfo?.picUrl)));

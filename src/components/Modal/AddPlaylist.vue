@@ -32,7 +32,7 @@
         >
           <template #prefix>
             <n-image
-              :src="item.coverImgUrl.replace(/^http:/, 'https:') + '?param=100y100'"
+              :src="item?.coverSize?.s || '/images/pic/album.jpg?assest'"
               class="cover"
               preview-disabled
               lazy
@@ -51,7 +51,7 @@
           </template>
           <n-thing :title="item.name">
             <template #description>
-              <n-text depth="3" class="size">{{ item.trackCount }} 首音乐</n-text>
+              <n-text depth="3" class="size">{{ item.count }} 首音乐</n-text>
             </template>
           </n-thing>
         </n-list-item>

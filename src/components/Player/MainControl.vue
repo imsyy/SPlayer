@@ -535,12 +535,12 @@ watch(
       border-radius: 25px;
       .vue-slider-process {
         background-color: var(--main-color);
-        transition: none !important;
+        // transition: none !important;
       }
       .vue-slider-dot {
         width: 12px !important;
         height: 12px !important;
-        transition: none !important;
+        // transition: none !important;
       }
       .vue-slider-dot-handle {
         transition: box-shadow 0.3s;

@@ -24,8 +24,6 @@ win:
   icon: public/images/icons/favicon-512x512.png
   # 构建类型
   target: nsis
-  # 管理员权限
-  requestedExecutionLevel: highestAvailable
 # NSIS 安装器配置
 nsis:
   # 一键式安装程序还是辅助安装程序
