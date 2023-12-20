@@ -48,7 +48,12 @@
               <SvgIcon icon="account-music" />
             </n-icon>
             <div v-if="privateFmSong?.artists" class="all-ar">
-              <span v-for="ar in privateFmSong.artists" :key="ar.id" class="ar">
+              <span
+                v-for="ar in privateFmSong.artists"
+                :key="ar.id"
+                class="ar"
+                @click.stop="router.push(`/artist?id=${ar.id}`)"
+              >
                 {{ ar.name }}
               </span>
             </div>
