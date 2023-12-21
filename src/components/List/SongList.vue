@@ -218,7 +218,7 @@ const music = musicData();
 const dataStore = siteData();
 const settings = siteSettings();
 const { userData } = storeToRefs(dataStore);
-const { loadSize } = storeToRefs(settings);
+const { loadSize, playSearch } = storeToRefs(settings);
 const { playList, playIndex, playSongData, playSongSource, playHeartbeatMode, playMode } =
   storeToRefs(music);
 
@@ -303,7 +303,12 @@ const playSong = async (data, song, index) => {
     fadePlayOrPause();
   } else {
     // 若为特殊状态
-    if (isPage === "/search" || isPage === "/history" || playHeartbeatMode.value) {
+    if (
+      (isPage === "/search" && !playSearch.value) ||
+      isPage === "/history" ||
+      playHeartbeatMode.value
+    ) {
+      console.log("仅播放当前歌曲");
       addSongToNext(song, true);
     } else {
       // 添加播放列表

@@ -218,6 +218,15 @@
         </n-card>
         <n-card class="set-item">
           <div class="name">
+            播放全部搜索歌曲
+            <n-text class="tip">
+              在播放搜索页面上的歌曲时，是否同时播放所有搜索结果中的歌曲
+            </n-text>
+          </div>
+          <n-switch v-model:value="playSearch" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
             在线播放音质
             <n-text class="tip">
               {{ songLevelData[songLevel].tip }}
@@ -556,6 +565,7 @@ const {
   memorySeek,
   showGithub,
   playCoverType,
+  playSearch,
 } = storeToRefs(settings);
 
 // 标签页数据

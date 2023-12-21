@@ -59,7 +59,7 @@ import { isLogin } from "@/utils/auth";
 import { useRouter } from "vue-router";
 import { siteData, siteSettings } from "@/stores";
 import { getSongDetail, getSongDownload } from "@/api/song";
-import { downloadFile } from "@/utils/helper";
+import { downloadFile, checkPlatform } from "@/utils/helper";
 import formatData from "@/utils/formatData";
 
 const router = useRouter();
@@ -97,7 +97,7 @@ const toSongDownload = async (song, br) => {
   // 获取下载数据
   const result = await getSongDownload(song?.id, br);
   // 开始下载
-  if (!downloadPath.value) {
+  if (!downloadPath.value && checkPlatform.electron()) {
     $notification["warning"]({
       content: "缺少配置",
       meta: "请前往设置页配置默认下载目录",

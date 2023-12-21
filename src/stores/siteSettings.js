@@ -29,6 +29,7 @@ const useSiteSettingsStore = defineStore("siteSettings", {
       bottomLyricShow: true, // 底栏歌词显示
       playerBackgroundType: "blur", // 播放器背景类别  animation 流动 / blur 模糊
       memorySeek: true, // 记忆上次播放位置
+      playSearch: false, // 是否播放全部搜索结果
       // 数量部分
       loadSize: 50, // 每页加载数量
       // 歌词部分
