@@ -30,7 +30,7 @@ export const initPlayer = async (playNow = false) => {
     const music = musicData();
     const status = siteStatus();
     const settings = siteSettings();
-    const { playList, playIndex } = music;
+    const { playList, playIndex, playMode } = music;
     // 当前播放歌曲数据
     const playSongData = music.getPlaySongData;
     // 是否为本地歌曲
@@ -42,6 +42,8 @@ export const initPlayer = async (playNow = false) => {
     const cover = isLocalSong ? music.playSongData?.localCover : playSongData?.coverSize;
     // 歌词归位
     music.playSongLyricIndex = -1;
+    // 若为 fm 模式，则清除当前歌曲信息
+    if (playMode === "fm") music.playSongData = {};
     // 在线歌曲
     if (!isLocalSong) {
       // 获取歌曲信息

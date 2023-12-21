@@ -168,3 +168,16 @@ body,
     backdrop-filter: blur(16px);
   }
 }
+
+// layout-toggle-bar
+.n-layout-toggle-bar {
+  height: 44px !important;
+  top: calc(50% - 22px) !important;
+  .n-layout-toggle-bar__top,
+  .n-layout-toggle-bar__bottom {
+    height: 24px !important;
+  }
+  .n-layout-toggle-bar__bottom {
+    top: 20px !important;
+  }
+}

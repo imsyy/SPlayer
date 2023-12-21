@@ -57,7 +57,7 @@ const useSiteDataStore = defineStore("siteData", {
   },
   actions: {
     // 获取每日推荐
-    async setDailySongsData() {
+    async setDailySongsData(refresh = false) {
       try {
         if (!isLogin()) {
           this.dailySongsData = { timestamp: null, data: [] };
@@ -73,7 +73,7 @@ const useSiteDataStore = defineStore("siteData", {
         const originalHour = new Date(timestamp).getHours();
         const isAfter6AM =
           new Date(timestamp).toDateString() === new Date().toDateString() && originalHour >= 6;
-        if (songsData?.[0] && isAfter6AM && timestamp <= nextDay6AM.getTime()) {
+        if (!refresh && songsData?.[0] && isAfter6AM && timestamp <= nextDay6AM.getTime()) {
           console.log("日推缓存未过期，不更新");
           return true;
         } else {
@@ -81,6 +81,7 @@ const useSiteDataStore = defineStore("siteData", {
           const songsData = formatData(res.data.dailySongs, "song");
           console.log("日推缓存不存在或已过期", songsData);
           this.dailySongsData = { timestamp: new Date().getTime(), data: songsData };
+          if (refresh) $message.success("日推更新成功");
         }
       } catch (error) {
         showError(error, "每日推荐加载失败");

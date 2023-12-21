@@ -273,7 +273,7 @@ const playAllSongs = async () => {
     playSongData.value = albumData.value[0];
     playIndex.value = 0;
     // 初始化播放器
-    initPlayer(true);
+    await initPlayer(true);
   } else {
     console.log("处于专辑内");
     playSongData.value = albumData.value[existingIndex];

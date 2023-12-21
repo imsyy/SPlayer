@@ -364,7 +364,7 @@ const playAllSongs = async () => {
     playSongData.value = playListData.value[0];
     playIndex.value = 0;
     // 初始化播放器
-    initPlayer(true);
+    await initPlayer(true);
   } else {
     console.log("处于歌单内");
     playSongData.value = playListData.value[existingIndex];

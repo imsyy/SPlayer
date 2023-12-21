@@ -58,20 +58,25 @@
     </n-space>
     <!-- 列表 -->
     <Transition name="fade" mode="out-in">
-      <SongList v-if="!searchValue" :data="userCloudData" :showPrivilege="false" />
-      <SongList v-else-if="searchData?.length" :data="searchData" :showPrivilege="false" />
-      <n-empty
-        v-else
-        :description="`搜不到关于 ${searchValue} 的任何歌曲呀`"
-        style="margin-top: 60px"
-        size="large"
-      >
-        <template #icon>
-          <n-icon>
-            <SvgIcon icon="search-off" />
-          </n-icon>
-        </template>
-      </n-empty>
+      <div v-if="userCloudData !== 'empty'" class="list">
+        <Transition name="fade" mode="out-in">
+          <SongList v-if="!searchValue" :data="userCloudData" :showPrivilege="false" />
+          <SongList v-else-if="searchData?.length" :data="searchData" :showPrivilege="false" />
+          <n-empty
+            v-else
+            :description="`搜不到关于 ${searchValue} 的任何歌曲呀`"
+            style="margin-top: 60px"
+            size="large"
+          >
+            <template #icon>
+              <n-icon>
+                <SvgIcon icon="search-off" />
+              </n-icon>
+            </template>
+          </n-empty>
+        </Transition>
+      </div>
+      <n-empty v-else class="empty" description="你还没播放任何歌曲" />
     </Transition>
   </div>
 </template>
@@ -125,6 +130,10 @@ const getUserCloudData = async (isOnce = false) => {
         (res.size / Math.pow(1024, 3)).toFixed(2),
         (res.maxSize / Math.pow(1024, 3)).toFixed(0),
       ];
+      if (res.count === 0) {
+        userCloudData.value = "empty";
+        break;
+      }
       if (isOnce) break;
     }
     // 展平并赋值
@@ -166,7 +175,7 @@ const playAllSongs = async () => {
     playSongData.value = userCloudData.value[0];
     playIndex.value = 0;
     // 初始化播放器
-    initPlayer(true);
+    await initPlayer(true);
   } else {
     playSongData.value = userCloudData.value[existingIndex];
     playIndex.value = existingIndex;
