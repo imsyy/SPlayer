@@ -150,7 +150,7 @@ const setCloudSongMatchBtn = async (data) => {
       allCloudSongs[cloudMatchIndex.value] = JSON.parse(JSON.stringify(cloudMatchSongData.value));
       await indexedDB.setfilesDB("userCloudList", allCloudSongs.slice());
       // 刷新列表
-      if (typeof $refreshCloudList !== "undefined") $refreshCloudList();
+      if (typeof $refreshCloudCatch !== "undefined") $refreshCloudCatch();
     } catch (error) {
       console.error("更改云盘列表时出错：", error);
       $message.error("更改云盘列表时出错，请刷新后重试");

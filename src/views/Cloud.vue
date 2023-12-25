@@ -104,10 +104,9 @@ const searchValue = ref(null);
 const searchData = ref([]);
 
 // 获取用户云盘缓存数据
-const getUserCloudDataList = async () => {
-  await indexedDB.getfilesDB("userCloudList").then((res) => {
-    userCloudData.value = res;
-  });
+const getUserCloudDataCatch = async () => {
+  const result = await indexedDB.getfilesDB("userCloudList");
+  userCloudData.value = result;
 };
 
 // 获取用户云盘列表
@@ -117,7 +116,6 @@ const getUserCloudData = async (isOnce = false) => {
     let offset = 0;
     let totalCount = null;
     let resultArr = [];
-    userCloudData.value = [];
     // 获取数据
     while (totalCount === null || offset < totalCount) {
       const res = await getUserCloud(100, offset);
@@ -191,12 +189,12 @@ const goBuy = () => {
 };
 
 onMounted(async () => {
-  await getUserCloudDataList();
+  await getUserCloudDataCatch();
   await getUserCloudData();
 });
 
 onMounted(() => {
-  window.$refreshCloudList = getUserCloudDataList;
+  window.$refreshCloudCatch = getUserCloudDataCatch;
 });
 </script>
 
