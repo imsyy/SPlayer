@@ -109,6 +109,24 @@ const formatData = (data, type = "playlist", noTracks = false) => {
           duration: v.duration || v.durationms,
           playCount: v.playCount || v.playTime,
         };
+      // dj
+      case "dj":
+        return {
+          id: v.id || v.vid,
+          mainTrackId: v.mainTrackId,
+          name: v.name,
+          creator: v.dj,
+          count: v.programCount,
+          desc: v.copywriter || v.lastProgramName || v.desc,
+          cover,
+          coverSize,
+          tags: { id: v.categoryId, name: v.category },
+          rcmdText: v.rcmdtext || v.rcmdText,
+          playCount: v.playCount || v.listenerCount,
+          createTime: v.createTime,
+          updateTime: v.lastProgramCreateTime || v.scheduledPublishTime,
+          duration: getSongTime(v.duration),
+        };
       default:
         return null;
     }

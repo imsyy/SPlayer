@@ -47,10 +47,10 @@ export const isLogin = () => {
 /**
  * 退出用户登录
  */
-export const toLogout = (show = true) => {
+export const toLogout = async (show = true) => {
   const data = siteData();
   // 去除 cookie
-  logOut();
+  await logOut();
   removeCookie("MUSIC_U");
   removeCookie("__csrf");
   sessionStorage.clear();

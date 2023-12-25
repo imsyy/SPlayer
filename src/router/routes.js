@@ -45,6 +45,11 @@ const routes = [
         name: "sea-playlists",
         component: () => import("@/views/Search/playlists.vue"),
       },
+      {
+        path: "djs",
+        name: "sea-djs",
+        component: () => import("@/views/Search/djs.vue"),
+      },
     ],
   },
   // 发现音乐
@@ -154,6 +159,15 @@ const routes = [
     },
     component: () => import("@/views/List/album.vue"),
   },
+  // 播客电台
+  {
+    path: "/dj",
+    name: "dj",
+    meta: {
+      title: "播客电台",
+    },
+    component: () => import("@/views/List/dj.vue"),
+  },
   // 歌手
   {
     path: "/artist",
@@ -217,6 +231,11 @@ const routes = [
         name: "like-playlists",
         component: () => import("@/views/Like/playlists.vue"),
       },
+      {
+        path: "djs",
+        name: "like-djs",
+        component: () => import("@/views/Like/djs.vue"),
+      },
     ],
   },
   // 本地歌曲
@@ -250,20 +269,21 @@ const routes = [
   },
   // 播客
   {
-    path: "/record",
-    name: "record",
+    path: "/dj-hot",
+    name: "dj-hot",
     meta: {
-      title: "播客",
+      title: "热门播客",
     },
-    component: () => import("@/views/Record/index.vue"),
-    redirect: "/record/hot",
-    children: [
-      {
-        path: "hot",
-        name: "record-hot",
-        component: () => import("@/views/Record/hot.vue"),
-      },
-    ],
+    component: () => import("@/views/Dj/index.vue"),
+  },
+  // 播客 -分类
+  {
+    path: "/dj-type",
+    name: "dj-type",
+    meta: {
+      title: "播客分类",
+    },
+    component: () => import("@/views/Dj/type.vue"),
   },
   // 全局设置
   {

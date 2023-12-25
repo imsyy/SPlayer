@@ -64,11 +64,15 @@
           <div class="cover-content">
             <n-text class="name">{{ item.name }}</n-text>
             <!-- 创建者 -->
-            <n-text v-if="item.creator" class="creator" depth="3">
+            <n-text v-if="item?.creator" class="creator" depth="3">
               {{ item.creator?.nickname || item.creator || "未知" }}
             </n-text>
+            <!-- 电台简介 -->
+            <n-text v-if="item?.rcmdText" class="creator" depth="3">
+              {{ item.rcmdText || "未知简介" }}
+            </n-text>
             <!-- 歌手 -->
-            <div v-if="item.artists" class="artists">
+            <div v-if="item.artists && type !== 'dj'" class="artists">
               <n-text
                 v-for="ar in item.artists"
                 :key="ar.id"
@@ -198,6 +202,14 @@ const jumpLink = (data, type) => {
           },
         });
         break;
+      case "dj":
+        router.push({
+          path: "/dj",
+          query: {
+            id: data?.id,
+          },
+        });
+        break;
       default:
         break;
     }
@@ -260,7 +272,9 @@ const jumpLink = (data, type) => {
         top: -80px;
         left: 0;
         z-index: 1;
+        width: 100%;
         padding: 6px 10px;
+        box-sizing: border-box;
         background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0));
         opacity: 0;
         transition:

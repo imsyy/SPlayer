@@ -120,6 +120,19 @@ export const getUserMv = () => {
 };
 
 /**
+ * 获取用户电台的订阅列表
+ */
+export const getUserDj = () => {
+  return axios({
+    method: "GET",
+    url: "/dj/sublist",
+    params: {
+      timestamp: new Date().getTime(),
+    },
+  });
+};
+
+/**
  * 获取用户喜欢的音乐列表
  * @param {string} uid 用户的id
  */

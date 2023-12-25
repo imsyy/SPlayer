@@ -140,12 +140,12 @@ const menuOptions = computed(() => [
         RouterLink,
         {
           to: {
-            name: "record",
+            name: "dj-hot",
           },
         },
         () => ["播客电台"],
       ),
-    key: "record",
+    key: "dj-hot",
     icon: renderIcon("record"),
   },
   {

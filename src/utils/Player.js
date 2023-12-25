@@ -33,6 +33,8 @@ export const initPlayer = async (playNow = false) => {
     const { playList, playIndex, playMode } = music;
     // 当前播放歌曲数据
     const playSongData = music.getPlaySongData;
+    // 若为电台则更改 id
+    playSongData.id = playMode === "dj" ? playSongData.mainTrackId : playSongData.id;
     // 是否为本地歌曲
     const isLocalSong = playSongData?.path ? true : false;
     // 获取封面
@@ -59,7 +61,7 @@ export const initPlayer = async (playNow = false) => {
         createPlayer(url);
       }
       // 无法正常获取播放地址
-      else if (checkPlatform.electron() && settings.useUnmServer) {
+      else if (checkPlatform.electron() && playMode !== "dj" && settings.useUnmServer) {
         const url = await getFromUnblockMusic(playSongData, status, playNow);
         if (url) {
           status.playUseOtherSource = true;
@@ -100,9 +102,9 @@ export const initPlayer = async (playNow = false) => {
       }
     }
     // 获取歌词
-    getSongLyricData(isLocalSong, playSongData);
+    if (playMode !== "dj") getSongLyricData(isLocalSong, playSongData);
     // 初始化媒体会话控制
-    initMediaSession(playSongData, isLocalSong, cover);
+    initMediaSession(playSongData, cover, isLocalSong, playMode === "dj");
     // 获取图片主色
     getColorMainColor(isLocalSong, cover);
   } catch (error) {
@@ -241,13 +243,14 @@ export const createPlayer = async (src, autoPlay = true) => {
       status.playLoading = false;
       // 发送歌曲名
       if (checkPlatform.electron()) {
-        const songName =
-          playSongData.name +
-          " - " +
-          (Array.isArray(playSongData.artists)
+        const songName = playSongData.name || "未知曲目";
+        const songArtist =
+          music.playMode === "dj"
+            ? "电台节目"
+            : Array.isArray(playSongData.artists)
             ? playSongData.artists.map((ar) => ar.name).join(" / ")
-            : playSongData.artists || "未知歌手");
-        electron.ipcRenderer.send("songNameChange", songName);
+            : playSongData.artists || "未知歌手";
+        electron.ipcRenderer.send("songNameChange", songName + " - " + songArtist);
       }
       // 听歌打卡
       if (isLogin() && !playSongData?.path) {
@@ -613,13 +616,17 @@ const getSongLyricData = async (islocal, data) => {
  * @param {string} islocal - 是否为本地歌曲
  * @param {string} cover - 封面图像的URL或数据
  */
-const initMediaSession = async (data, islocal, cover) => {
+const initMediaSession = async (data, cover, islocal, isDj) => {
   if ("mediaSession" in navigator) {
     // 歌曲信息
     navigator.mediaSession.metadata = new MediaMetadata({
       title: data.name,
-      artist: islocal ? data.artists : data.artists?.map((a) => a.name)?.join(" & "),
-      album: islocal ? data.album : data.album.name,
+      artist: isDj
+        ? "电台节目"
+        : islocal
+        ? data.artists
+        : data.artists?.map((a) => a.name)?.join(" & "),
+      album: isDj ? "电台节目" : islocal ? data.album : data.album.name,
       artwork: islocal
         ? [
             {

@@ -147,24 +147,5 @@ onBeforeUnmount(() => {
       margin-top: 30px;
     }
   }
-  @keyframes fade-spacing {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-      letter-spacing: 12px;
-    }
-  }
-  @keyframes fade-down {
-    0% {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
 }
 </style>

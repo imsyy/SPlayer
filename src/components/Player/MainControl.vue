@@ -7,7 +7,7 @@
       'no-sider': !showSider,
     }"
     content-style="padding: 0"
-    @dblclick.stop="showFullPlayer = true"
+    @dblclick.stop="openFullPlayer"
   >
     <!-- 进度条 -->
     <vue-slider
@@ -31,7 +31,7 @@
     <div class="player">
       <!-- 歌曲信息 -->
       <div class="info">
-        <div class="cover" @click.stop="showFullPlayer = true">
+        <div class="cover" @click.stop="openFullPlayer">
           <Transition name="fade" mode="out-in">
             <n-image
               :key="music.getPlaySongData?.id"
@@ -67,6 +67,7 @@
             </n-text>
             <!-- 喜欢歌曲 -->
             <n-icon
+              v-if="playMode !== 'dj'"
               class="favorite"
               @click.stop="
                 data.changeLikeList(
@@ -87,7 +88,7 @@
             </n-icon>
             <!-- 更多操作 -->
             <n-dropdown
-              v-if="!music.getPlaySongData?.path"
+              v-if="playMode !== 'dj' && !music.getPlaySongData?.path"
               :options="songMoreOptions"
               :show-arrow="true"
               placement="top-start"
@@ -102,7 +103,8 @@
             <!-- 歌手 -->
             <div
               v-if="
-                ((!playState || !bottomLyricShow) && playSongLyric.lrc?.length) ||
+                ((!playState || !bottomLyricShow || playMode === 'dj') &&
+                  playSongLyric.lrc?.length) ||
                 playSongLyricIndex === -1
               "
               class="artist"
@@ -121,6 +123,7 @@
                   {{ ar.name }}
                 </n-text>
               </template>
+              <div v-else-if="playMode === 'dj'" class="ar">电台节目</div>
               <n-text v-else class="ar">
                 {{ music.getPlaySongData?.artists || "未知艺术家" }}
               </n-text>
@@ -196,110 +199,121 @@
         </n-icon>
       </div>
       <!-- 功能区 -->
-      <div class="menu">
-        <!-- 时间进度 -->
-        <div class="time">
-          <n-text class="played" depth="3">{{ playTimeData.played }}</n-text>
-          <n-text depth="3">{{ playTimeData.durationTime }}</n-text>
-        </div>
-        <!-- 播放模式 -->
-        <n-dropdown
-          v-if="playMode === 'normal'"
-          :options="playModeOptions"
-          :show-arrow="true"
-          trigger="hover"
-          @select="playModeChange"
-        >
-          <div class="mode" @click.stop @dblclick.stop>
-            <n-icon size="22">
-              <SvgIcon
-                :icon="
-                  playHeartbeatMode
-                    ? 'heartbit'
-                    : playSongMode === 'normal'
-                    ? 'repeat-list'
-                    : playSongMode === 'random'
-                    ? 'shuffle'
-                    : 'repeat-song'
-                "
-                isSpecial
-              />
-            </n-icon>
+      <Transition name="fade" mode="out-in">
+        <div :key="playMode" class="menu">
+          <!-- 时间进度 -->
+          <div class="time">
+            <n-text class="played" depth="3">{{ playTimeData.played }}</n-text>
+            <n-text depth="3">{{ playTimeData.durationTime }}</n-text>
           </div>
-        </n-dropdown>
-        <!-- 倍速 -->
-        <n-popover :show-arrow="false" trigger="hover" placement="top-end" raw>
-          <template #trigger>
-            <div class="speed" @click.stop="(playRate = 1), setRate(1)" @dblclick.stop>
-              <n-icon v-if="playRate === 1" size="22">
-                <SvgIcon icon="speed-rounded" />
-              </n-icon>
-              <n-text v-else class="speed-text">{{ playRate }}x</n-text>
-            </div>
-          </template>
-          <!-- 倍速调整 -->
-          <div class="slider-content">
-            <n-slider
-              v-model:value="playRate"
-              :tooltip="false"
-              :min="0.1"
-              :max="2"
-              :step="0.1"
-              :marks="{
-                0.1: '减速',
-                1: '正常',
-                2: '加速',
-              }"
-              style="width: 220px"
-              @update:value="setRate"
-            />
-          </div>
-        </n-popover>
-        <!-- 音量 -->
-        <n-popover trigger="hover" :show-arrow="false" raw>
-          <template #trigger>
-            <n-icon class="volume" size="22" @click.stop="setVolumeMute" @wheel="changeVolume">
-              <SvgIcon v-if="playVolume === 0" icon="no-sound-rounded" />
-              <SvgIcon v-else-if="playVolume > 0 && playVolume < 0.4" icon="volume-mute-rounded" />
-              <SvgIcon
-                v-else-if="playVolume >= 0.4 && playVolume < 0.7"
-                icon="volume-down-rounded"
-              />
-              <SvgIcon v-else icon="volume-up-rounded" />
-            </n-icon>
-          </template>
-          <!-- 音量调整 -->
-          <div
-            :style="{
-              padding: '10px 0',
-              width: '50px',
-            }"
-            class="slider-content"
-            @wheel="changeVolume"
+          <!-- 播放模式 -->
+          <n-dropdown
+            v-if="playMode !== 'fm'"
+            :options="playModeOptions"
+            :show-arrow="true"
+            trigger="hover"
+            @select="playModeChange"
           >
-            <n-slider
-              v-model:value="playVolume"
-              :tooltip="false"
-              :min="0"
-              :max="1"
-              :step="0.01"
-              vertical
-              style="height: 120px"
-              @update:value="setVolume"
-            />
-            <n-text class="slider-num" depth="3">{{ (playVolume * 100).toFixed(0) }}%</n-text>
-          </div>
-        </n-popover>
-        <!-- 播放列表 -->
-        <n-icon
-          v-if="playMode === 'normal'"
-          class="playlist"
-          size="22"
-          @click.stop="playListShow = !playListShow"
-        >
-          <SvgIcon icon="queue-music-rounded" />
-        </n-icon>
-      </div>
+            <div class="mode" @click.stop @dblclick.stop>
+              <n-icon size="22">
+                <SvgIcon
+                  :icon="
+                    playHeartbeatMode
+                      ? 'heartbit'
+                      : playSongMode === 'normal'
+                      ? 'repeat-list'
+                      : playSongMode === 'random'
+                      ? 'shuffle'
+                      : 'repeat-song'
+                  "
+                  isSpecial
+                />
+              </n-icon>
+            </div>
+          </n-dropdown>
+          <!-- 倍速 -->
+          <n-popover :show-arrow="false" trigger="hover" placement="top-end" raw>
+            <template #trigger>
+              <div class="speed" @click.stop="(playRate = 1), setRate(1)" @dblclick.stop>
+                <n-icon v-if="playRate === 1" size="22">
+                  <SvgIcon icon="speed-rounded" />
+                </n-icon>
+                <n-text v-else class="speed-text">{{ playRate }}x</n-text>
+              </div>
+            </template>
+            <!-- 倍速调整 -->
+            <div class="slider-content">
+              <n-slider
+                v-model:value="playRate"
+                :tooltip="false"
+                :min="0.1"
+                :max="2"
+                :step="0.1"
+                :marks="{
+                  0.1: '减速',
+                  1: '正常',
+                  2: '加速',
+                }"
+                style="width: 220px"
+                @update:value="setRate"
+              />
+            </div>
+          </n-popover>
+          <!-- 音量 -->
+          <n-popover trigger="hover" :show-arrow="false" raw>
+            <template #trigger>
+              <n-icon class="volume" size="22" @click.stop="setVolumeMute" @wheel="changeVolume">
+                <SvgIcon v-if="playVolume === 0" icon="no-sound-rounded" />
+                <SvgIcon
+                  v-else-if="playVolume > 0 && playVolume < 0.4"
+                  icon="volume-mute-rounded"
+                />
+                <SvgIcon
+                  v-else-if="playVolume >= 0.4 && playVolume < 0.7"
+                  icon="volume-down-rounded"
+                />
+                <SvgIcon v-else icon="volume-up-rounded" />
+              </n-icon>
+            </template>
+            <!-- 音量调整 -->
+            <div
+              :style="{
+                padding: '10px 0',
+                width: '50px',
+              }"
+              class="slider-content"
+              @wheel="changeVolume"
+            >
+              <n-slider
+                v-model:value="playVolume"
+                :tooltip="false"
+                :min="0"
+                :max="1"
+                :step="0.01"
+                vertical
+                style="height: 120px"
+                @update:value="setVolume"
+              />
+              <n-text class="slider-num" depth="3">{{ (playVolume * 100).toFixed(0) }}%</n-text>
+            </div>
+          </n-popover>
+          <!-- 播放列表 -->
+          <n-badge
+            v-if="playMode !== 'fm'"
+            :value="playList?.length ?? 0"
+            :show="showPlaylistCount"
+            :max="999"
+            :style="{
+              marginRight: showPlaylistCount ? '12px' : null,
+            }"
+            class="playlist"
+          >
+            <n-icon size="22" @click.stop="playListShow = !playListShow">
+              <SvgIcon icon="queue-music-rounded" />
+            </n-icon>
+          </n-badge>
+        </div>
+      </Transition>
     </div>
     <!-- 添加到歌单 -->
     <AddPlaylist ref="addPlaylistRef" />
@@ -347,7 +361,7 @@ const {
   playSongLyric,
 } = storeToRefs(music);
 const { playLoading, playState, playListShow, showPlayBar, showFullPlayer } = storeToRefs(status);
-const { showYrc, bottomLyricShow, showSider } = storeToRefs(settings);
+const { showYrc, bottomLyricShow, showSider, showPlaylistCount } = storeToRefs(settings);
 
 // 子组件
 const addPlaylistRef = ref(null);
@@ -450,6 +464,15 @@ const songTimeSliderUpdate = (val) => {
     const currentTime = (playTimeData.value.duration / 100) * val;
     setSeek(currentTime);
   }
+};
+
+// 开启播放器
+const openFullPlayer = () => {
+  if (playMode.value === "dj") {
+    $message.warning("当前为电台模式，无法开启播放器");
+    return false;
+  }
+  showFullPlayer.value = true;
 };
 
 // 上下曲切换
@@ -723,18 +746,7 @@ watch(
       display: flex;
       flex-direction: row;
       justify-content: flex-end;
-      .time {
-        display: flex;
-        align-items: center;
-        font-size: 12px;
-        margin-right: 4px;
-        .played {
-          &::after {
-            content: "/";
-            margin: 0 4px;
-          }
-        }
-      }
+      transition: opacity 0.1s;
       .n-icon {
         margin-left: 8px;
         padding: 8px;
@@ -756,6 +768,18 @@ watch(
           transform: scale(1);
         }
       }
+      .time {
+        display: flex;
+        align-items: center;
+        font-size: 12px;
+        margin-right: 4px;
+        .played {
+          &::after {
+            content: "/";
+            margin: 0 4px;
+          }
+        }
+      }
       .speed {
         margin-left: 8px;
         display: flex;
@@ -775,6 +799,19 @@ watch(
           transition: opacity 0.1s ease-in-out;
           transform: translateY(-1px);
           cursor: pointer;
+        }
+      }
+      .playlist {
+        transition: margin 0.3s;
+        &.count {
+          margin-right: 12px;
+        }
+      }
+      :deep(.n-badge-sup) {
+        background: var(--main-boxshadow-color);
+        backdrop-filter: blur(20px);
+        .n-base-slot-machine {
+          color: var(--main-color);
         }
       }
     }

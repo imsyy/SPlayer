@@ -5,9 +5,13 @@
       <div v-if="showTitle" class="song-list-header">
         <n-text class="num" depth="3"> # </n-text>
         <n-text :class="{ info: true, 'has-cover': data[0].cover && showCover }" depth="3">
-          歌曲
+          {{ type === "song" ? "歌曲" : "声音" }}
         </n-text>
         <n-text v-if="data[0].album && showAlbum" class="album" depth="3"> 专辑 </n-text>
+        <n-text v-if="data[0].updateTime && type === 'dj'" class="update" depth="3">
+          更新日期
+        </n-text>
+        <n-text v-if="data[0].playCount && type === 'dj'" class="count" depth="3"> 播放量 </n-text>
         <n-text v-if="data[0].duration" class="duration" depth="3"> 时长 </n-text>
         <n-text v-if="data[0].size" class="size" depth="3"> 大小 </n-text>
       </div>
@@ -29,7 +33,7 @@
         hoverable
         @dblclick.stop="playSong(data, item, songsIndex + index)"
         @contextmenu="
-          songListDropdownRef?.openDropdown($event, data, item, songsIndex + index, sourceId)
+          songListDropdownRef?.openDropdown($event, data, item, songsIndex + index, sourceId, type)
         "
       >
         <!-- 序号 -->
@@ -122,6 +126,9 @@
               {{ ar.name }}
             </n-text>
           </div>
+          <div v-else-if="type === 'dj'" class="artist">
+            <n-text class="ar"> 电台节目 </n-text>
+          </div>
           <div v-else class="artist">
             <n-text class="ar"> {{ item.artists || "未知艺术家" }} </n-text>
           </div>
@@ -129,7 +136,7 @@
           <n-text v-if="item.alia" class="alia" depth="3">{{ item.alia }}</n-text>
         </div>
         <!-- 专辑 -->
-        <template v-if="showAlbum">
+        <template v-if="showAlbum && type !== 'dj'">
           <n-text
             v-if="item.album"
             class="album"
@@ -140,7 +147,7 @@
           <n-text v-else class="album">未知专辑</n-text>
         </template>
         <!-- 操作 -->
-        <div class="action">
+        <div v-if="type !== 'dj'" class="action">
           <!-- 喜欢歌曲 -->
           <n-icon
             :depth="dataStore.getSongIsLike(item?.id) ? 0 : 3"
@@ -158,6 +165,14 @@
             />
           </n-icon>
         </div>
+        <!-- 更新日期 -->
+        <n-text v-if="type === 'dj' && item.updateTime" class="update" depth="3">
+          {{ getTimestampTime(item.updateTime, false) }}
+        </n-text>
+        <!-- 播放量 -->
+        <n-text v-if="type === 'dj' && item.playCount" class="count" depth="3">
+          {{ item.playCount }}次
+        </n-text>
         <!-- 时长 -->
         <n-text v-if="item.duration" class="duration" depth="3">{{ item.duration }}</n-text>
         <n-text v-else class="duration"> -- </n-text>
@@ -212,6 +227,7 @@ import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { siteData, siteSettings, musicData } from "@/stores";
 import { initPlayer, fadePlayOrPause, addSongToNext } from "@/utils/Player";
+import { getTimestampTime } from "@/utils/timeTools";
 
 const router = useRouter();
 const music = musicData();
@@ -224,6 +240,11 @@ const { playList, playIndex, playSongData, playSongSource, playHeartbeatMode, pl
 
 // eslint-disable-next-line no-unused-vars
 const props = defineProps({
+  // 列表类型
+  type: {
+    type: String,
+    default: "song",
+  },
   // 列表数据
   data: {
     type: [Array, String],
@@ -292,7 +313,7 @@ const checkHasPlaying = (isScoll = null) => {
 const playSong = async (data, song, index) => {
   console.log(data, song, index);
   // 更改模式
-  playMode.value = "normal";
+  playMode.value = props.type === "song" ? "normal" : "dj";
   // 检查当前页面
   const isPage = router.currentRoute.value.matched?.[0].path || null;
   // 是否关闭心动模式
@@ -319,7 +340,7 @@ const playSong = async (data, song, index) => {
     console.log("与当前播放歌曲不一致");
     playSongData.value = song;
     // 初始化播放器
-    initPlayer(true);
+    await initPlayer(true);
   }
   // 附加来源
   playSongSource.value = Number(props.sourceId);
@@ -375,6 +396,14 @@ onBeforeUnmount(() => {
     }
     .has-cover {
       margin-right: 66px;
+    }
+    .update {
+      width: 80px;
+      text-align: center;
+    }
+    .count {
+      width: 120px;
+      text-align: center;
     }
     .duration {
       width: 40px;
@@ -523,6 +552,14 @@ onBeforeUnmount(() => {
           transform: scale(1);
         }
       }
+    }
+    .update {
+      width: 80px;
+      text-align: center;
+    }
+    .count {
+      width: 120px;
+      text-align: center;
     }
     .duration {
       width: 40px;

@@ -64,7 +64,7 @@ const renderIcon = (icon, size, translate = 0) => {
 };
 
 // 歌曲信息
-const renderSong = (song) => {
+const renderSong = (song, isSong) => {
   return () =>
     h(
       "div",
@@ -75,26 +75,28 @@ const renderSong = (song) => {
         h(NImage, { src: song?.coverSize?.s || song?.cover, class: "cover" }),
         h("div", { class: "song-detail" }, [
           h(NText, { class: "name" }, () => [song?.name || "未知曲目"]),
-          song.artists && Array.isArray(song.artists)
-            ? h(
-                "div",
-                { class: "all-ar" },
-                song.artists.map((ar) =>
-                  h(NText, { key: ar.id, class: "ar", depth: 3 }, () => [ar.name]),
-                ),
-              )
-            : h(
-                "div",
-                { class: "all-ar" },
-                h(NText, { class: "ar", depth: 3 }, () => [song.artists || "未知艺术家"]),
-              ),
+          isSong
+            ? song.artists && Array.isArray(song.artists)
+              ? h(
+                  "div",
+                  { class: "all-ar" },
+                  song.artists.map((ar) =>
+                    h(NText, { key: ar.id, class: "ar", depth: 3 }, () => [ar.name]),
+                  ),
+                )
+              : h(
+                  "div",
+                  { class: "all-ar" },
+                  h(NText, { class: "ar", depth: 3 }, () => [song.artists || "未知艺术家"]),
+                )
+            : h(NText, { class: "ar", depth: 3 }, () => ["电台节目"]),
         ]),
       ],
     );
 };
 
 // 打开右键菜单
-const openDropdown = (e, data, song, index, sourceId) => {
+const openDropdown = (e, data, song, index, sourceId, type) => {
   try {
     e.preventDefault();
     dropdownShow.value = false;
@@ -106,7 +108,9 @@ const openDropdown = (e, data, song, index, sourceId) => {
     );
     // 当前状态
     const isFm = playMode.value === "fm";
+    const isSong = type === "song";
     const isLocalSong = song?.path ? true : false;
+    const isHasMv = song.mv && song.mv !== 0 ? true : false;
     const isCloud = router.currentRoute.value.name === "cloud";
     const isUserPlaylist = sourceId !== 0 && userPlaylistsData.some((pl) => pl.id == sourceId);
     // 生成菜单
@@ -117,7 +121,7 @@ const openDropdown = (e, data, song, index, sourceId) => {
           key: "song-data",
           type: "render",
           show: !isLocalSong,
-          render: renderSong(song),
+          render: renderSong(song, isSong),
         },
         {
           key: "line-song",
@@ -137,9 +141,10 @@ const openDropdown = (e, data, song, index, sourceId) => {
         {
           key: "next-play",
           label: "下一首播放",
-          show: playSongData.value?.id !== song.id && !isFm,
+          show: isSong && playMode.value !== "dj" && playSongData.value?.id !== song.id && !isFm,
           props: {
             onClick: () => {
+              playMode.value = "song";
               addSongToNext(song);
             },
           },
@@ -148,7 +153,7 @@ const openDropdown = (e, data, song, index, sourceId) => {
         {
           key: "add-pl",
           label: "添加到歌单",
-          show: song?.path ? false : true,
+          show: isSong && !isLocalSong,
           props: {
             onClick: () => {
               addPlaylistRef.value?.openAddToPlaylist(song?.id);
@@ -159,7 +164,7 @@ const openDropdown = (e, data, song, index, sourceId) => {
         {
           key: "comment",
           label: "查看评论",
-          show: song?.path ? false : true,
+          show: isSong && !isLocalSong,
           props: {
             onClick: () => {
               router.push({
@@ -175,7 +180,7 @@ const openDropdown = (e, data, song, index, sourceId) => {
         {
           key: "mv",
           label: "观看 MV",
-          show: song.mv && song.mv !== 0 ? true : false,
+          show: isSong && isHasMv,
           props: {
             onClick: () => {
               router.push({
@@ -196,7 +201,7 @@ const openDropdown = (e, data, song, index, sourceId) => {
           children: [
             {
               key: "copy",
-              label: "复制歌曲 ID",
+              label: `复制${isSong ? "歌曲" : "节目"} ID`,
               props: {
                 onClick: () => {
                   const songId = song?.id?.toString();
@@ -207,11 +212,13 @@ const openDropdown = (e, data, song, index, sourceId) => {
             },
             {
               key: "share",
-              label: "分享歌曲链接",
+              label: `分享${isSong ? "歌曲" : "节目"}链接`,
               props: {
                 onClick: () => {
-                  const shareUrl = `https://music.163.com/song?id=${song?.id?.toString()}`;
-                  copyData(shareUrl, "复制歌曲链接");
+                  const shareUrl = isSong
+                    ? `https://music.163.com/song?id=${song?.id?.toString()}`
+                    : `https://music.163.com/#/dj?id=${song?.id?.toString()}`;
+                  copyData(shareUrl, `复制${isSong ? "歌曲" : "节目"}链接`);
                 },
               },
               icon: renderIcon("share"),
@@ -301,7 +308,7 @@ const openDropdown = (e, data, song, index, sourceId) => {
         {
           key: "download",
           label: "下载歌曲",
-          show: !isLocalSong,
+          show: isSong && !isLocalSong,
           props: {
             onClick: () => {
               downloadSongRef.value?.openDownloadModal(song);

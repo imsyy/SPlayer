@@ -1,7 +1,7 @@
 <template>
   <Provider>
     <!-- 主框架 -->
-    <n-layout class="all-layout">
+    <n-layout :class="['all-layout', { 'full-player': showFullPlayer }]">
       <!-- 导航栏 -->
       <n-layout-header bordered>
         <MainNav />
@@ -204,7 +204,9 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .all-layout {
   height: 100%;
-  transition: transform 0.3s;
+  transition:
+    transform 0.3s,
+    opacity 0.3s;
   .n-layout-header {
     height: 60px;
     display: flex;
@@ -229,6 +231,10 @@ onUnmounted(() => {
     &.player-bar {
       bottom: 80px;
     }
+  }
+  &.full-player {
+    opacity: 0;
+    transform: scale(0.9);
   }
 }
 </style>

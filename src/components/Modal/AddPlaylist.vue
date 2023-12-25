@@ -87,7 +87,7 @@ const addToPlayList = async (pid, tracks, index) => {
     $message.success("添加歌曲至歌单成功");
     if (index === 0) await data.setUserLikeSongs();
   } else {
-    $message.error("添加失败，请重试");
+    $message.error(result?.message || "添加失败，请重试");
   }
 };
 

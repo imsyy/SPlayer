@@ -13,6 +13,7 @@
         <n-tab name="sea-albums"> 专辑 </n-tab>
         <n-tab name="sea-playlists"> 歌单 </n-tab>
         <n-tab name="sea-videos"> 视频 </n-tab>
+        <n-tab name="sea-djs"> 电台 </n-tab>
       </n-tabs>
       <!-- 路由页面 -->
       <router-view v-slot="{ Component }">

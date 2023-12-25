@@ -53,7 +53,7 @@ const searchInpRef = ref(null);
 const searchInputValue = ref("");
 
 // 搜索框输入限制
-const noSideSpace = (value) => !value.startsWith(" ") && !value.endsWith(" ");
+const noSideSpace = (value) => !value.startsWith(" ");
 
 // 搜索框 focus
 const searchInputFocus = () => {
@@ -63,6 +63,7 @@ const searchInputFocus = () => {
 
 // 添加搜索历史
 const setSearchHistory = (name) => {
+  if (!name || !name?.trim()) return false;
   const index = data.searchHistory.indexOf(name);
   if (index !== -1) {
     data.searchHistory.splice(index, 1);

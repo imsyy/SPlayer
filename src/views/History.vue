@@ -8,14 +8,6 @@
     <Transition name="fade" mode="out-in">
       <div v-if="historyPlaylist?.length" class="list">
         <n-space class="menu">
-          <n-button type="primary" round strong secondary @click="playAllSongs">
-            <template #icon>
-              <n-icon>
-                <SvgIcon icon="play-arrow-rounded" />
-              </n-icon>
-            </template>
-            播放全部
-          </n-button>
           <n-button round strong secondary @click="cleanHistory">
             <template #icon>
               <n-icon>
@@ -38,19 +30,9 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { musicData } from "@/stores";
-import { fadePlayOrPause } from "@/utils/Player";
 
 const music = musicData();
-const { playList, historyPlaylist, playIndex } = storeToRefs(music);
-
-// 播放全部
-const playAllSongs = async () => {
-  console.log(historyPlaylist.value);
-  playList.value = historyPlaylist.value;
-  playIndex.value = 0;
-  fadePlayOrPause();
-  $message.info("已开始播放", { showIcon: false });
-};
+const { historyPlaylist } = storeToRefs(music);
 
 // 清除播放历史
 const cleanHistory = () => {

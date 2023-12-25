@@ -44,12 +44,12 @@ export const getSongTime = (mss) => {
  * @param {number} mss - 时间戳
  * @returns {string} - 日期字符串
  */
-export const getTimestampTime = (mss) => {
+export const getTimestampTime = (mss, showYear = true) => {
   const date = new Date(parseInt(mss));
   const y = date.getFullYear();
   const m = `0${date.getMonth() + 1}`.slice(-2);
   const d = `0${date.getDate()}`.slice(-2);
-  return `${y}-${m}-${d}`;
+  return showYear ? `${y}-${m}-${d}` : `${m}-${d}`;
 };
 
 /**

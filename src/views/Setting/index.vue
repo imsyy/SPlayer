@@ -242,6 +242,10 @@
           <n-switch v-model:value="bottomLyricShow" :round="false" />
         </n-card>
         <n-card class="set-item">
+          <div class="name">显示播放列表歌曲数量</div>
+          <n-switch v-model:value="showPlaylistCount" :round="false" />
+        </n-card>
+        <n-card class="set-item">
           <div class="name">
             播放器样式
             <n-text class="tip"> 播放器左侧区域样式 </n-text>
@@ -566,6 +570,7 @@ const {
   showGithub,
   playCoverType,
   playSearch,
+  showPlaylistCount,
 } = storeToRefs(settings);
 
 // 标签页数据

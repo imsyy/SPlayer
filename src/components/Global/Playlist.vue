@@ -40,7 +40,8 @@
                   'songs-item',
                   { play: playSongData?.id === item?.id, player: showFullPlayer },
                 ]"
-                @click="playSong(item, index)"
+                @click.stop="playSong(item, index)"
+                @dblclick.stop="playSong(item, index)"
               >
                 <!-- 序号 -->
                 <n-text v-if="playSongData?.id !== item?.id" class="num" depth="3">
@@ -58,6 +59,9 @@
                     <n-text v-for="ar in item.artists" :key="ar.id" depth="3" class="ar">
                       {{ ar.name }}
                     </n-text>
+                  </div>
+                  <div v-else-if="playMode === 'dj'" class="artist">
+                    <n-text class="ar"> 电台节目 </n-text>
                   </div>
                   <div v-else class="artist">
                     <n-text class="ar"> {{ item?.artists || "未知艺术家" }} </n-text>

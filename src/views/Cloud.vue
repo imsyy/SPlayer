@@ -76,7 +76,7 @@
           </n-empty>
         </Transition>
       </div>
-      <n-empty v-else class="empty" description="你还没播放任何歌曲" />
+      <n-empty v-else class="empty" description="你还有任何歌曲，快去上传吧" />
     </Transition>
   </div>
 </template>
@@ -131,8 +131,9 @@ const getUserCloudData = async (isOnce = false) => {
         (res.maxSize / Math.pow(1024, 3)).toFixed(0),
       ];
       if (res.count === 0) {
+        console.log("云盘为空");
         userCloudData.value = "empty";
-        break;
+        return false;
       }
       if (isOnce) break;
     }
@@ -189,9 +190,9 @@ const goBuy = () => {
   window.open("https://music.163.com/#/store/product/detail?id=34001");
 };
 
-onBeforeMount(() => {
-  getUserCloudDataList();
-  getUserCloudData();
+onMounted(async () => {
+  await getUserCloudDataList();
+  await getUserCloudData();
 });
 
 onMounted(() => {

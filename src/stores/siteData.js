@@ -12,6 +12,7 @@ import {
   getUserArtist,
   getUserAlbum,
   getUserMv,
+  getUserDj,
 } from "@/api/user";
 import { isLogin } from "@/utils/auth";
 import formatData from "@/utils/formatData";
@@ -35,6 +36,7 @@ const useSiteDataStore = defineStore("siteData", {
         artists: [],
         albums: [],
         mvs: [],
+        djs: [],
       },
       // 每日推荐
       dailySongsData: {
@@ -125,6 +127,7 @@ const useSiteDataStore = defineStore("siteData", {
           this.setUserLikeArtists(),
           this.setUserLikeAlbums(),
           this.setUserLikeMvs(),
+          this.setUserLikeDjs(),
         ];
         await Promise.all(allUserLikeResult);
       } catch (error) {
@@ -200,6 +203,18 @@ const useSiteDataStore = defineStore("siteData", {
         });
       } catch (error) {
         showError(error, "用户喜欢歌手加载失败");
+      }
+    },
+    // 更改用户喜欢电台
+    async setUserLikeDjs() {
+      try {
+        if (!isLogin()) return false;
+        // 获取数据
+        getUserDj().then((res) => {
+          this.userLikeData.djs = formatData(res.djRadios, "dj");
+        });
+      } catch (error) {
+        showError(error, "用户喜欢电台加载失败");
       }
     },
     // 查找歌曲是否处于喜欢列表

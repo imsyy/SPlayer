@@ -9,7 +9,7 @@ const useMusicDataStore = defineStore("musicData", {
   state: () => {
     return {
       // 当前模式
-      // normal 正常 / fm 私人 FM
+      // normal 正常 / fm 私人 FM / dj 电台
       playMode: "normal",
       // normal 顺序播放 / random 随机播放 / repeat 单曲循环
       playSongMode: "normal",
