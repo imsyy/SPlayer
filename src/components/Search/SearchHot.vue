@@ -50,13 +50,13 @@
                 <n-text class="text">{{ item.searchWord }}</n-text>
                 <n-tag
                   v-if="item.iconUrl"
-                  class="tag"
-                  round
-                  size="small"
-                  type="error"
+                  :type="item.iconType == 1 ? 'error' : 'warning'"
                   :bordered="false"
+                  class="tag"
+                  size="small"
+                  round
                 >
-                  {{ item.iconType == 1 ? "HOT" : "UP" }}
+                  {{ item.iconType === 1 ? "HOT" : "UP" }}
                 </n-tag>
                 <n-text class="hot-num" depth="3">{{ item.score }}</n-text>
               </div>

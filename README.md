@@ -142,9 +142,9 @@ docker-compose up -d
 
 ```bash
 # 拉取
-docker pull imsyy/splayer:2.0.0-beta.5
+docker pull imsyy/splayer:latest
 # 运行
-docker run -d --name SPlayer -p 7899:7899 imsyy/splayer:2.0.0-beta.5
+docker run -d --name SPlayer -p 7899:7899 imsyy/splayer:latest
 ```
 
 以上步骤成功后，将会在本地 [localhost:7899](http://localhost:7899/) 启动，如需更换端口，请自行修改命令行中的端口号

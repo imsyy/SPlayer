@@ -127,23 +127,7 @@
             </template>
           </n-button>
           <n-button
-            v-if="isUserPLayList"
-            size="large"
-            tag="div"
-            round
-            strong
-            secondary
-            @click="playlistUpdateRef?.openUpdateModal(playListDetail)"
-          >
-            <template #icon>
-              <n-icon>
-                <SvgIcon icon="edit" />
-              </n-icon>
-            </template>
-            编辑歌单
-          </n-button>
-          <n-button
-            v-else
+            v-if="!isUserPLayList"
             size="large"
             tag="div"
             round
@@ -161,6 +145,22 @@
               </n-icon>
             </template>
             {{ isLikeOrDislike(playlistId) ? "收藏歌单" : "取消收藏" }}
+          </n-button>
+          <n-button
+            v-else
+            size="large"
+            tag="div"
+            round
+            strong
+            secondary
+            @click="playlistUpdateRef?.openUpdateModal(playListDetail)"
+          >
+            <template #icon>
+              <n-icon>
+                <SvgIcon icon="edit" />
+              </n-icon>
+            </template>
+            编辑歌单
           </n-button>
           <n-dropdown :options="moreOptions" trigger="hover" placement="bottom-start">
             <n-button size="large" tag="div" circle strong secondary>

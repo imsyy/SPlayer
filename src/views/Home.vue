@@ -54,6 +54,7 @@ import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { getGreetings } from "@/utils/timeTools";
 import { getDailyRec, getPersonalized, getTopArtists, getNewAlbum } from "@/api/recommend";
+import { getDjPersonalRec } from "@/api/dj";
 import { siteData, siteSettings } from "@/stores";
 import { getCacheData } from "@/utils/helper";
 import { isLogin } from "@/utils/auth";
@@ -119,6 +120,13 @@ const recommendData = ref({
     loadingNum: 2,
     data: [],
   },
+  dj: {
+    name: "专属播客",
+    type: "dj",
+    loadingNum: 6,
+    data: [],
+    to: "/dj-hot",
+  },
   album: {
     name: "新碟上架",
     type: "album",
@@ -131,7 +139,7 @@ const recommendData = ref({
 // 获取个性化推荐数据
 const getRecommendData = async () => {
   try {
-    const [playlistRes, artistRes, mvRes, albumRes] = await Promise.allSettled([
+    const [playlistRes, artistRes, mvRes, djRes, albumRes] = await Promise.allSettled([
       // 歌单
       isLogin()
         ? getCacheData("recPl-P", 5, getDailyRec, "resource")
@@ -140,6 +148,8 @@ const getRecommendData = async () => {
       getCacheData("recAr", 5, getTopArtists),
       // MV
       getCacheData("recMv", 5, getPersonalized, "mv"),
+      // 电台
+      getCacheData("recDj", 5, getDjPersonalRec),
       // 专辑
       getCacheData("recAl", 5, getNewAlbum),
     ]);
@@ -152,6 +162,8 @@ const getRecommendData = async () => {
       (recommendData.value.artist.data = formatData(artistRes.value.artists, "artist"));
     mvRes.status === "fulfilled" &&
       (recommendData.value.mv.data = formatData(mvRes.value.result, "mv"));
+    djRes.status === "fulfilled" &&
+      (recommendData.value.dj.data = formatData(djRes.value.data, "dj"));
     albumRes.status === "fulfilled" &&
       (recommendData.value.album.data = formatData(albumRes.value.albums, "album"));
     // 检查是否有任何请求失败
