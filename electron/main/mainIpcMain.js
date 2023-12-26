@@ -1,9 +1,9 @@
 import { ipcMain, dialog, app, clipboard, shell } from "electron";
-import { readDirAsync } from "@main/readDirAsync";
+import { readDirAsync } from "@main/utils/readDirAsync";
 import { parseFile } from "music-metadata";
 import { write } from "node-id3";
 import { download } from "electron-dl";
-import getNeteaseMusicUrl from "@main/getNeteaseMusicUrl";
+import getNeteaseMusicUrl from "@main/utils/getNeteaseMusicUrl";
 import axios from "axios";
 import fs from "fs/promises";
 
@@ -23,7 +23,7 @@ const mainIpcMain = (win) => {
   ipcMain.on("window-maxOrRestore", (ev) => {
     const winSizeState = win.isMaximized();
     winSizeState ? win.restore() : win.maximize();
-    ev.reply("window-state", win.isMaximized());
+    ev.reply("windowState", win.isMaximized());
   });
   ipcMain.on("window-restore", () => {
     win.restore();

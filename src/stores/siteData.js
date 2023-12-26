@@ -12,8 +12,10 @@ import {
   getUserArtist,
   getUserAlbum,
   getUserMv,
+  getUserDj,
 } from "@/api/user";
 import { isLogin } from "@/utils/auth";
+import formatData from "@/utils/formatData";
 import throttle from "@/utils/throttle";
 
 const useSiteDataStore = defineStore("siteData", {
@@ -34,6 +36,7 @@ const useSiteDataStore = defineStore("siteData", {
         artists: [],
         albums: [],
         mvs: [],
+        djs: [],
       },
       // 每日推荐
       dailySongsData: {
@@ -46,9 +49,6 @@ const useSiteDataStore = defineStore("siteData", {
         catList: [], // 普通分类
         hqCatList: [], // 精品分类
       },
-      // 封面主题
-      coverTheme: {},
-      coverBackground: null,
     };
   },
   getters: {
@@ -59,38 +59,31 @@ const useSiteDataStore = defineStore("siteData", {
   },
   actions: {
     // 获取每日推荐
-    async setDailySongsData() {
+    async setDailySongsData(refresh = false) {
       try {
         if (!isLogin()) {
           this.dailySongsData = { timestamp: null, data: [] };
           return false;
         }
-        const data = this.dailySongsData.data;
+        const songsData = this.dailySongsData.data;
         const timestamp = this.dailySongsData.timestamp;
-        if (data[0] && timestamp) {
-          console.log("触发日推缓存");
-          const currentTime = new Date().getTime();
-          const storedTime = parseInt(timestamp, 10);
-          const nextDay6AM = new Date(storedTime);
-          nextDay6AM.setHours(6, 0, 0, 0);
-          if (currentTime <= nextDay6AM.getTime()) {
-            return true;
-          }
+        // 下一天六点
+        const nextDay6AM = new Date(timestamp);
+        nextDay6AM.setDate(nextDay6AM.getDate() + 1);
+        nextDay6AM.setHours(6, 0, 0, 0);
+        // 是否小于今日 6:00
+        const originalHour = new Date(timestamp).getHours();
+        const isAfter6AM =
+          new Date(timestamp).toDateString() === new Date().toDateString() && originalHour >= 6;
+        if (!refresh && songsData?.[0] && isAfter6AM && timestamp <= nextDay6AM.getTime()) {
+          console.log("日推缓存未过期，不更新");
+          return true;
         } else {
           const res = await getDailyRec();
-          const data = res.data.dailySongs;
-          const currentTime = new Date().getTime();
-          const formatData = data.map((v) => {
-            return {
-              id: v.id,
-              name: v.name,
-              artist: v.ar,
-              album: v.al,
-              cover: v.al.picUrl.replace(/^http:/, "https:"),
-              reason: v?.reason,
-            };
-          });
-          this.dailySongsData = { timestamp: currentTime, data: formatData };
+          const songsData = formatData(res.data.dailySongs, "song");
+          console.log("日推缓存不存在或已过期", songsData);
+          this.dailySongsData = { timestamp: new Date().getTime(), data: songsData };
+          if (refresh) $message.success("日推更新成功");
         }
       } catch (error) {
         showError(error, "每日推荐加载失败");
@@ -134,11 +127,11 @@ const useSiteDataStore = defineStore("siteData", {
           this.setUserLikeArtists(),
           this.setUserLikeAlbums(),
           this.setUserLikeMvs(),
+          this.setUserLikeDjs(),
         ];
         await Promise.all(allUserLikeResult);
       } catch (error) {
-        console.error("用户信息加载失败：", error);
-        $message.error("用户信息加载失败");
+        showError(error, "用户信息加载失败");
       }
     },
     // 获取用户喜欢歌曲
@@ -150,8 +143,7 @@ const useSiteDataStore = defineStore("siteData", {
           this.userLikeData.songs = res.ids;
         });
       } catch (error) {
-        console.error("用户喜欢歌曲加载失败：", error);
-        $message.error("用户喜欢歌曲加载失败");
+        showError(error, "用户喜欢歌曲加载失败");
       }
     },
     // 获取用户喜欢歌单
@@ -163,11 +155,10 @@ const useSiteDataStore = defineStore("siteData", {
         const number = createdPlaylistCount + subPlaylistCount ?? 50;
         // 获取数据
         getUserPlaylist(this.userData.userId, number).then((res) => {
-          this.userLikeData.playlists = res.playlist;
+          this.userLikeData.playlists = formatData(res.playlist);
         });
       } catch (error) {
-        console.error("用户喜欢歌单加载失败：", error);
-        $message.error("用户喜欢歌单加载失败");
+        showError(error, "用户喜欢歌单加载失败");
       }
     },
     // 更改用户喜欢歌手
@@ -176,11 +167,10 @@ const useSiteDataStore = defineStore("siteData", {
         if (!isLogin()) return false;
         // 获取数据
         getUserArtist().then((res) => {
-          this.userLikeData.artists = res.data;
+          this.userLikeData.artists = formatData(res.data, "artist");
         });
       } catch (error) {
-        console.error("用户喜欢歌手加载失败：", error);
-        $message.error("用户喜欢歌手加载失败");
+        showError(error, "用户喜欢歌手加载失败");
       }
     },
     // 更改用户喜欢专辑
@@ -194,28 +184,37 @@ const useSiteDataStore = defineStore("siteData", {
         // 获取数据
         while (totalCount === null || offset < totalCount) {
           const res = await getUserAlbum(50, offset);
-          res.data.forEach((v) => {
-            this.userLikeData.albums.push(v);
-          });
+          const albumsData = formatData(res.data, "album");
+          this.userLikeData.albums = this.userLikeData.albums.concat(albumsData);
           totalCount = res.count;
           offset += 50;
         }
       } catch (error) {
-        console.error("用户喜欢专辑加载失败：", error);
-        $message.error("用户喜欢专辑加载失败");
+        showError(error, "用户喜欢专辑加载失败");
       }
     },
-    // 更改用户喜欢歌手
+    // 更改用户喜欢视频
     async setUserLikeMvs() {
       try {
         if (!isLogin()) return false;
         // 获取数据
         getUserMv().then((res) => {
-          this.userLikeData.mvs = res.data;
+          this.userLikeData.mvs = formatData(res.data, "mv");
         });
       } catch (error) {
-        console.error("用户喜欢歌手加载失败：", error);
-        $message.error("用户喜欢歌手加载失败");
+        showError(error, "用户喜欢歌手加载失败");
+      }
+    },
+    // 更改用户喜欢电台
+    async setUserLikeDjs() {
+      try {
+        if (!isLogin()) return false;
+        // 获取数据
+        getUserDj().then((res) => {
+          this.userLikeData.djs = formatData(res.djRadios, "dj");
+        });
+      } catch (error) {
+        showError(error, "用户喜欢电台加载失败");
       }
     },
     // 查找歌曲是否处于喜欢列表
@@ -239,7 +238,7 @@ const useSiteDataStore = defineStore("siteData", {
 // 输出错误
 const showError = (error, msg, show = true) => {
   console.error(msg, error);
-  if (show) $message.error(msg);
+  if (show && typeof $message !== "undefined") $message.error(msg);
 };
 
 // 移入移除喜欢列表

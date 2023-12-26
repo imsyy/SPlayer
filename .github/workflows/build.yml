@@ -1,62 +1,49 @@
-name: Release
+# Dev 分支推送部署预览
+## 仅部署 Win 端
+name: Build Dev
 
 on:
   push:
     branches:
       - dev
-    tags:
-      - v*
+
 jobs:
   release:
-    name: Build and release splayer app
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest]
+    name: Build and electron app
+    runs-on: windows-latest
 
     steps:
+      # 检出 Git 仓库
       - name: Check out git repository
-        uses: actions/checkout@v3.0.0
-
+        uses: actions/checkout@v4.1.1
+      # 安装 Node.js
       - name: Install Node.js
-        uses: actions/setup-node@v3.0.0
+        uses: actions/setup-node@v4.0.0
         with:
-          node-version: "18.12.0"
-
+          node-version: "18.x"
+      # 复制环境变量文件
+      - name: Copy .env.example
+        run: |
+          if (-not (Test-Path .env)) {
+            Copy-Item .env.example .env
+          } else {
+            Write-Host ".env file already exists. Skipping the copy step."
+          }
+      # 安装项目依赖
       - name: Install Dependencies
         run: npm install
-
+      # 构建 Electron App
       - name: Build Electron App
         run: npm run build:win
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: Cleanup Artifacts for Windows
-        if: matrix.os == 'windows-latest'
+      # 清理不必要的构建产物
+      - name: Cleanup Artifacts
         run: |
           npx rimraf "dist/!(*.exe)"
-
-      - name: Cleanup Artifacts for MacOS
-        if: matrix.os == 'macos-latest'
-        run: |
-          npx rimraf "dist/!(*.dmg)"
-
+      # 上传构建产物
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3.0.0
+        uses: actions/upload-artifact@v3.1.3
         with:
-          name: ${{ matrix.os }}
+          name: SPlayer-dev
           path: dist
-
-      - name: Release
-        uses: softprops/action-gh-release@v0.1.14
-        if: startsWith(github.ref, 'refs/tags/v')
-        with:
-          files: "dist/**"
-        env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-
-# Add the following block to use Environment Files
-env:
-  GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}

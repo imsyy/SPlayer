@@ -42,8 +42,13 @@
                 </n-icon>
                 <n-text class="type-name">{{ searchSuggestionsType[item].name }}</n-text>
               </div>
-              <div v-for="suggs in suggestionsData[item]" :key="suggs.id" class="suggestions-item">
-                <n-text class="item-name" @click="toSearch(suggs.id, item)">
+              <div
+                v-for="suggs in suggestionsData[item]"
+                :key="suggs.id"
+                class="suggestions-item"
+                @click="toSearch(suggs.id, item)"
+              >
+                <n-text class="item-name">
                   {{ suggs.name }}
                 </n-text>
               </div>

@@ -1,5 +1,5 @@
 import { Howl, Howler } from "howler";
-import { musicData, siteStatus, siteSettings, siteData } from "@/stores";
+import { musicData, siteStatus, siteSettings } from "@/stores";
 import { getSongUrl, getSongLyric, songScrobble } from "@/api/song";
 import { checkPlatform, getLocalCoverData } from "@/utils/helper";
 import { decode as base642Buffer } from "@/utils/base64";
@@ -30,9 +30,11 @@ export const initPlayer = async (playNow = false) => {
     const music = musicData();
     const status = siteStatus();
     const settings = siteSettings();
-    const { playList, playIndex } = music;
+    const { playList, playIndex, playMode } = music;
     // 当前播放歌曲数据
     const playSongData = music.getPlaySongData;
+    // 若为电台则更改 id
+    playSongData.id = playMode === "dj" ? playSongData.mainTrackId : playSongData.id;
     // 是否为本地歌曲
     const isLocalSong = playSongData?.path ? true : false;
     // 获取封面
@@ -42,6 +44,8 @@ export const initPlayer = async (playNow = false) => {
     const cover = isLocalSong ? music.playSongData?.localCover : playSongData?.coverSize;
     // 歌词归位
     music.playSongLyricIndex = -1;
+    // 若为 fm 模式，则清除当前歌曲信息
+    if (playMode === "fm") music.playSongData = {};
     // 在线歌曲
     if (!isLocalSong) {
       // 获取歌曲信息
@@ -57,14 +61,22 @@ export const initPlayer = async (playNow = false) => {
         createPlayer(url);
       }
       // 无法正常获取播放地址
-      else if (checkPlatform.electron() && settings.useUnmServer) {
+      else if (checkPlatform.electron() && playMode !== "dj" && settings.useUnmServer) {
         const url = await getFromUnblockMusic(playSongData, status, playNow);
         if (url) {
           status.playUseOtherSource = true;
           createPlayer(url);
         } else {
+          isPlayEnd = true;
           status.playUseOtherSource = false;
-          changePlayIndex("next", true);
+          // 是否为最后一首
+          if (playIndex === playList.length - 1) {
+            status.playState = false;
+            $message.warning("当前列表歌曲无法播放，请更换歌曲");
+          } else {
+            $message.error("该歌曲暂无音源，跳至下一首");
+            changePlayIndex("next", true);
+          }
         }
       }
       // 下一曲
@@ -90,9 +102,9 @@ export const initPlayer = async (playNow = false) => {
       }
     }
     // 获取歌词
-    getSongLyricData(isLocalSong, playSongData);
+    if (playMode !== "dj") getSongLyricData(isLocalSong, playSongData);
     // 初始化媒体会话控制
-    initMediaSession(playSongData, isLocalSong, cover);
+    initMediaSession(playSongData, cover, isLocalSong, playMode === "dj");
     // 获取图片主色
     getColorMainColor(isLocalSong, cover);
   } catch (error) {
@@ -153,7 +165,6 @@ const getFromUnblockMusic = async (data, status, playNow) => {
     // 调用解灰
     let musicUrl = await electron.ipcRenderer.invoke("getMusicNumUrl", JSON.stringify(data));
     if (!musicUrl) {
-      $message.error("该歌曲暂无音源");
       status.playLoading = false;
       return null;
     }
@@ -232,13 +243,14 @@ export const createPlayer = async (src, autoPlay = true) => {
       status.playLoading = false;
       // 发送歌曲名
       if (checkPlatform.electron()) {
-        const toolTip =
-          playSongData.name +
-          " - " +
-          (Array.isArray(playSongData.artists)
+        const songName = playSongData.name || "未知曲目";
+        const songArtist =
+          music.playMode === "dj"
+            ? "电台节目"
+            : Array.isArray(playSongData.artists)
             ? playSongData.artists.map((ar) => ar.name).join(" / ")
-            : playSongData.artists || "未知歌手");
-        electron.ipcRenderer.send("sendSongName", toolTip);
+            : playSongData.artists || "未知歌手";
+        electron.ipcRenderer.send("songNameChange", songName + " - " + songArtist);
       }
       // 听歌打卡
       if (isLogin() && !playSongData?.path) {
@@ -256,6 +268,10 @@ export const createPlayer = async (src, autoPlay = true) => {
       setAllInterval();
       // 更改状态
       status.playState = true;
+      // 发送状态
+      if (checkPlatform.electron()) {
+        electron.ipcRenderer.send("songStateChange", true);
+      }
     });
     // 暂停播放
     player?.on("pause", () => {
@@ -263,6 +279,10 @@ export const createPlayer = async (src, autoPlay = true) => {
       cleanAllInterval();
       // 更改状态
       status.playState = false;
+      // 发送状态
+      if (checkPlatform.electron()) {
+        electron.ipcRenderer.send("songStateChange", false);
+      }
     });
     // 结束播放
     player?.on("end", () => {
@@ -272,6 +292,10 @@ export const createPlayer = async (src, autoPlay = true) => {
       cleanAllInterval();
       // 下一曲
       changePlayIndex();
+      // 发送状态
+      if (checkPlatform.electron()) {
+        electron.ipcRenderer.send("songStateChange", false);
+      }
     });
     // 加载失败
     player?.on("loaderror", (_, errCode) => {
@@ -319,7 +343,7 @@ export const changePlayIndex = async (type = "next", play = false) => {
   if (playMode === "fm") {
     await music.setPersonalFm(true);
     // 渐出音乐
-    if (!isPlayEnd) await fadePlayOrPause("pause");
+    if (!isPlayEnd) fadePlayOrPause("pause");
     // 初始化播放器
     initPlayer(play);
     return true;
@@ -354,9 +378,8 @@ export const changePlayIndex = async (type = "next", play = false) => {
     const songData = playList?.[music.playIndex];
     if (songData) {
       music.playSongData = songData;
-      console.log(songData);
       // 渐出音乐
-      if (!isPlayEnd) await fadePlayOrPause("pause");
+      if (!isPlayEnd) fadePlayOrPause("pause");
       // 初始化播放器
       initPlayer(play);
     } else {
@@ -412,34 +435,25 @@ export const addSongToNext = (data, play = false) => {
 export const fadePlayOrPause = (type = "play") => {
   const settings = siteSettings();
   const duration = settings.songVolumeFade ? 300 : 0;
-  return new Promise((resolve) => {
-    const music = musicData();
-    // 渐入
-    if (type === "play") {
-      if (player?.playing()) {
-        resolve();
-        return;
-      }
-      player?.play();
-      // 更新播放进度
-      setAllInterval();
-      player?.once("play", () => {
-        player?.fade(0, music.playVolume, duration);
-        player?.once("fade", () => {
-          resolve();
-        });
-      });
-    }
-    // 渐出
-    else if (type === "pause") {
-      player?.fade(music.playVolume, 0, duration);
-      player?.once("fade", () => {
-        player?.pause();
-        cleanAllInterval();
-        resolve();
-      });
-    }
-  });
+  const music = musicData();
+  // 渐入
+  if (type === "play") {
+    if (player?.playing()) return;
+    player?.play();
+    // 更新播放进度
+    setAllInterval();
+    player?.once("play", () => {
+      player?.fade(0, music.playVolume, duration);
+    });
+  }
+  // 渐出
+  else if (type === "pause") {
+    player?.fade(music.playVolume, 0, duration);
+    player?.once("fade", () => {
+      player?.pause();
+      cleanAllInterval();
+    });
+  }
 };
 
 /**
@@ -447,7 +461,7 @@ export const fadePlayOrPause = (type = "play") => {
  */
 export const playOrPause = async () => {
   const status = player?.playing();
-  await fadePlayOrPause(status ? "pause" : "play");
+  fadePlayOrPause(status ? "pause" : "play");
 };
 
 /**
@@ -477,7 +491,7 @@ export const checkPlayer = () => {
  * 停止播放器
  */
 export const soundStop = () => {
-  player?.stop();
+  // player?.stop();
   // setSeek();
   Howler.unload();
 };
@@ -602,13 +616,17 @@ const getSongLyricData = async (islocal, data) => {
  * @param {string} islocal - 是否为本地歌曲
  * @param {string} cover - 封面图像的URL或数据
  */
-const initMediaSession = async (data, islocal, cover) => {
+const initMediaSession = async (data, cover, islocal, isDj) => {
   if ("mediaSession" in navigator) {
     // 歌曲信息
     navigator.mediaSession.metadata = new MediaMetadata({
       title: data.name,
-      artist: islocal ? data.artists : data.artists?.map((a) => a.name)?.join(" & "),
-      album: islocal ? data.album : data.album.name,
+      artist: isDj
+        ? "电台节目"
+        : islocal
+        ? data.artists
+        : data.artists?.map((a) => a.name)?.join(" & "),
+      album: isDj ? "电台节目" : islocal ? data.album : data.album.name,
       artwork: islocal
         ? [
             {
@@ -634,10 +652,10 @@ const initMediaSession = async (data, islocal, cover) => {
     });
     // 按键关联
     navigator.mediaSession.setActionHandler("play", async () => {
-      await fadePlayOrPause("play");
+      fadePlayOrPause("play");
     });
     navigator.mediaSession.setActionHandler("pause", async () => {
-      await fadePlayOrPause("pause");
+      fadePlayOrPause("pause");
     });
     navigator.mediaSession.setActionHandler("previoustrack", () => {
       changePlayIndex("prev", true);
@@ -655,17 +673,17 @@ const initMediaSession = async (data, islocal, cover) => {
  * @returns {string} - 主要颜色的RGB十六进制表示
  */
 const getColorMainColor = async (islocal, cover) => {
-  const data = siteData();
+  const status = siteStatus();
   try {
     // 获取封面图像的URL
-    if (!cover) return (data.coverColor = {});
+    if (!cover) return (status.coverTheme = {});
     const colorUrl = islocal ? cover : cover.s;
     // 获取渐变色背景
     const gradientColor = await getCoverGradient(colorUrl);
-    data.coverBackground = gradientColor;
+    status.coverBackground = gradientColor;
   } catch (error) {
     console.error("封面颜色获取失败：", error);
-    data.coverColor = {};
+    status.coverTheme = {};
   }
 };
 

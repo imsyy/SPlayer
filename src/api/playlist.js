@@ -199,6 +199,7 @@ export const likePlaylist = (t, id) => {
   return axios({
     method: "GET",
     url: "/playlist/subscribe",
+    noCookie: true, // 临时解决无法收藏歌单
     params: {
       t,
       id,

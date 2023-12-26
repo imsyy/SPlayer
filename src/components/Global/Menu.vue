@@ -4,14 +4,15 @@
     ref="mainMenuRef"
     v-model:value="menuActiveKey"
     class="main-menu"
-    :root-indent="36"
+    :root-indent="showSider ? 36 : 28"
     :indent="0"
-    :collapsed="status.asideMenuCollapsed"
+    :collapsed="asideMenuCollapsed.value"
     :defaultExpandedKeys="['user-playlists', 'favorite-playlists']"
     :collapsed-width="64"
     :collapsed-icon-size="22"
     :options="menuOptions"
     @contextmenu="openSideDropdown($event)"
+    @update:value="checkMenuItem"
   />
   <!-- 右键菜单 -->
   <CoverDropdown ref="coverDropdownRef" />
@@ -36,9 +37,17 @@ const router = useRouter();
 const data = siteData();
 const music = musicData();
 const status = siteStatus();
-const { userData, userLikeData } = storeToRefs(data);
-const { playList, playListOld, playIndex, playSongData, playHeartbeatMode, playMode } =
-  storeToRefs(music);
+const { asideMenuCollapsed, showSider, showFullPlayer } = storeToRefs(status);
+const { userData, userLikeData, userLoginStatus } = storeToRefs(data);
+const {
+  playList,
+  playListOld,
+  playIndex,
+  playSongData,
+  playHeartbeatMode,
+  playMode,
+  privateFmSong,
+} = storeToRefs(music);
 
 // 子组件
 const coverDropdownRef = ref(null);
@@ -90,7 +99,7 @@ const menuOptions = computed(() => [
     label: "在线音乐",
     key: "online",
     children: [],
-    show: !status.asideMenuCollapsed,
+    show: !asideMenuCollapsed.value,
   },
   {
     label: () =>
@@ -121,18 +130,23 @@ const menuOptions = computed(() => [
     icon: renderIcon("discover-fill"),
   },
   {
+    label: "私人漫游",
+    key: "fm",
+    icon: renderIcon("radio"),
+  },
+  {
     label: () =>
       h(
         RouterLink,
         {
           to: {
-            name: "videos",
+            name: "dj-hot",
           },
         },
-        () => ["视频"],
+        () => ["播客电台"],
       ),
-    key: "videos",
-    icon: renderIcon("video"),
+    key: "dj-hot",
+    icon: renderIcon("record"),
   },
   {
     key: "divider-1",
@@ -143,7 +157,7 @@ const menuOptions = computed(() => [
     label: "我的音乐",
     key: "user",
     children: [],
-    show: !status.asideMenuCollapsed,
+    show: !asideMenuCollapsed.value,
   },
   {
     label: () =>
@@ -157,23 +171,50 @@ const menuOptions = computed(() => [
           menuid: "like-songs",
         },
         () => [
-          h(NText, null, () => ["喜欢的音乐"]),
-          h(NButton, {
-            size: "small",
-            type: "tertiary",
-            round: true,
-            strong: true,
-            secondary: true,
-            renderIcon: renderIcon("heartbit", "26"),
-            onclick: (event) => {
-              event.stopPropagation();
-              startHeartRate();
+          h(
+            "div",
+            {
+              style: {
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              },
             },
-          }),
+            [
+              h("span", null, ["喜欢的音乐"]),
+              h(NButton, {
+                size: "small",
+                type: "tertiary",
+                round: true,
+                strong: true,
+                secondary: true,
+                class: asideMenuCollapsed.value ? "heart-rate-btn collapsed" : "heart-rate-btn",
+                renderIcon: renderIcon("heartbit", "26"),
+                onclick: () => {
+                  startHeartRate();
+                },
+              }),
+            ],
+          ),
         ],
       ),
     key: "like-songs",
     icon: renderIcon("favorite-rounded"),
+  },
+  {
+    label: () =>
+      h(
+        RouterLink,
+        {
+          to: {
+            name: "like",
+          },
+        },
+        () => ["我的收藏"],
+      ),
+    key: "like",
+    icon: renderIcon("star"),
   },
   {
     label: () =>
@@ -222,13 +263,18 @@ const menuOptions = computed(() => [
     key: "divider-2",
     type: "divider",
   },
-  { ...userPlaylists.value, show: !status.asideMenuCollapsed },
-  { ...favoritePlaylists.value, show: !status.asideMenuCollapsed },
+  { ...userPlaylists.value, show: !asideMenuCollapsed.value },
+  { ...favoritePlaylists.value, show: !asideMenuCollapsed.value },
 ]);
 
 // 更改用户的歌单
 const changeUserPlaylists = (data) => {
-  if (!isLogin() || !data?.length) return false;
+  // 未登录
+  if (!isLogin() || !data?.length) {
+    userPlaylists.value.children = [];
+    favoritePlaylists.value.children = [];
+    return false;
+  }
   // 用户 id
   const userId = userData.value?.userId;
   // 创建的歌单
@@ -281,10 +327,24 @@ const changeUserPlaylists = (data) => {
 };
 
 // 选中菜单项
-const checkMenuItem = (key) => {
-  console.log(key);
+const checkMenuItem = async (key) => {
   // 例外路由
   const otherRouter = ["search", "videos-player", "playlist", "like-songs"];
+  // 私人漫游
+  if (key === "fm") {
+    if (!privateFmSong.value || !Object.keys(privateFmSong.value)?.length) {
+      return $message.error("开启私人漫游出错，请重试");
+    }
+    if (playMode.value === "fm") {
+      fadePlayOrPause();
+    } else {
+      // 更改播放模式
+      playMode.value = "fm";
+      await initPlayer(true);
+    }
+    showFullPlayer.value = true;
+    $message.info("已开启私人漫游", { icon: renderIcon("radio") });
+  }
   // 特殊处理
   if (!key) {
     menuActiveKey.value = "home";
@@ -332,7 +392,7 @@ const openSideDropdown = (e) => {
 const startHeartRate = debounce(async () => {
   try {
     if (!isLogin()) return false;
-    if (playHeartbeatMode.value) return await fadePlayOrPause();
+    if (playHeartbeatMode.value) return fadePlayOrPause();
     // 基础数据
     const likeSongs = userLikeData.value.songs;
     const songId = playSongData.value?.id;
@@ -385,6 +445,10 @@ watch(
   (val) => {
     changeUserPlaylists(val);
   },
+);
+watch(
+  () => userLoginStatus.value,
+  () => changeUserPlaylists(userLikeData.value.playlists),
 );
 
 onMounted(() => {
@@ -442,6 +506,25 @@ onMounted(() => {
           }
         }
       }
+    }
+  }
+}
+</style>
+
+<!-- 特殊样式 -->
+<style lang="scss">
+.heart-rate-btn {
+  &:hover {
+    background-color: var(--main-second-color) !important;
+    color: var(--main-color) !important;
+  }
+  &.collapsed {
+    margin-left: 12px;
+    background-color: #efefef40;
+    color: #efefef;
+    &:hover {
+      background-color: #efefef60 !important;
+      color: #efefef !important;
     }
   }
 }

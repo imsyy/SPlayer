@@ -1,7 +1,8 @@
 # 应用程序的唯一标识符
-appId: com.splayer-imsyy.app
+appId: com.imsyy.splayer
 # 应用程序的产品名称
-productName: splayer-desktop-dev
+productName: SPlayer
+copyright: Copyright © imsyy 2023
 # 构建资源所在的目录
 directories:
   buildResources: build
@@ -18,18 +19,17 @@ asarUnpack:
 # Windows 平台配置
 win:
   # 可执行文件名
-  executableName: splayer-desktop-dev
+  executableName: SPlayer
   # 应用程序的图标文件路径
-  icon: public/images/logo/favicon_256.png
-  # 构建的目标类型
-  # target: "portable"
-  requestedExecutionLevel: highestAvailable
+  icon: public/images/icons/favicon-512x512.png
+  # 构建类型
+  target: nsis
 # NSIS 安装器配置
 nsis:
   # 一键式安装程序还是辅助安装程序
   oneClick: false
   # 安装程序的生成名称
-  artifactName: ${name}-${version}-setup.${ext}
+  artifactName: ${productName}-${version}-setup.${ext}
   # 创建的桌面快捷方式名称
   shortcutName: ${productName}
   # 卸载时显示的名称
@@ -37,11 +37,19 @@ nsis:
   # 创建桌面图标
   createDesktopShortcut: always
   # 是否允许 UAC 提升权限
-  allowElevation: false
+  allowElevation: true
   # 是否允许用户更改安装目录
   allowToChangeInstallationDirectory: true
+  # 安装包图标
+  installerIcon: public/images/icons/favicon.ico
+  # 卸载命令图标
+  uninstallerIcon: public/images/icons/favicon.ico
 # macOS 平台配置
 mac:
+  # 可执行文件名
+  executableName: SPlayer
+  # 应用程序的图标文件路径
+  icon: public/images/icons/favicon-512x512.png
   # 权限继承的文件路径
   entitlementsInherit: build/entitlements.mac.plist
   # 扩展信息，如权限描述
@@ -52,30 +60,39 @@ mac:
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   # 是否启用应用程序的 Notarization（苹果的安全审核）
   notarize: false
+  darkModeSupport: true
+  category: public.app-category.music
 # macOS 平台的 DMG 配置
 dmg:
   # DMG 文件的生成名称
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${productName}-${version}.${ext}
 # Linux 平台配置
 linux:
-  # 目标平台，例如 AppImage、snap、deb 等
+  # 可执行文件名
+  executableName: SPlayer
+  # 应用程序的图标文件路径
+  icon: public/images/icons/favicon-512x512.png
+  # 构建类型
   target:
     - AppImage
-    - snap
     - deb
+    - rpm
+    - tar.gz
   # 维护者信息
-  maintainer: electronjs.org
+  maintainer: imsyy.top
   # 应用程序类别
-  category: Utility
+  category: Audio;Music
 # AppImage 配置
 appImage:
   #  AppImage 文件的生成名称
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${productName}-${version}.${ext}
 # 是否在构建之前重新编译原生模块
 npmRebuild: false
 # 自动更新的配置
 publish:
   # 更新提供商
-  provider: generic
+  provider: github
   # 自动更新检查的 URL
-  url: https://example.com/auto-updates
+  # url: https://example.com/auto-updates
+  owner: "imsyy"
+  repo: "SPlayer"

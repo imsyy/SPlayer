@@ -2,6 +2,30 @@
 <template>
   <div class="local">
     <n-h1 class="title">本地歌曲</n-h1>
+    <!-- 数据统计 -->
+    <n-space class="num">
+      <!-- 总数 -->
+      <div class="num-item">
+        <n-icon size="18">
+          <SvgIcon icon="music-note" />
+        </n-icon>
+        <n-number-animation :from="0" :to="localSongList ? localSongList.length : 0" />
+        首歌曲
+      </div>
+      <!-- 空间 -->
+      <div class="num-item">
+        <n-icon size="18">
+          <SvgIcon icon="storage" />
+        </n-icon>
+        占用
+        <n-number-animation
+          :from="0"
+          :to="Number((allSongStorage / 1024).toFixed(2))"
+          :precision="2"
+        />
+        GB
+      </div>
+    </n-space>
     <!-- 标签页 -->
     <n-tabs v-model:value="tabValue" class="tabs" type="segment" @update:value="tabChange">
       <n-tab name="local-songs"> 歌曲 </n-tab>
@@ -157,6 +181,7 @@ const isLoading = ref(false);
 
 // 本地歌曲
 const localSongList = ref([]);
+const allSongStorage = ref(0);
 
 // 默认选中
 const tabValue = ref(router.currentRoute.value?.name ?? "local-songs");
@@ -187,7 +212,7 @@ const getLocalSongList = async () => {
 
 // 获取全部路径歌曲
 const getAllPathMusic = async () => {
-  console.log("调用");
+  console.log("获取全部路径歌曲");
   // 先获取
   getLocalSongList();
   // 全部路径
@@ -225,6 +250,8 @@ const getAllPathMusic = async () => {
       // 更新本地歌曲
       await indexedDB.setfilesDB("localSongList", uniqueSongsArray.slice());
       getLocalSongList();
+      // 统计歌曲总容量
+      allSongStorage.value = uniqueSongsArray.reduce((acc, v) => (acc += Number(v.size)), 0);
     } catch (error) {
       console.error("获取歌曲内容时出错：", error);
     } finally {
@@ -258,7 +285,7 @@ const changeLocalPath = async (isDel = false) => {
   }
 };
 
-// 本地歌曲模糊搜索
+// 歌曲模糊搜索
 const localSearch = debounce((val) => {
   const searchValue = val?.trim();
   // 是否为空
@@ -293,9 +320,20 @@ onBeforeMount(async () => {
 <style lang="scss" scoped>
 .local {
   .title {
-    margin: 20px 0;
+    margin: 20px 0 12px 0;
     font-size: 36px;
     font-weight: bold;
+  }
+  .num {
+    margin-bottom: 20px;
+    .num-item {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      .n-icon {
+        margin-right: 4px;
+      }
+    }
   }
   .tabs {
     margin-bottom: 20px;

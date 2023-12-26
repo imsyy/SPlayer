@@ -59,7 +59,7 @@ import { isLogin } from "@/utils/auth";
 import { useRouter } from "vue-router";
 import { siteData, siteSettings } from "@/stores";
 import { getSongDetail, getSongDownload } from "@/api/song";
-import { downloadFile } from "@/utils/helper";
+import { downloadFile, checkPlatform } from "@/utils/helper";
 import formatData from "@/utils/formatData";
 
 const router = useRouter();
@@ -97,7 +97,7 @@ const toSongDownload = async (song, br) => {
   // 获取下载数据
   const result = await getSongDownload(song?.id, br);
   // 开始下载
-  if (!downloadPath.value) {
+  if (!downloadPath.value && checkPlatform.electron()) {
     $notification["warning"]({
       content: "缺少配置",
       meta: "请前往设置页配置默认下载目录",
@@ -189,12 +189,12 @@ const openDownloadModal = (data) => {
       router.currentRoute.value.name === "cloud" ||
       data?.fee === 0 ||
       data?.pc ||
-      userData.detail?.profile?.vipType !== 0
+      userData.value.detail?.profile?.vipType !== 0
     ) {
       return toDownload();
     }
     // 权限不足
-    if (data?.fee !== 0 && userData.detail?.profile?.vipType !== 11 && !data?.pc) {
+    if (data?.fee !== 0 && userData.value.detail?.profile?.vipType !== 11 && !data?.pc) {
       return $message.warning("账号会员等级不足，请提升权限");
     }
     $message.warning("账号会员等级不足，请提升权限");

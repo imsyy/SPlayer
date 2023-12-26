@@ -3,7 +3,10 @@
   <div
     class="private-fm"
     :style="{
-      color: playMode === 'fm' && settings.themeAutoCover ? 'var(--main-color)' : '#efefef',
+      '--color':
+        playMode === 'fm' && settings.themeAutoCover && Object.keys(coverTheme)?.length
+          ? `rgb(${coverTheme.dark.bg})`
+          : '#efefef',
     }"
   >
     <!-- 背景 -->
@@ -45,7 +48,12 @@
               <SvgIcon icon="account-music" />
             </n-icon>
             <div v-if="privateFmSong?.artists" class="all-ar">
-              <span v-for="ar in privateFmSong.artists" :key="ar.id" class="ar">
+              <span
+                v-for="ar in privateFmSong.artists"
+                :key="ar.id"
+                class="ar"
+                @click.stop="router.push(`/artist?id=${ar.id}`)"
+              >
                 {{ ar.name }}
               </span>
             </div>
@@ -67,8 +75,8 @@
         <div class="control">
           <!-- 播放暂停 -->
           <n-button
-            :loading="playLoading"
-            :class="{ 'play-control': true, isFm: playMode === 'fm' && settings.themeAutoCover }"
+            :loading="playMode === 'fm' && playLoading"
+            class="play-control"
             color="#efefef"
             type="primary"
             strong
@@ -134,7 +142,7 @@ const status = siteStatus();
 const settings = siteSettings();
 const router = useRouter();
 const { privateFmSong, playMode } = storeToRefs(music);
-const { playLoading, playState } = storeToRefs(status);
+const { playLoading, playState, coverTheme } = storeToRefs(status);
 
 // 播放暂停
 const fmPlayOrPause = () => {
@@ -240,6 +248,7 @@ onBeforeMount(async () => {
       display: flex;
       flex-direction: column;
       width: 100%;
+      color: var(--color);
       .info {
         .name {
           display: -webkit-box;
@@ -256,6 +265,7 @@ onBeforeMount(async () => {
           align-items: center;
           .n-icon {
             margin-right: 4px;
+            color: var(--color);
           }
           .all-ar {
             display: -webkit-box;
@@ -292,6 +302,7 @@ onBeforeMount(async () => {
           align-items: center;
           .n-icon {
             margin-right: 4px;
+            color: var(--color);
           }
           .al {
             display: -webkit-box;
@@ -315,9 +326,11 @@ onBeforeMount(async () => {
         align-items: center;
         height: 46px;
         margin-top: auto;
+        color: var(--color);
         .play-control {
           --n-width: 46px;
           --n-height: 46px;
+          color: var(--color);
           margin-right: 12px;
           transition:
             background-color 0.3s,
@@ -330,9 +343,6 @@ onBeforeMount(async () => {
           }
           &:active {
             transform: scale(1);
-          }
-          &.isFm {
-            color: var(--main-color);
           }
         }
         .play-other {
@@ -355,6 +365,7 @@ onBeforeMount(async () => {
           position: absolute;
           right: 0;
           bottom: 0;
+          color: var(--color);
           display: flex;
           flex-direction: column;
           align-items: flex-end;

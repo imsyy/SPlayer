@@ -4,7 +4,7 @@
     :style="{
       cursor: cursorShow ? 'pointer' : 'none',
     }"
-    :class="['lyric', `lyric-${lyricsPosition}`]"
+    :class="['lyric', `lyric-${lyricsPosition}`, { pure: pureLyricMode }, playCoverType]"
     @mouseenter="lrcMouseStatus = lrcMousePause ? true : false"
     @mouseleave="lrcAllLeave"
   >
@@ -13,6 +13,8 @@
         v-if="playSongLyric.lrc?.[0] && playSongLyric.lrc?.length > 4"
         :key="playSongLyric.lrc?.[0]"
         class="lyric-all"
+        @after-enter="lyricsScroll(playSongLyricIndex)"
+        @after-leave="lyricsScroll(playSongLyricIndex)"
       >
         <n-scrollbar ref="lyricScroll" style="width: 100%">
           <!-- 普通歌词 -->
@@ -32,6 +34,11 @@
               :id="'lrc' + index"
               :key="index"
               :class="{ 'lrc-line': true, on: Number(playSongLyricIndex) === index, islrc: true }"
+              :style="{
+                filter: lyricsBlur
+                  ? `blur(${Math.min(Math.abs(Number(playSongLyricIndex) - index) * 1.5, 10)}px)`
+                  : 'blur(0)',
+              }"
               @click.stop="jumpSeek(item?.time)"
             >
               <!-- 歌词 -->
@@ -141,7 +148,7 @@ const props = defineProps({
 const music = musicData();
 const settings = siteSettings();
 const status = siteStatus();
-const { playSeek } = storeToRefs(status);
+const { playSeek, pureLyricMode } = storeToRefs(status);
 const { playSongLyric, playSongLyricIndex } = storeToRefs(music);
 const {
   showYrc,
@@ -154,6 +161,7 @@ const {
   lyricsBlur,
   showTransl,
   showRoma,
+  playCoverType,
 } = storeToRefs(settings);
 
 // 歌词滚动数据
@@ -188,14 +196,14 @@ const getYrcStyle = (wordData, lyricIndex) => {
     // 如果当前歌词索引与播放歌曲的歌词索引不匹配
     if (playSongLyricIndex.value !== lyricIndex) {
       return {
-        transitionDuration: `0ms, 0ms, 0.5s`,
+        transitionDuration: `0ms, 0ms, 0.35s`,
         transitionDelay: `0ms`,
       };
     }
     // 如果播放状态不是加载中，且当前单词的时间加上持续时间减去播放进度大于 0
     if (status.playLoading === false && wordData.time + wordData.duration - playSeek.value > 0) {
       return {
-        transitionDuration: `0s, 0s, 0.5s`,
+        transitionDuration: `0s, 0s, 0.35s`,
         transitionDelay: `0ms`,
         WebkitMaskPositionX: `${
           100 - Math.max(((playSeek.value - wordData.time) / wordData.duration) * 100, 0)
@@ -204,7 +212,7 @@ const getYrcStyle = (wordData, lyricIndex) => {
     }
     // 如果以上条件都不满足
     return {
-      transitionDuration: `${wordData.duration}ms, ${wordData.duration * 0.8}ms, 0.5s`,
+      transitionDuration: `${wordData.duration}ms, ${wordData.duration * 0.8}ms, 0.35s`,
       transitionDelay: `${wordData.time - playSeek.value}ms, ${
         wordData.time - playSeek.value + wordData.duration * 0.5
       }ms, 0ms`,
@@ -229,10 +237,21 @@ const jumpSeek = (time) => {
   fadePlayOrPause();
 };
 
+// 主进程调用歌词滚动
+if (typeof electron !== "undefined") {
+  electron.ipcRenderer.on("lyricsScroll", () => {
+    lyricsScroll(playSongLyricIndex.value);
+  });
+}
+
 // 监听歌词滚动
 watch(
   () => playSongLyricIndex.value,
   (val) => lyricsScroll(val),
+);
+watch(
+  () => pureLyricMode.value,
+  () => lyricsScroll(playSongLyricIndex.value),
 );
 
 onMounted(() => {
@@ -244,7 +263,7 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .lyric {
-  width: 50%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -272,11 +291,13 @@ onMounted(() => {
     hsla(0, 0%, 100%, 0.6) 85%,
     hsla(0, 0%, 100%, 0)
   );
+  :deep(.n-scrollbar-rail) {
+    display: none;
+  }
   :deep(.n-scrollbar-content) {
     padding-left: 10px;
     padding-right: 80px;
   }
-
   .fade-enter-active {
     transition-delay: 0.3s;
   }
@@ -305,9 +326,9 @@ onMounted(() => {
     transform: scale(0.86);
     transform-origin: left center;
     transition:
-      filter 0.3s,
-      opacity 0.3s,
-      transform 0.3s ease-in-out;
+      filter 0.35s,
+      opacity 0.35s,
+      transform 0.35s ease-in-out;
     .lrc-content {
       font-size: 46px;
       font-weight: bold;
@@ -340,7 +361,7 @@ onMounted(() => {
           );
           -webkit-mask-size: 220% 100%;
           -webkit-mask-repeat: no-repeat;
-          transition: all 0.3s;
+          transition: all 0.35s;
         }
         &.end-with-space {
           margin-right: 12px;
@@ -354,11 +375,13 @@ onMounted(() => {
       margin-top: 8px;
       font-size: 30px;
       opacity: 0.6;
+      transition: opacity 0.35s;
     }
     .lrc-roma {
       margin-top: 4px;
       font-size: 20px;
       opacity: 0.6;
+      transition: opacity 0.35s;
     }
     &.islrc {
       opacity: 0.3;
@@ -367,10 +390,10 @@ onMounted(() => {
       .lrc-content {
         display: flex;
         flex-wrap: wrap;
-        .lrc-fy,
-        .lrc-roma {
-          opacity: 0.3;
-        }
+      }
+      .lrc-fy,
+      .lrc-roma {
+        opacity: 0.3;
       }
     }
     &.on {
@@ -413,8 +436,8 @@ onMounted(() => {
         z-index: 0;
         transform: scale(1.05);
         transition:
-          transform 0.3s ease,
-          opacity 0.3s ease;
+          transform 0.35s ease,
+          opacity 0.35s ease;
         pointer-events: none;
       }
       &:hover {
@@ -432,18 +455,19 @@ onMounted(() => {
       }
     }
   }
-  &.lyric-center {
+  &.lyric-center,
+  &.pure {
     span {
-      text-align: center;
+      text-align: center !important;
     }
     .placeholder {
-      justify-content: center;
+      justify-content: center !important;
     }
     .lrc-line {
-      transform-origin: center;
-      align-items: center;
+      transform-origin: center !important;
+      align-items: center !important;
       .lrc-content {
-        justify-content: center;
+        justify-content: center !important;
       }
     }
   }
@@ -459,6 +483,23 @@ onMounted(() => {
       align-items: flex-end;
       .lrc-content {
         justify-content: flex-end;
+      }
+    }
+  }
+  &.pure {
+    :deep(.n-scrollbar-content) {
+      padding: 0 80px;
+    }
+  }
+  &.record,
+  &.pure {
+    height: calc(100vh - 340px);
+    margin-bottom: 20px;
+    .lrc-line {
+      margin-bottom: -12px;
+      transform: scale(0.76);
+      &.on {
+        transform: scale(0.9);
       }
     }
   }

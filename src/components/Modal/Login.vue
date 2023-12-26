@@ -14,14 +14,16 @@
   >
     <div class="login-content">
       <div class="title">
-        <img class="logo" src="/images/logo/favicon.png?asset" alt="logo" />
+        <img class="logo" src="/images/icons/favicon.png?asset" alt="logo" />
       </div>
       <!-- 登录方式 -->
       <n-tabs class="login-tabs" default-value="login-qr" type="segment" animated>
         <n-tab-pane name="login-qr" tab="扫码登录">
           <loginQRCode @setLoginData="setLoginData" />
         </n-tab-pane>
-        <n-tab-pane name="login-phone" tab="验证码登录"> 444 </n-tab-pane>
+        <n-tab-pane name="login-phone" tab="验证码登录">
+          <loginPhone @setLoginData="setLoginData" />
+        </n-tab-pane>
       </n-tabs>
       <!-- 关闭登录弹窗 -->
       <n-button
@@ -43,12 +45,15 @@
 
 <script setup>
 import { storeToRefs } from "pinia";
-import { siteData } from "@/stores";
+import { siteData, siteSettings } from "@/stores";
 import { getLoginState, refreshLogin } from "@/api/login";
 import { setCookies, toLogout, isLogin } from "@/utils/auth";
+import userSignIn from "@/utils/userSignIn";
 
 const data = siteData();
+const settings = siteSettings();
 const { userData } = storeToRefs(data);
+const { autoSignIn } = storeToRefs(settings);
 
 // 登录数据
 const loginModalShow = ref(false);
@@ -72,6 +77,7 @@ const openLoginModal = () => {
 
 // 储存登录信息
 const setLoginData = async (loginData) => {
+  console.log(loginData);
   if (!loginData) return false;
   if (loginData.code === 200) {
     // 关闭登录弹窗
@@ -80,6 +86,9 @@ const setLoginData = async (loginData) => {
     setCookies(loginData.cookie);
     // 获取用户信息
     await data.setUserProfile();
+    await data.setDailySongsData();
+    // 签到
+    if (autoSignIn.value) await userSignIn();
     // 更改状态
     data.userLoginStatus = true;
     $message.success("登录成功");
@@ -168,7 +177,7 @@ onBeforeMount(() => {
   .close {
     position: absolute;
     bottom: -58px;
-    background-color: var(--n-color-embedded);
+    background-color: var(--n-color-modal);
     &:hover {
       background-color: var(--n-color-embedded);
     }

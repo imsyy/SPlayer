@@ -10,13 +10,17 @@ const useSiteSettingsStore = defineStore("siteSettings", {
       showTaskbarProgress: false, // 显示歌曲任务栏进度
       searchHistory: true, // 搜索历史
       autoSignIn: true, // 自动签到
+      showGithub: true,
+      showSider: true, // 显示侧边栏
       // 主题部分
       themeType: "dark",
       themeAuto: false,
       themeTypeName: "red",
       themeTypeData: {},
       themeAutoCover: true, // 主题色跟随封面
+      themeAutoCoverType: "secondary",
       // 播放部分
+      playCoverType: "cover", // 播放器样式
       songLevel: "exhigh", // 歌曲音质
       autoPlay: false, // 程序启动时自动播放
       songVolumeFade: true, // 歌曲渐入渐出
@@ -25,6 +29,8 @@ const useSiteSettingsStore = defineStore("siteSettings", {
       bottomLyricShow: true, // 底栏歌词显示
       playerBackgroundType: "blur", // 播放器背景类别  animation 流动 / blur 模糊
       memorySeek: true, // 记忆上次播放位置
+      playSearch: false, // 是否播放全部搜索结果
+      showPlaylistCount: true, // 是否显示播放列表数量
       // 数量部分
       loadSize: 50, // 每页加载数量
       // 歌词部分

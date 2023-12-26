@@ -1,0 +1,12 @@
+services:
+  SPlayer:
+    build:
+      context: .
+    image: splayer
+    container_name: SPlayer
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    ports:
+      - 7899:7899
+    restart: always

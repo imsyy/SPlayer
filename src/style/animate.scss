@@ -62,6 +62,20 @@
   transform: translateY(100%);
 }
 
+// left
+.left-enter-active,
+.left-leave-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    transform 0.3s,
+    opacity 0.3s;
+}
+.left-enter-from,
+.left-leave-to {
+  transform: translateX(-100%);
+}
+
 @keyframes skeleton-loading {
   0% {
     background-position: 100% 50%;
@@ -81,5 +95,35 @@
   }
   100% {
     transform: rotate(360deg) scale(1) translateX(0);
+  }
+}
+
+@keyframes playerCoverRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fade-spacing {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+    letter-spacing: 12px;
+  }
+}
+
+@keyframes fade-down {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

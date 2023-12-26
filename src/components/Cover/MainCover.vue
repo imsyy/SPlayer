@@ -56,7 +56,7 @@
               <n-text class="add-desc">{{ item.desc }}</n-text>
             </div>
             <!-- 播放按钮 -->
-            <n-icon class="play" @click.stop>
+            <n-icon class="play">
               <SvgIcon :icon="type !== 'artist' ? 'play-circle' : 'account-music'" />
             </n-icon>
           </div>
@@ -64,13 +64,22 @@
           <div class="cover-content">
             <n-text class="name">{{ item.name }}</n-text>
             <!-- 创建者 -->
-            <n-text v-if="item.creator" class="creator" depth="3">
+            <n-text v-if="item?.creator" class="creator" depth="3">
               {{ item.creator?.nickname || item.creator || "未知" }}
             </n-text>
+            <!-- 电台简介 -->
+            <n-text v-if="item?.rcmdText" class="creator" depth="3">
+              {{ item.rcmdText || "未知简介" }}
+            </n-text>
             <!-- 歌手 -->
-            <div v-if="item.artists" class="artists">
-              <n-text v-for="ar in item.artists" :key="ar.id" class="ar">
-                {{ ar.name }}
+            <div v-if="item.artists && type !== 'dj'" class="artists">
+              <n-text
+                v-for="ar in item.artists"
+                :key="ar.id"
+                class="ar"
+                @click.stop="router.push(`/artist?id=${ar.id}`)"
+              >
+                {{ ar.name || ar.userName }}
               </n-text>
             </div>
             <!-- 歌曲数量 -->
@@ -185,6 +194,22 @@ const jumpLink = (data, type) => {
           },
         });
         break;
+      case "artist":
+        router.push({
+          path: "/artist",
+          query: {
+            id: data?.id,
+          },
+        });
+        break;
+      case "dj":
+        router.push({
+          path: "/dj",
+          query: {
+            id: data?.id,
+          },
+        });
+        break;
       default:
         break;
     }
@@ -247,7 +272,9 @@ const jumpLink = (data, type) => {
         top: -80px;
         left: 0;
         z-index: 1;
+        width: 100%;
         padding: 6px 10px;
+        box-sizing: border-box;
         background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0));
         opacity: 0;
         transition:
@@ -289,8 +316,10 @@ const jumpLink = (data, type) => {
         word-break: break-all;
         .ar {
           display: inline-flex;
-          color: var(--n-close-icon-color);
-          transition: color 0.3s;
+          opacity: 0.6;
+          transition:
+            color 0.3s,
+            opacity 0.3s;
           cursor: pointer;
           &::after {
             content: "/";
@@ -303,10 +332,7 @@ const jumpLink = (data, type) => {
             }
           }
           &:hover {
-            color: var(--n-code-text-color);
-            &::after {
-              color: var(--n-close-icon-color);
-            }
+            opacity: 0.8;
           }
         }
       }

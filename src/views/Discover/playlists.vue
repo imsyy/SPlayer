@@ -275,6 +275,7 @@ onMounted(() => {
     }
   }
   .tag {
+    background-color: var(--n-action-color);
     transition:
       transform 0.3s,
       background-color 0.3s,

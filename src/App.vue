@@ -1,33 +1,33 @@
 <template>
   <Provider>
     <!-- 主框架 -->
-    <n-layout :class="['all-layout', status.showFullPlayer ? 'full-player' : null]">
+    <n-layout :class="['all-layout', { 'full-player': showFullPlayer }]">
       <!-- 导航栏 -->
       <n-layout-header bordered>
         <MainNav />
-        <TitleBar v-if="checkPlatform.electron()" />
       </n-layout-header>
-      <!-- 主内容 -->
+      <!-- 主内容 - 有侧边栏 -->
       <n-layout
+        v-if="showSider"
         :class="{
           'body-layout': true,
-          'player-bar': Object.keys(music.playSongData)?.length && status.showPlayBar,
+          'player-bar': Object.keys(music.getPlaySongData)?.length && showPlayBar,
         }"
         position="absolute"
         has-sider
       >
         <!-- 侧边栏 -->
         <n-layout-sider
-          class="main-sider"
-          :collapsed="status.asideMenuCollapsed"
+          :collapsed="asideMenuCollapsed"
           :native-scrollbar="false"
           :collapsed-width="64"
           :width="240"
+          class="main-sider"
           show-trigger="bar"
           collapse-mode="width"
           bordered
-          @collapse="status.asideMenuCollapsed = true"
-          @expand="status.asideMenuCollapsed = false"
+          @collapse="asideMenuCollapsed = true"
+          @expand="asideMenuCollapsed = false"
         >
           <div class="sider-all">
             <Menu />
@@ -35,32 +35,29 @@
         </n-layout-sider>
         <!-- 页面区 -->
         <n-layout :native-scrollbar="false" embedded>
-          <main id="main-layout" class="main-layout">
-            {{ music.getplaySongData }}
-            <!-- 回顶 -->
-            <n-back-top bottom="110">
-              <n-icon size="26">
-                <SvgIcon icon="chevron-up" />
-              </n-icon>
-            </n-back-top>
-            <!-- 路由页面 -->
-            <router-view v-slot="{ Component }">
-              <keep-alive>
-                <Transition name="router" mode="out-in">
-                  <component :is="Component" />
-                </Transition>
-              </keep-alive>
-            </router-view>
-          </main>
+          <MainLayout />
         </n-layout>
       </n-layout>
+      <!-- 主内容 - 无侧边栏 -->
+      <n-layout-content
+        v-else
+        :class="{
+          'body-layout': true,
+          'player-bar': Object.keys(music.getPlaySongData)?.length && showPlayBar,
+        }"
+        :native-scrollbar="false"
+        position="absolute"
+        embedded
+      >
+        <MainLayout />
+      </n-layout-content>
     </n-layout>
     <!-- 主播放器 -->
     <MainControl />
     <!-- 全屏播放器 -->
     <FullPlayer />
     <!-- 全局播放列表 -->
-    <n-config-provider v-if="status.showFullPlayer" :theme="darkTheme">
+    <n-config-provider v-if="showFullPlayer" :theme="darkTheme">
       <Playlist />
     </n-config-provider>
     <Playlist v-else />
@@ -81,18 +78,83 @@
 </template>
 
 <script setup>
-import { darkTheme } from "naive-ui";
+import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
+import { darkTheme, NButton } from "naive-ui";
 import { musicData, siteStatus, siteSettings } from "@/stores";
-import { initPlayer } from "@/utils/Player";
 import { checkPlatform } from "@/utils/helper";
+import { initPlayer } from "@/utils/Player";
+import userSignIn from "@/utils/userSignIn";
 import globalShortcut from "@/utils/globalShortcut";
 import globalEvents from "@/utils/globalEvents";
+import packageJson from "@/../package.json";
 
 const router = useRouter();
 const music = musicData();
 const status = siteStatus();
 const settings = siteSettings();
+const { autoPlay, showSider, autoSignIn } = storeToRefs(settings);
+const { showPlayBar, asideMenuCollapsed, showFullPlayer } = storeToRefs(status);
+
+// 公告数据
+const annShow =
+  import.meta.env.RENDERER_VITE_ANN_TITLE && import.meta.env.RENDERER_VITE_ANN_CONTENT
+    ? true
+    : false;
+const annType = import.meta.env.RENDERER_VITE_ANN_TYPE;
+const annTitle = import.meta.env.RENDERER_VITE_ANN_TITLE;
+const annContene = import.meta.env.RENDERER_VITE_ANN_CONTENT;
+const annDuration = Number(import.meta.env.RENDERER_VITE_ANN_DURATION);
+
+// PWA
+if ("serviceWorker" in navigator) {
+  // 更新完成提醒
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (checkPlatform.electron()) {
+      $notification.create({
+        title: "🎉 有更新啦",
+        content: "检测到软件内资源有更新，是否重新启动软件以应用更新？",
+        meta: "当前版本 v " + (packageJson.version || "1.0.0"),
+        action: () =>
+          h(
+            NButton,
+            {
+              text: true,
+              type: "primary",
+              onClick: () => {
+                electron.ipcRenderer.send("window-relaunch");
+              },
+            },
+            {
+              default: () => "更新",
+            },
+          ),
+        onAfterLeave: () => {
+          $message.info("已取消本次更新，更新将在下次启动软件后生效", {
+            duration: 6000,
+          });
+        },
+      });
+    } else {
+      console.info("站点资源有更新，请刷新以应用更新");
+      $message.info("站点资源有更新，请刷新以应用更新", {
+        closable: true,
+        duration: 0,
+      });
+    }
+  });
+}
+
+// 显示公告
+const showAnnouncements = () => {
+  if (annShow) {
+    $notification[annType]({
+      content: annTitle,
+      meta: annContene,
+      duration: annDuration,
+    });
+  }
+};
 
 // 网络无法连接
 const canNotConnect = (error) => {
@@ -102,36 +164,49 @@ const canNotConnect = (error) => {
     title: "网络连接错误",
     content: "网络连接错误，请检查您当前的网络状态",
     positiveText: "重试",
-    negativeText: "前往本地歌曲",
+    negativeText: checkPlatform.electron() ? "前往本地歌曲" : "取消",
     onPositiveClick: () => {
       location.reload();
     },
     onNegativeClick: () => {
-      router.push("/local");
+      if (checkPlatform.electron()) router.push("/local");
     },
   });
 };
 
-onMounted(() => {
+// 网页端键盘事件
+const handleKeyUp = (event) => {
+  globalShortcut(event, router);
+};
+
+onMounted(async () => {
   // 挂载方法
   window.$canNotConnect = canNotConnect;
   // 主播放器
-  initPlayer(settings.autoPlay);
+  await initPlayer(autoPlay.value);
   // 全局事件
-  globalEvents();
+  globalEvents(router);
   // 键盘监听
-  window.addEventListener("keyup", globalShortcut);
+  if (!checkPlatform.electron()) {
+    window.addEventListener("keyup", handleKeyUp);
+  }
+  // 自动签到
+  if (autoSignIn.value) await userSignIn();
+  // 显示公告
+  showAnnouncements();
 });
 
 onUnmounted(() => {
-  window.removeEventListener("keyup", globalShortcut);
+  if (!checkPlatform.electron()) window.removeEventListener("keyup", handleKeyUp);
 });
 </script>
 
 <style lang="scss" scoped>
 .all-layout {
   height: 100%;
-  transition: transform 0.3s;
+  transition:
+    transform 0.3s,
+    opacity 0.3s;
   .n-layout-header {
     height: 60px;
     display: flex;
@@ -142,9 +217,6 @@ onUnmounted(() => {
   .body-layout {
     top: 60px;
     transition: bottom 0.3s;
-    &.player-bar {
-      bottom: 80px;
-    }
     .main-sider {
       :deep(.n-scrollbar-content) {
         height: 100%;
@@ -156,12 +228,13 @@ onUnmounted(() => {
         display: none;
       }
     }
-    .main-layout {
-      padding: 24px;
+    &.player-bar {
+      bottom: 80px;
     }
   }
   &.full-player {
-    transform: scale(0.95);
+    opacity: 0;
+    transform: scale(0.9);
   }
 }
 </style>

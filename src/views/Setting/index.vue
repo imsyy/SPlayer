@@ -1,9 +1,17 @@
 <!-- 全局设置 -->
 <template>
-  <div class="setting">
+  <div :class="{ setting: true, 'use-cover': themeAutoCover }">
     <n-h1 class="title">
       <n-text>全局设置</n-text>
-      <n-text class="version" depth="3">v&nbsp;{{ packageJson.version }}</n-text>
+      <div class="copyright" @click="jump">
+        <div class="author">
+          <n-icon depth="3" size="18">
+            <SvgIcon icon="github" />
+          </n-icon>
+          <n-text class="author-text" depth="3">{{ packageJson.author }}</n-text>
+        </div>
+        <n-text class="version" depth="3">v&nbsp;{{ packageJson.version }}</n-text>
+      </div>
     </n-h1>
     <!-- 导航栏 -->
     <n-tabs
@@ -24,7 +32,7 @@
       ref="setScrollRef"
       :style="{
         height: `calc(100vh - ${
-          Object.keys(music.getPlaySongData)?.length && status.showPlayBar ? 328 : 248
+          Object.keys(music.getPlaySongData)?.length && showPlayBar ? 328 : 248
         }px)`,
       }"
       class="all-set"
@@ -64,6 +72,13 @@
           />
         </n-card>
         <n-card class="set-item">
+          <div class="name">
+            开启侧边栏
+            <n-text class="tip">将导航栏放于侧边显示，可展开或收起</n-text>
+          </div>
+          <n-switch v-model:value="showSider" :round="false" />
+        </n-card>
+        <n-card class="set-item">
           <div class="name">显示搜索历史</div>
           <n-switch v-model:value="searchHistory" :round="false" />
         </n-card>
@@ -77,7 +92,7 @@
         <n-card class="set-item">
           <div class="name">
             <div class="dev">
-              主题色跟随歌曲封面
+              全局动态取色
               <n-tag :bordered="false" round size="small" type="warning">
                 开发中
                 <template #icon>
@@ -92,7 +107,51 @@
           <n-switch
             v-model:value="themeAutoCover"
             :round="false"
+            :disabled="Object.keys(coverTheme)?.length === 0"
             @update:value="themeAutoCoverChange"
+          />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            <div class="dev">
+              全局动态取色类别
+              <n-tag :bordered="false" round size="small" type="warning">
+                开发中
+                <template #icon>
+                  <n-icon>
+                    <SvgIcon icon="code" />
+                  </n-icon>
+                </template>
+              </n-tag>
+            </div>
+            <n-text class="tip">将在下一首播放或刷新时生效，不建议更改</n-text>
+          </div>
+          <n-select
+            v-model:value="themeAutoCoverType"
+            :disabled="!themeAutoCover"
+            :options="[
+              {
+                label: '中性',
+                value: 'neutral',
+              },
+              {
+                label: '中性变体',
+                value: 'neutralVariant',
+              },
+              {
+                label: '主要',
+                value: 'primary',
+              },
+              {
+                label: '次要',
+                value: 'secondary',
+              },
+              {
+                label: '次次要',
+                value: 'tertiary',
+              },
+            ]"
+            class="set"
           />
         </n-card>
       </div>
@@ -140,17 +199,31 @@
         <n-card class="set-item">
           <div class="name">
             启动时自动播放
-            <n-text class="tip">程序启动时自动播放上次歌曲</n-text>
+            <n-text class="tip">
+              {{ checkPlatform.electron() ? "程序启动时自动播放上次歌曲" : "客户端独占功能" }}
+            </n-text>
           </div>
-          <n-switch v-model:value="autoPlay" :round="false" />
+          <n-switch v-model:value="autoPlay" :disabled="!checkPlatform.electron()" :round="false" />
         </n-card>
         <n-card class="set-item">
-          <div class="name">记忆上次播放位置</div>
-          <n-switch v-model:value="memorySeek" :round="false" />
+          <div class="name">
+            记忆上次播放位置
+            <n-text v-if="autoPlay" class="tip"> 与自动播放相冲突，已禁用 </n-text>
+          </div>
+          <n-switch v-model:value="memorySeek" :disabled="autoPlay" :round="false" />
         </n-card>
         <n-card class="set-item">
           <div class="name">音乐渐入渐出</div>
           <n-switch v-model:value="songVolumeFade" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            播放全部搜索歌曲
+            <n-text class="tip">
+              在播放搜索页面上的歌曲时，是否同时播放所有搜索结果中的歌曲
+            </n-text>
+          </div>
+          <n-switch v-model:value="playSearch" :round="false" />
         </n-card>
         <n-card class="set-item">
           <div class="name">
@@ -167,6 +240,30 @@
             <n-text class="tip">是否在播放时将歌手信息更改为歌词</n-text>
           </div>
           <n-switch v-model:value="bottomLyricShow" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">显示播放列表歌曲数量</div>
+          <n-switch v-model:value="showPlaylistCount" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            播放器样式
+            <n-text class="tip"> 播放器左侧区域样式 </n-text>
+          </div>
+          <n-select
+            v-model:value="playCoverType"
+            :options="[
+              {
+                label: '封面模式',
+                value: 'cover',
+              },
+              {
+                label: '唱片模式',
+                value: 'record',
+              },
+            ]"
+            class="set"
+          />
         </n-card>
         <n-card class="set-item">
           <div class="name">
@@ -331,7 +428,7 @@
                 </template>
               </n-tag>
             </div>
-            <n-text class="tip">开启后可能会造成卡顿等性能问题</n-text>
+            <n-text class="tip">可能会造成卡顿等性能问题，建议显卡为 GTX 2060 及以上</n-text>
           </div>
           <n-switch v-model:value="showYrcAnimation" :disabled="!showYrc" :round="false" />
         </n-card>
@@ -387,6 +484,10 @@
       <div class="set-type">
         <n-h3 prefix="bar"> 其他 </n-h3>
         <n-card class="set-item">
+          <div class="name">是否显示 GitHub 仓库按钮</div>
+          <n-switch v-model:value="showGithub" :round="false" />
+        </n-card>
+        <n-card class="set-item">
           <div class="name">
             默认加载数量
             <n-text class="tip">在部分列表页面显示几条数据</n-text>
@@ -426,20 +527,22 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { useOsTheme } from "naive-ui";
-import { siteSettings, siteStatus, musicData, siteData } from "@/stores";
+import { siteSettings, siteStatus, musicData } from "@/stores";
 import { checkPlatform } from "@/utils/helper";
 import debounce from "@/utils/debounce";
 import packageJson from "@/../package.json";
 
 const music = musicData();
 const status = siteStatus();
-const data = siteData();
 const settings = siteSettings();
+const { showPlayBar, coverTheme } = storeToRefs(status);
 const {
   themeType,
   themeTypeName,
   themeAuto,
   themeAutoCover,
+  themeAutoCoverType,
+  showSider,
   closeTip,
   closeType,
   loadSize,
@@ -464,6 +567,10 @@ const {
   bottomLyricShow,
   downloadPath,
   memorySeek,
+  showGithub,
+  playCoverType,
+  playSearch,
+  showPlaylistCount,
 } = storeToRefs(settings);
 
 // 标签页数据
@@ -515,9 +622,9 @@ const songLevelData = {
 
 // 封面自动跟随变化
 const themeAutoCoverChange = (val) => {
-  typeof $changeThemeColor !== "undefined" && val
-    ? $changeThemeColor(data.coverTheme, val)
-    : $changeThemeColor(themeTypeName.value, val);
+  if ($changeThemeColor !== "undefined" && Object.keys(coverTheme.value)?.length) {
+    $changeThemeColor(val ? coverTheme.value : themeTypeName.value, val);
+  }
 };
 
 // 标签页切换
@@ -549,6 +656,11 @@ const choosePath = async () => {
   if (selectedDir) downloadPath.value = selectedDir;
 };
 
+// 跳转
+const jump = () => {
+  window.open(packageJson.github);
+};
+
 // 程序重置
 const resetApp = () => {
   $dialog.warning({
@@ -557,8 +669,11 @@ const resetApp = () => {
     positiveText: "重置",
     negativeText: "取消",
     onPositiveClick: () => {
+      if (typeof $cleanAll === "undefined") {
+        return $message.error("重置操作出现错误，请重试");
+      }
+      $cleanAll(false);
       $message.success("重置成功，正在重启");
-      localStorage.clear();
       setTimeout(() => {
         if (checkPlatform.electron()) {
           electron.ipcRenderer.send("window-relaunch");
@@ -583,11 +698,29 @@ const resetApp = () => {
     margin: 20px 0;
     font-size: 36px;
     font-weight: bold;
-    .version {
+    .copyright {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
       margin-left: 12px;
       margin-bottom: 6px;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: normal;
+      cursor: pointer;
+      .author {
+        display: flex;
+        align-items: center;
+        &::after {
+          content: "/";
+          transform: translateY(2px);
+          font-size: 14px;
+          margin: 0 6px;
+          opacity: 0.6;
+        }
+        .author-text {
+          margin-left: 6px;
+        }
+      }
     }
   }
   .n-tabs {
@@ -631,6 +764,15 @@ const resetApp = () => {
         @media (max-width: 768px) {
           width: 140px;
           min-width: 140px;
+        }
+      }
+    }
+  }
+  &.use-cover {
+    .n-switch {
+      &.n-switch--active {
+        :deep(.n-switch__rail) {
+          background-color: var(--main-second-color);
         }
       }
     }

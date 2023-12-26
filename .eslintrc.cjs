@@ -49,5 +49,7 @@ module.exports = {
     $notification: true,
     $changeThemeColor: true,
     $canNotConnect: true,
+    $refreshCloudCatch: true,
+    $cleanAll: true,
   },
 };

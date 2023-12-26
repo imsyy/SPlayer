@@ -1,6 +1,6 @@
 <!-- 专辑页面 -->
 <template>
-  <div v-if="albumId" class="album">
+  <div v-if="albumId && Number(albumId)" class="album">
     <Transition name="fade" mode="out-in">
       <div v-if="albumDetail && Object.keys(albumDetail)?.length" class="detail">
         <div class="cover">
@@ -32,7 +32,12 @@
           </n-text>
           <n-text v-if="albumDetail.alia" class="alia" depth="3">{{ albumDetail.alia }}</n-text>
           <div v-if="albumDetail.artists" class="creator">
-            <n-text v-for="(item, index) in albumDetail.artists" :key="index" class="ar">
+            <n-text
+              v-for="(item, index) in albumDetail.artists"
+              :key="index"
+              class="ar"
+              @click="router.push(`/artist?id=${item.id}`)"
+            >
               {{ item.name }}
             </n-text>
           </div>
@@ -102,6 +107,7 @@
           :disabled="albumData === 'empty'"
           type="primary"
           class="play"
+          tag="div"
           circle
           strong
           secondary
@@ -113,7 +119,7 @@
             </n-icon>
           </template>
         </n-button>
-        <n-button size="large" round strong secondary @click="likeOrDislike(albumId)">
+        <n-button size="large" tag="div" round strong secondary @click="likeOrDislike(albumId)">
           <template #icon>
             <n-icon>
               <SvgIcon
@@ -124,7 +130,7 @@
           {{ isLikeOrDislike(albumId) ? "收藏专辑" : "取消收藏" }}
         </n-button>
         <n-dropdown :options="moreOptions" trigger="hover" placement="bottom-start">
-          <n-button size="large" circle strong secondary>
+          <n-button size="large" tag="div" circle strong secondary>
             <template #icon>
               <n-icon>
                 <SvgIcon icon="format-list-bulleted" />
@@ -255,26 +261,30 @@ const playAllSongs = async () => {
   if (!albumData.value) return false;
   // 关闭心动模式
   playHeartbeatMode.value = false;
+  // 更改模式和歌单
+  playMode.value = "normal";
+  playList.value = albumData.value.slice();
   // 是否处于专辑内
   const songId = playSongData.value?.id;
-  const isHas = albumData.value.some((song) => song.id === songId);
+  const existingIndex = albumData.value.findIndex((song) => song.id === songId);
   // 若不处于
-  if (!isHas) {
-    // 更改模式
-    playMode.value = "normal";
-    playList.value = albumData.value;
+  if (existingIndex === -1 || !songId) {
+    console.log("不在专辑内");
     playSongData.value = albumData.value[0];
     playIndex.value = 0;
     // 初始化播放器
-    initPlayer(true);
+    await initPlayer(true);
   } else {
+    console.log("处于专辑内");
+    playSongData.value = albumData.value[existingIndex];
+    playIndex.value = existingIndex;
     // 播放
-    await fadePlayOrPause();
+    fadePlayOrPause();
   }
   $message.info("已开始播放", { showIcon: false });
 };
 
-// 本地歌曲模糊搜索
+// 歌曲模糊搜索
 const localSearch = debounce((val) => {
   const searchValue = val?.trim();
   // 是否为空

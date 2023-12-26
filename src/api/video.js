@@ -63,3 +63,37 @@ export const getSimiVideo = (mvid) => {
     },
   });
 };
+
+/**
+ * 收藏/取消收藏视频
+ * @param {number} t - 操作类型，1为收藏，2为取消收藏
+ * @param {number} id - 视频id
+ */
+export const likeVideo = (t, id) => {
+  return axios({
+    method: "GET",
+    url: "/video/sub",
+    params: {
+      t,
+      id,
+      timestamp: new Date().getTime(),
+    },
+  });
+};
+
+/**
+ * 收藏/取消收藏 MV
+ * @param {number} t - 操作类型，1为收藏，2为取消收藏
+ * @param {number} mvid - MV id
+ */
+export const likeMv = (t, mvid) => {
+  return axios({
+    method: "GET",
+    url: "/mv/sub",
+    params: {
+      t,
+      mvid,
+      timestamp: new Date().getTime(),
+    },
+  });
+};

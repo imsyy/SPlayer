@@ -51,21 +51,8 @@ watch(
     font-weight: bold;
   }
   .tabs {
-    position: sticky;
-    top: 20px;
     margin-bottom: 20px;
     z-index: 2;
-    &::after {
-      content: "";
-      position: absolute;
-      top: -20px;
-      left: -25px;
-      width: calc(100% + 50px);
-      height: calc(100% + 40px);
-      background-color: var(--n-color);
-      backdrop-filter: blur(40px);
-      z-index: -1;
-    }
   }
 }
 </style>

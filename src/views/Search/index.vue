@@ -2,21 +2,19 @@
 <template>
   <div class="search">
     <template v-if="searchKeywords">
-      <!-- 固定 -->
-      <div class="fixed">
-        <div class="title">
-          <n-text class="key">{{ searchKeywords }}</n-text>
-          <n-text depth="3">的相关搜索</n-text>
-        </div>
-        <!-- 标签页 -->
-        <n-tabs v-model:value="tabValue" class="tabs" type="line" @update:value="tabChange">
-          <n-tab name="sea-songs"> 单曲 </n-tab>
-          <n-tab name="sea-artists"> 歌手 </n-tab>
-          <n-tab name="sea-albums"> 专辑 </n-tab>
-          <n-tab name="sea-playlists"> 歌单 </n-tab>
-          <n-tab name="sea-videos"> 视频 </n-tab>
-        </n-tabs>
+      <div class="title">
+        <n-text class="key">{{ searchKeywords }}</n-text>
+        <n-text depth="3">的相关搜索</n-text>
       </div>
+      <!-- 标签页 -->
+      <n-tabs v-model:value="tabValue" class="tabs" type="line" @update:value="tabChange">
+        <n-tab name="sea-songs"> 单曲 </n-tab>
+        <n-tab name="sea-artists"> 歌手 </n-tab>
+        <n-tab name="sea-albums"> 专辑 </n-tab>
+        <n-tab name="sea-playlists"> 歌单 </n-tab>
+        <n-tab name="sea-videos"> 视频 </n-tab>
+        <n-tab name="sea-djs"> 电台 </n-tab>
+      </n-tabs>
       <!-- 路由页面 -->
       <router-view v-slot="{ Component }">
         <keep-alive>
@@ -69,38 +67,20 @@ watch(
 
 <style lang="scss" scoped>
 .search {
-  .fixed {
-    position: sticky;
-    top: 34px;
-    background-color: var(--n-color);
-    z-index: 2;
-    &::after {
-      content: "";
-      position: absolute;
-      bottom: -20px;
-      left: -25px;
-      width: calc(100% + 50px);
-      height: calc(100% + 54px);
-      background-color: var(--n-color);
-      backdrop-filter: blur(40px);
-      z-index: -1;
+  .title {
+    margin: 10px 0;
+    font-size: 22px;
+    .key {
+      font-size: 36px;
+      font-weight: bold;
+      margin-right: 8px;
     }
-
-    .title {
-      margin: 10px 0;
-      font-size: 22px;
-      .key {
-        font-size: 36px;
-        font-weight: bold;
-        margin-right: 8px;
-      }
-      .n-text {
-        display: inline;
-      }
+    .n-text {
+      display: inline;
     }
-    .tabs {
-      margin-bottom: 20px;
-    }
+  }
+  .tabs {
+    margin-bottom: 20px;
   }
 }
 </style>

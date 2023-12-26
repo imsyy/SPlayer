@@ -21,6 +21,10 @@ axios.interceptors.request.use(
     if (!request.noCookie && (isLogin() || getCookie("MUSIC_U") !== null)) {
       request.params.cookie = `MUSIC_U=${getCookie("MUSIC_U")};`;
     }
+    // 去除 cookie
+    if (request.noCookie) {
+      request.params.noCookie = true;
+    }
     // 附加 realIP
     if (!checkPlatform.electron()) request.params.realIP = "116.25.146.177";
     // 发送请求
@@ -66,7 +70,6 @@ axios.interceptors.response.use(
         break;
       default:
         // 处理其他状态码或错误条件
-        $canNotConnect(error);
         console.error("未处理的错误：", error.message);
     }
     // 继续传递错误

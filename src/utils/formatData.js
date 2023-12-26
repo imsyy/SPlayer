@@ -18,7 +18,9 @@ const formatData = (data, type = "playlist", noTracks = false) => {
     const imgUrl =
       v &&
       (v.picUrl ||
+        v.coverUrl ||
         v.coverImgUrl ||
+        v.imgurl ||
         v.cover ||
         (v.album && v.album.picUrl) ||
         (v.al && (v.al.picUrl || v.al.xInfo?.picUrl)));
@@ -46,6 +48,7 @@ const formatData = (data, type = "playlist", noTracks = false) => {
           updateTime: v.updateTime || v.trackNumberUpdateTime,
           description: v.description,
           tags: v.tags || v.algTags,
+          userId: v.userId,
         };
       // 歌曲
       case "song":
@@ -57,7 +60,7 @@ const formatData = (data, type = "playlist", noTracks = false) => {
           cover,
           coverSize,
           mv: v.mv,
-          alia: v.alias?.[0] || v.transNames?.[0],
+          alia: v.alia?.[0] || v.alias?.[0] || v.transNames?.[0],
           fee: v.fee,
           pc: v.pc,
           size: v.size,
@@ -68,6 +71,7 @@ const formatData = (data, type = "playlist", noTracks = false) => {
         return {
           id: v.id,
           name: v.name,
+          description: v.briefDesc,
           cover,
           coverSize,
           alias: v.alias,
@@ -96,14 +100,32 @@ const formatData = (data, type = "playlist", noTracks = false) => {
       // mv
       case "mv":
         return {
-          id: v.id,
-          name: v.name,
-          artists: v.artists,
+          id: v.id || v.vid,
+          name: v.name || v.title,
+          artists: v.artists || v.creator,
           desc: v.copywriter,
           cover,
-          coverSize: getCoverUrl(v.picUrl || v.cover, "464y260"),
-          duration: v.duration,
-          playCount: v.playCount,
+          coverSize: getCoverUrl(cover, "464y260"),
+          duration: v.duration || v.durationms,
+          playCount: v.playCount || v.playTime,
+        };
+      // dj
+      case "dj":
+        return {
+          id: v.id || v.vid,
+          mainTrackId: v.mainTrackId,
+          name: v.name,
+          creator: v.dj,
+          count: v.programCount,
+          desc: v.copywriter || v.lastProgramName || v.desc,
+          cover,
+          coverSize,
+          tags: { id: v.categoryId, name: v.category },
+          rcmdText: v.rcmdtext || v.rcmdText,
+          playCount: v.playCount || v.listenerCount,
+          createTime: v.createTime,
+          updateTime: v.lastProgramCreateTime || v.scheduledPublishTime,
+          duration: getSongTime(v.duration),
         };
       default:
         return null;

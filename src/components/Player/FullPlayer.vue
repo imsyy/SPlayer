@@ -4,23 +4,20 @@
     <div
       v-if="showFullPlayer"
       :style="{
-        '--cover-main-color': `rgb(${coverTheme?.dark?.shadeTwo})` || '#efefef',
-        '--cover-second-color': `rgba(${coverTheme?.dark?.shadeTwo}, 0.14)` || '#efefef14',
+        '--cover-main-color': `rgb(${coverTheme?.light?.shadeTwo})` || '#efefef',
+        '--cover-second-color': `rgba(${coverTheme?.light?.shadeTwo}, 0.14)` || '#efefef14',
         '--cover-bg': coverBackground,
         cursor: playerControlShow ? 'auto' : 'none',
       }"
       class="full-player"
       @mousemove="controlShowChange"
-      @mouseleave="playerControlShow = false"
     >
       <!-- 遮罩 -->
       <Transition name="fade" mode="out-in">
         <div
-          :key="
-            playerBackgroundType === 'gradient'
-              ? coverBackground
-              : music.getPlaySongData?.coverSize?.s || music.getPlaySongData?.localCover
-          "
+          :key="`${playerBackgroundType}-${coverBackground}-${
+            music.getPlaySongData?.coverSize?.s || music.getPlaySongData?.localCover
+          }`"
           :class="['overlay', playerBackgroundType]"
         >
           <!-- 模糊背景 -->
@@ -49,7 +46,12 @@
       <!-- 按钮 -->
       <Transition name="fade" mode="out-in">
         <div v-show="playerControlShow" class="menu">
-          <div class="left"></div>
+          <div class="left">
+            <!-- 歌词模式 -->
+            <div v-if="isHasLrc" class="n-icon" @click="pureLyricMode = !pureLyricMode">
+              <n-text>词</n-text>
+            </div>
+          </div>
           <div class="right">
             <!-- 全屏切换 -->
             <n-icon @click.stop="screenfullChange">
@@ -64,106 +66,164 @@
           </div>
         </div>
       </Transition>
-      <!-- 主内容 -->
-      <div
-        :class="{
-          content: true,
-          'no-lrc': !playSongLyric.lrc?.[0] && playSongLyric.lrc?.length <= 4,
-        }"
-      >
-        <!-- 封面 -->
-        <Transition name="fade" mode="out-in">
-          <div :key="music.getPlaySongData.id" class="cover">
-            <n-image
-              :src="
-                music.getPlaySongData?.coverSize?.l ||
-                music.getPlaySongData?.cover ||
-                music.getPlaySongData?.localCover
-              "
-              class="cover-img"
-              preview-disabled
-              @load="
-                (e) => {
-                  e.target.style.opacity = 1;
-                }
-              "
-            >
-              <template #placeholder>
-                <div class="cover-loading">
-                  <img class="loading-img" src="/images/pic/song.jpg?assest" alt="loading-img" />
+      <!-- 主播放器内容 -->
+      <Transition name="fade" mode="out-in">
+        <div
+          :key="`${pureLyricMode}-${playCoverType}-${isHasLrc}-${music.getPlaySongData?.id}`"
+          class="main-player"
+        >
+          <div v-show="!(pureLyricMode && isHasLrc)" :class="['content', { 'no-lrc': !isHasLrc }]">
+            <!-- 封面 -->
+            <PlayerCover />
+            <!-- 信息 -->
+            <div v-if="playCoverType === 'cover' || !isHasLrc" :class="['data', playCoverType]">
+              <div class="desc">
+                <div class="title">
+                  <span class="name">{{ music.getPlaySongData.name || "未知曲目" }}</span>
+                  <n-popover :show-arrow="false" placement="right-start" trigger="hover" raw>
+                    <template #trigger>
+                      <n-tag
+                        v-show="playUseOtherSource"
+                        :style="{
+                          color: `rgb(${coverTheme?.light?.shadeTwo})` || '#efefef',
+                          backgroundColor:
+                            `rgba(${coverTheme?.light?.shadeTwo}, 0.14)` || '#efefef14',
+                        }"
+                        round
+                      >
+                        其他音源
+                      </n-tag>
+                    </template>
+                    <div
+                      :style="{
+                        color: `rgb(${coverTheme?.light?.shadeTwo})` || '#efefef',
+                        backgroundColor:
+                          `rgba(${coverTheme?.light?.shadeTwo}, 0.14)` || '#efefef14',
+                      }"
+                      class="title-tip"
+                    >
+                      <span>该歌曲暂时无法播放，为您采用其他音源，可能会与原曲存在差别</span>
+                    </div>
+                  </n-popover>
                 </div>
-              </template>
-            </n-image>
-            <!-- 封面背板 -->
-            <n-image
-              class="cover-shadow"
-              preview-disabled
-              :src="
-                music.getPlaySongData?.coverSize?.l ||
-                music.getPlaySongData?.cover ||
-                music.getPlaySongData?.localCover
-              "
-            />
-          </div>
-        </Transition>
-        <!-- 信息 -->
-        <div class="data">
-          <div class="desc">
-            <div class="title">
-              <n-text>{{ music.getPlaySongData.name || "未知曲目" }}</n-text>
-              <n-popover :show-arrow="false" placement="right-start" trigger="hover" raw>
-                <template #trigger>
-                  <n-tag v-show="playUseOtherSource" round> 其他音源 </n-tag>
-                </template>
-                <div class="title-tip">
-                  <n-text>该歌曲暂时无法播放，为您采用其他音源，可能会与原曲存在差别</n-text>
+                <span v-if="music.getPlaySongData.alia" class="alia">
+                  {{ music.getPlaySongData.alia }}
+                </span>
+                <div class="artist">
+                  <n-icon depth="3" size="20">
+                    <SvgIcon icon="account-music" />
+                  </n-icon>
+                  <div v-if="Array.isArray(music.getPlaySongData.artists)" class="all-ar">
+                    <span
+                      v-for="ar in music.getPlaySongData.artists"
+                      :key="ar.id"
+                      class="ar"
+                      @click.stop="
+                        () => {
+                          showFullPlayer = false;
+                          router.push(`/artist?id=${ar.id}`);
+                        }
+                      "
+                    >
+                      {{ ar.name }}
+                    </span>
+                  </div>
+                  <div v-else class="all-ar">
+                    <span class="ar"> {{ music.getPlaySongData.artists || "未知艺术家" }} </span>
+                  </div>
                 </div>
-              </n-popover>
+                <div
+                  class="album"
+                  @click.stop="
+                    () => {
+                      if (typeof music.getPlaySongData.album !== 'string') {
+                        showFullPlayer = false;
+                        router.push(`/album?id=${music.getPlaySongData?.album.id}`);
+                      }
+                    }
+                  "
+                >
+                  <n-icon depth="3" size="20">
+                    <SvgIcon icon="album" />
+                  </n-icon>
+                  <span v-if="music.getPlaySongData.album" class="al">
+                    {{
+                      typeof music.getPlaySongData.album === "string"
+                        ? music.getPlaySongData.album
+                        : music.getPlaySongData.album.name
+                    }}
+                  </span>
+                  <span v-else class="album">未知专辑</span>
+                </div>
+              </div>
             </div>
-            <span v-if="music.getPlaySongData.alia" class="alia">{{
-              music.getPlaySongData.alia
-            }}</span>
-            <div class="artist">
-              <n-icon depth="3" size="20">
-                <SvgIcon icon="account-music" />
-              </n-icon>
-              <div v-if="Array.isArray(music.getPlaySongData.artists)" class="all-ar">
-                <span v-for="ar in music.getPlaySongData.artists" :key="ar.id" class="ar">
-                  {{ ar.name }}
+          </div>
+          <div :class="['right', { pure: pureLyricMode && isHasLrc }]">
+            <!-- 唱片模式下信息 -->
+            <div
+              v-show="(pureLyricMode && isHasLrc) || (playCoverType === 'record' && isHasLrc)"
+              class="data"
+            >
+              <div class="name">
+                <span class="name-text">{{ music.getPlaySongData.name || "未知曲目" }}</span>
+                <span v-if="music.getPlaySongData.alia" class="name-alias">
+                  {{ music.getPlaySongData.alia }}
                 </span>
               </div>
-              <div v-else class="all-ar">
-                <span class="ar"> {{ music.getPlaySongData.artists || "未知艺术家" }} </span>
+              <div class="other">
+                <div class="artist">
+                  <n-icon depth="3" size="20">
+                    <SvgIcon icon="account-music" />
+                  </n-icon>
+                  <div v-if="Array.isArray(music.getPlaySongData.artists)" class="all-ar">
+                    <span
+                      v-for="ar in music.getPlaySongData.artists"
+                      :key="ar.id"
+                      class="ar"
+                      @click.stop="
+                        () => {
+                          showFullPlayer = false;
+                          router.push(`/artist?id=${ar.id}`);
+                        }
+                      "
+                    >
+                      {{ ar.name }}
+                    </span>
+                  </div>
+                  <div v-else class="all-ar">
+                    <span class="ar"> {{ music.getPlaySongData.artists || "未知艺术家" }} </span>
+                  </div>
+                </div>
+                <div
+                  class="album"
+                  @click.stop="
+                    () => {
+                      if (typeof music.getPlaySongData.album !== 'string') {
+                        showFullPlayer = false;
+                        router.push(`/album?id=${music.getPlaySongData?.album.id}`);
+                      }
+                    }
+                  "
+                >
+                  <n-icon depth="3" size="20">
+                    <SvgIcon icon="album" />
+                  </n-icon>
+                  <span v-if="music.getPlaySongData.album" class="al">
+                    {{
+                      typeof music.getPlaySongData.album === "string"
+                        ? music.getPlaySongData.album
+                        : music.getPlaySongData.album.name
+                    }}
+                  </span>
+                  <span v-else class="album">未知专辑</span>
+                </div>
               </div>
             </div>
-            <div
-              class="album"
-              @click.stop="
-                () => {
-                  if (typeof music.getPlaySongData.album !== 'string') {
-                    showFullPlayer = false;
-                    router.push(`/album?id=${music.getPlaySongData?.album.id}`);
-                  }
-                }
-              "
-            >
-              <n-icon depth="3" size="20">
-                <SvgIcon icon="album" />
-              </n-icon>
-              <span v-if="music.getPlaySongData.album" class="al">
-                {{
-                  typeof music.getPlaySongData.album === "string"
-                    ? music.getPlaySongData.album
-                    : music.getPlaySongData.album.name
-                }}
-              </span>
-              <span v-else class="album">未知专辑</span>
-            </div>
+            <!-- 歌词 -->
+            <Lyric :cursorShow="playerControlShow" />
           </div>
         </div>
-      </div>
-      <!-- 歌词 -->
-      <Lyric :cursorShow="playerControlShow" />
+      </Transition>
       <!-- 控制中心 -->
       <PlayerControl v-show="playerControlShow" />
     </div>
@@ -173,20 +233,30 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
-import { musicData, siteStatus, siteSettings, siteData } from "@/stores";
+import { musicData, siteStatus, siteSettings } from "@/stores";
 import screenfull from "screenfull";
 import throttle from "@/utils/throttle";
 
 const router = useRouter();
-const data = siteData();
 const music = musicData();
 const status = siteStatus();
 const settings = siteSettings();
 const { playList, playSongLyric } = storeToRefs(music);
-const { playerBackgroundType, showYrc } = storeToRefs(settings);
-const { coverTheme, coverBackground } = storeToRefs(data);
-const { playerControlShow, controlTimeOut, showFullPlayer, playUseOtherSource } =
-  storeToRefs(status);
+const { playerBackgroundType, showYrc, playCoverType } = storeToRefs(settings);
+const {
+  playerControlShow,
+  controlTimeOut,
+  showFullPlayer,
+  playUseOtherSource,
+  coverTheme,
+  coverBackground,
+  pureLyricMode,
+} = storeToRefs(status);
+
+// 是否有歌词
+const isHasLrc = computed(() => {
+  return playSongLyric.value.lrc?.[0] && playSongLyric.value.lrc?.length > 4;
+});
 
 // 全屏状态
 const screenfullStatus = ref(false);
@@ -317,6 +387,7 @@ onUnmounted(() => {
     justify-content: space-between;
     z-index: 2;
     box-sizing: border-box;
+    -webkit-app-region: no-drag;
     .left,
     .right {
       display: flex;
@@ -324,6 +395,17 @@ onUnmounted(() => {
       align-items: center;
       justify-content: flex-end;
       flex: 1;
+    }
+    .left {
+      justify-content: flex-start;
+      .n-icon {
+        margin-left: 0;
+        margin-right: 12px;
+        .n-text {
+          font-size: 26px;
+          font-weight: bold;
+        }
+      }
     }
     .n-icon {
       margin-left: 12px;
@@ -350,137 +432,213 @@ onUnmounted(() => {
       }
     }
   }
-  // 内容
-  .content {
-    width: 50%;
+  .main-player {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
     align-items: center;
-    transition: transform 0.3s;
-    &.no-lrc {
-      transform: translateX(50%);
-    }
-    .cover {
-      position: relative;
+    width: 100%;
+    height: 100%;
+    // 内容
+    .content {
+      width: 50%;
       display: flex;
-      align-items: center;
+      flex-direction: column;
       justify-content: center;
-      width: 70%;
-      max-width: 55vh;
-      height: auto;
-      aspect-ratio: 1 / 1;
-      .cover-img {
-        width: 100%;
-        height: 100%;
-        border-radius: 32px;
-        overflow: hidden;
-        z-index: 1;
-        box-shadow: 0 0 10px 6px #00000008;
-        transition: opacity 0.1s ease-in-out;
-        :deep(img) {
-          width: 100%;
-          height: 100%;
-          opacity: 0;
-          transition: opacity 0.3s ease-in-out;
-        }
-      }
-      .cover-shadow {
-        position: absolute;
-        top: 12px;
-        height: 100%;
-        width: 100%;
-        filter: blur(20px) opacity(0.6);
-        transform: scale(0.95);
-        z-index: 0;
-        :deep(img) {
-          width: 100%;
-          height: 100%;
-        }
-      }
-    }
-    .data {
-      width: 70%;
-      max-width: 55vh;
-      margin-top: 24px;
-      padding: 0 2px;
-      box-sizing: border-box;
-      .desc {
-        display: flex;
-        flex-direction: column;
-        .title {
+      align-items: center;
+      transition:
+        transform 0.3s,
+        opacity 0.3s;
+      .data {
+        width: 70%;
+        max-width: 55vh;
+        margin-top: 24px;
+        padding: 0 2px;
+        box-sizing: border-box;
+        .desc {
           display: flex;
-          align-items: center;
-          margin-left: 4px;
-          .n-text {
-            font-size: 26px;
-            font-weight: bold;
-            color: var(--cover-main-color);
-            -webkit-line-clamp: 2;
-          }
-          .n-tag {
-            margin-left: 6px;
-            cursor: pointer;
-          }
-        }
-        .alia {
-          margin: 6px 0 6px 2px;
-          opacity: 0.6;
-          font-size: 18px;
-        }
-        .artist {
-          margin-top: 2px;
-          display: flex;
-          align-items: center;
-          .n-icon {
-            margin-right: 4px;
-            color: var(--cover-main-color);
-          }
-          .all-ar {
-            display: -webkit-box;
-            -webkit-box-orient: vertical;
-            -webkit-line-clamp: 2;
-            overflow: hidden;
-            word-break: break-all;
-            .ar {
-              font-size: 16px;
-              opacity: 0.7;
-              display: inline-flex;
-              transition: opacity 0.3s;
+          flex-direction: column;
+          .title {
+            display: flex;
+            align-items: center;
+            margin-left: 4px;
+            .name {
+              font-size: 26px;
+              font-weight: bold;
+              color: var(--cover-main-color);
+              -webkit-line-clamp: 2;
+            }
+            .n-tag {
+              margin-left: 12px;
               cursor: pointer;
-              &::after {
-                content: "/";
-                margin: 0 4px;
-                transition: none;
-              }
-              &:last-child {
+            }
+          }
+          .alia {
+            margin: 6px 0 6px 2px;
+            opacity: 0.6;
+            font-size: 18px;
+          }
+          .artist {
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            .n-icon {
+              margin-right: 4px;
+              color: var(--cover-main-color);
+            }
+            .all-ar {
+              display: -webkit-box;
+              -webkit-box-orient: vertical;
+              -webkit-line-clamp: 2;
+              overflow: hidden;
+              word-break: break-all;
+              .ar {
+                font-size: 16px;
+                opacity: 0.7;
+                display: inline-flex;
+                transition: opacity 0.3s;
+                cursor: pointer;
                 &::after {
-                  display: none;
+                  content: "/";
+                  margin: 0 4px;
+                  transition: none;
+                }
+                &:last-child {
+                  &::after {
+                    display: none;
+                  }
+                }
+                &:hover {
+                  opacity: 1;
                 }
               }
+            }
+          }
+          .album {
+            margin-top: 2px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            .n-icon {
+              margin-right: 4px;
+              color: var(--cover-main-color);
+            }
+            .al {
+              opacity: 0.7;
+              transition: opacity 0.3s;
+              // -webkit-line-clamp: 2;
+              cursor: pointer;
               &:hover {
                 opacity: 1;
               }
             }
           }
         }
-        .album {
-          margin-top: 2px;
-          font-size: 16px;
+        &.record {
+          width: 100%;
+          margin-top: 20px;
+          .desc {
+            align-items: center;
+            .title {
+              .name {
+                text-align: center;
+              }
+            }
+          }
+        }
+      }
+      &.no-lrc {
+        transform: translateX(50%);
+      }
+    }
+    .right {
+      width: 50%;
+      transition: width 0.3s;
+      .data {
+        padding: 0 80px 0 24px;
+        margin-bottom: 26px;
+        .name {
           display: flex;
-          align-items: center;
+          flex-direction: column;
+          font-size: 30px;
+          font-weight: bold;
+          .name-text {
+            -webkit-line-clamp: 2;
+          }
+          .name-alias {
+            margin-top: 6px;
+            font-size: 18px;
+            font-weight: normal;
+            opacity: 0.6;
+          }
+        }
+        .other {
+          display: flex;
+          flex-direction: column;
+          margin-top: 8px;
+          font-size: 16px;
           .n-icon {
             margin-right: 4px;
             color: var(--cover-main-color);
           }
-          .al {
-            opacity: 0.7;
-            transition: opacity 0.3s;
-            // -webkit-line-clamp: 2;
-            cursor: pointer;
-            &:hover {
-              opacity: 1;
+          .artist {
+            display: flex;
+            align-items: center;
+            margin-right: 12px;
+            .all-ar {
+              display: -webkit-box;
+              -webkit-box-orient: vertical;
+              -webkit-line-clamp: 2;
+              overflow: hidden;
+              word-break: break-all;
+              .ar {
+                opacity: 0.7;
+                display: inline-flex;
+                transition: opacity 0.3s;
+                cursor: pointer;
+                &::after {
+                  content: "/";
+                  margin: 0 4px;
+                  transition: none;
+                }
+                &:last-child {
+                  &::after {
+                    display: none;
+                  }
+                }
+                &:hover {
+                  opacity: 1;
+                }
+              }
             }
+          }
+          .album {
+            display: flex;
+            align-items: center;
+            margin-top: 4px;
+            .al {
+              opacity: 0.7;
+              transition: opacity 0.3s;
+              cursor: pointer;
+              &:hover {
+                opacity: 1;
+              }
+            }
+          }
+        }
+      }
+      &.pure {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        .data {
+          padding: 0 80px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          .other,
+          .name {
+            align-items: center;
           }
         }
       }
@@ -499,7 +657,6 @@ onUnmounted(() => {
 .title-tip {
   width: 200px;
   padding: 12px 20px;
-  background-color: var(--main-second-color);
   border-radius: 12px;
   .n-text {
     display: initial;

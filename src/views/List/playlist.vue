@@ -114,6 +114,7 @@
             :disabled="playListData === 'empty'"
             type="primary"
             class="play"
+            tag="div"
             circle
             strong
             secondary
@@ -128,6 +129,7 @@
           <n-button
             v-if="isUserPLayList"
             size="large"
+            tag="div"
             round
             strong
             secondary
@@ -140,7 +142,15 @@
             </template>
             编辑歌单
           </n-button>
-          <n-button v-else size="large" round strong secondary @click="likeOrDislike(playlistId)">
+          <n-button
+            v-else
+            size="large"
+            tag="div"
+            round
+            strong
+            secondary
+            @click="likeOrDislike(playlistId)"
+          >
             <template #icon>
               <n-icon>
                 <SvgIcon
@@ -153,7 +163,7 @@
             {{ isLikeOrDislike(playlistId) ? "收藏歌单" : "取消收藏" }}
           </n-button>
           <n-dropdown :options="moreOptions" trigger="hover" placement="bottom-start">
-            <n-button size="large" circle strong secondary>
+            <n-button size="large" tag="div" circle strong secondary>
               <template #icon>
                 <n-icon>
                   <SvgIcon icon="format-list-bulleted" />
@@ -342,27 +352,30 @@ const playAllSongs = async () => {
   if (!playListData.value) return false;
   // 关闭心动模式
   playHeartbeatMode.value = false;
+  // 更改模式和歌单
+  playMode.value = "normal";
+  playList.value = playListData.value.slice();
   // 是否处于歌单内
   const songId = music.getPlaySongData?.id;
-  const isHas = playListData.value.some((song) => song.id === songId);
+  const existingIndex = playListData.value.findIndex((song) => song.id === songId);
   // 若不处于
-  if (!isHas || !songId) {
+  if (existingIndex === -1 || !songId) {
     console.log("不在歌单内");
-    // 更改模式
-    playMode.value = "normal";
-    playList.value = playListData.value.slice();
     playSongData.value = playListData.value[0];
     playIndex.value = 0;
     // 初始化播放器
-    initPlayer(true);
+    await initPlayer(true);
   } else {
+    console.log("处于歌单内");
+    playSongData.value = playListData.value[existingIndex];
+    playIndex.value = existingIndex;
     // 播放
-    await fadePlayOrPause();
+    fadePlayOrPause();
   }
   $message.info("已开始播放", { showIcon: false });
 };
 
-// 本地歌曲模糊搜索
+// 歌曲模糊搜索
 const localSearch = debounce((val) => {
   const searchValue = val?.trim();
   // 是否为空
@@ -431,11 +444,11 @@ const likeOrDislike = debounce(async (id) => {
     const type = isLikeOrDislike(id) ? 1 : 2;
     const result = await likePlaylist(type, id);
     if (result.code === 200) {
-      $message.success(type === 1 ? "收藏" : "取消收藏" + "成功");
+      $message.success((type === 1 ? "收藏" : "取消收藏") + "成功");
       // 更新用户歌单
       await data.setUserLikePlaylists();
     } else {
-      $message.error(type === 1 ? "收藏" : "取消收藏" + "失败，请重试");
+      $message.error((type === 1 ? "收藏" : "取消收藏") + "失败，请重试");
     }
   } catch (error) {
     console.error("收藏出错：", error);
@@ -446,19 +459,19 @@ const likeOrDislike = debounce(async (id) => {
 // 监听路由变化
 watch(
   () => router.currentRoute.value,
-  (val) => {
+  async (val) => {
     if (val.name === "playlist" || val.name === "like-songs") {
       playlistId.value =
         router.currentRoute.value.name === "like-songs"
           ? userLikeData.value.playlists?.[0]?.id || null
           : val.query?.id;
-      getPlayListDetailData(playlistId.value);
+      await getPlayListDetailData(playlistId.value);
     }
   },
 );
 
-onBeforeMount(() => {
-  getPlayListDetailData(playlistId.value);
+onBeforeMount(async () => {
+  await getPlayListDetailData(playlistId.value);
 });
 </script>
 

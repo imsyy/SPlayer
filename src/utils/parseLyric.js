@@ -92,7 +92,7 @@ const parseLrc = (lyrics, isTrim = true) => {
     // 匹配时间轴和歌词文本的正则表达式
     const regex = /^\[([^\]]+)\]\s*(.+?)\s*$/;
     // 匹配歌曲信息的正则表达式
-    const infoRegex = /\].*[:：-]/;
+    // const infoRegex = /\].*[:：-]/;
     // 将歌词字符串按行分割为数组
     const lines = lyrics.split("\n");
     // 对每一行进行转换
@@ -102,7 +102,7 @@ const parseLrc = (lyrics, isTrim = true) => {
       // 转换时间轴和歌词文本为对象
       .map((line) => {
         // 过滤掉包含信息的文本
-        if (infoRegex.test(line)) return null;
+        // if (infoRegex.test(line)) return null;
         // 继续解析
         const [, time, text] = line.match(regex);
         const parts = time.split(":");
@@ -154,11 +154,11 @@ const parseYrc = (lyrics) => {
           return null;
         }
         // 去除歌曲信息
-        const contentInfoReg = /\s*[^:：\n]*[:：]\s*.+/;
-        const contentFilter = content.replace(/\(\d+,\d+,\d+\)/g, "");
-        if (!contentFilter || contentInfoReg.test(contentFilter)) {
-          return null;
-        }
+        // const contentInfoReg = /\s*[^:：\n]*[:：]\s*.+/;
+        // const contentFilter = content.replace(/\(\d+,\d+,\d+\)/g, "");
+        // if (!contentFilter || contentInfoReg.test(contentFilter)) {
+        //   return null;
+        // }
         // 对歌词内容中的时间戳和歌词内容分离
         const contentArray = content
           .split(/(\([1-9]\d*,[1-9]\d*,\d*\)[^(]*)/g)

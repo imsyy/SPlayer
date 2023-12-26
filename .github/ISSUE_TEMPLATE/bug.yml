@@ -1,0 +1,33 @@
+name: 遇到问题
+description: 关于使用过程中遇到的问题
+labels: [bug]
+body:
+  - type: input
+    validations:
+      required: true
+    attributes:
+      label: "是网页端还是客户端"
+      placeholder: "客户端"
+  - type: input
+    validations:
+      required: true
+    attributes:
+      label: "当前系统环境"
+      placeholder: "win11"
+  - type: input
+    validations:
+      required: true
+    attributes:
+      label: "当前 Node.js 及 npm 版本"
+      placeholder: "v18.16.0 / v9.6.7"
+  - type: input
+    validations:
+      required: true
+    attributes:
+      label: "当前版本"
+      placeholder: "v1.0.0"
+  - type: textarea
+    id: other
+    attributes:
+      label: "具体信息"
+      description: "有需要补充的信息吗？比如控制台的报错什么的"

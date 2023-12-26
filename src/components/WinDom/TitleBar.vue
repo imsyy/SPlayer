@@ -2,21 +2,28 @@
 <template>
   <div class="title-bar">
     <n-divider vertical />
-    <n-button class="bar-icon" quaternary circle @click="windowMin">
+    <n-button
+      class="bar-icon"
+      tag="div"
+      style="margin-left: 0"
+      quaternary
+      circle
+      @click="windowMin"
+    >
       <template #icon>
         <n-icon :depth="2">
           <SvgIcon icon="window-minimize" />
         </n-icon>
       </template>
     </n-button>
-    <n-button class="bar-icon" quaternary circle @click="maxOrRestore">
+    <n-button class="bar-icon" tag="div" quaternary circle @click="maxOrRestore">
       <template #icon>
         <n-icon :depth="2">
           <SvgIcon :icon="defaultWindowState ? 'window-restore' : 'window-maximize'" />
         </n-icon>
       </template>
     </n-button>
-    <n-button class="bar-icon" quaternary circle @click="openCloseTip">
+    <n-button class="bar-icon" tag="div" quaternary circle @click="openCloseTip">
       <template #icon>
         <n-icon :depth="2">
           <SvgIcon icon="window-close" />
@@ -36,7 +43,7 @@
       title="关闭软件"
       transform-origin="center"
     >
-      <n-text>确认关闭软件吗？</n-text>
+      <n-text class="close-tip">确认关闭软件吗？</n-text>
       <n-checkbox v-model:checked="closeTipCheckbox"> 记住且不再询问 </n-checkbox>
       <template #footer>
         <n-space justify="space-between">
@@ -127,7 +134,7 @@ const closeCloseTip = (type) => {
 };
 
 // 窗口状态响应
-electron.ipcRenderer.on("window-state", (_, val) => {
+electron.ipcRenderer.on("windowState", (_, val) => {
   defaultWindowState.value = val;
 });
 
@@ -138,16 +145,19 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .title-bar {
-  padding-right: 16px;
   display: flex;
   flex-direction: row;
   align-items: center;
   -webkit-app-region: no-drag;
+  .n-divider {
+    margin-left: 16px;
+  }
   .bar-icon {
     margin-left: 8px;
-    &:first-child {
-      margin-left: 0;
-    }
   }
+}
+.close-tip {
+  font-size: 16px;
+  margin-bottom: 8px;
 }
 </style>

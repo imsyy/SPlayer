@@ -6,7 +6,7 @@
     class="local-artists"
     :style="{
       height: `calc(100vh - ${
-        Object.keys(music.playSongData)?.length && status.showPlayBar ? 345 : 265
+        Object.keys(music.playSongData)?.length && status.showPlayBar ? 380 : 300
       }px)`,
     }"
     type="card"

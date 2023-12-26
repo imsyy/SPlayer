@@ -58,9 +58,8 @@ export const getCacheData = async (key, time, request, params) => {
  * @returns {Promise<string>} 返回封面的 Blob URL，如果没有封面数据则返回默认 URL
  */
 export const getLocalCoverData = async (path, isAlbum = false) => {
-  let blobUrl = null;
-
   try {
+    let blobUrl = null;
     const coverData = await electron.ipcRenderer.invoke("getMusicCover", path);
     if (coverData) {
       // 将 Uint8Array 数据转换为 Blob
@@ -94,20 +93,20 @@ export const getLocalCoverData = async (path, isAlbum = false) => {
 /**
  * 内容复制
  */
-export const copyData = async (data) => {
+export const copyData = async (data, info) => {
   try {
     const isElectron = checkPlatform.electron();
     // electron
     if (isElectron) {
       const result = await electron.ipcRenderer.invoke("copyData", data);
-      result ? $message.success("复制成功") : $message.error("复制失败");
+      result ? $message.success(`${info || "复制"}成功`) : $message.error(`${info || "复制"}失败`);
     }
     // 浏览器端
     else {
       if (navigator.clipboard) {
         try {
           await navigator.clipboard.writeText(data);
-          $message.success("复制成功");
+          $message.success(`${info || "复制"}成功`);
         } catch (error) {
           console.error("复制出错：", error);
           $message.error("复制失败");
@@ -120,7 +119,9 @@ export const copyData = async (data) => {
         textArea.select();
         try {
           const successful = document.execCommand("copy");
-          successful ? $message.success("复制成功") : $message.error("复制失败");
+          successful
+            ? $message.success(`${info || "复制"}成功`)
+            : $message.error(`${info || "复制"}失败`);
         } catch (err) {
           console.error("复制出错：", err);
           $message.error("复制失败");
@@ -337,4 +338,19 @@ export const downloadFile = async (data, song, path = null) => {
     console.error("下载出错：", error);
     return false;
   }
+};
+
+/**
+ * 将字节数格式化为可读的大小字符串。
+ * @param {number} bytes - 要格式化的字节数
+ * @param {number} [decimals=2] - 小数点位数
+ * @returns {string} - 格式化后的大小字符串（例如，"10 KB"）
+ */
+export const formatBytes = (bytes, decimals = 2) => {
+  if (bytes === 0) return "0 K";
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ["K", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
 };

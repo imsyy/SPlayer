@@ -6,6 +6,7 @@
       v-model:value="searchInputValue"
       :class="status.searchInputFocus ? 'input focus' : 'input'"
       :input-props="{ autoComplete: false }"
+      :allow-input="noSideSpace"
       placeholder="搜索音乐 / 视频"
       round
       clearable
@@ -28,22 +29,31 @@
       />
     </Transition>
     <!-- 热搜榜及历史 -->
-    <SearchHot :searchValue="searchInputValue" @toSearch="toSearch" />
+    <SearchHot :searchValue="searchInputValue?.trim()" @toSearch="toSearch" />
     <!-- 搜索建议 -->
-    <SearchSuggestions :searchValue="searchInputValue" @toSearch="toSearch" />
+    <SearchSuggestions :searchValue="searchInputValue?.trim()" @toSearch="toSearch" />
   </div>
 </template>
 
 <script setup>
-import { siteData, siteStatus } from "@/stores";
+import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
+import { getSongDetail } from "@/api/song";
+import { siteData, siteStatus, musicData } from "@/stores";
+import { addSongToNext, initPlayer } from "@/utils/Player";
+import formatData from "@/utils/formatData";
 
 const router = useRouter();
+const music = musicData();
 const status = siteStatus();
 const data = siteData();
+const { playSongData } = storeToRefs(music);
 
 const searchInpRef = ref(null);
-const searchInputValue = ref(null);
+const searchInputValue = ref("");
+
+// 搜索框输入限制
+const noSideSpace = (value) => !value.startsWith(" ");
 
 // 搜索框 focus
 const searchInputFocus = () => {
@@ -53,6 +63,7 @@ const searchInputFocus = () => {
 
 // 添加搜索历史
 const setSearchHistory = (name) => {
+  if (!name || !name?.trim()) return false;
   const index = data.searchHistory.indexOf(name);
   if (index !== -1) {
     data.searchHistory.splice(index, 1);
@@ -60,6 +71,24 @@ const setSearchHistory = (name) => {
   data.searchHistory.unshift(name);
   if (data.searchHistory.length > 30) {
     data.searchHistory.pop();
+  }
+};
+
+// 直接播放单曲
+const toPlaySong = async (id) => {
+  try {
+    if (!id) return false;
+    // 获取歌曲信息
+    const result = await getSongDetail(id.toString());
+    const songData = formatData(result?.songs?.[0], "song")?.[0];
+    // 添加至下一曲
+    addSongToNext(songData, true);
+    playSongData.value = songData;
+    // 初始化播放器
+    initPlayer(true);
+  } catch (error) {
+    console.error("获取歌曲信息失败：", error);
+    $message.error("获取歌曲信息失败");
   }
 };
 
@@ -92,10 +121,23 @@ const toSearch = (val, type = "song") => {
         },
       });
       break;
+    // 单曲
+    case "songs":
+      toPlaySong(val);
+      break;
     // 专辑
     case "albums":
       router.push({
         path: "/album",
+        query: {
+          id: val,
+        },
+      });
+      break;
+    // 歌手
+    case "artists":
+      router.push({
+        path: "/artist",
         query: {
           id: val,
         },

@@ -2,14 +2,14 @@
 import { defineStore } from "pinia";
 import { getPersonalFm, setFmToTrash } from "@/api/recommend";
 import { changePlayIndex } from "@/utils/Player";
-// import { isLogin } from "@/utils/auth";
+import { isLogin } from "@/utils/auth";
 import formatData from "@/utils/formatData";
 
 const useMusicDataStore = defineStore("musicData", {
   state: () => {
     return {
       // 当前模式
-      // normal 正常 / fm 私人 FM
+      // normal 正常 / fm 私人 FM / dj 电台
       playMode: "normal",
       // normal 顺序播放 / random 随机播放 / repeat 单曲循环
       playSongMode: "normal",
@@ -197,6 +197,7 @@ const useMusicDataStore = defineStore("musicData", {
     // 私人FM垃圾桶
     async setPersonalFmToTrash(id) {
       try {
+        if (!isLogin()) return $message.warning("请登录后使用");
         const result = await setFmToTrash(id);
         if (result.code === 200) {
           $message.success("已移至垃圾桶");

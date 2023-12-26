@@ -48,20 +48,19 @@ import { useRouter } from "vue-router";
 import { NIcon, NText, NNumberAnimation, NButton } from "naive-ui";
 import { siteData, siteSettings } from "@/stores";
 import SvgIcon from "@/components/Global/SvgIcon";
+import userSignIn from "@/utils/userSignIn";
 
 const data = siteData();
 const router = useRouter();
 const settings = siteSettings();
 const { userLoginStatus, userData, userLikeData } = storeToRefs(data);
+const { themeType } = storeToRefs(settings);
 
 // 菜单数据
 const userMenuShow = ref(false);
 
 // 登录弹窗
 const loginRef = ref(null);
-
-// 是否签到
-const signInStatus = ref(false);
 
 // 图标渲染
 const renderIcon = (icon) => {
@@ -70,14 +69,28 @@ const renderIcon = (icon) => {
 
 // 数量统计模块
 const createUserNumber = (num, text, duration = 1000) => {
-  return h("div", { className: "user-pl" }, [
-    h(NNumberAnimation, { from: 0, to: num, duration }),
-    h(NText, { depth: 3, style: { fontSize: "12px" } }, () => [text]),
-  ]);
+  return h(
+    "div",
+    {
+      className: "user-pl",
+      onclick: () => {
+        userMenuShow.value = false;
+        router.push(
+          `/like/${text === "歌单" ? "playlists?" : text === "专辑" ? "albums" : "artists"}`,
+        );
+      },
+    },
+    [
+      h(NNumberAnimation, { from: 0, to: num, duration }),
+      h(NText, { depth: 3, style: { fontSize: "12px" } }, () => [text]),
+    ],
+  );
 };
 
 // 生成导航栏用户信息
 const createUserData = () => {
+  // 是否签到
+  const signInStatus = sessionStorage.getItem("lastSignInDate") ? true : false;
   return h(
     "div",
     { className: "nav-user-data" },
@@ -95,12 +108,14 @@ const createUserData = () => {
               NButton,
               {
                 round: true,
-                renderIcon: renderIcon(signInStatus.value ? "calendar-check" : "calendar-badge"),
-                onclick: () => {
-                  $message.warning("施工中（ 新建文件夹 ）");
+                renderIcon: renderIcon(signInStatus ? "calendar-check" : "calendar-badge"),
+                disabled: signInStatus,
+                onclick: async () => {
+                  userMenuShow.value = false;
+                  await userSignIn();
                 },
               },
-              () => [signInStatus.value ? "Lv." + userData.value.detail?.level || 1 : "立即签到"],
+              () => [signInStatus ? "今日已签到" : "立即签到"],
             ),
           ]),
         ]
@@ -120,9 +135,9 @@ const userMenuOptions = computed(() => [
     key: "d1",
   },
   {
-    label: settings.themeType === "dark" ? "浅色模式" : "深色模式",
+    label: themeType.value === "dark" ? "浅色模式" : "深色模式",
     key: "darkOrlight",
-    icon: renderIcon(settings.themeType === "dark" ? "round-wb-sunny" : "round-dark-mode"),
+    icon: renderIcon(themeType.value === "dark" ? "round-wb-sunny" : "round-dark-mode"),
   },
   {
     label: "全局设置",
@@ -143,7 +158,7 @@ const userMenuSelect = (key) => {
   switch (key) {
     // 明暗切换
     case "darkOrlight":
-      settings.setThemeType(settings.themeType === "light" ? "dark" : "light");
+      settings.setThemeType(themeType.value === "light" ? "dark" : "light");
       break;
     // 登录登出
     case "logoutOrlogin":
@@ -218,6 +233,7 @@ const userMenuSelect = (key) => {
     display: flex;
     flex-direction: row;
     align-items: center;
+    cursor: pointer;
     .user-pl {
       display: flex;
       flex-direction: column;

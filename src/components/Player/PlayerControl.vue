@@ -68,6 +68,7 @@
           <!-- 播放暂停 -->
           <n-button
             :loading="playLoading"
+            :keyboard="false"
             class="play-control"
             strong
             secondary
@@ -345,12 +346,12 @@ const controlMove = (e) => {
           background-color: var(--cover-second-color);
           .vue-slider-process {
             background-color: var(--cover-main-color);
-            transition: none !important;
+            // transition: none !important;
           }
           .vue-slider-dot {
             width: 10px !important;
             height: 10px !important;
-            transition: none !important;
+            // transition: none !important;
             .vue-slider-dot-handle {
               background-color: var(--cover-main-color);
             }

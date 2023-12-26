@@ -8,8 +8,7 @@
           v-for="item in artistInitials"
           :key="item"
           :bordered="false"
-          :type="item.key == artistInitialChoose ? 'primary' : 'default'"
-          class="tag"
+          :class="['tag', { choose: item.key == artistInitialChoose }]"
           round
           @click="artistInitialChange(item.key)"
         >
@@ -21,10 +20,12 @@
         <n-tag
           v-for="(item, index) in artistTypeNames"
           :key="item"
-          :class="['tag', item.length > 2 ? 'hidden' : 'show']"
+          :class="[
+            'tag',
+            item.length > 2 ? 'hidden' : 'show',
+            { choose: index == artistTypeNamesChoose },
+          ]"
           :bordered="false"
-          :type="index == artistTypeNamesChoose ? 'primary' : 'default'"
-          class="tag"
           round
           @click="artistTypeChange(index)"
         >
@@ -198,6 +199,10 @@ onMounted(() => {
       }
       &:active {
         transform: scale(0.95);
+      }
+      &.choose {
+        background-color: var(--main-second-color);
+        color: var(--main-color);
       }
     }
     .category {
