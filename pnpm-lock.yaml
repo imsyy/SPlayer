@@ -81,7 +81,7 @@ devDependencies:
     version: 1.3.3
   '@vitejs/plugin-vue':
     specifier: ^4.3.1
-    version: 4.3.1(vite@4.4.9)(vue@3.3.4)
+    version: 4.3.1(vite@4.4.12)(vue@3.3.4)
   '@vue/eslint-config-prettier':
     specifier: ^8.0.0
     version: 8.0.0(eslint@8.47.0)(prettier@3.0.2)
@@ -99,7 +99,7 @@ devDependencies:
     version: 5.0.1
   electron-vite:
     specifier: ^1.0.29
-    version: 1.0.29(vite@4.4.9)
+    version: 1.0.29(vite@4.4.12)
   eslint:
     specifier: ^8.47.0
     version: 8.47.0
@@ -125,14 +125,14 @@ devDependencies:
     specifier: ^0.25.1
     version: 0.25.1(rollup@2.79.1)(vue@3.3.4)
   vite:
-    specifier: ^4.4.9
-    version: 4.4.9(sass@1.66.1)(terser@5.19.2)
+    specifier: ^4.4.12
+    version: 4.4.12(sass@1.66.1)(terser@5.19.2)
   vite-plugin-compression:
     specifier: ^0.5.1
-    version: 0.5.1(vite@4.4.9)
+    version: 0.5.1(vite@4.4.12)
   vite-plugin-pwa:
     specifier: ^0.17.4
-    version: 0.17.4(vite@4.4.9)(workbox-build@7.0.0)(workbox-window@7.0.0)
+    version: 0.17.4(vite@4.4.12)(workbox-build@7.0.0)(workbox-window@7.0.0)
   vue:
     specifier: ^3.3.4
     version: 3.3.4
@@ -2129,14 +2129,14 @@ packages:
       '@types/node': 20.5.6
     optional: true
 
-  /@vitejs/plugin-vue@4.3.1(vite@4.4.9)(vue@3.3.4):
+  /@vitejs/plugin-vue@4.3.1(vite@4.4.12)(vue@3.3.4):
     resolution: {integrity: sha512-tUBEtWcF7wFtII7ayNiLNDTCE1X1afySEo+XNVMNkFXaThENyCowIEX095QqbJZGTgoOcSVDJGlnde2NG4jtbQ==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       vite: ^4.0.0
       vue: ^3.2.25
     dependencies:
-      vite: 4.4.9(sass@1.66.1)(terser@5.19.2)
+      vite: 4.4.12(sass@1.66.1)(terser@5.19.2)
       vue: 3.3.4
     dev: true
 
@@ -3387,7 +3387,7 @@ packages:
       - supports-color
     dev: false
 
-  /electron-vite@1.0.29(vite@4.4.9):
+  /electron-vite@1.0.29(vite@4.4.12):
     resolution: {integrity: sha512-BDTmVTLIri8W4Lz1tn5RAV1slSTinBBb6G77+qKcjkF0vEwdiUp2ntSU6FDqwP9pmy1t96U1CZqIYIStF8H6Jw==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -3404,7 +3404,7 @@ packages:
       esbuild: 0.18.20
       magic-string: 0.30.3
       picocolors: 1.0.0
-      vite: 4.4.9(sass@1.66.1)(terser@5.19.2)
+      vite: 4.4.12(sass@1.66.1)(terser@5.19.2)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -6860,7 +6860,7 @@ packages:
     dev: true
     optional: true
 
-  /vite-plugin-compression@0.5.1(vite@4.4.9):
+  /vite-plugin-compression@0.5.1(vite@4.4.12):
     resolution: {integrity: sha512-5QJKBDc+gNYVqL/skgFAP81Yuzo9R+EAf19d+EtsMF/i8kFUpNi3J/H01QD3Oo8zBQn+NzoCIFkpPLynoOzaJg==}
     peerDependencies:
       vite: '>=2.0.0'
@@ -6868,12 +6868,12 @@ packages:
       chalk: 4.1.2
       debug: 4.3.4
       fs-extra: 10.1.0
-      vite: 4.4.9(sass@1.66.1)(terser@5.19.2)
+      vite: 4.4.12(sass@1.66.1)(terser@5.19.2)
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /vite-plugin-pwa@0.17.4(vite@4.4.9)(workbox-build@7.0.0)(workbox-window@7.0.0):
+  /vite-plugin-pwa@0.17.4(vite@4.4.12)(workbox-build@7.0.0)(workbox-window@7.0.0):
     resolution: {integrity: sha512-j9iiyinFOYyof4Zk3Q+DtmYyDVBDAi6PuMGNGq6uGI0pw7E+LNm9e+nQ2ep9obMP/kjdWwzilqUrlfVRj9OobA==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
@@ -6884,15 +6884,15 @@ packages:
       debug: 4.3.4
       fast-glob: 3.3.2
       pretty-bytes: 6.1.1
-      vite: 4.4.9(sass@1.66.1)(terser@5.19.2)
+      vite: 4.4.12(sass@1.66.1)(terser@5.19.2)
       workbox-build: 7.0.0
       workbox-window: 7.0.0
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /vite@4.4.9(sass@1.66.1)(terser@5.19.2):
-    resolution: {integrity: sha512-2mbUn2LlUmNASWwSCNSJ/EG2HuSRTnVNaydp6vMCm5VIqJsjMfbIWtbH2kDuwUVW5mMUKKZvGPX/rqeqVvv1XA==}
+  /vite@4.4.12(sass@1.66.1)(terser@5.19.2):
+    resolution: {integrity: sha512-KtPlUbWfxzGVul8Nut8Gw2Qe8sBzWY+8QVc5SL8iRFnpnrcoCaNlzO40c1R6hPmcdTwIPEDkq0Y9+27a5tVbdQ==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
