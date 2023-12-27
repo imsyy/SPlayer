@@ -121,12 +121,11 @@ class MainProcess {
       icon: nativeImage.createFromPath(join(__dirname, "../../public/images/icons/favicon.png")),
       // 预加载
       webPreferences: {
-        // devTools: is.dev, //是否开启 DevTools
+        devTools: is.dev,
         preload: join(__dirname, "../preload/index.js"),
         sandbox: false,
         webSecurity: false,
         hardwareAcceleration: true,
-        nodeIntegration: true,
       },
     });
 

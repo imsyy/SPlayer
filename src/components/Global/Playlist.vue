@@ -159,7 +159,7 @@ const playlistOpen = () => {
 // 播放歌曲
 const playSong = debounce(async (song, index) => {
   // 更改模式
-  playMode.value = "normal";
+  if (playMode.value !== "dj") playMode.value = "normal";
   // 更改播放索引
   playIndex.value = index;
   // 是否为当前播放歌曲
