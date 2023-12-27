@@ -10,7 +10,7 @@
           </n-icon>
           <n-text class="author-text" depth="3">{{ packageJson.author }}</n-text>
         </div>
-        <n-text class="version" depth="3">v&nbsp;{{ packageJson.version }}</n-text>
+        <n-text class="version" depth="3">{{ packageJson.version }}</n-text>
       </div>
     </n-h1>
     <!-- 导航栏 -->
@@ -31,9 +31,7 @@
     <n-scrollbar
       ref="setScrollRef"
       :style="{
-        height: `calc(100vh - ${
-          Object.keys(music.getPlaySongData)?.length && showPlayBar ? 328 : 248
-        }px)`,
+        height: `calc(100vh - ${music.getPlaySongData?.id && showPlayBar ? 328 : 248}px)`,
       }"
       class="all-set"
       @scroll="allSetScroll"
@@ -191,7 +189,9 @@
       </div>
       <div v-else class="set-type">
         <n-h3 prefix="bar"> 系统 </n-h3>
-        <n-text>该设置项为桌面端独占功能</n-text>
+        <n-card class="set-item">
+          <div class="name">该设置项为桌面端独占功能</div>
+        </n-card>
       </div>
       <!-- 播放 -->
       <div class="set-type">
@@ -317,6 +317,29 @@
             :round="false"
           />
         </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            <div class="dev">
+              显示音乐频谱
+              <n-tag :bordered="false" round size="small" type="warning">
+                开发中
+                <template #icon>
+                  <n-icon>
+                    <SvgIcon icon="code" />
+                  </n-icon>
+                </template>
+              </n-tag>
+            </div>
+            <n-text class="tip">
+              {{
+                showSpectrums
+                  ? "开启音乐频谱会极大影响性能，如遇问题请关闭"
+                  : "是否在播放器底部显示音乐频谱"
+              }}
+            </n-text>
+          </div>
+          <n-switch v-model:value="showSpectrums" :round="false" />
+        </n-card>
       </div>
       <!-- 歌词 -->
       <div class="set-type">
@@ -401,7 +424,7 @@
         <n-card class="set-item">
           <div class="name">
             <div class="dev">
-              是否显示逐字歌词
+              显示逐字歌词
               <n-tag :bordered="false" round size="small" type="warning">
                 开发中
                 <template #icon>
@@ -418,7 +441,7 @@
         <n-card class="set-item">
           <div class="name">
             <div class="dev">
-              是否显示逐字歌词动画
+              显示逐字歌词动画
               <n-tag :bordered="false" round size="small" type="warning">
                 开发中
                 <template #icon>
@@ -484,7 +507,7 @@
       <div class="set-type">
         <n-h3 prefix="bar"> 其他 </n-h3>
         <n-card class="set-item">
-          <div class="name">是否显示 GitHub 仓库按钮</div>
+          <div class="name">显示 GitHub 仓库按钮</div>
           <n-switch v-model:value="showGithub" :round="false" />
         </n-card>
         <n-card class="set-item">
@@ -571,6 +594,7 @@ const {
   playCoverType,
   playSearch,
   showPlaylistCount,
+  showSpectrums,
 } = storeToRefs(settings);
 
 // 标签页数据
@@ -719,6 +743,12 @@ const resetApp = () => {
         }
         .author-text {
           margin-left: 6px;
+        }
+      }
+      .version {
+        &::before {
+          content: "v";
+          margin-right: 2px;
         }
       }
     }

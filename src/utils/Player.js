@@ -18,6 +18,12 @@ let scrobbleTimeout;
 let testNumber = 0;
 // 是否结束
 let isPlayEnd = true;
+// 频谱数据
+let spectrumsData = {
+  audio: null,
+  analyser: null,
+  audioCtx: null,
+};
 
 /**
  * 初始化播放器
@@ -219,8 +225,14 @@ export const createPlayer = async (src, autoPlay = true) => {
       volume: music.playVolume,
       rate: music.playRate,
     });
+    // 允许跨域
+    const audioDom = player._sounds[0]._node;
+    audioDom.crossOrigin = "anonymous";
     // 写入播放历史
     music.setPlayHistory(playSongData);
+    // 生成音乐频谱
+    // 由于浏览器安全策略，无法在此处启动
+    if (settings.showSpectrums && checkPlatform.electron()) processSpectrum(player);
     // 加载完成
     player?.once("load", () => {
       console.info("🎵 加载完成", player, status.playState);
@@ -318,6 +330,8 @@ export const createPlayer = async (src, autoPlay = true) => {
       // 下一曲
       changePlayIndex();
     });
+    // 返回音频对象
+    return (window.$player = player);
   } catch (error) {
     console.error("播放遇到错误：" + error);
     $message.error("播放遇到错误，请重试");
@@ -685,6 +699,60 @@ const getColorMainColor = async (islocal, cover) => {
     console.error("封面颜色获取失败：", error);
     status.coverTheme = {};
   }
+};
+
+/**
+ * 生成频谱数据 - 快速傅里叶变换（ FFT ）
+ * @param {Object} sound - Howler.js 的音频对象
+ * @returns {void}
+ */
+export const processSpectrum = (sound) => {
+  try {
+    if (!spectrumsData.audioCtx) {
+      // 断开之前的连接
+      spectrumsData.audio?.disconnect();
+      spectrumsData.analyser?.disconnect();
+      spectrumsData.audioCtx?.close();
+      // 创建新的连接
+      spectrumsData.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      // 获取音频元素
+      const audioDom = sound._sounds[0]._node;
+      // 允许跨域请求
+      audioDom.crossOrigin = "anonymous";
+      // 创建音频源和分析器
+      const source = spectrumsData.audioCtx.createMediaElementSource(audioDom);
+      const analyser = spectrumsData.audioCtx.createAnalyser();
+      // 频谱分析器 FFT
+      analyser.fftSize = 1024;
+      // 连接音频源和分析器，再连接至音频上下文的目标
+      source.connect(analyser);
+      analyser.connect(spectrumsData.audioCtx.destination);
+      // 更新频谱数据
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      updateSpectrums(analyser, dataArray);
+      // 保存当前链接
+      spectrumsData.audio = source;
+      spectrumsData.analyser = analyser;
+    }
+  } catch (err) {
+    console.error("音乐频谱生成失败：" + err);
+  }
+};
+
+/**
+ * 更新音乐频谱数据
+ * @param {Object} analyser - 音频分析器
+ * @param {Uint8Array} dataArray - 频谱数据数组
+ */
+const updateSpectrums = (analyser, dataArray) => {
+  // pinia
+  const status = siteStatus();
+  analyser.getByteFrequencyData(dataArray);
+  status.spectrumsData = [...dataArray];
+  // 递归调用，持续更新频谱数据
+  requestAnimationFrame(() => {
+    updateSpectrums(analyser, dataArray);
+  });
 };
 
 /*

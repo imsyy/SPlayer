@@ -3,7 +3,7 @@
   <n-card
     :class="{
       'main-player': true,
-      'show-bar': Object.keys(music.getPlaySongData)?.length && showPlayBar,
+      'show-bar': music.getPlaySongData?.id && showPlayBar,
       'no-sider': !showSider,
     }"
     content-style="padding: 0"
@@ -335,6 +335,7 @@ import {
   setVolume,
   setVolumeMute,
   setRate,
+  processSpectrum,
 } from "@/utils/Player";
 import { getSongPlayTime } from "@/utils/timeTools";
 import debounce from "@/utils/debounce";
@@ -361,7 +362,8 @@ const {
   playSongLyric,
 } = storeToRefs(music);
 const { playLoading, playState, playListShow, showPlayBar, showFullPlayer } = storeToRefs(status);
-const { showYrc, bottomLyricShow, showSider, showPlaylistCount } = storeToRefs(settings);
+const { showYrc, bottomLyricShow, showSider, showPlaylistCount, showSpectrums } =
+  storeToRefs(settings);
 
 // 子组件
 const addPlaylistRef = ref(null);
@@ -472,6 +474,7 @@ const openFullPlayer = () => {
     $message.warning("当前为电台模式，无法开启播放器");
     return false;
   }
+  if (showSpectrums.value && typeof $player !== "undefined") processSpectrum($player);
   showFullPlayer.value = true;
 };
 

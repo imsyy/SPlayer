@@ -2,7 +2,7 @@
   <main id="main-layout" :class="['main-layout', { 'no-sider': !showSider }]">
     <!-- 回顶 -->
     <n-back-top
-      :bottom="Object.keys(music.getPlaySongData)?.length && showPlayBar ? 110 : 50"
+      :bottom="music.getPlaySongData?.id && showPlayBar ? 110 : 50"
       style="transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
     >
       <n-icon size="26">

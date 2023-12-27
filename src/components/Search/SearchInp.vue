@@ -98,6 +98,8 @@ const toSearch = (val, type = "song") => {
   // 取消聚焦状态
   status.searchInputFocus = false;
   searchInpRef.value?.blur();
+  // 触发测试
+  if (Number(val) === 114514) return router.push("/test");
   // 判断类型
   switch (type) {
     // 直接搜索

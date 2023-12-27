@@ -96,66 +96,6 @@ const useMusicDataStore = defineStore("musicData", {
       }
     },
     // 更改私人FM
-    // async setPersonalFm(getNext = false) {
-    //   try {
-    //     // 获取私人FM数据
-    //     const getPersonalFmData = async () => {
-    //       const result = await getPersonalFm();
-    //       this.privateFmData = formatData(result.data, "song");
-    //     };
-    //     // 未登录
-    //     // if (!isLogin()) return false;
-    //     // 若不存在fm数据，则获取
-    //     if (!this.privateFmData?.length) {
-    //       await getPersonalFmData();
-    //     }
-    //     // 若当前无歌曲
-    //     if (Object.keys(this.privateFmSong).length === 0) {
-    //       this.privateFmSong = this.privateFmData[0];
-    //     }
-    //     // 若上次索引为旧列表且列表只有一首
-    //     if (
-    //       this.privateFmIndex === -1 &&
-    //       this.privateFmData?.length === 1 &&
-    //       !Object.keys(this.privateFmSong)?.length
-    //     ) {
-    //       this.privateFmSong = this.privateFmData[0];
-    //     }
-    //     // 若立即播放
-    //     if (getNext) {
-    //       // 更改播放模式
-    //       this.playMode = "fm";
-    //       // 更改当前fm歌曲
-    //       this.privateFmIndex++;
-    //       // 未登录 - 仅一首
-    //       if (this.privateFmData.length === 1) {
-    //         console.log("只有一首歌，重新加载列表");
-    //         await getPersonalFmData();
-    //         this.privateFmSong = this.privateFmData[0];
-    //         return true;
-    //       }
-    //       if (this.privateFmIndex < this.privateFmData.length - 1) {
-    //         console.log("在歌单内");
-    //         this.privateFmSong = this.privateFmData[this.privateFmIndex];
-    //       } else if (this.privateFmIndex === this.privateFmData.length - 1) {
-    //         console.log("是最后一首，更新列表");
-    //         this.privateFmSong = this.privateFmData[this.privateFmData.length - 1];
-    //         this.privateFmIndex = -1;
-    //         await getPersonalFmData();
-    //       } else {
-    //         $message.error("私人FM出现错误，重新加载");
-    //         this.privateFmIndex = 0;
-    //         await this.setPersonalFm(getNext);
-    //       }
-    //       return true;
-    //     }
-    //   } catch (error) {
-    //     this.privateFmSong = {};
-    //     console.error("私人FM加载失败：", error);
-    //     $message.error("私人FM出现错误，请重试");
-    //   }
-    // },
-    // 更改私人FM
     async setPersonalFm(getNext = false) {
       try {
         // 获取私人FM数据

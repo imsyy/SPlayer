@@ -51,5 +51,6 @@ module.exports = {
     $canNotConnect: true,
     $refreshCloudCatch: true,
     $cleanAll: true,
+    $player: true,
   },
 };

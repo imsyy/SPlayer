@@ -257,7 +257,6 @@ docker run -d --name SPlayer -p 7899:7899 imsyy/splayer:latest
 <details>
 <summary>查看目录结构详情</summary>
 
-
 > ChatGPT 写的，如有错误，请见谅
 
 ```dir
@@ -423,4 +422,5 @@ docker run -d --name SPlayer -p 7899:7899 imsyy/splayer:latest
 │       └── Test.vue
 └── vercel.json                           # Vercel 部署配置
 ```
+
 </details>

@@ -226,6 +226,8 @@
       </Transition>
       <!-- 控制中心 -->
       <PlayerControl v-show="playerControlShow" />
+      <!-- 音乐频谱 -->
+      <Spectrum v-if="showSpectrums" :show="!playerControlShow" :height="60" />
     </div>
   </Transition>
 </template>
@@ -242,7 +244,7 @@ const music = musicData();
 const status = siteStatus();
 const settings = siteSettings();
 const { playList, playSongLyric } = storeToRefs(music);
-const { playerBackgroundType, showYrc, playCoverType } = storeToRefs(settings);
+const { playerBackgroundType, showYrc, playCoverType, showSpectrums } = storeToRefs(settings);
 const {
   playerControlShow,
   controlTimeOut,

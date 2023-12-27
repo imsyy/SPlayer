@@ -11,7 +11,7 @@
         v-if="showSider"
         :class="{
           'body-layout': true,
-          'player-bar': Object.keys(music.getPlaySongData)?.length && showPlayBar,
+          'player-bar': music.getPlaySongData?.id && showPlayBar,
         }"
         position="absolute"
         has-sider
@@ -43,7 +43,7 @@
         v-else
         :class="{
           'body-layout': true,
-          'player-bar': Object.keys(music.getPlaySongData)?.length && showPlayBar,
+          'player-bar': music.getPlaySongData?.id && showPlayBar,
         }"
         :native-scrollbar="false"
         position="absolute"

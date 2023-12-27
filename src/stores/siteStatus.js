@@ -30,6 +30,8 @@ const useSiteStatusStore = defineStore("siteStatus", {
       coverBackground: null,
       // 纯净歌词模式
       pureLyricMode: false,
+      // 音乐频谱数据
+      spectrumsData: [],
     };
   },
   getters: {},
