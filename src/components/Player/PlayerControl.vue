@@ -166,17 +166,20 @@ const router = useRouter();
 const data = siteData();
 const music = musicData();
 const status = siteStatus();
+const { playList, playListOld } = storeToRefs(music);
 const {
   playIndex,
-  playList,
-  playListOld,
-  playMode,
+  playerControlShow,
+  controlTimeOut,
+  playLoading,
+  playState,
+  showFullPlayer,
+  playListShow,
   playTimeData,
+  playMode,
   playSongMode,
   playHeartbeatMode,
-} = storeToRefs(music);
-const { playerControlShow, controlTimeOut, playLoading, playState, showFullPlayer, playListShow } =
-  storeToRefs(status);
+} = storeToRefs(status);
 
 // 子组件
 const addPlaylistRef = ref(null);

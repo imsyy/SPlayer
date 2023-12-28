@@ -197,7 +197,7 @@
 import { NIcon } from "naive-ui";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
-import { musicData, siteData, siteSettings } from "@/stores";
+import { musicData, siteData, siteSettings, siteStatus } from "@/stores";
 import { getDjDetail, getDjProgram, likeDj } from "@/api/dj";
 import { fuzzySearch } from "@/utils/helper";
 import { isLogin } from "@/utils/auth";
@@ -210,10 +210,12 @@ import SvgIcon from "@/components/Global/SvgIcon";
 const router = useRouter();
 const data = siteData();
 const music = musicData();
+const status = siteStatus();
 const settings = siteSettings();
 const { userLikeData } = storeToRefs(data);
 const { loadSize } = storeToRefs(settings);
-const { playList, playIndex, playSongData, playHeartbeatMode, playMode } = storeToRefs(music);
+const { playList, playSongData } = storeToRefs(music);
+const { playIndex, playMode, playHeartbeatMode } = storeToRefs(status);
 
 //  电台数据
 const djId = ref(router.currentRoute.value.query.id);

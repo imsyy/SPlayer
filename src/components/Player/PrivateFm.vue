@@ -141,8 +141,8 @@ const music = musicData();
 const status = siteStatus();
 const settings = siteSettings();
 const router = useRouter();
-const { privateFmSong, playMode } = storeToRefs(music);
-const { playLoading, playState, coverTheme } = storeToRefs(status);
+const { privateFmSong } = storeToRefs(music);
+const { playLoading, playState, coverTheme, playMode } = storeToRefs(status);
 
 // 播放暂停
 const fmPlayOrPause = () => {

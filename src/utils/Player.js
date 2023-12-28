@@ -36,7 +36,8 @@ export const initPlayer = async (playNow = false) => {
     const music = musicData();
     const status = siteStatus();
     const settings = siteSettings();
-    const { playList, playIndex, playMode } = music;
+    const { playIndex, playMode } = status;
+    const { playList } = music;
     // 当前播放歌曲数据
     const playSongData = music.getPlaySongData;
     // 若为电台则更改 id
@@ -49,7 +50,7 @@ export const initPlayer = async (playNow = false) => {
     }
     const cover = isLocalSong ? music.playSongData?.localCover : playSongData?.coverSize;
     // 歌词归位
-    music.playSongLyricIndex = -1;
+    status.playSongLyricIndex = -1;
     // 若为 fm 模式，则清除当前歌曲信息
     if (playMode === "fm") music.playSongData = {};
     // 在线歌曲
@@ -222,8 +223,8 @@ export const createPlayer = async (src, autoPlay = true) => {
       html5: true,
       pool: 10,
       preload: true,
-      volume: music.playVolume,
-      rate: music.playRate,
+      volume: status.playVolume,
+      rate: status.playRate,
     });
     // 允许跨域
     const audioDom = player._sounds[0]._node;
@@ -244,12 +245,12 @@ export const createPlayer = async (src, autoPlay = true) => {
       // 恢复进度（防止播放到结尾时触发 bug）
       if (
         settings.memorySeek &&
-        music.playTimeData?.duration - music.playTimeData?.currentTime > 2
+        status.playTimeData?.duration - status.playTimeData?.currentTime > 2
       ) {
-        setSeek(music.playTimeData?.currentTime ?? 0);
+        setSeek(status.playTimeData?.currentTime ?? 0);
       } else {
         setSeek();
-        music.playTimeData.bar = "0";
+        status.playTimeData.bar = "0";
       }
       // 取消加载状态
       status.playLoading = false;
@@ -257,7 +258,7 @@ export const createPlayer = async (src, autoPlay = true) => {
       if (checkPlatform.electron()) {
         const songName = playSongData.name || "未知曲目";
         const songArtist =
-          music.playMode === "dj"
+          status.playMode === "dj"
             ? "电台节目"
             : Array.isArray(playSongData.artists)
             ? playSongData.artists.map((ar) => ar.name).join(" / ")
@@ -346,13 +347,14 @@ export const createPlayer = async (src, autoPlay = true) => {
 export const changePlayIndex = async (type = "next", play = false) => {
   // pinia
   const music = musicData();
-  const state = siteStatus();
+  const status = siteStatus();
   // 解构音乐数据
-  const { playMode, playSongMode, playHeartbeatMode, playList } = music;
+  const { playList } = music;
+  const { playSongMode, playMode, playHeartbeatMode } = status;
   // 清除定时器
   cleanAllInterval();
   // 歌词归位
-  music.playSongLyricIndex = -1;
+  status.playSongLyricIndex = -1;
   // 私人FM模式
   if (playMode === "fm") {
     await music.setPersonalFm(true);
@@ -365,16 +367,16 @@ export const changePlayIndex = async (type = "next", play = false) => {
   // 根据播放模式确定要操作的播放列表和其长度
   const listLength = playList?.length || 0;
   // 根据播放歌曲模式执行不同的操作
-  if (state.hasNextSong) {
-    music.playIndex += type === "next" ? 1 : -1;
-    state.hasNextSong = false;
+  if (status.hasNextSong) {
+    status.playIndex += type === "next" ? 1 : -1;
+    status.hasNextSong = false;
   } else {
     if (playSongMode === "normal" || playHeartbeatMode) {
       // 正常模式
-      music.playIndex += type === "next" ? 1 : -1;
+      status.playIndex += type === "next" ? 1 : -1;
     } else if (playSongMode === "random") {
       // 随机模式
-      music.playIndex = Math.floor(Math.random() * listLength);
+      status.playIndex = Math.floor(Math.random() * listLength);
     } else if (playSongMode === "repeat") {
       // 单曲循环模式
       setSeek();
@@ -383,13 +385,13 @@ export const changePlayIndex = async (type = "next", play = false) => {
   }
   // 检查播放索引是否越界
   if (playSongMode !== "repeat") {
-    if (music.playIndex < 0) {
-      music.playIndex = listLength - 1;
-    } else if (music.playIndex >= listLength) {
-      music.playIndex = 0;
+    if (status.playIndex < 0) {
+      status.playIndex = listLength - 1;
+    } else if (status.playIndex >= listLength) {
+      status.playIndex = 0;
     }
     // 赋值当前播放歌曲信息
-    const songData = playList?.[music.playIndex];
+    const songData = playList?.[status.playIndex];
     if (songData) {
       music.playSongData = songData;
       // 渐出音乐
@@ -410,16 +412,16 @@ export const changePlayIndex = async (type = "next", play = false) => {
 export const addSongToNext = (data, play = false) => {
   try {
     const music = musicData();
-    const state = siteStatus();
+    const status = siteStatus();
     // 更改播放模式
-    state.hasNextSong = true;
+    status.hasNextSong = true;
     // 查找是否存在于播放列表
     const index = music.playList.findIndex((v) => v.id === data.id);
     // 若存在
     if (index !== -1) {
       console.log("已存在", index);
       // 移动至当前歌曲的下一曲
-      const currentSongIndex = music.playIndex;
+      const currentSongIndex = status.playIndex;
       const nextSongIndex = currentSongIndex + 1;
       // 如果移动的位置不是当前位置，且不是最后一首歌曲
       if (index !== currentSongIndex && nextSongIndex < music.playList.length) {
@@ -427,13 +429,13 @@ export const addSongToNext = (data, play = false) => {
         music.playList.splice(nextSongIndex, 0, music.playList.splice(index, 1)[0]);
       }
       // 更新播放索引
-      if (play) music.playIndex = nextSongIndex;
+      if (play) status.playIndex = nextSongIndex;
     }
     // 添加至播放列表
     else {
       // music.playList.push(data);
-      music.playList.splice(music.playIndex + 1, 0, data);
-      if (play) music.playIndex++;
+      music.playList.splice(status.playIndex + 1, 0, data);
+      if (play) status.playIndex++;
     }
     // 是否立即播放
     play ? fadePlayOrPause("play") : $message.success("已添加至下一首播放");
@@ -447,9 +449,9 @@ export const addSongToNext = (data, play = false) => {
  * @param {String} [type="play"] - 渐入渐出
  */
 export const fadePlayOrPause = (type = "play") => {
+  const status = siteStatus();
   const settings = siteSettings();
   const duration = settings.songVolumeFade ? 300 : 0;
-  const music = musicData();
   // 渐入
   if (type === "play") {
     if (player?.playing()) return;
@@ -457,12 +459,12 @@ export const fadePlayOrPause = (type = "play") => {
     // 更新播放进度
     setAllInterval();
     player?.once("play", () => {
-      player?.fade(0, music.playVolume, duration);
+      player?.fade(0, status.playVolume, duration);
     });
   }
   // 渐出
   else if (type === "pause") {
-    player?.fade(music.playVolume, 0, duration);
+    player?.fade(status.playVolume, 0, duration);
     player?.once("fade", () => {
       player?.pause();
       cleanAllInterval();
@@ -514,14 +516,14 @@ export const soundStop = () => {
  * 调整静音
  */
 export const setVolumeMute = () => {
-  const music = musicData();
-  if (music.playVolume > 0) {
-    music.playVolumeMute = music.playVolume;
-    music.playVolume = 0;
+  const status = siteStatus();
+  if (status.playVolume > 0) {
+    status.playVolumeMute = status.playVolume;
+    status.playVolume = 0;
   } else {
-    music.playVolume = music.playVolumeMute;
+    status.playVolume = status.playVolumeMute;
   }
-  player?.volume(music.playVolume);
+  player?.volume(status.playVolume);
 };
 
 /**
@@ -550,6 +552,7 @@ export const getSeek = () => {
 const setAudioTime = () => {
   if (player?.playing()) {
     const music = musicData();
+    const status = siteStatus();
     const settings = siteSettings();
     const currentTime = player?.seek();
     const duration = player?._duration;
@@ -562,8 +565,8 @@ const setAudioTime = () => {
     const lyrics = lrcType ? music.playSongLyric.lrc : music.playSongLyric.yrc;
     const lyricsIndex = lyrics?.findIndex((v) => v?.time >= currentTime);
     // 赋值数据
-    music.playTimeData = { currentTime, duration, bar, played, durationTime };
-    music.playSongLyricIndex = lyricsIndex === -1 ? lyrics.length - 1 : lyricsIndex - 1;
+    status.playTimeData = { currentTime, duration, bar, played, durationTime };
+    status.playSongLyricIndex = lyricsIndex === -1 ? lyrics.length - 1 : lyricsIndex - 1;
     // 显示进度条
     if (checkPlatform.electron() && settings.showTaskbarProgress) {
       electron.ipcRenderer.send("setProgressBar", bar);

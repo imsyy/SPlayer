@@ -193,7 +193,7 @@
 import { NIcon } from "naive-ui";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
-import { musicData, siteData } from "@/stores";
+import { musicData, siteData, siteStatus } from "@/stores";
 import { getAlbumDetail, likeAlbum } from "@/api/album";
 import { formatNumber, fuzzySearch } from "@/utils/helper";
 import { getTimestampTime } from "@/utils/timeTools";
@@ -206,8 +206,10 @@ import SvgIcon from "@/components/Global/SvgIcon";
 const router = useRouter();
 const data = siteData();
 const music = musicData();
+const status = siteStatus();
 const { userLikeData } = storeToRefs(data);
-const { playList, playIndex, playSongData, playHeartbeatMode, playMode } = storeToRefs(music);
+const { playList, playSongData } = storeToRefs(music);
+const { playIndex, playMode, playHeartbeatMode } = storeToRefs(status);
 
 // 专辑 ID
 const albumId = ref(router.currentRoute.value.query.id || null);

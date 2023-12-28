@@ -40,14 +40,16 @@
 <script setup>
 import { NIcon } from "naive-ui";
 import { storeToRefs } from "pinia";
-import { musicData, siteData } from "@/stores";
+import { musicData, siteData, siteStatus } from "@/stores";
 import { fadePlayOrPause, initPlayer } from "@/utils/Player";
 import SvgIcon from "@/components/Global/SvgIcon";
 
 const data = siteData();
 const music = musicData();
+const status = siteStatus();
 const { dailySongsData } = storeToRefs(data);
-const { playList, playIndex, playSongData, playHeartbeatMode, playMode } = storeToRefs(music);
+const { playList, playSongData } = storeToRefs(music);
+const { playIndex, playMode, playHeartbeatMode } = storeToRefs(status);
 
 const showTime = ref(false);
 const showTimeOut = ref(null);

@@ -1,6 +1,6 @@
 import { checkPlatform } from "@/utils/helper";
 import { playOrPause, changePlayIndex } from "@/utils/Player";
-import { siteStatus, musicData } from "@/stores";
+import { siteStatus } from "@/stores";
 
 /**
  * 全局事件
@@ -11,8 +11,7 @@ const globalEvents = (router) => {
   // 显示播放器
   electron.ipcRenderer.on("showPlayer", () => {
     const status = siteStatus();
-    const music = musicData();
-    if (music.playMode === "dj") return false;
+    if (status.playMode === "dj") return false;
     status.showFullPlayer = true;
   });
   // 播放或暂停

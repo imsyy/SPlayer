@@ -348,20 +348,22 @@ const data = siteData();
 const music = musicData();
 const status = siteStatus();
 const settings = siteSettings();
+const { playList, playListOld, playSongLyric } = storeToRefs(music);
 const {
-  playMode,
-  playIndex,
-  playList,
-  playListOld,
+  playLoading,
+  playState,
+  playListShow,
+  showPlayBar,
+  showFullPlayer,
+  playSongLyricIndex,
   playTimeData,
-  playVolume,
   playRate,
+  playVolume,
+  playIndex,
+  playMode,
   playSongMode,
   playHeartbeatMode,
-  playSongLyricIndex,
-  playSongLyric,
-} = storeToRefs(music);
-const { playLoading, playState, playListShow, showPlayBar, showFullPlayer } = storeToRefs(status);
+} = storeToRefs(status);
 const { showYrc, bottomLyricShow, showSider, showPlaylistCount, showSpectrums } =
   storeToRefs(settings);
 

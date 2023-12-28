@@ -148,8 +148,8 @@ const props = defineProps({
 const music = musicData();
 const settings = siteSettings();
 const status = siteStatus();
-const { playSeek, pureLyricMode } = storeToRefs(status);
-const { playSongLyric, playSongLyricIndex } = storeToRefs(music);
+const { playSeek, pureLyricMode, playSongLyricIndex } = storeToRefs(status);
+const { playSongLyric } = storeToRefs(music);
 const {
   showYrc,
   showYrcAnimation,

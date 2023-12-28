@@ -111,7 +111,7 @@
       <n-space :key="isUserPLayList" class="menu" justify="space-between">
         <n-space class="left">
           <n-button
-            :disabled="playListData === 'empty'"
+            :disabled="playListData === null || playListData === 'empty' || loadingMsg !== null"
             type="primary"
             class="play"
             tag="div"
@@ -224,7 +224,7 @@
 import { NIcon } from "naive-ui";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
-import { musicData, siteData } from "@/stores";
+import { musicData, siteData, siteStatus } from "@/stores";
 import {
   getPlayListDetail,
   getAllPlayList,
@@ -244,8 +244,10 @@ import SvgIcon from "@/components/Global/SvgIcon";
 const router = useRouter();
 const data = siteData();
 const music = musicData();
+const status = siteStatus();
 const { userLikeData, userData } = storeToRefs(data);
-const { playList, playIndex, playSongData, playHeartbeatMode, playMode } = storeToRefs(music);
+const { playList, playSongData } = storeToRefs(music);
+const { playIndex, playMode, playHeartbeatMode } = storeToRefs(status);
 
 // 歌单 ID
 const playlistId = ref(
@@ -258,6 +260,7 @@ const playlistId = ref(
 const playlistUpdateRef = ref(null);
 
 // 歌单数据
+const loadingMsg = ref(null);
 const isUserPLayList = ref(false);
 const playListDetail = ref(null);
 const playListData = ref(null);
@@ -315,36 +318,69 @@ const changeMoreOptions = (detail) => {
 
 // 获取歌单信息
 const getPlayListDetailData = async (id, justDetail = false) => {
-  if (!id) return false;
-  // 清空数据
-  playListDetail.value = null;
-  if (!justDetail) playListData.value = null;
-  // 获取数据
-  const detail = await getPlayListDetail(id);
-  // 基础信息
-  playListDetail.value = formatData(detail.playlist, "playlist", true)[0];
-  // 更改更多操作数据
-  changeMoreOptions(detail.playlist);
-  // 是否终止
-  if (justDetail) return true;
-  // 是否为用户歌单
-  isUserPLayList.value = detail.playlist.userId === userData.value?.userId;
-  // 判断登录
-  if (isLogin() && isUserPLayList.value) {
-    if (!detail.privileges) {
-      playListData.value = "empty";
-      return false;
+  try {
+    if (!id) return false;
+    // 清空数据
+    playListDetail.value = null;
+    if (!justDetail) playListData.value = null;
+    // 获取数据
+    const detail = await getPlayListDetail(id);
+    // 基础信息
+    playListDetail.value = formatData(detail.playlist, "playlist", true)[0];
+    // 更改更多操作数据
+    changeMoreOptions(detail.playlist);
+    // 是否终止
+    if (justDetail) return true;
+    // 是否为超大歌单
+    if (detail.playlist.trackCount >= 800) {
+      await getBigPlayListData(id, detail.playlist.trackCount);
+      return true;
     }
-    const ids = detail.privileges.map((song) => song.id).join(",");
-    const songsDetail = await getSongDetail(ids);
-    console.log(songsDetail);
-    playListData.value = formatData(songsDetail.songs, "song");
-  } else {
-    const limit = detail.playlist.trackCount || 0;
-    const songsDetail = await getAllPlayList(id, limit);
-    console.log(songsDetail);
-    playListData.value = formatData(songsDetail.songs, "song");
+    // 是否为用户歌单
+    isUserPLayList.value = detail.playlist.userId === userData.value?.userId;
+    // 判断登录并获取歌曲
+    let songsDetail = null;
+    if (isLogin() && isUserPLayList.value) {
+      if (!detail.privileges) {
+        playListData.value = "empty";
+        return false;
+      }
+      const ids = detail.privileges.map((song) => song.id).join(",");
+      songsDetail = await getSongDetail(ids);
+    } else {
+      const limit = detail.playlist.trackCount || 0;
+      songsDetail = await getAllPlayList(id, limit);
+    }
+    // 写入歌单数据
+    if (!songsDetail.songs) {
+      playListData.value = "error";
+    } else {
+      playListData.value = formatData(songsDetail.songs, "song");
+    }
+  } catch (error) {
+    console.error("获取歌单信息出错：", error);
+    $message.error("获取歌单信息出错");
   }
+};
+
+// 获取超大歌单数据
+const getBigPlayListData = async (id, count) => {
+  console.log(id, count);
+  loadingMsg.value = $message.loading("该歌单歌曲数量过多，请稍等", {
+    duration: 0,
+  });
+  // 循环获取
+  let offset = 0;
+  playListData.value = [];
+  while ((count === null || offset < count) && loadingMsg.value) {
+    const songsDetail = await getAllPlayList(id, 800, offset);
+    const albumsData = formatData(songsDetail.songs, "song");
+    playListData.value = playListData.value.concat(albumsData);
+    offset += 800;
+  }
+  // 关闭加载提示
+  loadingMsg.value?.destroy();
+  loadingMsg.value = null;
 };
 
 // 播放歌单全部歌曲
@@ -472,6 +508,11 @@ watch(
 
 onBeforeMount(async () => {
   await getPlayListDetailData(playlistId.value);
+});
+
+onBeforeUnmount(() => {
+  loadingMsg.value?.destroy();
+  loadingMsg.value = null;
 });
 </script>
 

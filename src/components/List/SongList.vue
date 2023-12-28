@@ -1,7 +1,7 @@
 <!-- 歌曲列表 -->
 <template>
   <Transition name="fade" mode="out-in" @after-enter="checkHasPlaying">
-    <div v-if="data !== 'empty' && data?.length && data[0] !== 'empty'" class="song-list">
+    <div v-if="data?.[0]?.id" class="song-list">
       <div v-if="showTitle" class="song-list-header">
         <n-text class="num" depth="3"> # </n-text>
         <n-text :class="{ info: true, 'has-cover': data[0].cover && showCover }" depth="3">
@@ -215,6 +215,13 @@
       style="margin-top: 60px"
       size="large"
     />
+    <!-- 错误 -->
+    <n-empty
+      v-else-if="data === 'error' || data?.[0] === 'error'"
+      description="列表获取出错，请重试"
+      style="margin-top: 60px"
+      size="large"
+    />
     <!-- 加载动画 -->
     <n-spin v-else class="loading" size="small">
       <template #description> 加载中 </template>
@@ -225,18 +232,19 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
-import { siteData, siteSettings, musicData } from "@/stores";
+import { siteData, siteSettings, musicData, siteStatus } from "@/stores";
 import { initPlayer, fadePlayOrPause, addSongToNext } from "@/utils/Player";
 import { getTimestampTime } from "@/utils/timeTools";
 
 const router = useRouter();
 const music = musicData();
 const dataStore = siteData();
+const status = siteStatus();
 const settings = siteSettings();
 const { userData } = storeToRefs(dataStore);
+const { playIndex, playMode, playHeartbeatMode } = storeToRefs(status);
 const { loadSize, playSearch } = storeToRefs(settings);
-const { playList, playIndex, playSongData, playSongSource, playHeartbeatMode, playMode } =
-  storeToRefs(music);
+const { playList, playSongData, playSongSource } = storeToRefs(music);
 
 // eslint-disable-next-line no-unused-vars
 const props = defineProps({

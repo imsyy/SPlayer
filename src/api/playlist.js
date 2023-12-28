@@ -67,10 +67,10 @@ export const getPlayListDetail = (id) => {
 /**
  * 获取歌单中所有歌曲信息
  * @param {number} id - 歌单id
- * @param {number} [limit=30] - 返回数量，默认30
+ * @param {number} [limit=50] - 返回数量，默认50
  * @param {number} [offset=0] - 偏移数量，默认0
  */
-export const getAllPlayList = (id, limit = 30, offset = 0) => {
+export const getAllPlayList = (id, limit = 50, offset = 0) => {
   return axios({
     method: "GET",
     url: "/playlist/track/all",

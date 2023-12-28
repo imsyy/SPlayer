@@ -83,7 +83,7 @@
 
 <script setup>
 import { storeToRefs } from "pinia";
-import { musicData, indexedDBData } from "@/stores";
+import { musicData, siteStatus, indexedDBData } from "@/stores";
 import { getUserCloud } from "@/api/cloud";
 import { fuzzySearch } from "@/utils/helper";
 import { fadePlayOrPause, initPlayer } from "@/utils/Player";
@@ -91,8 +91,10 @@ import debounce from "@/utils/debounce";
 import formatData from "@/utils/formatData";
 
 const music = musicData();
+const status = siteStatus();
 const indexedDB = indexedDBData();
-const { playList, playIndex, playSongData, playHeartbeatMode, playMode } = storeToRefs(music);
+const { playList, playSongData } = storeToRefs(music);
+const { playIndex, playMode, playHeartbeatMode } = storeToRefs(status);
 
 // 云盘数据
 const userCloudSpace = ref([]);

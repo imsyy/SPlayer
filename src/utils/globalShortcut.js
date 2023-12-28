@@ -1,5 +1,5 @@
 import { playOrPause, setVolume } from "@/utils/Player";
-import { musicData } from "@/stores";
+import { siteStatus } from "@/stores";
 
 /**
  * 全局快捷键监听
@@ -21,12 +21,12 @@ const globalShortcut = (e, router) => {
 
   // 调整音量
   if (e.code === "ArrowUp" || e.code === "ArrowDown") {
-    const music = musicData();
-    const volume = music.playVolume;
+    const status = siteStatus();
+    const volume = status.playVolume;
     const delta = e.code === "ArrowUp" ? 0.1 : -0.1;
     const newVolume = Math.min(1, Math.max(0, volume + delta));
     setVolume(newVolume);
-    music.playVolume = newVolume;
+    status.playVolume = newVolume;
   }
 };
 

@@ -32,6 +32,31 @@ const useSiteStatusStore = defineStore("siteStatus", {
       pureLyricMode: false,
       // 音乐频谱数据
       spectrumsData: [],
+      // 当前歌曲歌词播放索引
+      playSongLyricIndex: -1,
+      // 播放时长数据
+      playTimeData: {
+        currentTime: 0,
+        duration: 0,
+        bar: 0,
+        played: "00:00",
+        durationTime: "00:00",
+      },
+      // 默认倍速
+      playRate: 1,
+      // 默认音量
+      playVolume: 0.7,
+      // 静音前音量
+      playVolumeMute: 0,
+      // 当前播放索引
+      playIndex: 0,
+      // 当前模式
+      // normal 正常 / fm 私人 FM / dj 电台
+      playMode: "normal",
+      // normal 顺序播放 / random 随机播放 / repeat 单曲循环
+      playSongMode: "normal",
+      // 是否为心动模式
+      playHeartbeatMode: false,
     };
   },
   getters: {},
@@ -41,7 +66,17 @@ const useSiteStatusStore = defineStore("siteStatus", {
     {
       key: "siteStatus",
       storage: localStorage,
-      paths: ["asideMenuCollapsed", "pureLyricMode"],
+      paths: [
+        "asideMenuCollapsed",
+        "pureLyricMode",
+        "playRate",
+        "playVolume",
+        "playVolumeMute",
+        "playIndex",
+        "playMode",
+        "playSongMode",
+        "playHeartbeatMode",
+      ],
     },
   ],
 });

@@ -37,17 +37,10 @@ const router = useRouter();
 const data = siteData();
 const music = musicData();
 const status = siteStatus();
-const { asideMenuCollapsed, showSider, showFullPlayer } = storeToRefs(status);
+const { asideMenuCollapsed, showSider, showFullPlayer, playIndex, playMode, playHeartbeatMode } =
+  storeToRefs(status);
 const { userData, userLikeData, userLoginStatus } = storeToRefs(data);
-const {
-  playList,
-  playListOld,
-  playIndex,
-  playSongData,
-  playHeartbeatMode,
-  playMode,
-  privateFmSong,
-} = storeToRefs(music);
+const { playList, playListOld, playSongData, privateFmSong } = storeToRefs(music);
 
 // 子组件
 const coverDropdownRef = ref(null);

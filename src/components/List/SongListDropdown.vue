@@ -24,7 +24,7 @@
 <script setup>
 import { NIcon, NImage, NText } from "naive-ui";
 import { storeToRefs } from "pinia";
-import { musicData, siteData } from "@/stores";
+import { musicData, siteData, siteStatus } from "@/stores";
 import { useRouter } from "vue-router";
 import { addSongToNext } from "@/utils/Player";
 import { setCloudDel } from "@/api/cloud";
@@ -33,10 +33,12 @@ import { copyData } from "@/utils/helper";
 import SvgIcon from "@/components/Global/SvgIcon";
 
 const emit = defineEmits(["playSong"]);
-const router = useRouter();
-const music = musicData();
 const data = siteData();
-const { playSongData, playMode } = storeToRefs(music);
+const music = musicData();
+const router = useRouter();
+const status = siteStatus();
+const { playMode } = storeToRefs(status);
+const { playSongData } = storeToRefs(music);
 const { userData, userLikeData } = storeToRefs(data);
 
 // 右键菜单数据

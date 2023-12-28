@@ -130,8 +130,8 @@ import debounce from "@/utils/debounce";
 
 const music = musicData();
 const status = siteStatus();
-const { playSongData, playList, playIndex, playMode } = storeToRefs(music);
-const { coverTheme, showFullPlayer, playListShow } = storeToRefs(status);
+const { playSongData, playList } = storeToRefs(music);
+const { coverTheme, showFullPlayer, playListShow, playIndex, playMode } = storeToRefs(status);
 
 const playListRef = ref(null);
 
@@ -239,9 +239,9 @@ const removeSong = async (index) => {
     cursor: pointer;
     .num,
     .play {
-      width: 30px;
-      height: 30px;
-      min-width: 30px;
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
       border-radius: 8px;
       margin-right: 16px;
       display: flex;

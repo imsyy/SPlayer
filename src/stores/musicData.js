@@ -3,26 +3,12 @@ import { defineStore } from "pinia";
 import { getPersonalFm, setFmToTrash } from "@/api/recommend";
 import { changePlayIndex } from "@/utils/Player";
 import { isLogin } from "@/utils/auth";
+import { siteStatus } from "@/stores";
 import formatData from "@/utils/formatData";
 
 const useMusicDataStore = defineStore("musicData", {
   state: () => {
     return {
-      // 当前模式
-      // normal 正常 / fm 私人 FM / dj 电台
-      playMode: "normal",
-      // normal 顺序播放 / random 随机播放 / repeat 单曲循环
-      playSongMode: "normal",
-      // 是否为心动模式
-      playHeartbeatMode: false,
-      // 默认倍速
-      playRate: 1,
-      // 默认音量
-      playVolume: 0.7,
-      // 静音前音量
-      playVolumeMute: 0,
-      // 当前播放索引
-      playIndex: 0,
       // 播放列表
       playList: [],
       playListOld: [],
@@ -39,16 +25,6 @@ const useMusicDataStore = defineStore("musicData", {
         hasRoma: false,
         hasYrc: false,
       },
-      // 当前歌曲歌词播放索引
-      playSongLyricIndex: -1,
-      // 播放时长数据
-      playTimeData: {
-        currentTime: 0,
-        duration: 0,
-        bar: 0,
-        played: "00:00",
-        durationTime: "00:00",
-      },
       // 本地歌曲目录
       localSongPath: [],
       // 私人 FM 数据
@@ -60,7 +36,8 @@ const useMusicDataStore = defineStore("musicData", {
   getters: {
     // 获取当前播放歌曲
     getPlaySongData(state) {
-      return state.playMode === "fm" && state.privateFmSong
+      const status = siteStatus();
+      return status.playMode === "fm" && state.privateFmSong
         ? state.privateFmSong
         : state.playSongData;
     },
@@ -98,6 +75,7 @@ const useMusicDataStore = defineStore("musicData", {
     // 更改私人FM
     async setPersonalFm(getNext = false) {
       try {
+        const status = siteStatus();
         // 获取私人FM数据
         const getPersonalFmData = async () => {
           const result = await getPersonalFm();
@@ -114,7 +92,7 @@ const useMusicDataStore = defineStore("musicData", {
         // 若需要播放下一首
         if (getNext) {
           // 更改播放模式
-          this.playMode = "fm";
+          status.playMode = "fm";
           // 增加索引
           this.privateFmIndex++;
           // 判断索引是否在列表范围内
@@ -142,7 +120,7 @@ const useMusicDataStore = defineStore("musicData", {
         if (result.code === 200) {
           $message.success("已移至垃圾桶");
           // 更改播放模式
-          this.playMode = "fm";
+          status.playMode = "fm";
           // 下一曲
           changePlayIndex("next", true);
         }
