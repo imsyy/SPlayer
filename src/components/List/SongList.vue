@@ -122,15 +122,16 @@
               :key="ar.id"
               class="ar"
               @click.stop="router.push(`/artist?id=${ar.id}`)"
+              @dblclick.stop
             >
               {{ ar.name }}
             </n-text>
           </div>
           <div v-else-if="type === 'dj'" class="artist">
-            <n-text class="ar"> 电台节目 </n-text>
+            <n-text class="ar" @dblclick.stop> 电台节目 </n-text>
           </div>
           <div v-else class="artist">
-            <n-text class="ar"> {{ item.artists || "未知艺术家" }} </n-text>
+            <n-text class="ar" @dblclick.stop> {{ item.artists || "未知艺术家" }} </n-text>
           </div>
           <!-- 别名 -->
           <n-text v-if="item.alia" class="alia" depth="3">{{ item.alia }}</n-text>
@@ -140,9 +141,12 @@
           <n-text
             v-if="item.album"
             class="album"
-            @click.stop="item.album !== 'string' ? router.push(`/album?id=${item.album.id}`) : null"
+            @click.stop="
+              typeof item.album === 'object' ? router.push(`/album?id=${item.album.id}`) : null
+            "
+            @dblclick.stop
           >
-            {{ typeof item.album === "string" ? item.album : item.album.name }}
+            {{ typeof item.album === "object" ? item.album?.name || "未知专辑" : item.album }}
           </n-text>
           <n-text v-else class="album">未知专辑</n-text>
         </template>

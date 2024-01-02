@@ -213,15 +213,14 @@ export const createPlayer = async (src, autoPlay = true) => {
     const music = musicData();
     const status = siteStatus();
     const settings = siteSettings();
-    const { playSongSource } = music;
+    const { playSongSource, playList } = music;
     // 当前播放歌曲数据
     const playSongData = music.getPlaySongData;
     // 初始化播放器
     player = new Howl({
       src: [src],
-      format: ["mp3", "flac"],
+      format: ["mp3", "flac", "dolby", "webm"],
       html5: true,
-      pool: 10,
       preload: true,
       volume: status.playVolume,
       rate: status.playRate,
@@ -311,25 +310,34 @@ export const createPlayer = async (src, autoPlay = true) => {
       }
     });
     // 加载失败
-    player?.on("loaderror", (_, errCode) => {
-      console.log("错误");
+    player?.on("loaderror", (id, errCode) => {
+      console.log("播放出现错误：", id, errCode);
       // 更改状态
       status.playLoading = false;
-      status.playState = false;
       // https://github.com/goldfire/howler.js?tab=readme-ov-file#onloaderror-function
-      // 1-用户代理应用户请求中止了获取媒体资源的过程
-      // 2-某个描述的网络错误导致用户代理在确定资源可用后停止获取媒体资源
-      // 3-在确定资源可用后，对媒体资源进行解码时发生某种描述错误
-      // 4-由src属性或分配的媒体提供程序对象指示的媒体资源不合适
-      if (errCode === 3) {
-        $message.error("播放出错，媒体进行解码时发生错误");
-      } else if (errCode === 4) {
-        $message.error("播放出错，不支持的音频格式");
-      } else {
-        $message.error("播放遇到错误");
+      switch (errCode) {
+        case 1:
+          $message.error("播放出错，用户代理中止了获取媒体");
+          break;
+        case 2:
+          $message.error("播放出错，未知的网络错误");
+          break;
+        case 3:
+          $message.error("播放出错，媒体进行解码时发生错误");
+          break;
+        case 4:
+          $message.error("播放出错，不支持的音频格式或媒体资源不合适");
+          break;
+        default:
+          $message.error("播放遇到未知错误");
+          break;
       }
       // 下一曲
-      changePlayIndex();
+      if (playList.length > 1) {
+        changePlayIndex();
+      } else {
+        status.playState = false;
+      }
     });
     // 返回音频对象
     return (window.$player = player);

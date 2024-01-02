@@ -67,6 +67,7 @@ declare module 'vue' {
     NNumberAnimation: typeof import('naive-ui')['NNumberAnimation']
     NPagination: typeof import('naive-ui')['NPagination']
     NPopover: typeof import('naive-ui')['NPopover']
+    NProgress: typeof import('naive-ui')['NProgress']
     NQrCode: typeof import('naive-ui')['NQrCode']
     NRadio: typeof import('naive-ui')['NRadio']
     NRadioGroup: typeof import('naive-ui')['NRadioGroup']

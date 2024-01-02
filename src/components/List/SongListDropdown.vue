@@ -280,7 +280,7 @@ const openDropdown = (e, data, song, index, sourceId, type) => {
         {
           key: "delete",
           label: "从本地磁盘中删除",
-          show: isLocalSong,
+          show: isLocalSong && playSongData.value?.id !== song.id,
           props: {
             onClick: () => {
               delLocalSong(data, song, index);

@@ -11,6 +11,7 @@
       }"
       class="full-player"
       @mousemove="controlShowChange"
+      @mouseleave="playerControlShow = false"
     >
       <!-- 遮罩 -->
       <Transition name="fade" mode="out-in">
