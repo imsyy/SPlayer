@@ -428,4 +428,3 @@ docker run -d --name SPlayer -p 7899:7899 imsyy/splayer:latest
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=imsyy/SPlayer&type=Date)](https://star-history.com/#imsyy/SPlayer&Date)
-

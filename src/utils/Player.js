@@ -223,7 +223,7 @@ export const createPlayer = async (src, autoPlay = true) => {
       src: [blobUrl],
       format: ["mp3", "flac", "dolby", "webm"],
       html5: true,
-      preload: true,
+      preload: "metadata",
       volume: status.playVolume,
       rate: status.playRate,
     });

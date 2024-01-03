@@ -12,6 +12,7 @@ const useSiteSettingsStore = defineStore("siteSettings", {
       autoSignIn: true, // 自动签到
       showGithub: true,
       showSider: true, // 显示侧边栏
+      siderShowCover: false, // 侧边栏显示封面
       // 主题部分
       themeType: "dark",
       themeAuto: false,

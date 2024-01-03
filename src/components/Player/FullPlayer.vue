@@ -226,7 +226,7 @@
         </div>
       </Transition>
       <!-- 控制中心 -->
-      <PlayerControl v-show="playerControlShow" />
+      <PlayerControl />
       <!-- 音乐频谱 -->
       <Spectrum v-if="showSpectrums" :show="!playerControlShow" :height="60" />
     </div>

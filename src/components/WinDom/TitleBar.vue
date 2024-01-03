@@ -3,6 +3,7 @@
   <div class="title-bar">
     <n-divider vertical />
     <n-button
+      :focusable="false"
       class="bar-icon"
       tag="div"
       style="margin-left: 0"
@@ -16,14 +17,14 @@
         </n-icon>
       </template>
     </n-button>
-    <n-button class="bar-icon" tag="div" quaternary circle @click="maxOrRestore">
+    <n-button :focusable="false" class="bar-icon" tag="div" quaternary circle @click="maxOrRestore">
       <template #icon>
         <n-icon :depth="2">
           <SvgIcon :icon="defaultWindowState ? 'window-restore' : 'window-maximize'" />
         </n-icon>
       </template>
     </n-button>
-    <n-button class="bar-icon" tag="div" quaternary circle @click="openCloseTip">
+    <n-button :focusable="false" class="bar-icon" tag="div" quaternary circle @click="openCloseTip">
       <template #icon>
         <n-icon :depth="2">
           <SvgIcon icon="window-close" />

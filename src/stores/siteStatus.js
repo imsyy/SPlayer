@@ -76,6 +76,7 @@ const useSiteStatusStore = defineStore("siteStatus", {
         "playMode",
         "playSongMode",
         "playHeartbeatMode",
+        "playTimeData",
       ],
     },
   ],

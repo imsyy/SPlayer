@@ -70,8 +70,8 @@ const changeThemeColor = (val, isCover = false) => {
       isCover && Object.keys(val)?.length
         ? val[themeType.value]
         : val !== "custom"
-        ? themeColorData[val]
-        : themeTypeData.value;
+          ? themeColorData[val]
+          : themeTypeData.value;
     // 微调主题色
     const primaryColor = isCover ? `rgb(${mainColorData.bg})` : mainColorData.primaryColor;
     const primaryColorHover = isCover ? `rgba(${mainColorData.bg}, 0.29)` : primaryColor + "29";

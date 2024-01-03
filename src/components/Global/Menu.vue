@@ -3,15 +3,15 @@
   <n-menu
     ref="mainMenuRef"
     v-model:value="menuActiveKey"
-    class="main-menu"
-    :root-indent="showSider ? 36 : 28"
+    :class="['main-menu', { cover: siderShowCover }]"
+    :root-indent="showSider ? 36 : 26"
     :indent="0"
     :collapsed="asideMenuCollapsed.value"
     :defaultExpandedKeys="['user-playlists', 'favorite-playlists']"
     :collapsed-width="64"
     :collapsed-icon-size="22"
     :options="menuOptions"
-    @contextmenu="openSideDropdown($event)"
+    @contextmenu.stop
     @update:value="checkMenuItem"
   />
   <!-- 右键菜单 -->
@@ -22,8 +22,8 @@
 
 <script setup>
 import { storeToRefs } from "pinia";
-import { siteStatus, siteData, musicData } from "@/stores";
-import { NIcon, NText, NButton } from "naive-ui";
+import { siteStatus, siteData, musicData, siteSettings } from "@/stores";
+import { NIcon, NText, NButton, NAvatar } from "naive-ui";
 import { useRouter, RouterLink } from "vue-router";
 import { getHeartRateList } from "@/api/playlist";
 import { checkPlatform } from "@/utils/helper";
@@ -37,6 +37,8 @@ const router = useRouter();
 const data = siteData();
 const music = musicData();
 const status = siteStatus();
+const settings = siteSettings();
+const { siderShowCover } = storeToRefs(settings);
 const { asideMenuCollapsed, showSider, showFullPlayer, playIndex, playMode, playHeartbeatMode } =
   storeToRefs(status);
 const { userData, userLikeData, userLoginStatus } = storeToRefs(data);
@@ -161,7 +163,6 @@ const menuOptions = computed(() => [
             path: "/like-songs",
           },
           class: "user-playlist",
-          menuid: "like-songs",
         },
         () => [
           h(
@@ -278,43 +279,79 @@ const changeUserPlaylists = (data) => {
   userPlaylists.value.children = userPlaylistsData.slice(1).map((v) => {
     return {
       label: () =>
-        h(
-          RouterLink,
-          {
-            to: {
-              path: "/playlist",
-              query: {
-                id: v.id,
+        siderShowCover.value
+          ? h(
+              "div",
+              {
+                class: "user-pl-cover",
+                onclick: () => {
+                  router.push({
+                    path: "/playlist",
+                    query: {
+                      id: v.id,
+                    },
+                  });
+                },
               },
-            },
-            class: "user-playlist",
-            menuId: v.id,
-          },
-          () => [h(NText, null, () => [v.name])],
-        ),
+              [
+                h(NAvatar, { src: v?.coverSize?.s, fallbackSrc: "/images/pic/album.jpg?assest" }),
+                h(NText, null, () => [v.name]),
+              ],
+            )
+          : h(
+              RouterLink,
+              {
+                to: {
+                  path: "/playlist",
+                  query: {
+                    id: v.id,
+                  },
+                },
+                class: "user-playlist",
+              },
+              () => [h(NText, null, () => [v.name])],
+            ),
       key: v.id,
-      icon: renderIcon("queue-music-rounded"),
+      icon: siderShowCover.value ? null : renderIcon("queue-music-rounded"),
     };
   });
   favoritePlaylists.value.children = favoritePlaylistsData.map((v) => {
     return {
       label: () =>
-        h(
-          RouterLink,
-          {
-            to: {
-              path: "/playlist",
-              query: {
-                id: v.id,
+        siderShowCover.value
+          ? h(
+              "div",
+              {
+                class: "user-pl-cover",
+                onclick: () => {
+                  router.push({
+                    path: "/playlist",
+                    query: {
+                      id: v.id,
+                    },
+                  });
+                },
               },
-            },
-            class: "user-playlist",
-            menuId: v.id,
-          },
-          () => [h(NText, null, () => [v.name])],
-        ),
+              [
+                h(NAvatar, { src: v?.coverSize?.s, fallbackSrc: "/images/pic/album.jpg?assest" }),
+                h(NText, null, () => [v.name]),
+              ],
+            )
+          : h(
+              RouterLink,
+              {
+                to: {
+                  path: "/playlist",
+                  query: {
+                    id: v.id,
+                  },
+                },
+                class: "user-playlist",
+              },
+              () => [h(NText, null, () => [v.name])],
+            ),
       key: v.id,
-      icon: renderIcon("queue-music-rounded"),
+      icon: siderShowCover.value ? null : renderIcon("queue-music-rounded"),
     };
   });
 };
@@ -372,15 +409,6 @@ const checkMenuItem = async (key) => {
   mainMenuRef.value?.showOption(key);
 };
 
-// 开启右键菜单
-const openSideDropdown = (e) => {
-  e.preventDefault();
-  if (!e.target.classList.contains("user-playlist")) return false;
-  // 获取 id
-  const menuId = e.target.getAttribute("menuid");
-  coverDropdownRef.value?.openDropdown(e, "playlist", menuId);
-};
-
 // 开启心动模式
 const startHeartRate = debounce(async () => {
   try {
@@ -434,13 +462,7 @@ watch(
 
 // 监听用户歌单变化
 watch(
-  () => userLikeData.value.playlists,
-  (val) => {
-    changeUserPlaylists(val);
-  },
-);
-watch(
-  () => userLoginStatus.value,
+  [() => userLikeData.value.playlists, () => userLoginStatus.value, () => siderShowCover.value],
   () => changeUserPlaylists(userLikeData.value.playlists),
 );
 
@@ -451,6 +473,7 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .main-menu {
+  padding-bottom: 14px;
   :deep(.n-menu-item) {
     .n-menu-item-content {
       &.n-menu-item-content--selected {
@@ -463,11 +486,24 @@ onMounted(() => {
         text-overflow: ellipsis;
         overflow: hidden;
       }
-      // 我喜欢的音乐
+      // 普通歌单
       .user-playlist {
         display: flex;
         align-items: center;
         justify-content: space-between;
+      }
+      // 带封面歌单
+      .user-pl-cover {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        .n-avatar {
+          border-radius: 8px;
+          width: 34px;
+          height: 34px;
+          min-width: 34px;
+          margin-right: 12px;
+        }
       }
     }
   }
@@ -499,6 +535,11 @@ onMounted(() => {
           }
         }
       }
+    }
+  }
+  &.cover {
+    :deep(.n-submenu-children) {
+      --n-item-height: 50px;
     }
   }
 }

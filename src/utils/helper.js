@@ -344,7 +344,7 @@ export const downloadFile = async (data, song, path = null) => {
  * 将字节数格式化为可读的大小字符串。
  * @param {number} bytes - 要格式化的字节数
  * @param {number} [decimals=2] - 小数点位数
- * @returns {string} - 格式化后的大小字符串（例如，"10 KB"）
+ * @returns {string} - 格式化后的大小字符串（"10 KB"）
  */
 export const formatBytes = (bytes, decimals = 2) => {
   if (bytes === 0) return "0 K";
@@ -358,15 +358,13 @@ export const formatBytes = (bytes, decimals = 2) => {
 /**
  * 获取音频文件的 Blob 链接
  * @param {string} url - 音频文件的网络链接
- * @returns {Promise<string>} - 包含 Blob 链接的 Promise
- * @throws {Error} 如果获取 Blob 链接时出现错误
  */
 // 上次生成的 BlobUrl
 let lastBlobUrl = null;
 export const getBlobUrlFromUrl = async (url) => {
   try {
     // 是否为网络链接
-    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("blob:")) {
       return url;
     }
     // 获取音频文件数据

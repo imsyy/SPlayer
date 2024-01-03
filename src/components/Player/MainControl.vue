@@ -177,6 +177,7 @@
         <!-- 播放暂停 -->
         <n-button
           :loading="playLoading"
+          :focusable="false"
           tag="div"
           type="primary"
           class="play-control"
@@ -221,10 +222,10 @@
                     playHeartbeatMode
                       ? 'heartbit'
                       : playSongMode === 'normal'
-                      ? 'repeat-list'
-                      : playSongMode === 'random'
-                      ? 'shuffle'
-                      : 'repeat-song'
+                        ? 'repeat-list'
+                        : playSongMode === 'random'
+                          ? 'shuffle'
+                          : 'repeat-song'
                   "
                   isSpecial
                 />
