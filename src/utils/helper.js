@@ -354,3 +354,35 @@ export const formatBytes = (bytes, decimals = 2) => {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
 };
+
+/**
+ * 获取音频文件的 Blob 链接
+ * @param {string} url - 音频文件的网络链接
+ * @returns {Promise<string>} - 包含 Blob 链接的 Promise
+ * @throws {Error} 如果获取 Blob 链接时出现错误
+ */
+// 上次生成的 BlobUrl
+let lastBlobUrl = null;
+export const getBlobUrlFromUrl = async (url) => {
+  try {
+    // 是否为网络链接
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      return url;
+    }
+    // 获取音频文件数据
+    const response = await fetch(url);
+    // 检查请求是否成功
+    if (!response.ok) {
+      throw new Error("获取音频资源失败：", response.statusText);
+    }
+    const blob = await response.blob();
+    // 清理过期的 Blob 链接
+    if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
+    // 转换为本地 Blob 链接
+    lastBlobUrl = URL.createObjectURL(blob);
+    return lastBlobUrl;
+  } catch (error) {
+    console.error("获取 Blob 链接遇到错误：" + error);
+    throw error;
+  }
+};

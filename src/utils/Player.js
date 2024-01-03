@@ -1,7 +1,7 @@
 import { Howl, Howler } from "howler";
 import { musicData, siteStatus, siteSettings } from "@/stores";
 import { getSongUrl, getSongLyric, songScrobble } from "@/api/song";
-import { checkPlatform, getLocalCoverData } from "@/utils/helper";
+import { checkPlatform, getLocalCoverData, getBlobUrlFromUrl } from "@/utils/helper";
 import { decode as base642Buffer } from "@/utils/base64";
 import { getSongPlayTime } from "@/utils/timeTools";
 import { getCoverGradient } from "@/utils/cover-color";
@@ -207,7 +207,6 @@ const getFromUnblockMusic = async (data, status, playNow) => {
  * @param {number} seek - 初始播放进度（ 默认为 0 ）
  */
 export const createPlayer = async (src, autoPlay = true) => {
-  console.log("播放地址：", src);
   try {
     // pinia
     const music = musicData();
@@ -216,9 +215,12 @@ export const createPlayer = async (src, autoPlay = true) => {
     const { playSongSource, playList } = music;
     // 当前播放歌曲数据
     const playSongData = music.getPlaySongData;
+    // 获取播放链接
+    const blobUrl = await getBlobUrlFromUrl(src);
+    console.log("播放地址：", blobUrl);
     // 初始化播放器
     player = new Howl({
-      src: [src],
+      src: [blobUrl],
       format: ["mp3", "flac", "dolby", "webm"],
       html5: true,
       preload: true,
@@ -260,8 +262,8 @@ export const createPlayer = async (src, autoPlay = true) => {
           status.playMode === "dj"
             ? "电台节目"
             : Array.isArray(playSongData.artists)
-            ? playSongData.artists.map((ar) => ar.name).join(" / ")
-            : playSongData.artists || "未知歌手";
+              ? playSongData.artists.map((ar) => ar.name).join(" / ")
+              : playSongData.artists || "未知歌手";
         electron.ipcRenderer.send("songNameChange", songName + " - " + songArtist);
       }
       // 听歌打卡
@@ -649,8 +651,8 @@ const initMediaSession = async (data, cover, islocal, isDj) => {
       artist: isDj
         ? "电台节目"
         : islocal
-        ? data.artists
-        : data.artists?.map((a) => a.name)?.join(" & "),
+          ? data.artists
+          : data.artists?.map((a) => a.name)?.join(" & "),
       album: isDj ? "电台节目" : islocal ? data.album : data.album.name,
       artwork: islocal
         ? [
