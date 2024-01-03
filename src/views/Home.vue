@@ -35,7 +35,7 @@
     <div v-for="(item, index) in recommendData" :key="index" class="rec-public">
       <n-h3 class="title" prefix="bar" @click="item.to ? router.push(item.to) : null">
         <n-text class="name">{{ item.name }}</n-text>
-        <n-icon class="more" depth="3">
+        <n-icon v-if="item.to" class="more" depth="3">
           <SvgIcon icon="chevron-right" />
         </n-icon>
       </n-h3>
@@ -53,7 +53,13 @@
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { getGreetings } from "@/utils/timeTools";
-import { getDailyRec, getPersonalized, getTopArtists, getNewAlbum } from "@/api/recommend";
+import {
+  getDailyRec,
+  getPersonalized,
+  getRadarPlaylist,
+  getTopArtists,
+  getNewAlbum,
+} from "@/api/recommend";
 import { getDjPersonalRec } from "@/api/dj";
 import { siteData, siteSettings } from "@/stores";
 import { getCacheData } from "@/utils/helper";
@@ -99,8 +105,15 @@ const likeSongsCoverData = computed(() => {
 // 个性化推荐数据
 const recommendData = ref({
   playlist: {
-    name: "推荐歌单",
+    name: isLogin() ? "专属歌单" : "推荐歌单",
     loadingNum: 12,
+    columns: showSider.value ? undefined : "2 s:3 m:4 l:5 xl:6",
+    data: [],
+    to: "/discover/playlists",
+  },
+  radar: {
+    name: "雷达歌单",
+    loadingNum: 6,
     columns: showSider.value ? undefined : "2 s:3 m:4 l:5 xl:6",
     data: [],
     to: "/discover/playlists",
@@ -139,11 +152,13 @@ const recommendData = ref({
 // 获取个性化推荐数据
 const getRecommendData = async () => {
   try {
-    const [playlistRes, artistRes, mvRes, djRes, albumRes] = await Promise.allSettled([
+    const [playlistRes, radarRes, artistRes, mvRes, djRes, albumRes] = await Promise.allSettled([
       // 歌单
       isLogin()
         ? getCacheData("recPl-P", 5, getDailyRec, "resource")
         : getCacheData("recPl", 5, getPersonalized),
+      // 雷达歌单
+      getCacheData("recRadar", 30, getRadarPlaylist),
       // 歌手
       getCacheData("recAr", 5, getTopArtists),
       // MV
@@ -156,8 +171,14 @@ const getRecommendData = async () => {
     // 检查请求状态
     playlistRes.status === "fulfilled" &&
       (recommendData.value.playlist.data = formatData(
-        playlistRes.value.result || playlistRes.value.recommend,
+        isLogin()
+          ? playlistRes.value.recommend.filter((playlist) => {
+              return !playlist.name.includes("私人雷达");
+            })
+          : playlistRes.value.result,
       ));
+    radarRes.status === "fulfilled" &&
+      (recommendData.value.radar.data = formatData(radarRes.value));
     artistRes.status === "fulfilled" &&
       (recommendData.value.artist.data = formatData(artistRes.value.artists, "artist"));
     mvRes.status === "fulfilled" &&
@@ -167,7 +188,7 @@ const getRecommendData = async () => {
     albumRes.status === "fulfilled" &&
       (recommendData.value.album.data = formatData(albumRes.value.albums, "album"));
     // 检查是否有任何请求失败
-    const anyRejected = [playlistRes, artistRes, mvRes, albumRes].some(
+    const anyRejected = [playlistRes, radarRes, artistRes, mvRes, albumRes].some(
       (res) => res.status === "rejected",
     );
     if (anyRejected) {

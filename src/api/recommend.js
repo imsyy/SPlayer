@@ -1,4 +1,5 @@
 import axios from "@/utils/request";
+import idMeta from "@/assets/idMeta.json";
 
 /**
  * 推荐部分
@@ -32,6 +33,21 @@ export const getPersonalized = (type, limit = 12) => {
       limit,
     },
   });
+};
+
+/**
+ * 雷达歌单
+ */
+export const getRadarPlaylist = async () => {
+  const allRadar = idMeta.radarPlaylist.map((playlist) => {
+    return axios({
+      method: "GET",
+      url: "/playlist/detail",
+      params: { id: playlist.id },
+    });
+  });
+  const result = await Promise.allSettled(allRadar);
+  return result.map((res) => res?.value.playlist);
 };
 
 /**

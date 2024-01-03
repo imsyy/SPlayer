@@ -116,6 +116,7 @@ const useMusicDataStore = defineStore("musicData", {
     async setPersonalFmToTrash(id) {
       try {
         if (!isLogin()) return $message.warning("请登录后使用");
+        const status = siteStatus();
         const result = await setFmToTrash(id);
         if (result.code === 200) {
           $message.success("已移至垃圾桶");
