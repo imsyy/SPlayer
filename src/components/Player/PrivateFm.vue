@@ -76,6 +76,7 @@
           <!-- 播放暂停 -->
           <n-button
             :loading="playMode === 'fm' && playLoading"
+            :focusable="false"
             class="play-control"
             color="#efefef"
             type="primary"

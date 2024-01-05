@@ -31,14 +31,14 @@
         </Transition>
       </div>
       <div class="navigation">
-        <n-button class="nav-icon" quaternary @click="router.go(-1)">
+        <n-button :focusable="false" class="nav-icon" quaternary @click="router.go(-1)">
           <template #icon>
             <n-icon>
               <SvgIcon icon="chevron-left" />
             </n-icon>
           </template>
         </n-button>
-        <n-button class="nav-icon" quaternary @click="router.go(1)">
+        <n-button :focusable="false" class="nav-icon" quaternary @click="router.go(1)">
           <template #icon>
             <n-icon>
               <SvgIcon icon="chevron-right" />
@@ -50,7 +50,14 @@
       <SearchInp />
       <!-- GitHub -->
       <Transition name="fade" mode="out-in">
-        <n-button v-if="showGithub" class="github" circle quaternary @click="openGithub">
+        <n-button
+          v-if="showGithub"
+          :focusable="false"
+          class="github"
+          circle
+          quaternary
+          @click="openGithub"
+        >
           <template #icon>
             <n-icon size="20">
               <SvgIcon icon="github" />

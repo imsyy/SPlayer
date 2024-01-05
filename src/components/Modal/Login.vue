@@ -27,6 +27,7 @@
       </n-tabs>
       <!-- 关闭登录弹窗 -->
       <n-button
+        :focusable="false"
         class="close"
         strong
         secondary

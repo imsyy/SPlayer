@@ -74,6 +74,7 @@
           <n-button
             :loading="playLoading"
             :keyboard="false"
+            :focusable="false"
             class="play-control"
             strong
             secondary

@@ -220,6 +220,13 @@
           <n-switch v-model:value="memorySeek" :disabled="autoPlay" :round="false" />
         </n-card>
         <n-card class="set-item">
+          <div class="name">
+            音乐资源自动缓存
+            <n-text class="tip"> 可能会造成加载缓慢，将在下一首播放或刷新时生效 </n-text>
+          </div>
+          <n-switch v-model:value="useMusicCache" :round="false" />
+        </n-card>
+        <n-card class="set-item">
           <div class="name">音乐渐入渐出</div>
           <n-switch v-model:value="songVolumeFade" :round="false" />
         </n-card>
@@ -603,6 +610,7 @@ const {
   showPlaylistCount,
   showSpectrums,
   siderShowCover,
+  useMusicCache,
 } = storeToRefs(settings);
 
 // 标签页数据
