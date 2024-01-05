@@ -219,6 +219,7 @@ export const createPlayer = async (src, autoPlay = true) => {
     const blobUrl = useMusicCache ? await getBlobUrlFromUrl(src) : src;
     console.log("播放地址：", blobUrl);
     // 初始化播放器
+    if (player) soundStop();
     player = new Howl({
       src: [blobUrl],
       format: ["mp3", "flac", "dolby", "webm"],
@@ -501,13 +502,6 @@ export const setRate = (rate) => {
  */
 export const setVolume = (volume) => {
   player?.volume(Number(volume));
-};
-
-/**
- * 检查是否存在于播放器且正在播放
- */
-export const checkPlayer = () => {
-  return player && player?.playing();
 };
 
 /**

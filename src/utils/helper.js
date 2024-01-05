@@ -363,6 +363,8 @@ export const formatBytes = (bytes, decimals = 2) => {
 let lastBlobUrl = null;
 export const getBlobUrlFromUrl = async (url) => {
   try {
+    // 清理过期的 Blob 链接
+    if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
     // 是否为网络链接
     if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("blob:")) {
       return url;
@@ -374,8 +376,6 @@ export const getBlobUrlFromUrl = async (url) => {
       throw new Error("获取音频资源失败：", response.statusText);
     }
     const blob = await response.blob();
-    // 清理过期的 Blob 链接
-    if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
     // 转换为本地 Blob 链接
     lastBlobUrl = URL.createObjectURL(blob);
     return lastBlobUrl;
