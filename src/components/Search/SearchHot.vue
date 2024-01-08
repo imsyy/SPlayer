@@ -2,25 +2,26 @@
 <template>
   <Transition name="fadeDown" mode="out-in" @before-enter="getSearchHotData">
     <n-card
-      v-if="status.searchInputFocus && !searchValue && (data.searchHistory[0] || searchHotData[0])"
+      v-if="searchInputFocus && !searchValue && (searchHistory[0] || searchHotData[0])"
       class="search-suggestions"
       content-style="padding: 0"
+      @click="emit('closeSearch')"
     >
       <n-scrollbar class="scrollbar">
         <!-- 历史记录 -->
-        <div v-if="settings.searchHistory && data.searchHistory[0]" class="history">
+        <div v-if="showSearchHistory && searchHistory[0]" class="history">
           <div class="title">
             <n-icon>
               <SvgIcon icon="history" />
             </n-icon>
             <n-text>搜索历史</n-text>
-            <n-icon class="history-delete" depth="3" @click="delSearchHistory">
+            <n-icon class="history-delete" depth="3" @click.stop="delSearchHistory">
               <SvgIcon icon="delete" />
             </n-icon>
           </div>
-          <n-space>
+          <n-flex>
             <n-tag
-              v-for="(item, index) in data.searchHistory"
+              v-for="(item, index) in searchHistory"
               :key="index"
               :bordered="false"
               round
@@ -28,7 +29,7 @@
             >
               {{ item }}
             </n-tag>
-          </n-space>
+          </n-flex>
         </div>
         <!-- 热搜榜 -->
         <div v-if="searchHotData[0]" class="hot-list">
@@ -70,6 +71,7 @@
 </template>
 
 <script setup>
+import { storeToRefs } from "pinia";
 import { siteData, siteStatus, siteSettings } from "@/stores";
 import { getSearchHot } from "@/api/search";
 import { getCacheData } from "@/utils/helper";
@@ -77,7 +79,10 @@ import { getCacheData } from "@/utils/helper";
 const data = siteData();
 const status = siteStatus();
 const settings = siteSettings();
-const emit = defineEmits(["toSearch", "delSearchHistory"]);
+const { searchHistory } = storeToRefs(data);
+const { searchInputFocus } = storeToRefs(status);
+const { showSearchHistory } = storeToRefs(settings);
+const emit = defineEmits(["toSearch", "closeSearch"]);
 
 // 搜索内容
 // eslint-disable-next-line no-unused-vars
@@ -117,7 +122,7 @@ const delSearchHistory = () => {
     positiveText: "确认",
     negativeText: "取消",
     onPositiveClick: () => {
-      data.searchHistory = [];
+      searchHistory.value = [];
     },
   });
 };
@@ -176,7 +181,7 @@ onBeforeMount(() => {
         }
       }
     }
-    .n-space {
+    .n-flex {
       margin-top: 8px;
       .n-tag {
         font-size: 13px;
@@ -265,6 +270,15 @@ onBeforeMount(() => {
       &:hover {
         background-color: var(--n-border-color);
       }
+    }
+  }
+  @media (max-width: 512px) {
+    position: fixed;
+    top: 58px;
+    border-radius: 0px;
+    width: 100%;
+    :deep(.scrollbar) {
+      max-height: calc(100vh - 58px);
     }
   }
 }

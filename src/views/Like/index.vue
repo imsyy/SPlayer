@@ -101,6 +101,7 @@ watch(
     display: flex;
     flex-direction: row;
     align-items: center;
+    flex-wrap: wrap;
     margin-bottom: 20px;
     .num-item {
       display: flex;

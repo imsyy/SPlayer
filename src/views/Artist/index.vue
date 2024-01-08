@@ -38,7 +38,7 @@
             {{ artistData.identify }}
           </n-text>
           <!-- 数量 -->
-          <n-space class="num">
+          <n-flex class="num">
             <div
               v-if="artistData.size?.music"
               class="num-item"
@@ -69,7 +69,7 @@
               </n-icon>
               <n-text depth="3">{{ artistData.size.mv }}</n-text>
             </div>
-          </n-space>
+          </n-flex>
           <!-- 简介 -->
           <n-ellipsis
             v-if="artistData?.description"
@@ -82,7 +82,7 @@
           </n-ellipsis>
           <n-text v-else class="description">哇！竟然没有简介</n-text>
           <!-- 功能区 -->
-          <n-space class="menu" justify="space-between">
+          <n-flex class="menu" justify="space-between">
             <n-button size="large" round strong secondary @click="likeOrDislike(artistId)">
               <template #icon>
                 <n-icon>
@@ -91,7 +91,7 @@
               </template>
               {{ isLikeOrDislike(artistId) ? "关注歌手" : "取消关注" }}
             </n-button>
-          </n-space>
+          </n-flex>
         </div>
       </div>
       <div v-else class="detail">
@@ -325,6 +325,33 @@ onBeforeMount(async () => {
   }
   .tabs {
     margin-bottom: 20px;
+  }
+
+  @media (max-width: 700px) {
+    .detail {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      .cover {
+        width: 200px;
+        height: 200px;
+        min-width: 200px;
+        margin: 0;
+      }
+      .data {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+        .name {
+          font-size: 26px;
+        }
+        .identify {
+          font-size: 16px;
+          margin-left: 0;
+        }
+      }
+    }
   }
 }
 .title {

@@ -1,6 +1,6 @@
 name: 添加功能
 description: 请填写希望添加的功能的具体信息
-title: "添加功能"
+title: 【添加功能】请填写标题
 labels: [add]
 body:
   - type: input

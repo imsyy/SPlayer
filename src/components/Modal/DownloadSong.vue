@@ -17,7 +17,7 @@
           当前为云盘歌曲，下载的文件均为最高音质
         </n-alert>
         <n-radio-group v-model:value="downloadChoose" class="download-group" name="downloadGroup">
-          <n-space vertical>
+          <n-flex vertical>
             <n-radio
               v-for="item in downloadLevel"
               :key="item"
@@ -32,13 +32,13 @@
                 </n-text>
               </div>
             </n-radio>
-          </n-space>
+          </n-flex>
         </n-radio-group>
       </div>
       <n-text v-else>歌曲信息获取中</n-text>
     </Transition>
     <template #footer>
-      <n-space justify="end">
+      <n-flex justify="end">
         <n-button @click="closeDownloadModal"> 关闭 </n-button>
         <n-button
           :disabled="!downloadChoose"
@@ -48,7 +48,7 @@
         >
           下载
         </n-button>
-      </n-space>
+      </n-flex>
     </template>
   </n-modal>
 </template>

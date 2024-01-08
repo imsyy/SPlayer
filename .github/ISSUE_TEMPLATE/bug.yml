@@ -1,5 +1,6 @@
 name: 遇到问题
 description: 关于使用过程中遇到的问题
+title: 【遇到问题】请填写标题
 labels: [bug]
 body:
   - type: input

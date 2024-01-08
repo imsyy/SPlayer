@@ -36,7 +36,17 @@
             >
               <template #placeholder>
                 <div :class="['cover-loading', type]">
-                  <img class="loading-img" src="/images/pic/album.jpg?assest" alt="song" />
+                  <img
+                    class="loading-img"
+                    :src="
+                      type === 'mv'
+                        ? '/images/pic/video.png?assest'
+                        : type === 'artist'
+                          ? '/images/pic/artist.jpg?assest'
+                          : '/images/pic/album.jpg?assest'
+                    "
+                    alt="song"
+                  />
                 </div>
                 <!-- <div :class="['cover-loading', type]">
                   <n-spin size="small" />

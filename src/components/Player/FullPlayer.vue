@@ -11,7 +11,7 @@
       }"
       class="full-player"
       @mousemove="controlShowChange"
-      @mouseleave="playerControlShow = false"
+      @mouseleave="closePlayerControlShow"
     >
       <!-- 遮罩 -->
       <Transition name="fade" mode="out-in">
@@ -55,7 +55,7 @@
           </div>
           <div class="right">
             <!-- 全屏切换 -->
-            <n-icon @click.stop="screenfullChange">
+            <n-icon class="hidden" @click.stop="screenfullChange">
               <SvgIcon
                 :icon="screenfullStatus ? 'fullscreen-exit-rounded' : 'fullscreen-rounded'"
               />
@@ -77,7 +77,7 @@
             <!-- 封面 -->
             <PlayerCover />
             <!-- 信息 -->
-            <div v-if="playCoverType === 'cover' || !isHasLrc" :class="['data', playCoverType]">
+            <div v-show="playCoverType === 'cover' || !isHasLrc" :class="['data', playCoverType]">
               <div class="desc">
                 <div class="title">
                   <span class="name">{{ music.getPlaySongData.name || "未知曲目" }}</span>
@@ -272,9 +272,16 @@ const screenfullChange = () => {
   }
 };
 
+// 关闭控制中心
+const closePlayerControlShow = () => {
+  if (window.innerWidth <= 700) return false;
+  playerControlShow.value = false;
+};
+
 // 控制中心显隐
 const controlShowChange = throttle(() => {
   playerControlShow.value = true;
+  if (window.innerWidth <= 700) return false;
   if (controlTimeOut.value) {
     clearTimeout(controlTimeOut.value);
   }
@@ -654,6 +661,41 @@ onUnmounted(() => {
     word-break: break-all;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
+  }
+  @media (max-width: 700px) {
+    .menu {
+      .hidden {
+        display: none;
+      }
+    }
+    .main-player {
+      .content {
+        width: 100%;
+        .data {
+          display: block !important;
+          &.record {
+            margin-top: 0;
+          }
+        }
+        &.no-lrc {
+          transform: translateX(0);
+        }
+      }
+      .right {
+        display: none;
+        .data {
+          .name {
+            font-size: 24px;
+            .name-alias {
+              font-size: 16px;
+            }
+          }
+          .other {
+            font-size: 14px;
+          }
+        }
+      }
+    }
   }
 }
 // 局外样式

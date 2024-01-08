@@ -19,7 +19,7 @@ const useSiteStatusStore = defineStore("siteStatus", {
       // 全屏播放器状态
       showFullPlayer: false,
       // 播放器功能显示
-      playerControlShow: false,
+      playerControlShow: true,
       controlTimeOut: null,
       // 实时播放进度
       playSeek: 0,

@@ -11,7 +11,6 @@
         <!-- 喜欢歌曲 -->
         <n-icon
           v-if="!music.getPlaySongData.path"
-          class="favorite"
           size="24"
           @click.stop="
             data.changeLikeList(
@@ -32,7 +31,7 @@
         <!-- 添加到歌单 -->
         <n-icon
           v-if="!music.getPlaySongData.path"
-          class="favorite"
+          class="hidden"
           size="24"
           @click.stop="addPlaylistRef?.openAddToPlaylist(music.getPlaySongData?.id)"
         >
@@ -41,7 +40,7 @@
         <!-- 下载 -->
         <n-icon
           v-if="!music.getPlaySongData.path"
-          class="favorite"
+          class="hidden"
           size="24"
           @click.stop="downloadSongRef?.openDownloadModal(music.getPlaySongData)"
         >
@@ -113,7 +112,7 @@
         <!-- MV -->
         <n-icon
           v-if="music.getPlaySongData.mv"
-          class="favorite"
+          class="hidden"
           size="22"
           @click.stop="
             (showFullPlayer = false), router.push(`/videos-player?id=${music.getPlaySongData.mv}`)
@@ -124,6 +123,7 @@
         <!-- 评论 -->
         <n-icon
           v-if="!music.getPlaySongData?.path"
+          class="hidden"
           size="22"
           @click.stop="
             (showFullPlayer = false), router.push(`/comment?id=${music.getPlaySongData?.id}`)
@@ -132,7 +132,7 @@
           <SvgIcon icon="comment-text" />
         </n-icon>
         <!-- 播放模式 -->
-        <n-icon v-if="playMode === 'normal'" size="22" @click.stop="togglePlayMode">
+        <n-icon v-if="playMode === 'normal'" class="hidden" size="22" @click.stop="togglePlayMode">
           <SvgIcon
             :icon="
               playHeartbeatMode
@@ -379,6 +379,22 @@ const controlMove = (e) => {
     .left,
     .right {
       opacity: 1;
+    }
+  }
+  @media (max-width: 700px) {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+    .left,
+    .right {
+      opacity: 1;
+      .hidden {
+        display: none;
+      }
+    }
+    .center {
+      width: 100%;
     }
   }
 }

@@ -4,13 +4,13 @@
     <n-input
       ref="searchInpRef"
       v-model:value="searchInputValue"
-      :class="status.searchInputFocus ? 'input focus' : 'input'"
+      :class="searchInputFocus ? 'input focus' : 'input'"
       :input-props="{ autoComplete: false }"
       :allow-input="noSideSpace"
       placeholder="搜索音乐 / 视频"
       round
       clearable
-      @focus="searchInputFocus"
+      @focus="searchInputToFocus"
       @keyup.enter="toSearch(searchInputValue)"
       @click.stop
     >
@@ -22,16 +22,20 @@
     </n-input>
     <!-- 搜索框遮罩 -->
     <Transition name="fade" mode="out-in">
-      <div
-        v-show="status.searchInputFocus"
-        class="search-mask"
-        @click.stop="status.searchInputFocus = false"
-      />
+      <div v-show="searchInputFocus" class="search-mask" @click.stop="searchInputFocus = false" />
     </Transition>
     <!-- 热搜榜及历史 -->
-    <SearchHot :searchValue="searchInputValue?.trim()" @toSearch="toSearch" />
+    <SearchHot
+      :searchValue="searchInputValue?.trim()"
+      @toSearch="toSearch"
+      @closeSearch="closeSearch"
+    />
     <!-- 搜索建议 -->
-    <SearchSuggestions :searchValue="searchInputValue?.trim()" @toSearch="toSearch" />
+    <SearchSuggestions
+      :searchValue="searchInputValue?.trim()"
+      @toSearch="toSearch"
+      @closeSearch="closeSearch"
+    />
   </div>
 </template>
 
@@ -47,7 +51,9 @@ const router = useRouter();
 const music = musicData();
 const status = siteStatus();
 const data = siteData();
+const { searchHistory } = storeToRefs(data);
 const { playSongData } = storeToRefs(music);
+const { searchInputFocus } = storeToRefs(status);
 
 const searchInpRef = ref(null);
 const searchInputValue = ref("");
@@ -56,22 +62,29 @@ const searchInputValue = ref("");
 const noSideSpace = (value) => !value.startsWith(" ");
 
 // 搜索框 focus
-const searchInputFocus = () => {
+const searchInputToFocus = () => {
   searchInpRef.value?.focus();
-  status.searchInputFocus = true;
+  searchInputFocus.value = true;
 };
 
 // 添加搜索历史
 const setSearchHistory = (name) => {
   if (!name || !name?.trim()) return false;
-  const index = data.searchHistory.indexOf(name);
+  const index = searchHistory.value.indexOf(name);
   if (index !== -1) {
-    data.searchHistory.splice(index, 1);
+    searchHistory.value.splice(index, 1);
   }
-  data.searchHistory.unshift(name);
-  if (data.searchHistory.length > 30) {
-    data.searchHistory.pop();
+  searchHistory.value.unshift(name);
+  if (searchHistory.value.length > 30) {
+    searchHistory.value.pop();
   }
+};
+
+// 关闭搜索
+const closeSearch = () => {
+  // 取消聚焦状态
+  status.searchInputFocus = false;
+  searchInpRef.value?.blur();
 };
 
 // 直接播放单曲
@@ -96,8 +109,7 @@ const toPlaySong = async (id) => {
 const toSearch = (val, type = "song") => {
   if (!val) return false;
   // 取消聚焦状态
-  status.searchInputFocus = false;
-  searchInpRef.value?.blur();
+  closeSearch();
   // 触发测试
   if (Number(val) === 114514) return router.push("/test");
   // 判断类型
@@ -173,6 +185,22 @@ const toSearch = (val, type = "song") => {
     background-color: #00000040;
     backdrop-filter: blur(20px);
     -webkit-app-region: no-drag;
+  }
+  @media (max-width: 700px) {
+    width: 100%;
+    margin-right: 12px;
+    .input {
+      width: 100%;
+      &.focus {
+        width: 100%;
+      }
+    }
+  }
+  @media (max-width: 512px) {
+    .search-mask {
+      background-color: transparent;
+      backdrop-filter: blur(0);
+    }
   }
 }
 </style>

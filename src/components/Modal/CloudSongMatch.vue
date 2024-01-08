@@ -78,7 +78,7 @@
       </n-card>
     </Transition>
     <template #footer>
-      <n-space justify="end">
+      <n-flex justify="end">
         <n-button @click="closeCloudSongMatch"> 取消 </n-button>
         <n-button
           :disabled="!cloudMatchValue.asid"
@@ -87,7 +87,7 @@
         >
           纠正
         </n-button>
-      </n-space>
+      </n-flex>
     </template>
   </n-modal>
 </template>

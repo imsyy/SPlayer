@@ -27,18 +27,15 @@ import { storeToRefs } from "pinia";
 import { musicData, siteData, siteStatus } from "@/stores";
 import { useRouter } from "vue-router";
 import { addSongToNext } from "@/utils/Player";
-import { setCloudDel } from "@/api/cloud";
-import { addSongToPlayList } from "@/api/playlist";
 import { copyData } from "@/utils/helper";
 import SvgIcon from "@/components/Global/SvgIcon";
 
-const emit = defineEmits(["playSong"]);
+const emit = defineEmits(["playSong", "delCloudSong", "deletePlaylistSong", "delLocalSong"]);
 const data = siteData();
 const music = musicData();
 const router = useRouter();
 const status = siteStatus();
 const { playMode } = storeToRefs(status);
-const { playSongData } = storeToRefs(music);
 const { userData, userLikeData } = storeToRefs(data);
 
 // 右键菜单数据
@@ -74,7 +71,11 @@ const renderSong = (song, isSong) => {
         className: "song-data",
       },
       [
-        h(NImage, { src: song?.coverSize?.s || song?.cover, class: "cover" }),
+        h(NImage, {
+          src: song?.coverSize?.s || song?.cover,
+          class: "cover",
+          previewDisabled: true,
+        }),
         h("div", { class: "song-detail" }, [
           h(NText, { class: "name" }, () => [song?.name || "未知曲目"]),
           isSong
@@ -111,8 +112,8 @@ const openDropdown = (e, data, song, index, sourceId, type) => {
     // 当前状态
     const isFm = playMode.value === "fm";
     const isSong = type === "song";
-    const isLocalSong = song?.path ? true : false;
-    const isHasMv = song.mv && song.mv !== 0 ? true : false;
+    const isLocalSong = !!song?.path;
+    const isHasMv = !!song?.mv && song.mv !== 0;
     const isCloud = router.currentRoute.value.name === "cloud";
     const isUserPlaylist = sourceId !== 0 && userPlaylistsData.some((pl) => pl.id == sourceId);
     // 生成菜单
@@ -143,7 +144,7 @@ const openDropdown = (e, data, song, index, sourceId, type) => {
         {
           key: "next-play",
           label: "下一首播放",
-          show: isSong && playMode.value !== "dj" && playSongData.value?.id !== song.id && !isFm,
+          show: isSong && playMode.value !== "dj" && music.getPlaySongData?.id !== song.id && !isFm,
           props: {
             onClick: () => {
               playMode.value = "song";
@@ -239,7 +240,7 @@ const openDropdown = (e, data, song, index, sourceId, type) => {
           show: !isCloud && isUserPlaylist,
           props: {
             onClick: () => {
-              deletePlaylistSong(sourceId, song, data, index);
+              emit("deletePlaylistSong", data, song, index);
             },
           },
           icon: renderIcon("delete"),
@@ -261,7 +262,7 @@ const openDropdown = (e, data, song, index, sourceId, type) => {
           show: isCloud,
           props: {
             onClick: () => {
-              delCloudSong(data, song, index);
+              emit("delCloudSong", data, song, index);
             },
           },
           icon: renderIcon("delete"),
@@ -280,10 +281,10 @@ const openDropdown = (e, data, song, index, sourceId, type) => {
         {
           key: "delete",
           label: "从本地磁盘中删除",
-          show: isLocalSong && playSongData.value?.id !== song.id,
+          show: isLocalSong && music.getPlaySongData?.id !== song.id,
           props: {
             onClick: () => {
-              delLocalSong(data, song, index);
+              emit("delLocalSong", data, song, index);
             },
           },
           icon: renderIcon("delete"),
@@ -328,65 +329,6 @@ const openDropdown = (e, data, song, index, sourceId, type) => {
     console.error("右键菜单出现异常：", error);
     $message.warning("右键菜单出现异常");
   }
-};
-
-// 云盘歌曲删除
-const delCloudSong = (data, song, index) => {
-  console.log(data, song, index);
-  $dialog.warning({
-    title: "确认删除",
-    content: `确认从云盘中删除 ${song.name}？该操作无法撤销！`,
-    positiveText: "删除",
-    negativeText: "取消",
-    onPositiveClick: async () => {
-      const result = await setCloudDel(song.id);
-      if (result.code == 200) {
-        data.splice(index, 1);
-        $message.success("删除成功");
-      } else {
-        $message.error("删除失败，请重试");
-      }
-    },
-  });
-};
-
-// 歌单歌曲删除
-const deletePlaylistSong = (pid, song, data, index) => {
-  $dialog.warning({
-    title: "确认删除",
-    content: `确认从歌单中移除 ${song.name}？该操作无法撤销！`,
-    positiveText: "删除",
-    negativeText: "取消",
-    onPositiveClick: async () => {
-      const result = await addSongToPlayList(pid, song?.id, "del");
-      if (result.status === 200) {
-        data.length === 1 ? data.splice(0, 1, "empty") : data.splice(index, 1);
-        $message.success("歌曲删除成功");
-      } else {
-        $message.error("歌曲删除失败，请重试");
-      }
-    },
-  });
-};
-
-// 本地歌曲删除
-const delLocalSong = (data, song, index) => {
-  $dialog.warning({
-    title: "确认删除",
-    content: `确认从本地磁盘中删除 ${song.name}？该操作无法撤销！`,
-    positiveText: "删除",
-    negativeText: "取消",
-    onPositiveClick: async () => {
-      console.log(data, song, index);
-      const result = await electron.ipcRenderer.invoke("deleteFile", song?.path);
-      if (result) {
-        data.length === 1 ? data.splice(0, 1, "empty") : data.splice(index, 1);
-        $message.success("歌曲删除成功");
-      } else {
-        $message.error("歌曲删除失败，请重试");
-      }
-    },
-  });
 };
 
 defineExpose({

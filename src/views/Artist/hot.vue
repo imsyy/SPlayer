@@ -10,17 +10,7 @@
       </div>
     </n-h4>
     <!-- 列表 -->
-    <Transition name="fade" mode="out-in">
-      <SongList
-        v-if="artistHotSongs"
-        :data="artistHotSongs"
-        :showPagination="false"
-        :showTitle="false"
-      />
-      <div v-else class="loading">
-        <n-skeleton :repeat="10" text />
-      </div>
-    </Transition>
+    <SongList :data="artistHotSongs" :showPagination="false" :showTitle="false" />
   </div>
 </template>
 
@@ -89,14 +79,6 @@ onBeforeMount(async () => {
       margin-left: auto;
       font-size: 14px;
     }
-  }
-  :deep(.n-skeleton) {
-    &:nth-of-type(1) {
-      margin-top: 0;
-    }
-    height: 70px;
-    margin-top: 12px;
-    border-radius: 8px;
   }
 }
 </style>

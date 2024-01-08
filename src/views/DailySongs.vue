@@ -12,7 +12,7 @@
         </Transition>
       </div>
       <!-- 操作 -->
-      <n-space class="control">
+      <n-flex class="control">
         <n-button size="large" tag="div" round strong secondary @click="playAllSongs">
           <template #icon>
             <n-icon>
@@ -30,7 +30,7 @@
             </template>
           </n-button>
         </n-dropdown>
-      </n-space>
+      </n-flex>
     </div>
     <!-- 列表 -->
     <SongList :data="dailySongsData.data" />

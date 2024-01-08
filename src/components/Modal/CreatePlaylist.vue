@@ -21,7 +21,7 @@
     <!-- 隐私歌单 -->
     <n-checkbox v-model:checked="createPrivacy"> 设为隐私歌单 </n-checkbox>
     <template #footer>
-      <n-space justify="end">
+      <n-flex justify="end">
         <n-button @click="closeCreatePlaylist"> 取消 </n-button>
         <n-button
           :disabled="!createName"
@@ -30,7 +30,7 @@
         >
           新建
         </n-button>
-      </n-space>
+      </n-flex>
     </template>
   </n-modal>
 </template>

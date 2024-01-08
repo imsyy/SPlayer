@@ -97,6 +97,7 @@ body,
 .n-tabs {
   --n-tab-border-radius: 6px !important;
   .n-tabs-rail {
+    position: relative;
     .n-tabs-tab-wrapper {
       .n-tabs-tab {
         &:hover {

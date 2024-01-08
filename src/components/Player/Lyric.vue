@@ -493,13 +493,29 @@ onMounted(() => {
   }
   &.record,
   &.pure {
-    height: calc(100vh - 340px);
-    margin-bottom: 20px;
+    height: calc(100vh - 300px);
+    margin-bottom: 40px;
     .lrc-line {
       margin-bottom: -12px;
       transform: scale(0.76);
       &.on {
         transform: scale(0.9);
+      }
+    }
+  }
+  @media (max-width: 700px) {
+    :deep(.n-scrollbar-content) {
+      padding: 0 20px !important;
+    }
+    .lrc-line {
+      .lrc-content {
+        font-size: 6.5vw !important;
+      }
+      .lrc-fy {
+        font-size: 4.5vw !important;
+      }
+      .lrc-roma {
+        font-size: 4vw !important;
       }
     }
   }

@@ -123,15 +123,18 @@
 <script setup>
 import { NText, NIcon } from "naive-ui";
 import { storeToRefs } from "pinia";
-import { musicData, siteStatus } from "@/stores";
+import { musicData, siteStatus, siteSettings } from "@/stores";
 import { initPlayer, fadePlayOrPause, changePlayIndex, soundStop } from "@/utils/Player";
 import SvgIcon from "@/components/Global/SvgIcon";
 import debounce from "@/utils/debounce";
 
 const music = musicData();
 const status = siteStatus();
+const settings = siteSettings();
+const { useMusicCache } = storeToRefs(settings);
 const { playSongData, playList } = storeToRefs(music);
-const { coverTheme, showFullPlayer, playListShow, playIndex, playMode } = storeToRefs(status);
+const { coverTheme, showFullPlayer, playListShow, playIndex, playMode, playLoading } =
+  storeToRefs(status);
 
 const playListRef = ref(null);
 
@@ -158,6 +161,11 @@ const playlistOpen = () => {
 
 // 播放歌曲
 const playSong = debounce(async (song, index) => {
+  // 若开启了缓存且正在加载
+  if (useMusicCache.value && playLoading.value) {
+    $message.warning("歌曲正在缓冲中，请稍后");
+    return false;
+  }
   // 更改模式
   if (playMode.value !== "dj") playMode.value = "normal";
   // 更改播放索引
@@ -352,6 +360,7 @@ const removeSong = async (index) => {
 .main-playlist {
   width: 400px !important;
   border-radius: 12px 0 0 12px;
+  transition: width 0.3s;
   .n-drawer-header {
     height: 70px;
     box-sizing: border-box;
@@ -379,6 +388,10 @@ const removeSong = async (index) => {
         color: var(--cover-main-color);
       }
     }
+  }
+  @media (max-width: 700px) {
+    width: 100% !important;
+    border-radius: 0;
   }
 }
 </style>

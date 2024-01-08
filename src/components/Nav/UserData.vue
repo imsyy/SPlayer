@@ -219,6 +219,15 @@ const userMenuSelect = (key) => {
       margin-left: 2px;
     }
   }
+  @media (max-width: 700px) {
+    padding: 0;
+    .avatar {
+      margin: 0;
+    }
+    .user-data {
+      display: none;
+    }
+  }
 }
 </style>
 

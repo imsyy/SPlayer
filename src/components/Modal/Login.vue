@@ -2,13 +2,12 @@
 <template>
   <n-modal
     v-model:show="loginModalShow"
-    style="width: 400px"
-    class="login"
     :auto-focus="false"
     :mask-closable="false"
     :bordered="false"
     :close-on-esc="false"
     :closable="false"
+    style="width: 400px"
     preset="card"
     transform-origin="center"
   >

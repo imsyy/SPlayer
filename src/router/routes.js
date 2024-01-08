@@ -112,6 +112,15 @@ const routes = [
     },
     component: () => import("@/views/Comment.vue"),
   },
+  // 歌曲详情
+  {
+    path: "/song",
+    name: "song",
+    meta: {
+      title: "歌曲详情",
+    },
+    component: () => import("@/views/Song.vue"),
+  },
   // 最近播放
   {
     path: "/history",
@@ -244,7 +253,7 @@ const routes = [
     name: "local",
     meta: {
       title: "本地歌曲",
-      needLogin: true,
+      needLocal: true,
       show: checkPlatform.electron(),
     },
     component: () => import("@/views/Local/index.vue"),

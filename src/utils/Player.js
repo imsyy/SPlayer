@@ -24,13 +24,15 @@ let spectrumsData = {
   analyser: null,
   audioCtx: null,
 };
+// 默认标题
+let defaultTitle = document.title;
 
 /**
  * 初始化播放器
  */
 export const initPlayer = async (playNow = false) => {
   try {
-    // 停止播放当前歌曲
+    // 停止播放器
     soundStop();
     // 获取基础数据
     const music = musicData();
@@ -211,17 +213,19 @@ export const createPlayer = async (src, autoPlay = true) => {
     const music = musicData();
     const status = siteStatus();
     const settings = siteSettings();
+    const { playMode } = status;
     const { playSongSource, playList } = music;
     const { showSpectrums, memorySeek, useMusicCache } = settings;
     // 当前播放歌曲数据
     const playSongData = music.getPlaySongData;
-    // 获取播放链接
-    const blobUrl = useMusicCache ? await getBlobUrlFromUrl(src) : src;
-    console.log("播放地址：", blobUrl);
+    // 获取播放链接（非电台及云盘歌曲）
+    const songUrl =
+      useMusicCache && playMode !== "dj" && !playSongData.pc ? await getBlobUrlFromUrl(src) : src;
+    console.log("播放地址：", songUrl);
     // 初始化播放器
     if (player) soundStop();
     player = new Howl({
-      src: [blobUrl],
+      src: [songUrl],
       format: ["mp3", "flac", "dolby", "webm"],
       html5: true,
       preload: "metadata",
@@ -255,14 +259,7 @@ export const createPlayer = async (src, autoPlay = true) => {
       status.playLoading = false;
       // 发送歌曲名
       if (checkPlatform.electron()) {
-        const songName = playSongData.name || "未知曲目";
-        const songArtist =
-          status.playMode === "dj"
-            ? "电台节目"
-            : Array.isArray(playSongData.artists)
-              ? playSongData.artists.map((ar) => ar.name).join(" / ")
-              : playSongData.artists || "未知歌手";
-        electron.ipcRenderer.send("songNameChange", songName + " - " + songArtist);
+        electron.ipcRenderer.send("songNameChange", getPlaySongName());
       }
       // 听歌打卡
       if (isLogin() && !playSongData?.path) {
@@ -284,6 +281,8 @@ export const createPlayer = async (src, autoPlay = true) => {
       if (checkPlatform.electron()) {
         electron.ipcRenderer.send("songStateChange", true);
       }
+      // 更改页面标题
+      if (!checkPlatform.electron()) document.title = getPlaySongName();
     });
     // 暂停播放
     player?.on("pause", () => {
@@ -295,6 +294,8 @@ export const createPlayer = async (src, autoPlay = true) => {
       if (checkPlatform.electron()) {
         electron.ipcRenderer.send("songStateChange", false);
       }
+      // 更改页面标题
+      if (!checkPlatform.electron()) document.title = defaultTitle || "SPlayer";
     });
     // 结束播放
     player?.on("end", () => {
@@ -757,6 +758,25 @@ const updateSpectrums = (analyser, dataArray) => {
   requestAnimationFrame(() => {
     updateSpectrums(analyser, dataArray);
   });
+};
+
+/**
+ * 获取当前播放歌曲名
+ */
+const getPlaySongName = () => {
+  // pinia
+  const status = siteStatus();
+  const music = musicData();
+  const playSongData = music.getPlaySongData;
+  // 返回歌曲数据
+  const songName = playSongData.name || "未知曲目";
+  const songArtist =
+    status.playMode === "dj"
+      ? "电台节目"
+      : Array.isArray(playSongData.artists)
+        ? playSongData.artists.map((ar) => ar.name).join(" / ")
+        : playSongData.artists || "未知歌手";
+  return songName + " - " + songArtist;
 };
 
 /*

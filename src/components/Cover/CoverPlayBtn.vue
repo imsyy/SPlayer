@@ -3,7 +3,7 @@
   <div class="play-btn" @click.stop>
     <n-button
       :loading="playLoading"
-      color="#efefefde"
+      color="#efefef"
       tag="div"
       type="primary"
       class="play"
@@ -30,13 +30,16 @@ import { useRouter } from "vue-router";
 import { getAllPlayList } from "@/api/playlist";
 import { getAlbumDetail } from "@/api/album";
 import { getDjProgram } from "@/api/dj";
-import { musicData, siteStatus } from "@/stores";
+import { musicData, siteStatus, siteData } from "@/stores";
 import { playOrPause, initPlayer } from "@/utils/Player";
+import { isLogin } from "@/utils/auth";
 import formatData from "@/utils/formatData";
 
 const router = useRouter();
+const data = siteData();
 const music = musicData();
 const status = siteStatus();
+const { userLikeData } = storeToRefs(data);
 const { playList, playSongData } = storeToRefs(music);
 const { playIndex, playMode, playHeartbeatMode, playState } = storeToRefs(status);
 
@@ -58,7 +61,7 @@ const playListData = ref(null);
 
 // 是否处于当前歌单
 const isHasSongs = computed(() => {
-  if (!playListData.value) return -1;
+  if (!playListData.value || playListData.value === 400) return -1;
   const songId = music.getPlaySongData?.id;
   const existingIndex = playListData.value.findIndex((song) => song.id === songId);
   return existingIndex;
@@ -71,8 +74,16 @@ const getPlaylistData = async () => {
   // 按列表类别获取数据
   switch (props.type) {
     case "playlist": {
-      const result = await getAllPlayList(props.id, 500);
-      return formatData(result.songs, "song");
+      if (props.id === 1024) {
+        console.log("播放我喜欢的音乐");
+        const id = userLikeData.value.playlists?.[0]?.id || null;
+        if (!isLogin() || !id) return 400;
+        const result = await getAllPlayList(id, 500);
+        return formatData(result.songs, "song");
+      } else {
+        const result = await getAllPlayList(props.id, 500);
+        return formatData(result.songs, "song");
+      }
     }
     case "album": {
       const result = await getAlbumDetail(props.id);
@@ -102,6 +113,10 @@ const playAllSongs = async () => {
         if (!playListData.value) {
           playLoading.value = false;
           return $message.error("获取播放列表时出现错误");
+        }
+        if (playListData.value === 400) {
+          playLoading.value = false;
+          return $message.error("请登录后使用");
         }
         console.log("不在歌单内");
         // 更改模式和歌单

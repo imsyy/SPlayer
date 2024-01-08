@@ -7,7 +7,7 @@
         <n-text depth="3">的相关搜索</n-text>
       </div>
       <!-- 标签页 -->
-      <n-tabs v-model:value="tabValue" class="tabs" type="line" @update:value="tabChange">
+      <n-tabs v-model:value="tabValue" class="tabs" type="segment" @update:value="tabChange">
         <n-tab name="sea-songs"> 单曲 </n-tab>
         <n-tab name="sea-artists"> 歌手 </n-tab>
         <n-tab name="sea-albums"> 专辑 </n-tab>

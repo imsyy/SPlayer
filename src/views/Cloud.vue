@@ -15,8 +15,8 @@
       </div>
     </n-progress>
     <!-- 功能区 -->
-    <n-space class="menu" justify="space-between">
-      <n-space class="left">
+    <n-flex class="menu" justify="space-between">
+      <n-flex class="left">
         <n-button type="primary" class="play" circle strong secondary @click="playAllSongs">
           <template #icon>
             <n-icon size="32">
@@ -34,8 +34,8 @@
         </n-button>
         <!-- 歌曲上传弹窗 -->
         <UpCloudSong ref="upCloudSongRef" @getUserCloudData="getUserCloudData" />
-      </n-space>
-      <n-space class="right">
+      </n-flex>
+      <n-flex class="right">
         <!-- 模糊搜索 -->
         <Transition name="fade" mode="out-in">
           <n-input
@@ -54,8 +54,8 @@
             </template>
           </n-input>
         </Transition>
-      </n-space>
-    </n-space>
+      </n-flex>
+    </n-flex>
     <!-- 列表 -->
     <Transition name="fade" mode="out-in">
       <div v-if="userCloudData !== 'empty'" class="list">

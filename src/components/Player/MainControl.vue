@@ -209,7 +209,7 @@
       <Transition name="fade" mode="out-in">
         <div :key="playMode" class="menu">
           <!-- 时间进度 -->
-          <div class="time">
+          <div class="time hidden">
             <n-text class="played" depth="3">{{ playTimeData.played }}</n-text>
             <n-text depth="3">{{ playTimeData.durationTime }}</n-text>
           </div>
@@ -221,7 +221,7 @@
             trigger="hover"
             @select="playModeChange"
           >
-            <div class="mode" @click.stop @dblclick.stop>
+            <div class="mode hidden" @click.stop @dblclick.stop>
               <n-icon size="22">
                 <SvgIcon
                   :icon="
@@ -241,7 +241,7 @@
           <!-- 倍速 -->
           <n-popover :show-arrow="false" trigger="hover" placement="top-end" raw>
             <template #trigger>
-              <div class="speed" @click.stop="(playRate = 1), setRate(1)" @dblclick.stop>
+              <div class="speed hidden" @click.stop="(playRate = 1), setRate(1)" @dblclick.stop>
                 <n-icon v-if="playRate === 1" size="22">
                   <SvgIcon icon="speed-rounded" />
                 </n-icon>
@@ -269,7 +269,12 @@
           <!-- 音量 -->
           <n-popover trigger="hover" :show-arrow="false" raw>
             <template #trigger>
-              <n-icon class="volume" size="22" @click.stop="setVolumeMute" @wheel="changeVolume">
+              <n-icon
+                class="volume hidden"
+                size="22"
+                @click.stop="setVolumeMute"
+                @wheel="changeVolume"
+              >
                 <SvgIcon v-if="playVolume === 0" icon="no-sound-rounded" />
                 <SvgIcon
                   v-else-if="playVolume > 0 && playVolume < 0.4"
@@ -288,7 +293,7 @@
                 padding: '10px 0',
                 width: '50px',
               }"
-              class="slider-content"
+              class="slider-content hidden"
               @wheel="changeVolume"
             >
               <n-slider
@@ -643,12 +648,6 @@ watch(
           }
         }
         &.record {
-          width: 60px;
-          height: 60px;
-          max-height: 60px;
-          min-height: 60px;
-          max-width: 60px;
-          min-width: 60px;
           .cover-img {
             display: flex;
             align-items: center;
@@ -857,6 +856,31 @@ watch(
         backdrop-filter: blur(20px);
         .n-base-slot-machine {
           color: var(--main-color);
+        }
+      }
+    }
+    @media (max-width: 900px) {
+      .menu {
+        .time {
+          display: none;
+        }
+      }
+    }
+    @media (max-width: 700px) {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      .control {
+        margin-left: auto;
+        .play-prev,
+        .play-next {
+          display: none;
+        }
+      }
+      .menu {
+        .hidden {
+          display: none;
         }
       }
     }

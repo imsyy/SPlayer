@@ -22,11 +22,7 @@
         </n-gi>
         <!-- 喜欢的音乐 -->
         <n-gi>
-          <SpecialCover
-            :data="likeSongsCoverData"
-            :showIcon="false"
-            @click="jumpPage('like-songs')"
-          />
+          <SpecialCover :data="likeSongsCoverData" @click="jumpPage('like-songs')" />
         </n-gi>
       </n-grid>
       <PrivateFm class="rec-fm" />
@@ -60,7 +56,8 @@ import {
   getTopArtists,
   getNewAlbum,
 } from "@/api/recommend";
-import { getDjPersonalRec } from "@/api/dj";
+import { allMv } from "@/api/video";
+import { getDjRecommend } from "@/api/dj";
 import { siteData, siteSettings } from "@/stores";
 import { getCacheData } from "@/utils/helper";
 import { isLogin } from "@/utils/auth";
@@ -91,6 +88,7 @@ const dailySongsCoverData = computed(() => {
 // 喜欢的音乐
 const likeSongsCoverData = computed(() => {
   const likeSongsCover = {
+    id: 1024,
     name: "喜欢的音乐",
     desc: "发现你独特的音乐品味",
   };
@@ -129,12 +127,12 @@ const recommendData = ref({
   mv: {
     name: "推荐 MV",
     type: "mv",
-    columns: "1 s:2 m:3 l:4 xl:5",
-    loadingNum: 2,
+    columns: "2 s:2 m:3 l:4 xl:5",
+    loadingNum: 12,
     data: [],
   },
   dj: {
-    name: "专属播客",
+    name: "推荐播客",
     type: "dj",
     loadingNum: 6,
     data: [],
@@ -162,9 +160,9 @@ const getRecommendData = async () => {
       // 歌手
       getCacheData("recAr", 5, getTopArtists),
       // MV
-      getCacheData("recMv", 5, getPersonalized, "mv"),
+      getCacheData("recMv", 5, allMv),
       // 电台
-      getCacheData("recDj", 5, getDjPersonalRec),
+      getCacheData("recDj", 5, getDjRecommend),
       // 专辑
       getCacheData("recAl", 5, getNewAlbum),
     ]);
@@ -182,9 +180,9 @@ const getRecommendData = async () => {
     artistRes.status === "fulfilled" &&
       (recommendData.value.artist.data = formatData(artistRes.value.artists, "artist"));
     mvRes.status === "fulfilled" &&
-      (recommendData.value.mv.data = formatData(mvRes.value.result, "mv"));
+      (recommendData.value.mv.data = formatData(mvRes.value.data, "mv"));
     djRes.status === "fulfilled" &&
-      (recommendData.value.dj.data = formatData(djRes.value.data, "dj"));
+      (recommendData.value.dj.data = formatData(djRes.value.djRadios, "dj"));
     albumRes.status === "fulfilled" &&
       (recommendData.value.album.data = formatData(albumRes.value.albums, "album"));
     // 检查是否有任何请求失败
@@ -272,6 +270,14 @@ onBeforeMount(() => {
       height: 220px;
       margin-left: 20px;
       max-width: calc(50% - 10px);
+    }
+    @media (max-width: 700px) {
+      flex-direction: column;
+      .rec-fm {
+        margin-left: 0;
+        margin-top: 20px;
+        max-width: 100%;
+      }
     }
   }
 }

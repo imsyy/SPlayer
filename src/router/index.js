@@ -37,6 +37,18 @@ router.beforeEach((to, from, next) => {
       }
       if (typeof $changeLogin !== "undefined") $changeLogin();
     }
+  }
+  // 是否为本地功能
+  else if (to.meta.needLocal) {
+    if (checkPlatform.electron()) {
+      next();
+    } else {
+      $message.error("客户端独占功能");
+      if (typeof $loadingBar !== "undefined" && !checkPlatform.electron()) {
+        $loadingBar.error();
+      }
+      next("/403");
+    }
   } else {
     next();
   }

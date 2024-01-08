@@ -33,9 +33,7 @@
         </template>
       </n-image>
       <!-- 播放按钮 -->
-      <n-icon v-if="showIcon" class="play" @click.stop>
-        <SvgIcon icon="play-circle" />
-      </n-icon>
+      <CoverPlayBtn v-if="showIcon" :id="data.id" class="play" />
       <!-- 日期 -->
       <div v-if="showDate" class="cover-date">
         <n-icon class="date-icon">
@@ -145,15 +143,24 @@ const props = defineProps({
     .play {
       position: absolute;
       opacity: 0;
-      font-size: 60px;
-      color: #ffffffe6;
-      transform: scale(0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
       transition:
         transform 0.3s,
         opacity 0.3s;
       cursor: pointer;
+      :deep(.play) {
+        --n-width: 50px;
+        --n-height: 50px;
+        --n-font-size: 20px;
+        .n-icon {
+          font-size: 60px !important;
+        }
+      }
       &:hover {
-        transform: scale(1.2);
+        transform: scale(1.1);
       }
       &:active {
         transform: scale(1);
@@ -212,7 +219,6 @@ const props = defineProps({
   }
   &:hover {
     background-color: var(--n-close-color-hover);
-    transform: translate3d(-2px, 0, 0);
     .cover-main-img {
       filter: brightness(0.8);
     }

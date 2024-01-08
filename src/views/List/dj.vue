@@ -72,7 +72,7 @@
           </n-ellipsis>
           <n-text v-else class="description">太懒了吧，连简介都没写</n-text>
           <!-- 数量 -->
-          <n-space class="num">
+          <n-flex class="num">
             <div v-if="djDetail?.count" class="num-item">
               <n-icon depth="3" size="18">
                 <SvgIcon icon="music-note" />
@@ -85,7 +85,7 @@
               </n-icon>
               <n-text depth="3">{{ getTimestampTime(djDetail.updateTime) }} 更新</n-text>
             </div>
-          </n-space>
+          </n-flex>
         </div>
       </div>
       <div v-else class="detail">
@@ -96,8 +96,8 @@
       </div>
     </Transition>
     <!-- 功能区 -->
-    <n-space class="menu" justify="space-between">
-      <n-space class="left">
+    <n-flex class="menu" justify="space-between">
+      <n-flex class="left">
         <n-button
           :disabled="djData === 'empty'"
           type="primary"
@@ -114,7 +114,15 @@
             </n-icon>
           </template>
         </n-button>
-        <n-button size="large" tag="div" round strong secondary @click="likeOrDislike(djId)">
+        <n-button
+          class="like"
+          size="large"
+          tag="div"
+          round
+          strong
+          secondary
+          @click="likeOrDislike(djId)"
+        >
           <template #icon>
             <n-icon>
               <SvgIcon
@@ -125,7 +133,7 @@
           {{ isLikeOrDislike(djId) ? "订阅电台" : "取消订阅" }}
         </n-button>
         <n-dropdown :options="moreOptions" trigger="hover" placement="bottom-start">
-          <n-button size="large" tag="div" circle strong secondary>
+          <n-button class="more" size="large" tag="div" circle strong secondary>
             <template #icon>
               <n-icon>
                 <SvgIcon icon="format-list-bulleted" />
@@ -133,8 +141,8 @@
             </template>
           </n-button>
         </n-dropdown>
-      </n-space>
-      <n-space class="right">
+      </n-flex>
+      <n-flex class="right">
         <!-- 模糊搜索 -->
         <Transition name="fade" mode="out-in">
           <n-input
@@ -153,8 +161,8 @@
             </template>
           </n-input>
         </Transition>
-      </n-space>
-    </n-space>
+      </n-flex>
+    </n-flex>
     <!-- 列表 -->
     <Transition name="fade" mode="out-in">
       <div v-if="djData !== 'empty'" class="list">
@@ -433,6 +441,7 @@ onMounted(async () => {
         font-size: 30px;
         font-weight: bold;
         margin-bottom: 12px;
+        -webkit-line-clamp: 2;
       }
       .creator {
         display: flex;
@@ -525,6 +534,81 @@ onMounted(async () => {
           background-color 0.3s;
         &.n-input--focus {
           width: 200px;
+        }
+      }
+    }
+  }
+  @media (max-width: 700px) {
+    .detail {
+      .cover {
+        width: 140px;
+        height: 140px;
+        min-width: 140px;
+      }
+      .data {
+        .name {
+          font-size: 20px;
+          margin-bottom: 4px;
+        }
+        .creator {
+          .n-avatar {
+            width: 20px;
+            height: 20px;
+            margin-right: 6px;
+          }
+          .nickname {
+            font-size: 12px;
+          }
+          .create-time {
+            margin-left: 6px;
+            font-size: 12px;
+          }
+        }
+        .tags {
+          .pl-tags {
+            font-size: 12px;
+            padding: 0 12px;
+          }
+        }
+        .num,
+        .description {
+          display: none !important;
+        }
+      }
+    }
+    .menu {
+      margin: 20px 0;
+      .left {
+        .play {
+          --n-width: 40px;
+          --n-height: 40px;
+          .n-icon {
+            font-size: 22px !important;
+          }
+        }
+        .like {
+          --n-height: 36px;
+          --n-font-size: 13px;
+          --n-padding: 0 16px;
+          --n-icon-size: 18px;
+          :deep(.n-button__icon) {
+            margin: 0;
+          }
+          :deep(.n-button__content) {
+            display: none;
+          }
+        }
+        .more {
+          --n-height: 36px;
+          --n-font-size: 13px;
+          --n-icon-size: 18px;
+        }
+      }
+      .right {
+        .search {
+          height: 36px;
+          width: 130px;
+          font-size: 13px;
         }
       }
     }

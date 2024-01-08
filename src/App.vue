@@ -224,7 +224,7 @@ onUnmounted(() => {
       .sider-all {
         height: 100%;
       }
-      @media (max-width: 720px) {
+      @media (max-width: 900px) {
         display: none;
       }
     }

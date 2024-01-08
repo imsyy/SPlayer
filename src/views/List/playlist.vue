@@ -48,7 +48,7 @@
             </n-text>
           </div>
           <!-- 标签 -->
-          <n-space v-if="playListDetail?.tags" class="tags">
+          <n-flex v-if="playListDetail?.tags" class="tags">
             <n-tag
               v-for="(item, index) in playListDetail.tags"
               :key="index"
@@ -64,9 +64,9 @@
             >
               {{ item }}
             </n-tag>
-          </n-space>
+          </n-flex>
           <!-- 数量 -->
-          <n-space class="num">
+          <n-flex class="num">
             <div v-if="playListDetail.count" class="num-item">
               <n-icon depth="3" size="18">
                 <SvgIcon icon="music-note" />
@@ -85,7 +85,7 @@
               </n-icon>
               <n-text depth="3">{{ getTimestampTime(playListDetail.updateTime) }}</n-text>
             </div>
-          </n-space>
+          </n-flex>
           <!-- 简介 -->
           <n-ellipsis
             v-if="playListDetail.description"
@@ -108,8 +108,8 @@
     </Transition>
     <!-- 功能区 -->
     <Transition name="fade" mode="out-in">
-      <n-space :key="isUserPLayList" class="menu" justify="space-between">
-        <n-space class="left">
+      <n-flex :key="isUserPLayList" class="menu" justify="space-between">
+        <n-flex class="left">
           <n-button
             :disabled="playListData === null || playListData === 'empty' || loadingMsg !== null"
             type="primary"
@@ -128,6 +128,7 @@
           </n-button>
           <n-button
             v-if="!isUserPLayList"
+            class="like"
             size="large"
             tag="div"
             round
@@ -148,6 +149,7 @@
           </n-button>
           <n-button
             v-else
+            class="like"
             size="large"
             tag="div"
             round
@@ -163,7 +165,7 @@
             编辑歌单
           </n-button>
           <n-dropdown :options="moreOptions" trigger="hover" placement="bottom-start">
-            <n-button size="large" tag="div" circle strong secondary>
+            <n-button class="more" size="large" tag="div" circle strong secondary>
               <template #icon>
                 <n-icon>
                   <SvgIcon icon="format-list-bulleted" />
@@ -171,8 +173,8 @@
               </template>
             </n-button>
           </n-dropdown>
-        </n-space>
-        <n-space class="right">
+        </n-flex>
+        <n-flex class="right">
           <!-- 模糊搜索 -->
           <Transition name="fade" mode="out-in">
             <n-input
@@ -191,8 +193,8 @@
               </template>
             </n-input>
           </Transition>
-        </n-space>
-      </n-space>
+        </n-flex>
+      </n-flex>
     </Transition>
     <!-- 列表 -->
     <Transition name="fade" mode="out-in">
@@ -566,6 +568,7 @@ onBeforeUnmount(() => {
         font-size: 30px;
         font-weight: bold;
         margin-bottom: 12px;
+        -webkit-line-clamp: 2;
       }
       .creator {
         display: flex;
@@ -640,9 +643,11 @@ onBeforeUnmount(() => {
     }
   }
   .menu {
+    flex-wrap: nowrap;
     align-items: center;
     margin: 26px 0;
     .left {
+      flex-wrap: nowrap;
       align-items: center;
       .play {
         --n-width: 46px;
@@ -661,6 +666,82 @@ onBeforeUnmount(() => {
           background-color 0.3s;
         &.n-input--focus {
           width: 200px;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 700px) {
+    .detail {
+      .cover {
+        width: 140px;
+        height: 140px;
+        min-width: 140px;
+      }
+      .data {
+        .name {
+          font-size: 20px;
+          margin-bottom: 4px;
+        }
+        .creator {
+          .n-avatar {
+            width: 20px;
+            height: 20px;
+            margin-right: 6px;
+          }
+          .nickname {
+            font-size: 12px;
+          }
+          .create-time {
+            margin-left: 6px;
+            font-size: 12px;
+          }
+        }
+        .tags {
+          .pl-tags {
+            font-size: 12px;
+            padding: 0 12px;
+          }
+        }
+        .num,
+        .description {
+          display: none !important;
+        }
+      }
+    }
+    .menu {
+      margin: 20px 0;
+      .left {
+        .play {
+          --n-width: 40px;
+          --n-height: 40px;
+          .n-icon {
+            font-size: 22px !important;
+          }
+        }
+        .like {
+          --n-height: 36px;
+          --n-font-size: 13px;
+          --n-padding: 0 16px;
+          --n-icon-size: 18px;
+          :deep(.n-button__icon) {
+            margin: 0;
+          }
+          :deep(.n-button__content) {
+            display: none;
+          }
+        }
+        .more {
+          --n-height: 36px;
+          --n-font-size: 13px;
+          --n-icon-size: 18px;
+        }
+      }
+      .right {
+        .search {
+          height: 36px;
+          width: 130px;
+          font-size: 13px;
         }
       }
     }

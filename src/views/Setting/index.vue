@@ -17,7 +17,7 @@
     <n-tabs
       ref="setTabsRef"
       v-model:value="setTabsValue"
-      type="line"
+      type="segment"
       @update:value="settingTabChange"
     >
       <n-tab name="setTab1"> 常规 </n-tab>
@@ -85,7 +85,7 @@
         </n-card>
         <n-card class="set-item">
           <div class="name">显示搜索历史</div>
-          <n-switch v-model:value="searchHistory" :round="false" />
+          <n-switch v-model:value="showSearchHistory" :round="false" />
         </n-card>
         <n-card class="set-item">
           <div class="name">
@@ -499,7 +499,7 @@
             默认下载文件夹
             <n-text class="tip">{{ downloadPath || "不设置则会每次选择保存位置" }}</n-text>
           </div>
-          <n-space>
+          <n-flex>
             <Transition name="fade" mode="out-in">
               <n-button
                 v-if="downloadPath"
@@ -514,7 +514,7 @@
             <n-button :disabled="!checkPlatform.electron()" strong secondary @click="choosePath">
               更改
             </n-button>
-          </n-space>
+          </n-flex>
         </n-card>
       </div>
       <!-- 其他 -->
@@ -599,7 +599,7 @@ const {
   lrcMousePause,
   lyricsFontSize,
   lyricsBlur,
-  searchHistory,
+  showSearchHistory,
   autoSignIn,
   bottomLyricShow,
   downloadPath,

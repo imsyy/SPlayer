@@ -40,10 +40,10 @@
       </n-form-item>
     </n-form>
     <template #footer>
-      <n-space justify="end">
+      <n-flex justify="end">
         <n-button @click="closeUpdateModal"> 取消 </n-button>
         <n-button type="primary" @click="toUpdatePlayList"> 编辑 </n-button>
-      </n-space>
+      </n-flex>
     </template>
   </n-modal>
 </template>

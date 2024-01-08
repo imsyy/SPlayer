@@ -3,7 +3,7 @@
   <div class="local">
     <n-h1 class="title">本地歌曲</n-h1>
     <!-- 数据统计 -->
-    <n-space class="num">
+    <n-flex class="num">
       <!-- 总数 -->
       <div class="num-item">
         <n-icon size="18">
@@ -25,7 +25,7 @@
         />
         GB
       </div>
-    </n-space>
+    </n-flex>
     <!-- 标签页 -->
     <n-tabs v-model:value="tabValue" class="tabs" type="segment" @update:value="tabChange">
       <n-tab name="local-songs"> 歌曲 </n-tab>
@@ -153,7 +153,7 @@
         </n-list-item>
       </n-list>
       <template #footer>
-        <n-space justify="center">
+        <n-flex justify="center">
           <n-button class="add-path" strong secondary @click="changeLocalPath">
             <template #icon>
               <n-icon>
@@ -162,7 +162,7 @@
             </template>
             添加文件夹
           </n-button>
-        </n-space>
+        </n-flex>
       </template>
     </n-modal>
   </div>

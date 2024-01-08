@@ -30,7 +30,7 @@
           </n-text>
         </Transition>
       </div>
-      <div class="navigation">
+      <n-flex :class="['navigation', { hidden: searchInputFocus }]" :size="6">
         <n-button :focusable="false" class="nav-icon" quaternary @click="router.go(-1)">
           <template #icon>
             <n-icon>
@@ -45,7 +45,7 @@
             </n-icon>
           </template>
         </n-button>
-      </div>
+      </n-flex>
       <!-- 搜索框 -->
       <SearchInp />
       <!-- GitHub -->
@@ -69,7 +69,6 @@
     <div class="right">
       <!-- 全局菜单 -->
       <n-dropdown
-        v-if="!showSider"
         :show="mainMenuShow"
         :show-arrow="true"
         :options="mainMenuOptions"
@@ -78,7 +77,7 @@
       >
         <n-button
           :style="{ pointerEvents: mainMenuShow ? 'none' : 'auto' }"
-          class="main-menu"
+          :class="['main-menu', { show: !showSider }]"
           secondary
           strong
           round
@@ -111,7 +110,7 @@ import packageJson from "@/../package.json";
 const router = useRouter();
 const status = siteStatus();
 const settings = siteSettings();
-const { asideMenuCollapsed } = storeToRefs(status);
+const { asideMenuCollapsed, searchInputFocus } = storeToRefs(status);
 const { showGithub, showSider, themeAutoCover } = storeToRefs(settings);
 
 // 站点信息
@@ -192,16 +191,30 @@ const mainMenuOptions = computed(() => [
     }
   }
   .navigation {
-    margin-right: 12px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    height: 34px;
+    width: 86px;
+    min-width: 86px;
+    transition:
+      width 0.3s,
+      min-width 0.3s,
+      opacity 0.3s;
+    overflow: hidden;
     -webkit-app-region: no-drag;
     .nav-icon {
       border-radius: 8px;
       padding: 0 8px;
-      &:first-child {
-        margin-right: 6px;
-      }
       .n-icon {
         font-size: 24px;
+      }
+    }
+    @media (max-width: 700px) {
+      &.hidden {
+        opacity: 0;
+        width: 0px;
+        min-width: 0px;
       }
     }
   }
@@ -212,7 +225,15 @@ const mainMenuOptions = computed(() => [
   .main-menu {
     -webkit-app-region: no-drag;
     margin-right: 12px;
+    display: none;
+    &.show {
+      display: flex;
+    }
+    @media (max-width: 900px) {
+      display: flex;
+    }
   }
+
   &.no-sider {
     max-width: 1400px;
     margin: 0 auto;
@@ -224,6 +245,26 @@ const mainMenuOptions = computed(() => [
       width: auto;
       padding-left: 0;
       margin-right: 12px;
+    }
+  }
+  @media (max-width: 900px) {
+    .left {
+      .logo {
+        width: auto;
+        padding-left: 0;
+        margin-right: 12px;
+        .site-name {
+          display: none;
+        }
+      }
+    }
+  }
+  @media (max-width: 700px) {
+    .left {
+      width: 100%;
+    }
+    .github {
+      display: none;
     }
   }
 }

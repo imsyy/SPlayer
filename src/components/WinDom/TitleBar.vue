@@ -47,15 +47,15 @@
       <n-text class="close-tip">确认关闭软件吗？</n-text>
       <n-checkbox v-model:checked="closeTipCheckbox"> 记住且不再询问 </n-checkbox>
       <template #footer>
-        <n-space justify="space-between">
+        <n-flex justify="space-between">
           <n-button strong secondary @click="closeCloseTip('cancel')"> 取消 </n-button>
-          <n-space class="type">
+          <n-flex class="type">
             <n-button strong secondary @click="closeCloseTip('close')"> 退出 </n-button>
             <n-button type="primary" strong secondary @click="closeCloseTip('hide')">
               最小化
             </n-button>
-          </n-space>
-        </n-space>
+          </n-flex>
+        </n-flex>
       </template>
     </n-modal>
   </div>

@@ -6,7 +6,7 @@
       <Transition name="fade" mode="out-in">
         <div v-if="videoData" class="detail">
           <n-text class="title">{{ videoData.name }}</n-text>
-          <n-space class="detail-tag">
+          <n-flex class="detail-tag">
             <!-- 播放量 -->
             <div v-if="videoData?.playCount" class="tag-item">
               <n-icon depth="3" size="18">
@@ -33,7 +33,7 @@
               </n-icon>
               <n-text depth="3">{{ videoData.publishTime }}</n-text>
             </div>
-          </n-space>
+          </n-flex>
         </div>
         <div v-else class="detail">
           <n-skeleton :repeat="2" text round />
@@ -111,7 +111,7 @@
             {{ videoData.desc }}
           </n-ellipsis>
           <n-text v-else>该视频暂无简介</n-text>
-          <n-space v-if="videoData?.videoGroup" class="video-tag">
+          <n-flex v-if="videoData?.videoGroup" class="video-tag">
             <n-tag
               v-for="(item, index) in videoData?.videoGroup"
               :key="index"
@@ -121,7 +121,7 @@
             >
               {{ item.name }}
             </n-tag>
-          </n-space>
+          </n-flex>
           <n-divider id="to-comments" />
         </div>
         <div v-else class="content">
@@ -634,6 +634,26 @@ onBeforeUnmount(() => {
       position: sticky;
       top: 20px;
       margin-top: 36px;
+    }
+  }
+  @media (max-width: 700px) {
+    .player {
+      width: 100%;
+      .detail {
+        height: 60px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        margin-bottom: 20px;
+        .title {
+          display: inline-block;
+          margin: 0;
+          -webkit-line-clamp: 2;
+        }
+      }
+    }
+    .video-more {
+      display: none;
     }
   }
 }

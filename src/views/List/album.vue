@@ -42,7 +42,7 @@
             </n-text>
           </div>
           <!-- 标签 -->
-          <n-space v-if="albumDetail?.tags" class="tags">
+          <n-flex v-if="albumDetail?.tags" class="tags">
             <n-tag
               v-for="(item, index) in albumDetail.tags"
               :key="index"
@@ -58,9 +58,9 @@
             >
               {{ item }}
             </n-tag>
-          </n-space>
+          </n-flex>
           <!-- 数量 -->
-          <n-space class="num">
+          <n-flex class="num">
             <div v-if="albumDetail.count" class="num-item">
               <n-icon depth="3" size="18">
                 <SvgIcon icon="music-note" />
@@ -79,7 +79,7 @@
               </n-icon>
               <n-text depth="3">{{ getTimestampTime(albumDetail.publishTime) }} 发布</n-text>
             </div>
-          </n-space>
+          </n-flex>
           <!-- 简介 -->
           <n-ellipsis
             v-if="albumDetail.description"
@@ -101,8 +101,8 @@
       </div>
     </Transition>
     <!-- 功能区 -->
-    <n-space class="menu" justify="space-between">
-      <n-space class="left">
+    <n-flex class="menu" justify="space-between">
+      <n-flex class="left">
         <n-button
           :disabled="albumData === 'empty'"
           type="primary"
@@ -119,7 +119,15 @@
             </n-icon>
           </template>
         </n-button>
-        <n-button size="large" tag="div" round strong secondary @click="likeOrDislike(albumId)">
+        <n-button
+          class="like"
+          size="large"
+          tag="div"
+          round
+          strong
+          secondary
+          @click="likeOrDislike(albumId)"
+        >
           <template #icon>
             <n-icon>
               <SvgIcon
@@ -130,7 +138,7 @@
           {{ isLikeOrDislike(albumId) ? "收藏专辑" : "取消收藏" }}
         </n-button>
         <n-dropdown :options="moreOptions" trigger="hover" placement="bottom-start">
-          <n-button size="large" tag="div" circle strong secondary>
+          <n-button class="more" size="large" tag="div" circle strong secondary>
             <template #icon>
               <n-icon>
                 <SvgIcon icon="format-list-bulleted" />
@@ -138,8 +146,8 @@
             </template>
           </n-button>
         </n-dropdown>
-      </n-space>
-      <n-space class="right">
+      </n-flex>
+      <n-flex class="right">
         <!-- 模糊搜索 -->
         <Transition name="fade" mode="out-in">
           <n-input
@@ -158,8 +166,8 @@
             </template>
           </n-input>
         </Transition>
-      </n-space>
-    </n-space>
+      </n-flex>
+    </n-flex>
     <!-- 列表 -->
     <Transition name="fade" mode="out-in">
       <SongList v-if="!searchValue" :data="albumData" :sourceId="albumId" :showAlbum="false" />
@@ -194,6 +202,7 @@ import { NIcon } from "naive-ui";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { musicData, siteData, siteStatus } from "@/stores";
+import { getSongDetail } from "@/api/song";
 import { getAlbumDetail, likeAlbum } from "@/api/album";
 import { formatNumber, fuzzySearch } from "@/utils/helper";
 import { getTimestampTime } from "@/utils/timeTools";
@@ -255,7 +264,9 @@ const getAlbumAllData = async (id, justDetail = false) => {
   // 是否终止
   if (justDetail) return true;
   // 全部歌曲
-  albumData.value = formatData(detail.songs, "song");
+  const ids = detail.songs.map((song) => song.id).join(",");
+  const songsDetail = await getSongDetail(ids);
+  albumData.value = formatData(songsDetail.songs, "song");
 };
 
 // 播放专辑全部歌曲
@@ -391,6 +402,7 @@ onBeforeMount(() => {
       .name {
         font-size: 30px;
         font-weight: bold;
+        -webkit-line-clamp: 2;
       }
       .alia {
         margin-top: 4px;
@@ -470,9 +482,11 @@ onBeforeMount(() => {
     }
   }
   .menu {
+    flex-wrap: nowrap;
     align-items: center;
     margin: 26px 0;
     .left {
+      flex-wrap: nowrap;
       align-items: center;
       .play {
         --n-width: 46px;
@@ -491,6 +505,84 @@ onBeforeMount(() => {
           background-color 0.3s;
         &.n-input--focus {
           width: 200px;
+        }
+      }
+    }
+  }
+  @media (max-width: 700px) {
+    .detail {
+      .cover {
+        width: 140px;
+        height: 140px;
+        min-width: 140px;
+      }
+      .data {
+        .name {
+          font-size: 20px;
+          margin-bottom: 4px;
+        }
+        .alia {
+          font-size: 16px;
+        }
+        .creator {
+          .n-avatar {
+            width: 20px;
+            height: 20px;
+            margin-right: 6px;
+          }
+          .nickname {
+            font-size: 12px;
+          }
+          .create-time {
+            margin-left: 6px;
+            font-size: 12px;
+          }
+        }
+        .tags {
+          .pl-tags {
+            font-size: 12px;
+            padding: 0 12px;
+          }
+        }
+        .num,
+        .description {
+          display: none !important;
+        }
+      }
+    }
+    .menu {
+      margin: 20px 0;
+      .left {
+        .play {
+          --n-width: 40px;
+          --n-height: 40px;
+          .n-icon {
+            font-size: 22px !important;
+          }
+        }
+        .like {
+          --n-height: 36px;
+          --n-font-size: 13px;
+          --n-padding: 0 16px;
+          --n-icon-size: 18px;
+          :deep(.n-button__icon) {
+            margin: 0;
+          }
+          :deep(.n-button__content) {
+            display: none;
+          }
+        }
+        .more {
+          --n-height: 36px;
+          --n-font-size: 13px;
+          --n-icon-size: 18px;
+        }
+      }
+      .right {
+        .search {
+          height: 36px;
+          width: 130px;
+          font-size: 13px;
         }
       }
     }

@@ -7,13 +7,14 @@
     @after-leave="changeSuggestionsHeights"
   >
     <n-card
-      v-if="status.searchInputFocus && searchValue"
+      v-if="searchInputFocus && searchValue"
       class="search-suggestions"
       content-style="padding: 0"
       :style="{
         height: `${suggestionsHeights}px`,
         border: suggestionsHeights === 0 ? 'none' : null,
       }"
+      @click="emit('closeSearch')"
     >
       <n-scrollbar class="scrollbar">
         <!-- 直接搜索 -->
@@ -61,12 +62,14 @@
 </template>
 
 <script setup>
+import { storeToRefs } from "pinia";
 import { siteStatus } from "@/stores";
 import { getSearchSuggest } from "@/api/search";
 import debounce from "@/utils/debounce";
 
 const status = siteStatus();
-const emit = defineEmits(["toSearch"]);
+const { searchInputFocus } = storeToRefs(status);
+const emit = defineEmits(["toSearch", "closeSearch"]);
 
 // 搜索内容
 const props = defineProps({
@@ -231,6 +234,18 @@ watch(
       &:last-child {
         margin-bottom: 0;
       }
+    }
+  }
+  @media (max-width: 512px) {
+    position: fixed;
+    top: 58px;
+    border-radius: 0px;
+    width: 100%;
+    max-height: calc(100vh - 58px);
+    min-height: calc(100vh - 58px);
+    :deep(.scrollbar) {
+      max-height: calc(100vh - 58px);
+      min-height: calc(100vh - 58px);
     }
   }
 }

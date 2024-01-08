@@ -206,5 +206,18 @@ const { playState } = storeToRefs(status);
       display: none;
     }
   }
+  @media (max-width: 700px) {
+    &.record {
+      .pointer {
+        width: 12vh;
+        top: -6vh;
+      }
+      .cover-img {
+        width: 40vh;
+        height: 40vh;
+        min-width: 40vh;
+      }
+    }
+  }
 }
 </style>
