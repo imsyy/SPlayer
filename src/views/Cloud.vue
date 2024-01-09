@@ -17,7 +17,17 @@
     <!-- 功能区 -->
     <n-flex class="menu" justify="space-between">
       <n-flex class="left">
-        <n-button type="primary" class="play" circle strong secondary @click="playAllSongs">
+        <n-button
+          :disabled="userCloudData?.length === 0"
+          :focusable="false"
+          type="primary"
+          class="play"
+          tag="div"
+          circle
+          strong
+          secondary
+          @click="playAllSongs(userCloudData)"
+        >
           <template #icon>
             <n-icon size="32">
               <SvgIcon icon="play-arrow-rounded" />
@@ -82,19 +92,14 @@
 </template>
 
 <script setup>
-import { storeToRefs } from "pinia";
-import { musicData, siteStatus, indexedDBData } from "@/stores";
+import { indexedDBData } from "@/stores";
 import { getUserCloud } from "@/api/cloud";
 import { fuzzySearch } from "@/utils/helper";
-import { fadePlayOrPause, initPlayer } from "@/utils/Player";
+import { playAllSongs } from "@/utils/Player";
 import debounce from "@/utils/debounce";
 import formatData from "@/utils/formatData";
 
-const music = musicData();
-const status = siteStatus();
 const indexedDB = indexedDBData();
-const { playList, playSongData } = storeToRefs(music);
-const { playIndex, playMode, playHeartbeatMode } = storeToRefs(status);
 
 // 云盘数据
 const userCloudSpace = ref([]);
@@ -159,31 +164,6 @@ const localSearch = debounce((val) => {
   const result = fuzzySearch(searchValue, userCloudData.value);
   searchData.value = result;
 }, 300);
-
-// 播放歌单全部歌曲
-const playAllSongs = async () => {
-  if (!userCloudData.value || !Object.keys(userCloudData.value).length) return false;
-  // 关闭心动模式
-  playHeartbeatMode.value = false;
-  // 更改模式和歌单
-  playMode.value = "normal";
-  playList.value = userCloudData.value.slice();
-  // 是否处于歌单内
-  const songId = playSongData.value?.id;
-  const existingIndex = userCloudData.value.findIndex((song) => song.id === songId);
-  // 若不处于
-  if (existingIndex === -1 || !songId) {
-    playSongData.value = userCloudData.value[0];
-    playIndex.value = 0;
-    // 初始化播放器
-    await initPlayer(true);
-  } else {
-    playSongData.value = userCloudData.value[existingIndex];
-    playIndex.value = existingIndex;
-    fadePlayOrPause();
-  }
-  $message.info("已开始播放", { showIcon: false });
-};
 
 // 云盘扩容
 const goBuy = () => {

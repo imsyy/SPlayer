@@ -13,7 +13,16 @@
       </div>
       <!-- 操作 -->
       <n-flex class="control">
-        <n-button size="large" tag="div" round strong secondary @click="playAllSongs">
+        <n-button
+          :disabled="dailySongsData.data?.length === 0"
+          :focusable="false"
+          size="large"
+          tag="div"
+          round
+          strong
+          secondary
+          @click="playAllSongs(dailySongsData.data)"
+        >
           <template #icon>
             <n-icon>
               <SvgIcon icon="play-arrow-rounded" />
@@ -40,16 +49,12 @@
 <script setup>
 import { NIcon } from "naive-ui";
 import { storeToRefs } from "pinia";
-import { musicData, siteData, siteStatus } from "@/stores";
-import { fadePlayOrPause, initPlayer } from "@/utils/Player";
+import { siteData } from "@/stores";
+import { playAllSongs } from "@/utils/Player";
 import SvgIcon from "@/components/Global/SvgIcon";
 
 const data = siteData();
-const music = musicData();
-const status = siteStatus();
 const { dailySongsData } = storeToRefs(data);
-const { playList, playSongData } = storeToRefs(music);
-const { playIndex, playMode, playHeartbeatMode } = storeToRefs(status);
 
 const showTime = ref(false);
 const showTimeOut = ref(null);
@@ -84,34 +89,6 @@ const moreOptions = computed(() => [
     icon: renderIcon("refresh"),
   },
 ]);
-
-// 播放歌单全部歌曲
-const playAllSongs = async () => {
-  if (!dailySongsData.value.data) return false;
-  // 关闭心动模式
-  playHeartbeatMode.value = false;
-  // 更改模式和歌单
-  playMode.value = "normal";
-  playList.value = dailySongsData.value.data.slice();
-  // 是否处于歌单内
-  const songId = music.getPlaySongData?.id;
-  const existingIndex = dailySongsData.value.data.findIndex((song) => song.id === songId);
-  // 若不处于
-  if (existingIndex === -1 || !songId) {
-    console.log("不在歌单内");
-    playSongData.value = dailySongsData.value.data[0];
-    playIndex.value = 0;
-    // 初始化播放器
-    await initPlayer(true);
-  } else {
-    console.log("处于歌单内");
-    playSongData.value = dailySongsData.value.data[existingIndex];
-    playIndex.value = existingIndex;
-    // 播放
-    fadePlayOrPause();
-  }
-  $message.info("已开始播放", { showIcon: false });
-};
 
 onMounted(() => {
   showTimeOut.value = setTimeout(() => {

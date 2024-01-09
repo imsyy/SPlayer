@@ -1,6 +1,8 @@
 import { dialog, shell } from "electron";
 import { is } from "@electron-toolkit/utils";
-import { autoUpdater } from "electron-updater";
+import pkg from "electron-updater";
+
+const { autoUpdater } = pkg;
 
 // 更新弹窗
 const hasNewVersion = (info) => {

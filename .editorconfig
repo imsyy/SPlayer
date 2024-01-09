@@ -1,9 +1,18 @@
+# 根配置文件
+## 编辑器在查找配置时会停止查找更高层次的配置文件
 root = true
 
+# 通配符，匹配所有文件
 [*]
+# 设置字符集为 UTF-8，确保文件中的文本使用 UTF-8 编码
 charset = utf-8
+# 使用空格作为缩进风格
 indent_style = space
+# 设置每个缩进级别的空格数量为 2
 indent_size = 2
+# 设置行尾换行符为LF（Line Feed）
 end_of_line = lf
+# 在文件的末尾插入一个新行
 insert_final_newline = true
+# 删除每一行末尾的尾随空格
 trim_trailing_whitespace = true

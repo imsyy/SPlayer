@@ -779,6 +779,41 @@ const getPlaySongName = () => {
   return songName + " - " + songArtist;
 };
 
+export const playAllSongs = async (playlist, mode = "normal") => {
+  try {
+    // pinia
+    const music = musicData();
+    const status = siteStatus();
+    if (!playlist) return false;
+    // 关闭心动模式
+    status.playHeartbeatMode = false;
+    // 更改模式和歌单
+    status.playMode = mode;
+    music.playList = playlist.slice();
+    // 是否处于歌单内
+    const songId = music.getPlaySongData?.id;
+    const existingIndex = playlist.findIndex((song) => song.id === songId);
+    // 若不处于
+    if (existingIndex === -1 || !songId) {
+      console.log("不在歌单内");
+      music.playSongData = playlist[0];
+      status.playIndex = 0;
+      // 初始化播放器
+      await initPlayer(true);
+    } else {
+      console.log("处于歌单内");
+      music.playSongData = playlist[existingIndex];
+      status.playIndex = existingIndex;
+      // 播放
+      fadePlayOrPause();
+    }
+    $message.info("已开始播放", { showIcon: false });
+  } catch (error) {
+    console.error("播放全部歌曲出错：", error);
+    $message.error("播放全部歌曲出现错误");
+  }
+};
+
 /*
  * 清除定时器
  */

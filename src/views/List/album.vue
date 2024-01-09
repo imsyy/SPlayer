@@ -105,13 +105,14 @@
       <n-flex class="left">
         <n-button
           :disabled="albumData === 'empty'"
+          :focusable="false"
           type="primary"
           class="play"
           tag="div"
           circle
           strong
           secondary
-          @click="playAllSongs"
+          @click="playAllSongs(albumData)"
         >
           <template #icon>
             <n-icon size="32">
@@ -120,6 +121,7 @@
           </template>
         </n-button>
         <n-button
+          :focusable="false"
           class="like"
           size="large"
           tag="div"
@@ -138,7 +140,7 @@
           {{ isLikeOrDislike(albumId) ? "收藏专辑" : "取消收藏" }}
         </n-button>
         <n-dropdown :options="moreOptions" trigger="hover" placement="bottom-start">
-          <n-button class="more" size="large" tag="div" circle strong secondary>
+          <n-button :focusable="false" class="more" size="large" tag="div" circle strong secondary>
             <template #icon>
               <n-icon>
                 <SvgIcon icon="format-list-bulleted" />
@@ -193,7 +195,9 @@
   </div>
   <div v-else class="title">
     <n-text class="key">参数不完整</n-text>
-    <n-button class="back" strong secondary @click="router.go(-1)"> 返回上一页 </n-button>
+    <n-button :focusable="false" class="back" strong secondary @click="router.go(-1)">
+      返回上一页
+    </n-button>
   </div>
 </template>
 
@@ -201,12 +205,12 @@
 import { NIcon } from "naive-ui";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
-import { musicData, siteData, siteStatus } from "@/stores";
+import { siteData } from "@/stores";
 import { getSongDetail } from "@/api/song";
 import { getAlbumDetail, likeAlbum } from "@/api/album";
 import { formatNumber, fuzzySearch } from "@/utils/helper";
 import { getTimestampTime } from "@/utils/timeTools";
-import { fadePlayOrPause, initPlayer } from "@/utils/Player";
+import { playAllSongs } from "@/utils/Player";
 import { isLogin } from "@/utils/auth";
 import debounce from "@/utils/debounce";
 import formatData from "@/utils/formatData";
@@ -214,11 +218,7 @@ import SvgIcon from "@/components/Global/SvgIcon";
 
 const router = useRouter();
 const data = siteData();
-const music = musicData();
-const status = siteStatus();
 const { userLikeData } = storeToRefs(data);
-const { playList, playSongData } = storeToRefs(music);
-const { playIndex, playMode, playHeartbeatMode } = storeToRefs(status);
 
 // 专辑 ID
 const albumId = ref(router.currentRoute.value.query.id || null);
@@ -267,34 +267,6 @@ const getAlbumAllData = async (id, justDetail = false) => {
   const ids = detail.songs.map((song) => song.id).join(",");
   const songsDetail = await getSongDetail(ids);
   albumData.value = formatData(songsDetail.songs, "song");
-};
-
-// 播放专辑全部歌曲
-const playAllSongs = async () => {
-  if (!albumData.value) return false;
-  // 关闭心动模式
-  playHeartbeatMode.value = false;
-  // 更改模式和歌单
-  playMode.value = "normal";
-  playList.value = albumData.value.slice();
-  // 是否处于专辑内
-  const songId = playSongData.value?.id;
-  const existingIndex = albumData.value.findIndex((song) => song.id === songId);
-  // 若不处于
-  if (existingIndex === -1 || !songId) {
-    console.log("不在专辑内");
-    playSongData.value = albumData.value[0];
-    playIndex.value = 0;
-    // 初始化播放器
-    await initPlayer(true);
-  } else {
-    console.log("处于专辑内");
-    playSongData.value = albumData.value[existingIndex];
-    playIndex.value = existingIndex;
-    // 播放
-    fadePlayOrPause();
-  }
-  $message.info("已开始播放", { showIcon: false });
 };
 
 // 歌曲模糊搜索

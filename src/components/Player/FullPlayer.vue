@@ -49,9 +49,14 @@
         <div v-show="playerControlShow" class="menu">
           <div class="left">
             <!-- 歌词模式 -->
-            <div v-if="isHasLrc" class="n-icon" @click="pureLyricMode = !pureLyricMode">
-              <n-text>词</n-text>
-            </div>
+            <n-icon
+              v-if="isHasLrc"
+              :class="['lrc-open', { open: pureLyricMode }]"
+              size="28"
+              @click="pureLyricMode = !pureLyricMode"
+            >
+              <SvgIcon icon="lrc-text" />
+            </n-icon>
           </div>
           <div class="right">
             <!-- 全屏切换 -->
@@ -406,17 +411,6 @@ onUnmounted(() => {
       justify-content: flex-end;
       flex: 1;
     }
-    .left {
-      justify-content: flex-start;
-      .n-icon {
-        margin-left: 0;
-        margin-right: 12px;
-        .n-text {
-          font-size: 26px;
-          font-weight: bold;
-        }
-      }
-    }
     .n-icon {
       margin-left: 12px;
       width: 40px;
@@ -439,6 +433,17 @@ onUnmounted(() => {
       }
       &:active {
         transform: scale(1);
+      }
+    }
+    .left {
+      justify-content: flex-start;
+      .n-icon {
+        margin-left: 0;
+        &.lrc-open {
+          &.open {
+            opacity: 0.8;
+          }
+        }
       }
     }
   }

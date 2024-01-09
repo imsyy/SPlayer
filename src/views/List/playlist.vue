@@ -112,13 +112,14 @@
         <n-flex class="left">
           <n-button
             :disabled="playListData === null || playListData === 'empty' || loadingMsg !== null"
+            :focusable="false"
             type="primary"
             class="play"
             tag="div"
             circle
             strong
             secondary
-            @click="playAllSongs"
+            @click="playAllSongs(playListData)"
           >
             <template #icon>
               <n-icon size="32">
@@ -128,6 +129,7 @@
           </n-button>
           <n-button
             v-if="!isUserPLayList"
+            :focusable="false"
             class="like"
             size="large"
             tag="div"
@@ -149,6 +151,7 @@
           </n-button>
           <n-button
             v-else
+            :focusable="false"
             class="like"
             size="large"
             tag="div"
@@ -165,7 +168,15 @@
             编辑歌单
           </n-button>
           <n-dropdown :options="moreOptions" trigger="hover" placement="bottom-start">
-            <n-button class="more" size="large" tag="div" circle strong secondary>
+            <n-button
+              :focusable="false"
+              class="more"
+              size="large"
+              tag="div"
+              circle
+              strong
+              secondary
+            >
               <template #icon>
                 <n-icon>
                   <SvgIcon icon="format-list-bulleted" />
@@ -218,7 +229,9 @@
   </div>
   <div v-else class="title">
     <n-text class="key">参数不完整</n-text>
-    <n-button class="back" strong secondary @click="router.go(-1)"> 返回上一页 </n-button>
+    <n-button :focusable="false" class="back" strong secondary @click="router.go(-1)">
+      返回上一页
+    </n-button>
   </div>
 </template>
 
@@ -226,7 +239,7 @@
 import { NIcon } from "naive-ui";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
-import { musicData, siteData, siteStatus } from "@/stores";
+import { siteData } from "@/stores";
 import {
   getPlayListDetail,
   getAllPlayList,
@@ -238,18 +251,14 @@ import { getSongDetail } from "@/api/song";
 import { formatNumber, fuzzySearch } from "@/utils/helper";
 import { isLogin } from "@/utils/auth";
 import { getTimestampTime } from "@/utils/timeTools";
-import { fadePlayOrPause, initPlayer } from "@/utils/Player";
+import { playAllSongs } from "@/utils/Player";
 import debounce from "@/utils/debounce";
 import formatData from "@/utils/formatData";
 import SvgIcon from "@/components/Global/SvgIcon";
 
 const router = useRouter();
 const data = siteData();
-const music = musicData();
-const status = siteStatus();
 const { userLikeData, userData } = storeToRefs(data);
-const { playList, playSongData } = storeToRefs(music);
-const { playIndex, playMode, playHeartbeatMode } = storeToRefs(status);
 
 // 歌单 ID
 const playlistId = ref(
@@ -383,34 +392,6 @@ const getBigPlayListData = async (id, count) => {
   // 关闭加载提示
   loadingMsg.value?.destroy();
   loadingMsg.value = null;
-};
-
-// 播放歌单全部歌曲
-const playAllSongs = async () => {
-  if (!playListData.value) return false;
-  // 关闭心动模式
-  playHeartbeatMode.value = false;
-  // 更改模式和歌单
-  playMode.value = "normal";
-  playList.value = playListData.value.slice();
-  // 是否处于歌单内
-  const songId = music.getPlaySongData?.id;
-  const existingIndex = playListData.value.findIndex((song) => song.id === songId);
-  // 若不处于
-  if (existingIndex === -1 || !songId) {
-    console.log("不在歌单内");
-    playSongData.value = playListData.value[0];
-    playIndex.value = 0;
-    // 初始化播放器
-    await initPlayer(true);
-  } else {
-    console.log("处于歌单内");
-    playSongData.value = playListData.value[existingIndex];
-    playIndex.value = existingIndex;
-    // 播放
-    fadePlayOrPause();
-  }
-  $message.info("已开始播放", { showIcon: false });
 };
 
 // 歌曲模糊搜索

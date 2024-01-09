@@ -100,13 +100,14 @@
       <n-flex class="left">
         <n-button
           :disabled="djData === 'empty'"
+          :focusable="false"
           type="primary"
           class="play"
           tag="div"
           circle
           strong
           secondary
-          @click="playAllSongs"
+          @click="playAllSongs(djData, 'dj')"
         >
           <template #icon>
             <n-icon size="32">
@@ -115,6 +116,7 @@
           </template>
         </n-button>
         <n-button
+          :focusable="false"
           class="like"
           size="large"
           tag="div"
@@ -133,7 +135,7 @@
           {{ isLikeOrDislike(djId) ? "订阅电台" : "取消订阅" }}
         </n-button>
         <n-dropdown :options="moreOptions" trigger="hover" placement="bottom-start">
-          <n-button class="more" size="large" tag="div" circle strong secondary>
+          <n-button :focusable="false" class="more" size="large" tag="div" circle strong secondary>
             <template #icon>
               <n-icon>
                 <SvgIcon icon="format-list-bulleted" />
@@ -197,7 +199,9 @@
   </div>
   <div v-else class="title">
     <n-text class="key">参数不完整</n-text>
-    <n-button class="back" strong secondary @click="router.go(-1)"> 返回上一页 </n-button>
+    <n-button :focusable="false" class="back" strong secondary @click="router.go(-1)">
+      返回上一页
+    </n-button>
   </div>
 </template>
 
@@ -205,25 +209,21 @@
 import { NIcon } from "naive-ui";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
-import { musicData, siteData, siteSettings, siteStatus } from "@/stores";
+import { siteData, siteSettings } from "@/stores";
 import { getDjDetail, getDjProgram, likeDj } from "@/api/dj";
 import { fuzzySearch } from "@/utils/helper";
 import { isLogin } from "@/utils/auth";
 import { getTimestampTime } from "@/utils/timeTools";
-import { fadePlayOrPause, initPlayer } from "@/utils/Player";
+import { playAllSongs } from "@/utils/Player";
 import debounce from "@/utils/debounce";
 import formatData from "@/utils/formatData";
 import SvgIcon from "@/components/Global/SvgIcon";
 
 const router = useRouter();
 const data = siteData();
-const music = musicData();
-const status = siteStatus();
 const settings = siteSettings();
 const { userLikeData } = storeToRefs(data);
 const { loadSize } = storeToRefs(settings);
-const { playList, playSongData } = storeToRefs(music);
-const { playIndex, playMode, playHeartbeatMode } = storeToRefs(status);
 
 //  电台数据
 const djId = ref(router.currentRoute.value.query.id);
@@ -288,34 +288,6 @@ const getDjProgramData = async (id, limit = loadSize.value, offset = 0) => {
     console.error("获取电台节目错误：", error);
     $message.error("获取电台节目出现错误");
   }
-};
-
-// 播放电台全部节目
-const playAllSongs = async () => {
-  if (!djData.value) return false;
-  // 关闭心动模式
-  playHeartbeatMode.value = false;
-  // 更改模式和电台
-  playMode.value = "dj";
-  playList.value = djData.value.slice();
-  // 是否处于电台内
-  const songId = music.getPlaySongData?.id;
-  const existingIndex = djData.value.findIndex((song) => song.id === songId);
-  // 若不处于
-  if (existingIndex === -1 || !songId) {
-    console.log("不在电台内");
-    playSongData.value = djData.value[0];
-    playIndex.value = 0;
-    // 初始化播放器
-    await initPlayer(true);
-  } else {
-    console.log("处于电台内");
-    playSongData.value = djData.value[existingIndex];
-    playIndex.value = existingIndex;
-    // 播放
-    fadePlayOrPause();
-  }
-  $message.info("已开始播放", { showIcon: false });
 };
 
 // 节目模糊搜索

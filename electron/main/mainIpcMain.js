@@ -1,9 +1,9 @@
 import { ipcMain, dialog, app, clipboard, shell } from "electron";
 import { readDirAsync } from "@main/utils/readDirAsync";
 import { parseFile } from "music-metadata";
-import { write } from "node-id3";
 import { download } from "electron-dl";
 import getNeteaseMusicUrl from "@main/utils/getNeteaseMusicUrl";
+import NodeID3 from "node-id3";
 import axios from "axios";
 import fs from "fs/promises";
 
@@ -203,6 +203,8 @@ const mainIpcMain = (win) => {
           directory: path,
           filename: `${songName}.${songType}`,
         });
+        // 若不为 mp3，则不进行元信息写入
+        if (songType !== "mp3") return true;
         // 下载封面
         const coverDownload = await download(win, songData.cover, {
           directory: path,
@@ -218,10 +220,10 @@ const mainIpcMain = (win) => {
           image: coverDownload.getSavePath(),
         };
         // 保存修改后的元数据
-        write(songTag, songDownload.getSavePath());
+        const isSuccess = NodeID3.write(songTag, songDownload.getSavePath());
         // 删除封面
         await fs.unlink(coverDownload.getSavePath());
-        return true;
+        return isSuccess;
       } else {
         console.log(`目录不存在：${path}`);
         return false;

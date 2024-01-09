@@ -26,41 +26,68 @@
         GB
       </div>
     </n-flex>
+    <!-- 功能区 -->
+    <n-flex class="menu" justify="space-between">
+      <n-flex class="left">
+        <n-button
+          :disabled="!localSongList?.length"
+          :focusable="false"
+          type="primary"
+          class="play"
+          tag="div"
+          circle
+          strong
+          secondary
+          @click="playAllSongs(localSongList)"
+        >
+          <template #icon>
+            <n-icon size="32">
+              <SvgIcon icon="play-arrow-rounded" />
+            </n-icon>
+          </template>
+        </n-button>
+        <!-- 目录管理 -->
+        <n-button
+          :focusable="false"
+          class="local-path"
+          tag="div"
+          round
+          strong
+          secondary
+          @click="localPathShow = true"
+        >
+          <template #icon>
+            <n-icon>
+              <SvgIcon icon="folder-cog" />
+            </n-icon>
+          </template>
+          目录管理
+        </n-button>
+      </n-flex>
+      <n-flex class="right">
+        <!-- 模糊搜索 -->
+        <n-input
+          v-if="localSongList?.length"
+          v-model:value="searchValue"
+          :input-props="{ autoComplete: false }"
+          class="search"
+          placeholder="搜索"
+          clearable
+          @input="localSearch"
+        >
+          <template #prefix>
+            <n-icon size="18">
+              <SvgIcon icon="search-rounded" />
+            </n-icon>
+          </template>
+        </n-input>
+      </n-flex>
+    </n-flex>
     <!-- 标签页 -->
     <n-tabs v-model:value="tabValue" class="tabs" type="segment" @update:value="tabChange">
       <n-tab name="local-songs"> 歌曲 </n-tab>
       <n-tab name="local-artists"> 歌手 </n-tab>
       <n-tab name="local-albums"> 专辑 </n-tab>
-      <template #suffix>
-        <!-- 模糊搜索 -->
-        <div v-if="localSongList?.length" class="search">
-          <n-input
-            v-model:value="searchValue"
-            :input-props="{ autoComplete: false }"
-            class="local-search"
-            placeholder="搜索"
-            clearable
-            @input="localSearch"
-          >
-            <template #prefix>
-              <n-icon size="18">
-                <SvgIcon icon="search-rounded" />
-              </n-icon>
-            </template>
-          </n-input>
-        </div>
-        <!-- 目录管理 -->
-        <div class="local-path">
-          <n-button strong secondary @click="localPathShow = true">
-            <template #icon>
-              <n-icon>
-                <SvgIcon icon="folder-cog" />
-              </n-icon>
-            </template>
-            目录管理
-          </n-button>
-        </div>
-      </template>
     </n-tabs>
     <!-- 路由页面 -->
     <Transition name="fade" mode="out-in">
@@ -172,6 +199,7 @@
 import { musicData, indexedDBData } from "@/stores";
 import { useRouter } from "vue-router";
 import { fuzzySearch } from "@/utils/helper";
+import { playAllSongs } from "@/utils/Player";
 import debounce from "@/utils/debounce";
 
 const indexedDB = indexedDBData();
@@ -335,25 +363,40 @@ onBeforeMount(async () => {
       }
     }
   }
-  .tabs {
-    margin-bottom: 20px;
-    .search {
-      height: 100%;
-      margin-right: 16px;
-      .local-search {
+  .menu {
+    flex-wrap: nowrap;
+    align-items: center;
+    margin: 20px 0;
+    .left {
+      flex-wrap: nowrap;
+      align-items: center;
+      .play {
+        --n-width: 46px;
+        --n-height: 46px;
+      }
+      .local-path {
+        --n-height: 100%;
+        height: 40px;
+      }
+    }
+    .right {
+      .search {
+        height: 40px;
+        width: 130px;
         display: flex;
         align-items: center;
-        height: 100%;
-        border-radius: 6px;
+        border-radius: 40px;
+        transition:
+          width 0.3s,
+          background-color 0.3s;
+        &.n-input--focus {
+          width: 200px;
+        }
       }
     }
-    .local-path {
-      height: 100%;
-      :deep(.n-button) {
-        --n-height: 100%;
-        --n-border-radius: 6px;
-      }
-    }
+  }
+  .tabs {
+    margin-bottom: 20px;
   }
 }
 .local-list {

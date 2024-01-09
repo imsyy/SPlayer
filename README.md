@@ -229,7 +229,6 @@ docker run -d --name SPlayer -p 7899:7899 imsyy/splayer:latest
 - [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi)
 - [YesPlayMusic](https://github.com/qier222/YesPlayMusic)
 - [UnblockNeteaseMusic](https://github.com/UnblockNeteaseMusic/server)
-- [BlurLyric](https://github.com/Project-And-Factory/BlurLyric)
 - [Vue-mmPlayer](https://github.com/maomao1996/Vue-mmPlayer)
 
 ## 📢 免责声明
