@@ -221,22 +221,25 @@
             trigger="hover"
             @select="playModeChange"
           >
-            <div class="mode hidden" @click.stop @dblclick.stop>
-              <n-icon size="22">
-                <SvgIcon
-                  :icon="
-                    playHeartbeatMode
-                      ? 'heartbit'
-                      : playSongMode === 'normal'
-                        ? 'repeat-list'
-                        : playSongMode === 'random'
-                          ? 'shuffle'
-                          : 'repeat-song'
-                  "
-                  isSpecial
-                />
-              </n-icon>
-            </div>
+            <n-icon
+              class="mode hidden"
+              size="22"
+              @click.stop="playModeChange(false)"
+              @dblclick.stop
+            >
+              <SvgIcon
+                :icon="
+                  playHeartbeatMode
+                    ? 'heartbit'
+                    : playSongMode === 'normal'
+                      ? 'repeat-list'
+                      : playSongMode === 'random'
+                        ? 'shuffle'
+                        : 'repeat-song'
+                "
+                isSpecial
+              />
+            </n-icon>
           </n-dropdown>
           <!-- 倍速 -->
           <n-popover :show-arrow="false" trigger="hover" placement="top-end" raw>
@@ -391,14 +394,14 @@ const renderIcon = (icon, isSpecial = false) => {
 // 播放模式数据
 const playModeOptions = ref([
   {
-    label: "列表循环",
-    key: "normal",
-    icon: renderIcon("repeat-list", true),
-  },
-  {
     label: "单曲循环",
     key: "repeat",
     icon: renderIcon("repeat-song", true),
+  },
+  {
+    label: "列表循环",
+    key: "normal",
+    icon: renderIcon("repeat-list", true),
   },
   {
     label: "随机播放",
@@ -504,6 +507,11 @@ const changePlayIndexDebounce = debounce(async (type, id) => {
 
 // 播放模式切换
 const playModeChange = (mode) => {
+  const modeMap = {
+    normal: "random",
+    random: "shuffle",
+    shuffle: "normal",
+  };
   // 关闭心动模式
   if (playHeartbeatMode.value) {
     playHeartbeatMode.value = false;
@@ -513,7 +521,11 @@ const playModeChange = (mode) => {
     playListOld.value = [];
   }
   // 切换模式
-  playSongMode.value = mode;
+  if (mode) {
+    playSongMode.value = mode;
+  } else {
+    playSongMode.value = modeMap[playSongMode.value] || "normal";
+  }
 };
 
 // 音量条鼠标滚动

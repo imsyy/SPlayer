@@ -6,8 +6,8 @@
       v-model:value="searchInputValue"
       :class="searchInputFocus ? 'input focus' : 'input'"
       :input-props="{ autoComplete: false }"
+      :placeholder="searchPlaceholder"
       :allow-input="noSideSpace"
-      placeholder="搜索音乐 / 视频"
       round
       clearable
       @focus="searchInputToFocus"
@@ -43,6 +43,7 @@
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { getSongDetail } from "@/api/song";
+import { getSearchDefault } from "@/api/search";
 import { siteData, siteStatus, musicData } from "@/stores";
 import { addSongToNext, initPlayer } from "@/utils/Player";
 import formatData from "@/utils/formatData";
@@ -55,8 +56,12 @@ const { searchHistory } = storeToRefs(data);
 const { playSongData } = storeToRefs(music);
 const { searchInputFocus } = storeToRefs(status);
 
+// 搜索框数据
 const searchInpRef = ref(null);
 const searchInputValue = ref("");
+const searchInterval = ref(null);
+const searchRealkeyword = ref(null);
+const searchPlaceholder = ref("搜索音乐 / 视频");
 
 // 搜索框输入限制
 const noSideSpace = (value) => !value.startsWith(" ");
@@ -78,6 +83,25 @@ const setSearchHistory = (name) => {
   if (searchHistory.value.length > 30) {
     searchHistory.value.pop();
   }
+};
+
+// 更换搜索框关键词
+const updatePlaceholder = async () => {
+  try {
+    const result = await getSearchDefault();
+    searchPlaceholder.value = result.data.showKeyword;
+    searchRealkeyword.value = result.data.realkeyword;
+  } catch (error) {
+    console.error("搜索关键词获取失败：", error);
+    searchPlaceholder.value = "搜索音乐 / 视频";
+  }
+};
+
+// 更新搜索框关键词
+const changePlaceholder = () => {
+  updatePlaceholder();
+  // 5分钟
+  searchInterval.value = setInterval(updatePlaceholder, 5 * 60 * 1000);
 };
 
 // 关闭搜索
@@ -107,9 +131,15 @@ const toPlaySong = async (id) => {
 
 // 前往搜索
 const toSearch = (val, type = "song") => {
-  if (!val) return false;
+  // 未输入内容且不存在推荐
+  if (!val && searchPlaceholder.value === "搜索音乐 / 视频") return false;
+  if (!val && searchPlaceholder.value !== "搜索音乐 / 视频" && searchRealkeyword.value) {
+    val = searchRealkeyword.value?.trim();
+  }
   // 取消聚焦状态
   closeSearch();
+  // 更新推荐
+  updatePlaceholder();
   // 触发测试
   if (Number(val) === 114514) return router.push("/test");
   // 判断类型
@@ -161,6 +191,14 @@ const toSearch = (val, type = "song") => {
       break;
   }
 };
+
+onMounted(() => {
+  changePlaceholder();
+});
+
+onBeforeUnmount(() => {
+  clearInterval(searchInterval.value);
+});
 </script>
 
 <style lang="scss" scoped>

@@ -7,6 +7,8 @@
   "home": "https://imsyy.top",
   "github": "https://github.com/imsyy/SPlayer",
   "repository": "github:imsyy/SPlayer",
+  "license": "AGPL-3.0",
+  "license-file": "LICENSE",
   "engines": {
     "node": ">=18.16.0",
     "npm": ">=9.6.7",

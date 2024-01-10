@@ -779,6 +779,11 @@ const getPlaySongName = () => {
   return songName + " - " + songArtist;
 };
 
+/**
+ * 播放所有歌曲
+ * @param {Array} playlist - 包含歌曲信息的数组
+ * @param {string} mode - 播放模式
+ */
 export const playAllSongs = async (playlist, mode = "normal") => {
   try {
     // pinia
