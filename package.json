@@ -41,7 +41,7 @@
     "js-cookie": "^3.0.5",
     "localforage": "^1.10.0",
     "music-metadata": "7.14.0",
-    "node-id3": "^0.2.6",
+    "node-taglib-sharp": "^5.2.3",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",
     "plyr": "^3.7.8",

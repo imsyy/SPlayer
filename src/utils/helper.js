@@ -1,6 +1,7 @@
 // BlobUrl
 let lastSongBlobUrl = null;
 let lastCoverBlobUrl = null;
+let lastDownloadBlobUrl = null;
 
 /**
  * 判断当前运行环境
@@ -291,35 +292,40 @@ export const generateId = (fileName) => {
  * @param {String} songName - 歌曲名称
  * @returns {number} - 生成的数字ID
  */
-export const downloadFile = async (data, song, path = null) => {
+export const downloadFile = async (data, song, lyric, options) => {
   try {
     const isElectron = checkPlatform.electron();
     const songType = data.type.toLowerCase();
     // 歌曲名称
     const songName =
       song.name +
-      " - " +
+      "-" +
       (Array.isArray(song.artists)
-        ? song.artists.map((ar) => ar.name).join(" / ")
+        ? song.artists.map((ar) => ar.name).join("&")
         : song.artists || "未知歌手");
-    if (isElectron && path) {
-      console.log("开始下载：", data, song, songName, songType, path);
+    if (isElectron && options.path) {
+      console.log("开始下载：", data, song, songName, songType, options.path);
       return await electron.ipcRenderer.invoke(
         "downloadFile",
-        data,
-        JSON.stringify(song),
-        songName,
-        songType,
-        path,
+        JSON.stringify({
+          url: data?.url,
+          data: song,
+          lyric: lyric,
+          name: songName,
+          type: songType,
+        }),
+        JSON.stringify(options),
       );
     } else {
-      const songRes = await fetch(data.url.replace(/^http:/, "https:"));
+      // 清理过期的 Blob 链接
+      if (lastDownloadBlobUrl) URL.revokeObjectURL(lastDownloadBlobUrl);
+      const songRes = await fetch(data?.url.replace(/^http:/, "https:"));
       if (!songRes.ok) throw new Error("下载出错，请重试");
       const blob = await songRes.blob();
-      const url = window.URL.createObjectURL(blob);
+      lastDownloadBlobUrl = URL.createObjectURL(blob);
       // 下载数据
       const a = document.createElement("a");
-      a.href = url;
+      a.href = lastDownloadBlobUrl;
       a.download = `${songName}.${songType}`;
       document.body.appendChild(a);
       a.click();

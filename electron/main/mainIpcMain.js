@@ -1,9 +1,9 @@
 import { ipcMain, dialog, app, clipboard, shell } from "electron";
+import { File, Picture, Id3v2Settings } from "node-taglib-sharp";
 import { readDirAsync } from "@main/utils/readDirAsync";
 import { parseFile } from "music-metadata";
 import { download } from "electron-dl";
 import getNeteaseMusicUrl from "@main/utils/getNeteaseMusicUrl";
-import NodeID3 from "node-id3";
 import axios from "axios";
 import fs from "fs/promises";
 
@@ -193,37 +193,42 @@ const mainIpcMain = (win) => {
   });
 
   // 下载文件至指定目录
-  ipcMain.handle("downloadFile", async (_, data, song, songName, songType, path) => {
+  ipcMain.handle("downloadFile", async (_, songData, options) => {
     try {
+      const { url, data, lyric, name, type } = JSON.parse(songData);
+      const { path, downloadMeta, downloadCover, downloadLyrics } = JSON.parse(options);
       if (fs.access(path)) {
-        const songData = JSON.parse(song);
-        console.info("开始下载：", songData, data);
+        console.info("开始下载：", name, url);
         // 下载歌曲
-        const songDownload = await download(win, data.url, {
+        const songDownload = await download(win, url, {
           directory: path,
-          filename: `${songName}.${songType}`,
+          filename: `${name}.${type}`,
         });
-        // 若不为 mp3，则不进行元信息写入
-        if (songType !== "mp3") return true;
+        // 若关闭，则不进行元信息写入
+        if (!downloadMeta) return true;
         // 下载封面
-        const coverDownload = await download(win, songData.cover, {
+        const coverDownload = await download(win, data.cover, {
           directory: path,
-          filename: `${songName}.jpg`,
+          filename: `${name}.jpg`,
         });
-        // 生成歌曲文件的元数据
-        const songTag = {
-          title: songData.name,
-          artist: Array.isArray(songData.artists)
-            ? songData.artists.map((ar) => ar.name).join(" / ")
-            : songData.artists || "未知歌手",
-          album: songData.album?.name || songData.album,
-          image: coverDownload.getSavePath(),
-        };
+        // 读取歌曲文件
+        const songFile = File.createFromPath(songDownload.getSavePath());
+        // 生成图片信息
+        const songCover = Picture.fromPath(coverDownload.getSavePath());
         // 保存修改后的元数据
-        const isSuccess = NodeID3.write(songTag, songDownload.getSavePath());
+        Id3v2Settings.forceDefaultVersion = true;
+        Id3v2Settings.defaultVersion = 3;
+        songFile.tag.title = data.name || "未知曲目";
+        songFile.tag.album = data.album?.name || "未知专辑";
+        songFile.tag.performers = data?.artists?.map((ar) => ar.name) || ["未知艺术家"];
+        if (downloadLyrics) songFile.tag.lyrics = lyric;
+        if (downloadCover) songFile.tag.pictures = [songCover];
+        // 保存元信息
+        songFile.save();
+        songFile.dispose();
         // 删除封面
         await fs.unlink(coverDownload.getSavePath());
-        return isSuccess;
+        return true;
       } else {
         console.log(`目录不存在：${path}`);
         return false;

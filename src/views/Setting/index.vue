@@ -516,6 +516,21 @@
             </n-button>
           </n-flex>
         </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            同时下载歌曲元信息
+            <n-text class="tip">为当前下载歌曲附加封面及歌词等元信息</n-text>
+          </div>
+          <n-switch v-model:value="downloadMeta" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">下载歌曲时同时下载封面</div>
+          <n-switch v-model:value="downloadCover" :disabled="!downloadMeta" :round="false" />
+        </n-card>
+        <n-card class="set-item">
+          <div class="name">下载歌曲时同时下载歌词</div>
+          <n-switch v-model:value="downloadLyrics" :disabled="!downloadMeta" :round="false" />
+        </n-card>
       </div>
       <!-- 其他 -->
       <div class="set-type">
@@ -611,6 +626,9 @@ const {
   showSpectrums,
   siderShowCover,
   useMusicCache,
+  downloadMeta,
+  downloadCover,
+  downloadLyrics,
 } = storeToRefs(settings);
 
 // 标签页数据

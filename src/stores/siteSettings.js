@@ -48,6 +48,9 @@ const useSiteSettingsStore = defineStore("siteSettings", {
       showRoma: true, // 是否显示歌词音译
       // 下载部分
       downloadPath: null, // 默认下载路径
+      downloadMeta: true, // 同时下载元信息
+      downloadCover: true, // 同时下载封面
+      downloadLyrics: true, // 同时下载歌词
     };
   },
   getters: {},

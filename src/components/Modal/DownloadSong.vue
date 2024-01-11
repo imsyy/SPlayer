@@ -43,8 +43,9 @@
         <n-button
           :disabled="!downloadChoose"
           :loading="downloadStatus"
+          :focusable="false"
           type="primary"
-          @click="toSongDownload(songData, downloadChoose)"
+          @click="toSongDownload(songData, lyricData, downloadChoose)"
         >
           下载
         </n-button>
@@ -58,7 +59,7 @@ import { storeToRefs } from "pinia";
 import { isLogin } from "@/utils/auth";
 import { useRouter } from "vue-router";
 import { siteData, siteSettings } from "@/stores";
-import { getSongDetail, getSongDownload } from "@/api/song";
+import { getSongDetail, getSongDownload, getSongLyric } from "@/api/song";
 import { downloadFile, checkPlatform } from "@/utils/helper";
 import formatData from "@/utils/formatData";
 
@@ -66,11 +67,12 @@ const router = useRouter();
 const data = siteData();
 const settings = siteSettings();
 const { userData } = storeToRefs(data);
-const { downloadPath } = storeToRefs(settings);
+const { downloadPath, downloadMeta, downloadCover, downloadLyrics } = storeToRefs(settings);
 
 // 歌曲下载数据
 const songId = ref(null);
 const songData = ref(null);
+const lyricData = ref(null);
 const downloadStatus = ref(false);
 const downloadSongShow = ref(false);
 const downloadChoose = ref(null);
@@ -79,11 +81,13 @@ const downloadLevel = ref(null);
 // 获取歌曲详情
 const getMusicDetailData = async (id) => {
   try {
-    const result = await getSongDetail(id);
+    const songResult = await getSongDetail(id);
+    const lyricResult = await getSongLyric(id);
     // 获取歌曲详情
-    songData.value = formatData(result?.songs?.[0], "song")[0];
+    songData.value = formatData(songResult?.songs?.[0], "song")[0];
+    lyricData.value = lyricResult?.lrc?.lyric || null;
     // 生成音质列表
-    generateLists(result);
+    generateLists(songResult);
   } catch (error) {
     closeDownloadModal();
     console.error("歌曲信息获取失败：", error);
@@ -91,26 +95,42 @@ const getMusicDetailData = async (id) => {
 };
 
 // 歌曲下载
-const toSongDownload = async (song, br) => {
-  console.log(song, br);
-  downloadStatus.value = true;
-  // 获取下载数据
-  const result = await getSongDownload(song?.id, br);
-  // 开始下载
-  if (!downloadPath.value && checkPlatform.electron()) {
-    $notification["warning"]({
-      content: "缺少配置",
-      meta: "请前往设置页配置默认下载目录",
-      duration: 3000,
+const toSongDownload = async (song, lyric, br) => {
+  try {
+    console.log(song, lyric, br);
+    downloadStatus.value = true;
+    // 获取下载数据
+    const result = await getSongDownload(song?.id, br);
+    // 开始下载
+    if (!downloadPath.value && checkPlatform.electron()) {
+      $notification["warning"]({
+        content: "缺少配置",
+        meta: "请前往设置页配置默认下载目录",
+        duration: 3000,
+      });
+    }
+    if (!result.data?.url) {
+      downloadStatus.value = false;
+      return $message.error("下载失败，请重试");
+    }
+    // 获取下载结果
+    const isDownloaded = await downloadFile(result.data, song, lyric, {
+      path: downloadPath.value,
+      downloadMeta: downloadMeta.value,
+      downloadCover: downloadCover.value,
+      downloadLyrics: downloadLyrics.value,
     });
-  }
-  const isDownloaded = await downloadFile(result.data, song, downloadPath.value);
-  if (isDownloaded) {
-    $message.success("下载完成");
-    closeDownloadModal();
-  } else {
-    downloadStatus.value = false;
-    $message.error("下载失败，请重试");
+    console.log(lyric);
+    if (isDownloaded) {
+      $message.success("下载完成");
+      closeDownloadModal();
+    } else {
+      downloadStatus.value = false;
+      $message.error("下载失败，请重试");
+    }
+  } catch (error) {
+    console.error("歌曲下载出错：", error);
+    $message.error("歌曲下载失败，请重试");
   }
 };
 
