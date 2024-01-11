@@ -1,3 +1,7 @@
+// BlobUrl
+let lastSongBlobUrl = null;
+let lastCoverBlobUrl = null;
+
 /**
  * 判断当前运行环境
  */
@@ -59,27 +63,15 @@ export const getCacheData = async (key, time, request, params) => {
  */
 export const getLocalCoverData = async (path, isAlbum = false) => {
   try {
-    let blobUrl = null;
+    // 清理过期的 Blob 链接
+    if (lastCoverBlobUrl) URL.revokeObjectURL(lastCoverBlobUrl);
     const coverData = await electron.ipcRenderer.invoke("getMusicCover", path);
     if (coverData) {
       // 将 Uint8Array 数据转换为 Blob
       const blob = new Blob([coverData.coverData], { type: `image/${coverData.coverFormat}` });
       // 生成Blob URL
-      blobUrl = URL.createObjectURL(blob);
-      // 检查当前path是否与上次不一致
-      const previousPath = sessionStorage.getItem("localCoverPath");
-      if (previousPath && previousPath !== path) {
-        // 清除上次的内容
-        const previousBlobUrl = sessionStorage.getItem("localCoverBlobUrl");
-        if (previousBlobUrl) {
-          URL.revokeObjectURL(previousBlobUrl);
-          sessionStorage.removeItem("localCoverBlobUrl");
-        }
-      }
-      // 存储当前path和Blob URL
-      sessionStorage.setItem("localCoverPath", path);
-      sessionStorage.setItem("localCoverBlobUrl", blobUrl);
-      return blobUrl;
+      lastCoverBlobUrl = URL.createObjectURL(blob);
+      return lastCoverBlobUrl;
     } else {
       // 如果没有封面数据
       return `/images/pic/${isAlbum ? "album" : "song"}.jpg?assest`;
@@ -359,12 +351,10 @@ export const formatBytes = (bytes, decimals = 2) => {
  * 获取音频文件的 Blob 链接
  * @param {string} url - 音频文件的网络链接
  */
-// 上次生成的 BlobUrl
-let lastBlobUrl = null;
 export const getBlobUrlFromUrl = async (url) => {
   try {
     // 清理过期的 Blob 链接
-    if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
+    if (lastSongBlobUrl) URL.revokeObjectURL(lastSongBlobUrl);
     // 是否为网络链接
     if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("blob:")) {
       return url;
@@ -377,8 +367,8 @@ export const getBlobUrlFromUrl = async (url) => {
     }
     const blob = await response.blob();
     // 转换为本地 Blob 链接
-    lastBlobUrl = URL.createObjectURL(blob);
-    return lastBlobUrl;
+    lastSongBlobUrl = URL.createObjectURL(blob);
+    return lastSongBlobUrl;
   } catch (error) {
     console.error("获取 Blob 链接遇到错误：" + error);
     throw error;

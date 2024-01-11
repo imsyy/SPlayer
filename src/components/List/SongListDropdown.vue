@@ -147,7 +147,7 @@ const openDropdown = (e, data, song, index, sourceId, type) => {
           show: isSong && playMode.value !== "dj" && music.getPlaySongData?.id !== song.id && !isFm,
           props: {
             onClick: () => {
-              playMode.value = "song";
+              playMode.value = "normal";
               addSongToNext(song);
             },
           },

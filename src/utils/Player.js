@@ -6,7 +6,7 @@ import { decode as base642Buffer } from "@/utils/base64";
 import { getSongPlayTime } from "@/utils/timeTools";
 import { getCoverGradient } from "@/utils/cover-color";
 import { isLogin } from "@/utils/auth";
-import parseLyric from "@/utils/parseLyric";
+import { parseLyric, parseLocalLrc } from "@/utils/parseLyric";
 
 // 全局播放器
 let player;
@@ -46,6 +46,7 @@ export const initPlayer = async (playNow = false) => {
     playSongData.id = playMode === "dj" ? playSongData.mainTrackId : playSongData.id;
     // 是否为本地歌曲
     const isLocalSong = playSongData?.path ? true : false;
+    console.log("当前为本地歌曲");
     // 获取封面
     if (isLocalSong) {
       music.playSongData.localCover = await getLocalCoverData(playSongData?.path);
@@ -597,17 +598,20 @@ const getSongLyricData = async (islocal, data) => {
     const music = musicData();
     const setDefaults = () => {
       music.playSongLyric = {
+        hasLrcTran: false,
+        hasLrcRoma: false,
+        hasYrc: false,
+        hasYrcTran: false,
+        hasYrcRoma: false,
         lrc: [],
         yrc: [],
-        hasTran: false,
-        hasRoma: false,
-        hasYrc: false,
       };
     };
     if (islocal) {
       const lyricData = await electron.ipcRenderer.invoke("getMusicLyric", data?.path);
       if (lyricData) {
-        music.playSongLyric = parseLyric({ lrc: { lyric: lyricData } });
+        const result = parseLocalLrc(lyricData);
+        music.playSongLyric = result ? (music.playSongLyric = result) : setDefaults();
       } else {
         console.log("该歌曲暂无歌词");
         setDefaults();
@@ -616,7 +620,8 @@ const getSongLyricData = async (islocal, data) => {
       const lyricResponse = await getSongLyric(data?.id);
       const lyricData = lyricResponse?.lrc;
       if (lyricData) {
-        music.playSongLyric = parseLyric(lyricResponse);
+        const result = parseLyric(lyricResponse);
+        result ? (music.playSongLyric = result) : setDefaults();
       } else {
         console.log("该歌曲暂无歌词");
         setDefaults();
@@ -811,6 +816,10 @@ export const playAllSongs = async (playlist, mode = "normal") => {
       status.playIndex = existingIndex;
       // 播放
       fadePlayOrPause();
+    }
+    // 获取封面
+    if (music.getPlaySongData?.path) {
+      music.playSongData.localCover = await getLocalCoverData(music.getPlaySongData?.path);
     }
     $message.info("已开始播放", { showIcon: false });
   } catch (error) {

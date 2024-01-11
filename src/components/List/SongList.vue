@@ -698,7 +698,7 @@ onBeforeUnmount(() => {
       border-color: var(--main-color);
       a,
       span,
-      .play {
+      .num {
         color: var(--main-color) !important;
       }
       .artist {

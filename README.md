@@ -23,7 +23,7 @@
 - 仅对移动端做了基础适配，**不保证功能全部可用**
 
   > 请注意，本程序不打算开发移动端，也不会对移动端进行完美适配，仅保证基础可用性
-  
+
 - 欢迎各位大佬 `Star` 😍
 
 ## 👀 Demo
@@ -137,8 +137,11 @@ docker-compose up -d
 ### 在线部署
 
 ```bash
-# 拉取
+# 从 Docker Hub 拉取
 docker pull imsyy/splayer:latest
+# 从 GitHub ghcr 拉取
+docker pull ghcr.io/imsyy/splayer:latest
+
 # 运行
 docker run -d --name SPlayer -p 7899:7899 imsyy/splayer:latest
 ```

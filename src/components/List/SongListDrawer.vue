@@ -59,7 +59,7 @@
           @click="
             () => {
               drawerShow = false;
-              playMode = 'song';
+              playMode = 'normal';
               addSongToNext(songData);
             }
           "

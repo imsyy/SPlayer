@@ -71,7 +71,7 @@
           v-model:value="searchValue"
           :input-props="{ autoComplete: false }"
           class="search"
-          placeholder="搜索"
+          placeholder="模糊搜索"
           clearable
           @input="localSearch"
         >

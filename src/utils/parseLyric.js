@@ -4,60 +4,113 @@
  * @param {string} data 接口数据
  * @returns {Array} 对应数据
  */
-const parseLyric = (data) => {
-  // 判断是否具有内容
-  const checkLyric = (lyric) => (lyric ? (lyric.lyric ? true : false) : false);
-  // 初始化数据
-  const { lrc, tlyric, romalrc, yrc, ytlrc, yromalrc } = data;
-  const lrcData = {
-    lrc: lrc?.lyric || null,
-    tlyric: tlyric?.lyric || null,
-    romalrc: romalrc?.lyric || null,
-    yrc: yrc?.lyric || null,
-    ytlrc: ytlrc?.lyric || null,
-    yromalrc: yromalrc?.lyric || null,
-  };
-  // 初始化输出结果
-  const result = {
-    // 是否具有普通翻译
-    hasLrcTran: checkLyric(tlyric),
-    // 是否具有普通音译
-    hasLrcRoma: checkLyric(romalrc),
-    // 是否具有逐字歌词
-    hasYrc: checkLyric(yrc),
-    // 是否具有逐字翻译
-    hasYrcTran: checkLyric(ytlrc),
-    // 是否具有逐字音译
-    hasYrcRoma: checkLyric(yromalrc),
-    // 普通歌词数组
-    lrc: [],
-    // 逐字歌词数据
-    yrc: [],
-  };
-  // 普通歌词
-  if (lrcData.lrc) {
-    result.lrc = parseLrc(lrcData.lrc);
-    //判断是否有其他翻译
-    result.lrc = lrcData.tlyric
-      ? parseOtherLrc(result.lrc, parseLrc(lrcData.tlyric), "tran")
-      : result.lrc;
-    result.lrc = lrcData.romalrc
-      ? parseOtherLrc(result.lrc, parseLrc(lrcData.romalrc), "roma")
-      : result.lrc;
+export const parseLyric = (data) => {
+  try {
+    // 判断是否具有内容
+    const checkLyric = (lyric) => (lyric ? (lyric.lyric ? true : false) : false);
+    // 初始化数据
+    const { lrc, tlyric, romalrc, yrc, ytlrc, yromalrc } = data;
+    const lrcData = {
+      lrc: lrc?.lyric || null,
+      tlyric: tlyric?.lyric || null,
+      romalrc: romalrc?.lyric || null,
+      yrc: yrc?.lyric || null,
+      ytlrc: ytlrc?.lyric || null,
+      yromalrc: yromalrc?.lyric || null,
+    };
+    // 初始化输出结果
+    const result = {
+      // 是否具有普通翻译
+      hasLrcTran: checkLyric(tlyric),
+      // 是否具有普通音译
+      hasLrcRoma: checkLyric(romalrc),
+      // 是否具有逐字歌词
+      hasYrc: checkLyric(yrc),
+      // 是否具有逐字翻译
+      hasYrcTran: checkLyric(ytlrc),
+      // 是否具有逐字音译
+      hasYrcRoma: checkLyric(yromalrc),
+      // 普通歌词数组
+      lrc: [],
+      // 逐字歌词数据
+      yrc: [],
+    };
+    // 普通歌词
+    if (lrcData.lrc) {
+      result.lrc = parseLrc(lrcData.lrc);
+      //判断是否有其他翻译
+      result.lrc = lrcData.tlyric
+        ? parseOtherLrc(result.lrc, parseLrc(lrcData.tlyric), "tran")
+        : result.lrc;
+      result.lrc = lrcData.romalrc
+        ? parseOtherLrc(result.lrc, parseLrc(lrcData.romalrc), "roma")
+        : result.lrc;
+    }
+    // 逐字歌词
+    if (lrcData.yrc) {
+      result.yrc = parseYrc(lrcData.yrc);
+      //判断是否有其他翻译
+      result.yrc = lrcData.ytlrc
+        ? parseOtherLrc(result.yrc, parseLrc(lrcData.ytlrc), "tran")
+        : result.yrc;
+      result.yrc = lrcData.yromalrc
+        ? parseOtherLrc(result.yrc, parseLrc(lrcData.yromalrc, false), "roma")
+        : result.yrc;
+    }
+    console.log(result);
+    return result;
+  } catch (error) {
+    console.error("解析歌词时出现错误：", error);
+    return false;
   }
-  // 逐字歌词
-  if (lrcData.yrc) {
-    result.yrc = parseYrc(lrcData.yrc);
-    //判断是否有其他翻译
-    result.yrc = lrcData.ytlrc
-      ? parseOtherLrc(result.yrc, parseLrc(lrcData.ytlrc), "tran")
-      : result.yrc;
-    result.yrc = lrcData.yromalrc
-      ? parseOtherLrc(result.yrc, parseLrc(lrcData.yromalrc, false), "roma")
-      : result.yrc;
+};
+
+/**
+ * 解析本地歌词数据
+ * @param {string} data - 歌词字符串
+ * @returns {Object} - 包含解析后的歌词信息的对象
+ */
+export const parseLocalLrc = (data) => {
+  try {
+    const lyric = parseLrc(data);
+    const parsedLyrics = [];
+    // 初始化输出结果
+    const result = {
+      hasLrcTran: false,
+      hasLrcRoma: false,
+      hasYrc: false,
+      hasYrcTran: false,
+      hasYrcRoma: false,
+      lrc: [],
+      yrc: [],
+    };
+    // 遍历本地歌词数据
+    for (let i = 0; i < lyric.length; i++) {
+      // 当前歌词
+      let currentObj = lyric[i];
+      // 是否有相同时间
+      let existingObj = parsedLyrics.find((v) => Number(v.time) === Number(currentObj.time));
+      // 如果存在翻译
+      if (existingObj) {
+        result.hasLrcTran = true;
+        existingObj.tran = currentObj.content;
+      }
+      // 若不存在翻译
+      else {
+        parsedLyrics.push({
+          time: currentObj.time,
+          content: currentObj.content,
+        });
+      }
+    }
+    // 改变输出结果
+    result.lrc = parsedLyrics;
+    console.log(result);
+    return result;
+  } catch (error) {
+    console.error("解析本地歌词时出现错误：", error);
+    return false;
   }
-  console.log(result);
-  return result;
 };
 
 /**
@@ -199,5 +252,3 @@ const parseYrc = (lyrics) => {
     return [];
   }
 };
-
-export default parseLyric;
