@@ -1,6 +1,6 @@
 {
   "name": "splayer",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "A minimalist music player",
   "main": "./out/main/index.js",
   "author": "imsyy",
@@ -14,6 +14,7 @@
     "npm": ">=9.6.7",
     "pnpm": ">=8.14.0"
   },
+  "type": "module",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts,.vue --fix",
@@ -70,6 +71,6 @@
     "vite": "^5.0.11",
     "vite-plugin-compression": "^0.5.1",
     "vite-plugin-pwa": "^0.17.4",
-    "vue": "3.4.4"
+    "vue": "3.4.8"
   }
 }

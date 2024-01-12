@@ -1,4 +1,4 @@
-const netEaseApi = require("NeteaseCloudMusicApi");
+import netEaseApi from "NeteaseCloudMusicApi";
 
 /**
  * 启动网易云音乐 API 服务器

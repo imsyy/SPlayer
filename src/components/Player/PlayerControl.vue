@@ -131,6 +131,46 @@
         >
           <SvgIcon icon="comment-text" />
         </n-icon>
+        <!-- 音量 -->
+        <n-popover trigger="hover" :show-arrow="false" raw>
+          <template #trigger>
+            <n-icon
+              class="volume hidden"
+              size="22"
+              @click.stop="setVolumeMute"
+              @wheel="changeVolume"
+            >
+              <SvgIcon v-if="playVolume === 0" icon="no-sound-rounded" />
+              <SvgIcon v-else-if="playVolume > 0 && playVolume < 0.4" icon="volume-mute-rounded" />
+              <SvgIcon
+                v-else-if="playVolume >= 0.4 && playVolume < 0.7"
+                icon="volume-down-rounded"
+              />
+              <SvgIcon v-else icon="volume-up-rounded" />
+            </n-icon>
+          </template>
+          <!-- 音量调整 -->
+          <div
+            :style="{
+              '--cover-main-color': `rgb(${coverTheme?.light?.shadeTwo})` || '#efefef',
+              '--cover-second-color': `rgba(${coverTheme?.light?.shadeTwo}, 0.14)` || '#efefef14',
+            }"
+            class="slider-content hidden"
+            @wheel="changeVolume"
+          >
+            <n-slider
+              v-model:value="playVolume"
+              :tooltip="false"
+              :min="0"
+              :max="1"
+              :step="0.01"
+              vertical
+              style="height: 120px"
+              @update:value="setVolume"
+            />
+            <n-text class="slider-num" depth="3">{{ (playVolume * 100).toFixed(0) }}%</n-text>
+          </div>
+        </n-popover>
         <!-- 播放模式 -->
         <n-icon v-if="playMode === 'normal'" class="hidden" size="22" @click.stop="togglePlayMode">
           <SvgIcon
@@ -163,7 +203,14 @@
 import { storeToRefs } from "pinia";
 import { musicData, siteStatus, siteData } from "@/stores";
 import { useRouter } from "vue-router";
-import { playOrPause, fadePlayOrPause, setSeek, changePlayIndex } from "@/utils/Player";
+import {
+  playOrPause,
+  fadePlayOrPause,
+  setSeek,
+  changePlayIndex,
+  setVolume,
+  setVolumeMute,
+} from "@/utils/Player";
 import debounce from "@/utils/debounce";
 import VueSlider from "vue-slider-component";
 import "vue-slider-component/theme/default.css";
@@ -185,6 +232,8 @@ const {
   playMode,
   playSongMode,
   playHeartbeatMode,
+  playVolume,
+  coverTheme,
 } = storeToRefs(status);
 
 // 子组件
@@ -232,6 +281,24 @@ const togglePlayMode = () => {
   }
   // 切换模式
   playSongMode.value = modeMap[playSongMode.value] || "normal";
+};
+
+// 音量条鼠标滚动
+const changeVolume = (e) => {
+  const deltaY = e.deltaY;
+  if (deltaY > 0) {
+    // 向下滚动
+    if (playVolume.value >= 0) {
+      playVolume.value = Math.max(playVolume.value - 0.05, 0);
+    }
+  } else if (deltaY < 0) {
+    // 向上滚动
+    if (playVolume.value < 1) {
+      playVolume.value = Math.min(playVolume.value + 0.05, 1);
+    }
+  }
+  // 更新音量
+  setVolume(playVolume.value);
 };
 
 // 控制面板移入
@@ -396,6 +463,25 @@ const controlMove = (e) => {
     .center {
       width: 100%;
     }
+  }
+}
+// 音量控制
+.slider-content {
+  padding: 10px 0px;
+  width: 50px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--cover-second-color);
+  .n-slider {
+    --n-fill-color: var(--cover-main-color);
+    --n-fill-color-hover: var(--cover-main-color);
+    --n-handle-color: var(--cover-main-color);
+  }
+  .slider-num {
+    margin-top: 4px;
+    font-size: 12px;
   }
 }
 </style>

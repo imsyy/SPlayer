@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
       build: {
         rollupOptions: {
           input: {
-            index: resolve(__dirname, "electron/preload/index.js"),
+            index: resolve(__dirname, "electron/preload/index.mjs"),
           },
         },
       },
