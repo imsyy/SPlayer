@@ -130,7 +130,7 @@
           @click="
             () => {
               drawerShow = false;
-              emit('deletePlaylistSong', playlistData, songData, songIndex);
+              emit('deletePlaylistSong', songSourceId, songData, playlistData, songIndex);
             }
           "
         >

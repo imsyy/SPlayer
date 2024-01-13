@@ -439,6 +439,7 @@ const delCloudSong = (data, song, index) => {
 
 // 歌单歌曲删除
 const deletePlaylistSong = (pid, song, data, index) => {
+  if (!pid || !song) return $message.error("无法正确定位到歌单，请重试");
   $dialog.warning({
     title: "确认删除",
     content: `确认从歌单中移除 ${song.name}？该操作无法撤销！`,

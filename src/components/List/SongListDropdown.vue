@@ -240,7 +240,7 @@ const openDropdown = (e, data, song, index, sourceId, type) => {
           show: !isCloud && isUserPlaylist,
           props: {
             onClick: () => {
-              emit("deletePlaylistSong", data, song, index);
+              emit("deletePlaylistSong", sourceId, song, data, index);
             },
           },
           icon: renderIcon("delete"),
