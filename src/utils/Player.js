@@ -42,8 +42,6 @@ export const initPlayer = async (playNow = false) => {
     const { playList } = music;
     // 当前播放歌曲数据
     const playSongData = music.getPlaySongData;
-    // 若为电台则更改 id
-    playSongData.id = playMode === "dj" ? playSongData.mainTrackId : playSongData.id;
     // 是否为本地歌曲
     const isLocalSong = playSongData?.path ? true : false;
     console.log("当前为本地歌曲");

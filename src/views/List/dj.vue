@@ -171,13 +171,6 @@
         <Transition name="fade" mode="out-in">
           <div v-if="!searchValue" class="song-list">
             <SongList :data="djData" type="dj" />
-            <!-- 分页 -->
-            <Pagination
-              v-if="djData?.length"
-              :totalCount="totalCount"
-              :pageNumber="pageNumber"
-              @pageNumberChange="pageNumberChange"
-            />
           </div>
           <SongList v-else-if="searchData?.length" :data="searchData" type="dj" />
           <n-empty
@@ -209,7 +202,7 @@
 import { NIcon } from "naive-ui";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
-import { siteData, siteSettings } from "@/stores";
+import { siteData } from "@/stores";
 import { getDjDetail, getDjProgram, likeDj } from "@/api/dj";
 import { fuzzySearch } from "@/utils/helper";
 import { isLogin } from "@/utils/auth";
@@ -221,20 +214,17 @@ import SvgIcon from "@/components/Global/SvgIcon";
 
 const router = useRouter();
 const data = siteData();
-const settings = siteSettings();
 const { userLikeData } = storeToRefs(data);
-const { loadSize } = storeToRefs(settings);
 
 //  电台数据
 const djId = ref(router.currentRoute.value.query.id);
-const pageNumber = ref(Number(router.currentRoute.value.query?.page) || 1);
 const djDetail = ref(null);
 const djData = ref(null);
 
 // 模糊搜索数据
+const loadingMsg = ref(null);
 const searchValue = ref(null);
 const searchData = ref([]);
-const totalCount = ref(0);
 
 // 图标渲染
 const renderIcon = (icon) => {
@@ -267,6 +257,8 @@ const getDjDetailData = async (id) => {
     const detail = await getDjDetail(id);
     // 基础信息
     djDetail.value = formatData(detail.data, "dj")[0];
+    // 获取节目
+    await getDjProgramData(djId.value, djDetail.value?.count);
   } catch (error) {
     console.error("获取电台信息出错：", error);
     $message.error("获取电台信息出现错误");
@@ -274,16 +266,27 @@ const getDjDetailData = async (id) => {
 };
 
 // 获取电台全部节目
-const getDjProgramData = async (id, limit = loadSize.value, offset = 0) => {
+const getDjProgramData = async (id, count) => {
   try {
+    if (count === 0) return (djData.value = "empty");
+    // 是否为超大歌单
+    if (count >= 500) {
+      loadingMsg.value = $message.loading("该电台节目数量过多，请稍等", {
+        duration: 0,
+      });
+    }
+    // 循环获取
+    let offset = 0;
     djData.value = [];
-    const result = await getDjProgram(id, limit, offset);
-    console.log(result);
-    // 数据总数
-    totalCount.value = result.count;
-    if (totalCount.value === 0) return (djData.value = "empty");
-    // 处理数据
-    djData.value = formatData(result.programs, "dj");
+    while (count === null || offset < count) {
+      const result = await getDjProgram(id, 500, offset);
+      const djDetail = formatData(result.programs, "dj");
+      djData.value = djData.value.concat(djDetail);
+      offset += 500;
+    }
+    // 关闭加载提示
+    loadingMsg.value?.destroy();
+    loadingMsg.value = null;
   } catch (error) {
     console.error("获取电台节目错误：", error);
     $message.error("获取电台节目出现错误");
@@ -330,36 +333,8 @@ const likeOrDislike = debounce(async (id) => {
   }
 }, 300);
 
-// 页数变化
-const pageNumberChange = (page) => {
-  router.push({
-    path: "/dj",
-    query: { id: djId.value, page },
-  });
-};
-
-// 监听路由变化
-watch(
-  () => router.currentRoute.value,
-  async (val) => {
-    if (val.name === "dj") {
-      // 更改参数
-      pageNumber.value = Number(val.query?.page) || 1;
-      djId.value = val.query?.id;
-      // 调用接口
-      await getDjDetailData(djId.value);
-      await getDjProgramData(
-        djId.value,
-        loadSize.value,
-        (pageNumber.value - 1) * settings.loadSize,
-      );
-    }
-  },
-);
-
 onMounted(async () => {
   await getDjDetailData(djId.value);
-  await getDjProgramData(djId.value, loadSize.value, (pageNumber.value - 1) * settings.loadSize);
 });
 </script>
 

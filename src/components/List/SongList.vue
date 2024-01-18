@@ -32,7 +32,7 @@
           alignItems: 'center',
           justifyContent: 'space-between',
         }"
-        :class="music.getPlaySongData?.id === item?.id ? 'songs play' : 'songs'"
+        :class="Number(music.getPlaySongData?.id) === Number(item?.id) ? 'songs play' : 'songs'"
         hoverable
         @click="checkCanClick(data, item, songsIndex + index)"
         @dblclick.stop="playSong(data, item, songsIndex + index)"
@@ -190,7 +190,7 @@
         </div>
         <!-- 更新日期 -->
         <n-text v-if="type === 'dj' && item.updateTime" class="update hidden" depth="3">
-          {{ getTimestampTime(item.updateTime, false) }}
+          {{ djFormatDate(item.updateTime) }}
         </n-text>
         <!-- 播放量 -->
         <n-text v-if="type === 'dj' && item.playCount" class="count hidden" depth="3">
@@ -273,7 +273,7 @@ import { setCloudDel } from "@/api/cloud";
 import { addSongToPlayList } from "@/api/playlist";
 import { siteData, siteSettings, musicData, siteStatus } from "@/stores";
 import { initPlayer, fadePlayOrPause, addSongToNext } from "@/utils/Player";
-import { getTimestampTime } from "@/utils/timeTools";
+import { djFormatDate } from "@/utils/timeTools";
 
 const router = useRouter();
 const music = musicData();

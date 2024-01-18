@@ -6,6 +6,10 @@
 </div>
 <br /> -->
 
+# SPlayer
+
+> 一个简约的音乐播放器
+
 ![main](/screenshots/SPlayer.jpg)
 
 ## 说明
