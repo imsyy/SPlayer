@@ -31,4 +31,5 @@ body:
     id: other
     attributes:
       label: "具体信息"
-      description: "有需要补充的信息吗？比如控制台的报错什么的（ Ctrl + Shift + i 打开控制台 ）"
+      description: "请填写完整的复现步骤和遇到的问题，包括但不限于报错信息、控制台输出、网络请求等"
+      placeholder: "请填写具体的复现步骤和遇到的问题"
