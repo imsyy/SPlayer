@@ -10,6 +10,10 @@
 
 > 一个简约的音乐播放器
 
+> [!IMPORTANT]
+>
+> 由于 [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi) 项目已停止维护，由于接口状态的不可确定性，将无法保障功能的正常使用，本项目将会停止新功能的开发，进入无限期停更状态
+
 ![main](/screenshots/SPlayer.jpg)
 
 ## 说明
