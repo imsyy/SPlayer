@@ -93,7 +93,7 @@
       <!-- 用户信息 -->
       <userData />
       <!-- TitleBar -->
-      <TitleBar v-if="checkPlatform.electron()" />
+      <TitleBar v-if="isElectron" />
     </div>
   </nav>
 </template>
@@ -121,6 +121,11 @@ const openGithub = () => {
   console.log(packageJson.github);
   window.open(packageJson.github);
 };
+
+// 是否为 Electron
+const isElectron = computed(() => {
+  return checkPlatform.electron() || typeof electron !== "undefined";
+});
 
 // 主菜单渲染
 const mainMenuShow = ref(false);
