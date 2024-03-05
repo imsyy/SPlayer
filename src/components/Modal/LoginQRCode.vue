@@ -133,6 +133,8 @@ onBeforeUnmount(() => {
       min-width: 180px;
       height: 180px;
       width: 180px;
+      min-height: 180px;
+      min-width: 180px;
       box-sizing: border-box;
       transition: opacity 0.3s;
       &.hidden {

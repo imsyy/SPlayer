@@ -1,18 +1,11 @@
-<!-- <div align="center">
-<img alt="logo" height="80" src="./public/images/icons/favicon.png" />
-<h2>SPlayer</h2>
-<p>一个简约的音乐播放器</p>
-<img alt="main" src="./screenshots/main.png" />
-</div>
-<br /> -->
-
 # SPlayer
 
 > 一个简约的音乐播放器
 
-> [!IMPORTANT]
+> [!CAUTION]
 >
-> 由于 [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi) 项目已停止维护，由于接口状态的不可确定性，将无法保障功能的正常使用，本项目将会停止新功能的开发，进入无限期停更状态
+> # 因收到网易云官方警告函，本项目从即日起停止一切新功能开发，同时无限期停止维护，感谢您的理解和支持。
+> ## 在线预览页面也将同步下线
 
 ![main](/screenshots/SPlayer.jpg)
 
