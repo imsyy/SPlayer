@@ -142,9 +142,11 @@ const mainMenuOptions = computed(() => [
   },
 ]);
 
-onBeforeMount(() => {
-  // 是否显示 TitleBar
-  titleBarShow.value = checkPlatform.electron() || typeof electron !== "undefined";
+onMounted(() => {
+  nextTick().then(() => {
+    // 是否显示 TitleBar
+    titleBarShow.value = checkPlatform.electron() || typeof electron !== "undefined";
+  });
 });
 </script>
 
