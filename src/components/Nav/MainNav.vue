@@ -93,7 +93,7 @@
       <!-- 用户信息 -->
       <userData />
       <!-- TitleBar -->
-      <TitleBar v-if="isElectron" />
+      <TitleBar v-if="titleBarShow" />
     </div>
   </nav>
 </template>
@@ -122,10 +122,8 @@ const openGithub = () => {
   window.open(packageJson.github);
 };
 
-// 是否为 Electron
-const isElectron = computed(() => {
-  return checkPlatform.electron() || typeof electron !== "undefined";
-});
+// TitleBar
+const titleBarShow = ref(false);
 
 // 主菜单渲染
 const mainMenuShow = ref(false);
@@ -143,6 +141,11 @@ const mainMenuOptions = computed(() => [
     },
   },
 ]);
+
+onBeforeMount(() => {
+  // 是否显示 TitleBar
+  titleBarShow.value = checkPlatform.electron() || typeof electron !== "undefined";
+});
 </script>
 
 <style lang="scss" scoped>
