@@ -193,6 +193,13 @@
             @update:value="closeTaskbarProgress"
           />
         </n-card>
+        <n-card class="set-item">
+          <div class="name">
+            自动检查更新
+            <n-text class="tip">在开启软件时自动检查更新</n-text>
+          </div>
+          <n-switch v-model:value="autoCheckUpdates" :round="false" />
+        </n-card>
       </div>
       <div v-else class="set-type">
         <n-h3 prefix="bar"> 系统 </n-h3>
@@ -629,6 +636,7 @@ const {
   downloadMeta,
   downloadCover,
   downloadLyrics,
+  autoCheckUpdates,
 } = storeToRefs(settings);
 
 // 标签页数据

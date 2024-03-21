@@ -3,7 +3,6 @@ import { app, protocol, shell, BrowserWindow, globalShortcut, nativeImage } from
 import { platform, optimizer, is } from "@electron-toolkit/utils";
 import { startNcmServer } from "@main/startNcmServer";
 import { startMainServer } from "@main/startMainServer";
-import { configureAutoUpdater } from "@main/utils/checkUpdates";
 import createSystemTray from "@main/utils/createSystemTray";
 import createGlobalShortcut from "@main/utils/createGlobalShortcut";
 import mainIpcMain from "@main/mainIpcMain";
@@ -161,8 +160,6 @@ class MainProcess {
     app.whenReady().then(async () => {
       // 创建主窗口
       this.createWindow();
-      // 检测更新
-      configureAutoUpdater();
       // 引入主 Ipc
       mainIpcMain(this.mainWindow);
       // 系统托盘

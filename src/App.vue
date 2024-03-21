@@ -93,7 +93,7 @@ const router = useRouter();
 const music = musicData();
 const status = siteStatus();
 const settings = siteSettings();
-const { autoPlay, showSider, autoSignIn } = storeToRefs(settings);
+const { autoPlay, showSider, autoSignIn, autoCheckUpdates } = storeToRefs(settings);
 const { showPlayBar, asideMenuCollapsed, showFullPlayer } = storeToRefs(status);
 
 // 公告数据
@@ -145,6 +145,12 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+// 自动检查更新
+const checkUpdates = () => {
+  if (!checkPlatform.electron()) return false;
+  electron.ipcRenderer.send("check-updates");
+};
+
 // 显示公告
 const showAnnouncements = () => {
   if (annShow) {
@@ -192,6 +198,8 @@ onMounted(async () => {
   }
   // 自动签到
   if (autoSignIn.value) await userSignIn();
+  // 检查更新
+  if (autoCheckUpdates.value) checkUpdates();
   // 显示公告
   showAnnouncements();
 });

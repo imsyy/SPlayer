@@ -13,6 +13,7 @@ const useSiteSettingsStore = defineStore("siteSettings", {
       showGithub: true,
       showSider: true, // 显示侧边栏
       siderShowCover: false, // 侧边栏显示封面
+      autoCheckUpdates: true, // 自动检查更新
       // 主题部分
       themeType: "dark",
       themeAuto: false,

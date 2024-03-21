@@ -1,5 +1,6 @@
 import { ipcMain, dialog, app, clipboard, shell } from "electron";
 import { File, Picture, Id3v2Settings } from "node-taglib-sharp";
+import { configureAutoUpdater } from "@main/utils/checkUpdates";
 import { readDirAsync } from "@main/utils/readDirAsync";
 import { parseFile } from "music-metadata";
 import { download } from "electron-dl";
@@ -40,6 +41,10 @@ const mainIpcMain = (win) => {
     app.isQuiting = true;
     app.relaunch();
     app.quit();
+  });
+  ipcMain.on("check-updates", () => {
+    console.info("开始检查更新");
+    configureAutoUpdater();
   });
 
   // 显示进度
