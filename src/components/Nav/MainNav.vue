@@ -93,7 +93,7 @@
       <!-- 用户信息 -->
       <userData />
       <!-- TitleBar -->
-      <TitleBar v-if="titleBarShow" />
+      <TitleBar />
     </div>
   </nav>
 </template>
@@ -102,7 +102,6 @@
 import { NScrollbar } from "naive-ui";
 import { storeToRefs } from "pinia";
 import { siteStatus, siteSettings } from "@/stores";
-import { checkPlatform } from "@/utils/helper";
 import { useRouter } from "vue-router";
 import Menu from "@/components/Global/Menu";
 import packageJson from "@/../package.json";
@@ -122,9 +121,6 @@ const openGithub = () => {
   window.open(packageJson.github);
 };
 
-// TitleBar
-const titleBarShow = ref(false);
-
 // 主菜单渲染
 const mainMenuShow = ref(false);
 const mainMenuOptions = computed(() => [
@@ -141,13 +137,6 @@ const mainMenuOptions = computed(() => [
     },
   },
 ]);
-
-onMounted(() => {
-  nextTick().then(() => {
-    // 是否显示 TitleBar
-    titleBarShow.value = checkPlatform.electron() || typeof electron !== "undefined";
-  });
-});
 </script>
 
 <style lang="scss" scoped>

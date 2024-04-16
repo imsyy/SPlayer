@@ -76,7 +76,7 @@ const getCaptcha = (phone) => {
         console.log(phone + "发送验证码");
         const result = await sentCaptcha(phone);
         console.log(result);
-        if (result.code == 200) {
+        if (result.code === 200) {
           $message.success("验证码发送成功");
           let countDown = 60;
           captchaDisabled.value = true;
@@ -104,17 +104,17 @@ const getCaptcha = (phone) => {
 
 // 手机号登录
 const phoneLogin = (e) => {
-  try {
-    e.preventDefault();
-    phoneFormRef.value?.validate(async (errors) => {
-      if (!errors) {
+  e.preventDefault();
+  phoneFormRef.value?.validate(async (errors) => {
+    if (!errors) {
+      try {
         const verifyRes = await verifyCaptcha(
-          phoneFormData._value.phone,
-          phoneFormData._value.captcha,
+          phoneFormData.value.phone,
+          phoneFormData.value.captcha,
         );
         console.log(verifyRes);
-        if (verifyRes.code == 200) {
-          const result = await toLogin(phoneFormData._value.phone, phoneFormData._value.captcha);
+        if (verifyRes.code === 200) {
+          const result = await toLogin(phoneFormData.value.phone, phoneFormData.value.captcha);
           console.log(result);
           if (result.code === 200) {
             // 去除 HTTPOnly
@@ -128,15 +128,15 @@ const phoneLogin = (e) => {
             }
           }
         }
-      } else {
-        $message.error("请检查你的输入");
+      } catch (error) {
+        phoneFormData.value.captcha = null;
+        console.error("登录出错：", error);
+        $message.error("登录出错，请重试");
       }
-    });
-  } catch (error) {
-    phoneFormData.value.captcha = null;
-    console.error("登录出错：", error);
-    $message.error("登录出错，请重试");
-  }
+    } else {
+      $message.error("请检查你的输入");
+    }
+  });
 };
 </script>
 

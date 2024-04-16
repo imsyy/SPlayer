@@ -1,6 +1,6 @@
 <!-- 非网页端标题栏 -->
 <template>
-  <div class="title-bar">
+  <div id="electron-bar" class="title-bar">
     <n-divider vertical />
     <n-button
       :focusable="false"
@@ -135,9 +135,11 @@ const closeCloseTip = (type) => {
 };
 
 // 窗口状态响应
-electron.ipcRenderer.on("windowState", (_, val) => {
-  defaultWindowState.value = val;
-});
+if (typeof electron !== "undefined") {
+  electron.ipcRenderer.on("windowState", (_, val) => {
+    defaultWindowState.value = val;
+  });
+}
 
 onBeforeUnmount(() => {
   clearTimeout(closeTipTimeout.value);

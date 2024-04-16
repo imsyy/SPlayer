@@ -25,6 +25,16 @@ export const checkPlatform = {
 };
 
 /**
+ * 引入 CSS
+ */
+export const loadCSS = (href) => {
+  const linkElement = document.createElement("link");
+  linkElement.rel = "stylesheet";
+  linkElement.href = href;
+  document.head.appendChild(linkElement);
+};
+
+/**
  * 获取缓存数据或请求数据并进行缓存
  * @param {string} key - 缓存数据的键名
  * @param {number} time - 缓存的有效时间，以分钟为单位

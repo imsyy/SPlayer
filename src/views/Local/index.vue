@@ -84,7 +84,7 @@
       </n-flex>
     </n-flex>
     <!-- 标签页 -->
-    <n-tabs v-model:value="tabValue" class="tabs" type="segment" @update:value="tabChange">
+    <n-tabs v-model:value="tabValue" class="tabs" type="segment" animated @update:value="tabChange">
       <n-tab name="local-songs"> 歌曲 </n-tab>
       <n-tab name="local-artists"> 歌手 </n-tab>
       <n-tab name="local-albums"> 专辑 </n-tab>

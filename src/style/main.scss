@@ -10,8 +10,21 @@ body,
 #app {
   width: 100vw;
   height: 100vh;
-  font-family: "HarmonyOS_Regular", sans-serif !important;
   overflow: hidden;
+}
+
+body {
+  font-family:
+    "HarmonyOS Sans SC",
+    "HarmonyOS_Regular",
+    system-ui,
+    -apple-system,
+    sans-serif !important;
+  &.webapp {
+    #electron-bar {
+      display: none !important;
+    }
+  }
 }
 
 // n-text
@@ -95,20 +108,8 @@ body,
 
 // n-tabs
 .n-tabs {
+  width: 100%;
   --n-tab-border-radius: 6px !important;
-  .n-tabs-rail {
-    position: relative;
-    .n-tabs-tab-wrapper {
-      .n-tabs-tab {
-        &:hover {
-          transition:
-            color 0.3s,
-            background-color 0.5s ease-in-out,
-            box-shadow 0.3s;
-        }
-      }
-    }
-  }
 }
 
 // n-modal
