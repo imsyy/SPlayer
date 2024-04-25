@@ -1,6 +1,6 @@
 <template>
   <div class="test">
-    <n-h1>测试页面</n-h1>
+    <n-h1>Test Page</n-h1>
     <n-card title="频谱数据" style="margin-bottom: 20px">
       <n-scrollbar style="max-height: 120px">
         {{ status.spectrumsData }}
@@ -59,10 +59,6 @@ const roundRect = (ctx, x, y, width, height, radius) => {
   ctx.fill();
 };
 
-// watch(
-//   () => status.spectrumsData,
-//   (val) => drawSpectrum(val),
-// );
 onMounted(() => {
   drawSpectrum(status.spectrumsData);
 });

@@ -4,6 +4,7 @@ import { configureAutoUpdater } from "@main/utils/checkUpdates";
 import { readDirAsync } from "@main/utils/readDirAsync";
 import { parseFile } from "music-metadata";
 import { download } from "electron-dl";
+import { getFonts } from "font-list";
 import getNeteaseMusicUrl from "@main/utils/getNeteaseMusicUrl";
 import axios from "axios";
 import fs from "fs/promises";
@@ -11,9 +12,10 @@ import fs from "fs/promises";
 /**
  * 监听主进程的 IPC 事件
  * @param {BrowserWindow} win - 要监听 IPC 事件的程序窗口
+ * @param {Store} store - 存储对象
  */
 
-const mainIpcMain = (win) => {
+const mainIpcMain = (win, store) => {
   // 窗口操作部分
   ipcMain.on("window-min", (ev) => {
     // 阻止最小化
@@ -242,6 +244,35 @@ const mainIpcMain = (win) => {
       console.error("下载文件时出错：", error);
       return false;
     }
+  });
+
+  // 读取系统全部字体
+  ipcMain.handle("getAllFonts", async () => {
+    try {
+      const fonts = await getFonts();
+      return fonts;
+    } catch (error) {
+      console.error("获取系统字体时出错：", error);
+      return [];
+    }
+  });
+
+  // 配置网络代理
+  ipcMain.on("set-proxy", (_, config) => {
+    console.log(config);
+    const proxyRules = `${config.protocol}://${config.server}:${config.port}`;
+    store.set("proxy", proxyRules);
+    win.webContents.session.setProxy({ proxyRules }, () => {
+      console.info("网络代理配置完成");
+    });
+  });
+
+  // 取消代理
+  ipcMain.on("remove-proxy", () => {
+    store.set("proxy", "");
+    win.webContents.session.setProxy({ proxyRules: "" }, () => {
+      console.info("取消网络代理配置");
+    });
   });
 };
 

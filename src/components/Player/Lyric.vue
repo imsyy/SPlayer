@@ -4,7 +4,12 @@
     :style="{
       cursor: cursorShow ? 'pointer' : 'none',
     }"
-    :class="['lyric', `lyric-${lyricsPosition}`, { pure: pureLyricMode }, playCoverType]"
+    :class="[
+      'lyric',
+      `lyric-${lyricsPosition}`,
+      playCoverType,
+      { pure: pureLyricMode, 'custom-lrc': justLyricArea },
+    ]"
     @mouseenter="lrcMouseStatus = lrcMousePause ? true : false"
     @mouseleave="lrcAllLeave"
   >
@@ -45,6 +50,7 @@
               <span
                 :style="{
                   fontSize: lyricsFontSize + 'px',
+                  fontWeight: lyricsBold ? 'bold' : 'normal',
                 }"
                 class="lrc-content"
               >
@@ -92,6 +98,7 @@
               <div
                 :style="{
                   fontSize: lyricsFontSize + 'px',
+                  fontWeight: lyricsBold ? 'bold' : 'normal',
                 }"
                 class="lrc-content"
               >
@@ -162,6 +169,8 @@ const {
   showTransl,
   showRoma,
   playCoverType,
+  justLyricArea,
+  lyricsBold,
 } = storeToRefs(settings);
 
 // 歌词滚动数据
@@ -331,7 +340,6 @@ onMounted(() => {
       transform 0.35s ease-in-out;
     .lrc-content {
       font-size: 46px;
-      font-weight: bold;
       word-wrap: break-word;
       // 逐字歌词部分样式
       .lrc-text {
@@ -502,6 +510,9 @@ onMounted(() => {
         transform: scale(0.9);
       }
     }
+  }
+  &.custom-lrc {
+    font-family: var(--main-font-family-lyric) !important;
   }
   @media (max-width: 700px) {
     :deep(.n-scrollbar-content) {

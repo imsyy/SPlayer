@@ -170,12 +170,9 @@ const canNotConnect = (error) => {
     title: "网络连接错误",
     content: "网络连接错误，请检查您当前的网络状态",
     positiveText: "重试",
-    negativeText: checkPlatform.electron() ? "前往本地歌曲" : "取消",
+    negativeText: "知道了",
     onPositiveClick: () => {
       location.reload();
-    },
-    onNegativeClick: () => {
-      if (checkPlatform.electron()) router.push("/local");
     },
   });
 };
@@ -190,6 +187,8 @@ onMounted(async () => {
   window.$canNotConnect = canNotConnect;
   // 主播放器
   await initPlayer(autoPlay.value);
+  // 更改全局字体
+  settings.changeSystemFonts();
   // 全局事件
   globalEvents(router);
   // 键盘监听

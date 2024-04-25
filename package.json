@@ -1,6 +1,6 @@
 {
   "name": "splayer",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "A minimalist music player",
   "main": "./out/main/index.js",
   "author": "imsyy",
@@ -38,6 +38,7 @@
     "electron-updater": "^6.1.8",
     "express": "^4.19.2",
     "express-http-proxy": "^2.0.0",
+    "font-list": "^1.5.1",
     "howler": "^2.2.4",
     "js-cookie": "^3.0.5",
     "localforage": "^1.10.0",

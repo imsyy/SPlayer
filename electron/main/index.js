@@ -153,6 +153,14 @@ class MainProcess {
     else {
       this.mainWindow.loadURL(`http://127.0.0.1:${import.meta.env.MAIN_VITE_MAIN_PORT ?? 7899}`);
     }
+
+    // 配置网络代理
+    const proxyRules = this.store.get("proxy");
+    if (proxyRules) {
+      this.mainWindow.webContents.session.setProxy({ proxyRules }, (result) => {
+        console.info("网络代理配置：", result);
+      });
+    }
   }
 
   // 主应用程序事件
@@ -161,7 +169,7 @@ class MainProcess {
       // 创建主窗口
       this.createWindow();
       // 引入主 Ipc
-      mainIpcMain(this.mainWindow);
+      mainIpcMain(this.mainWindow, this.store);
       // 系统托盘
       createSystemTray(this.mainWindow);
       // 注册快捷键

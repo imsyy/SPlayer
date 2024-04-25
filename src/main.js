@@ -15,8 +15,7 @@ const isElectron = checkPlatform.electron();
 
 // 分设备添加字体
 if (isElectron) {
-  loadCSS(`${import.meta.env.BASE_URL}font/HarmonyOS_Sans_SC_Bold/result.css`);
-  loadCSS(`${import.meta.env.BASE_URL}font/HarmonyOS_Sans_SC_Regular/result.css`);
+  loadCSS(`${import.meta.env.BASE_URL}font/font.css`);
 } else {
   loadCSS("https://s1.hdslb.com/bfs/static/jinkela/long/font/regular.css");
 }

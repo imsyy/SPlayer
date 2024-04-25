@@ -1,8 +1,12 @@
+:root {
+  --main-font-family: "HarmonyOS Sans", "HarmonyOS_Regular", system-ui, -apple-system, sans-serif;
+}
+
 * {
   margin: 0;
   padding: 0;
-  user-select: none;
-  -webkit-user-drag: none;
+  user-select: none !important;
+  -webkit-user-drag: none !important;
 }
 
 html,
@@ -14,17 +18,7 @@ body,
 }
 
 body {
-  font-family:
-    "HarmonyOS Sans SC",
-    "HarmonyOS_Regular",
-    system-ui,
-    -apple-system,
-    sans-serif !important;
-  &.webapp {
-    #electron-bar {
-      display: none !important;
-    }
-  }
+  font-family: var(--main-font-family) !important;
 }
 
 // n-text
@@ -110,6 +104,9 @@ body {
 .n-tabs {
   width: 100%;
   --n-tab-border-radius: 6px !important;
+  .n-tabs-nav {
+    position: relative;
+  }
 }
 
 // n-modal

@@ -14,6 +14,8 @@ const useSiteSettingsStore = defineStore("siteSettings", {
       showSider: true, // 显示侧边栏
       siderShowCover: false, // 侧边栏显示封面
       autoCheckUpdates: true, // 自动检查更新
+      systemFonts: "HarmonyOS Sans", // 全局字体
+      justLyricArea: false, // 仅在歌词区域生效
       // 主题部分
       themeType: "dark",
       themeAuto: false,
@@ -41,6 +43,7 @@ const useSiteSettingsStore = defineStore("siteSettings", {
       lrcMousePause: false, // 鼠标移入歌词区域暂停滚动
       lyricsFontSize: 46, // 歌词大小
       lyricsBlur: false, // 歌词模糊
+      lyricsBold: true, // 歌词加粗
       showYrc: true, // 是否显示逐字歌词
       showYrcAnimation: true, // 是否显示逐字歌词动画
       lyricsPosition: "left", // 歌词位置
@@ -52,6 +55,10 @@ const useSiteSettingsStore = defineStore("siteSettings", {
       downloadMeta: true, // 同时下载元信息
       downloadCover: true, // 同时下载封面
       downloadLyrics: true, // 同时下载歌词
+      // 网络部分
+      proxyProtocol: "off", // 代理协议
+      proxyServe: "127.0.0.1", // 代理地址
+      proxyPort: 80, // 代理端口
     };
   },
   getters: {},
@@ -61,6 +68,28 @@ const useSiteSettingsStore = defineStore("siteSettings", {
       this.themeType = value;
       this.themeAuto = false;
       $message.info(`已切换至${value === "light" ? "浅色" : "深色"}模式`, { showIcon: false });
+    },
+    // 更改系统字体
+    changeSystemFonts(font = this.systemFonts) {
+      this.systemFonts = font;
+      const root = document.documentElement;
+      if (!root) return false;
+      // 若仅歌词生效
+      if (this.justLyricArea) {
+        root.style.setProperty(
+          "--main-font-family-lyric",
+          `"${font}", "HarmonyOS_Regular", system-ui, -apple-system, sans-serif`,
+        );
+        root.style.setProperty(
+          "--main-font-family",
+          `"HarmonyOS Sans", "HarmonyOS_Regular", system-ui, -apple-system, sans-serif`,
+        );
+        return true;
+      }
+      root.style.setProperty(
+        "--main-font-family",
+        `"${font}", "HarmonyOS_Regular", system-ui, -apple-system, sans-serif`,
+      );
     },
   },
   // 数据持久化
