@@ -8,7 +8,12 @@ let lastDownloadBlobUrl = null;
  */
 export const checkPlatform = {
   electron: () => {
-    return typeof electron !== "undefined";
+    // return typeof electron !== "undefined";
+    if (typeof process !== "undefined" && process.versions) {
+      return process.versions.electron ? true : false;
+    }
+    const userAgent = navigator.userAgent.toLowerCase();
+    return userAgent.includes("electron");
   },
   macOS: () => {
     if (!checkPlatform.electron()) return false;

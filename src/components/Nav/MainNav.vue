@@ -93,7 +93,7 @@
       <!-- 用户信息 -->
       <userData />
       <!-- TitleBar -->
-      <TitleBar v-if="showTitleBar" />
+      <TitleBar v-if="checkPlatform.electron()" />
     </div>
   </nav>
 </template>
@@ -121,9 +121,6 @@ const openGithub = () => {
   console.log(packageJson.github);
   window.open(packageJson.github);
 };
-
-// 是否显示 TitleBar
-const showTitleBar = computed(() => checkPlatform.electron());
 
 // 主菜单渲染
 const mainMenuShow = ref(false);
