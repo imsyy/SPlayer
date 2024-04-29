@@ -23,6 +23,7 @@ let spectrumsData = {
   audio: null,
   analyser: null,
   audioCtx: null,
+  scale: 1,
 };
 // 默认标题
 let defaultTitle = document.title;
@@ -755,8 +756,12 @@ export const processSpectrum = (sound) => {
 const updateSpectrums = (analyser, dataArray) => {
   // pinia
   const status = siteStatus();
+  // 获取频率数据
   analyser.getByteFrequencyData(dataArray);
   status.spectrumsData = [...dataArray];
+  // 计算 scale
+  const averageAmplitude = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
+  status.spectrumsScaleData = (averageAmplitude / 512 + 1).toFixed(2);
   // 递归调用，持续更新频谱数据
   requestAnimationFrame(() => {
     updateSpectrums(analyser, dataArray);

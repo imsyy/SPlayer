@@ -9,6 +9,9 @@ import { siteStatus } from "@/stores";
  */
 const globalShortcut = (e, router) => {
   if (!e) return false;
+
+  // 是否按下 Ctrl
+  if (!e.ctrlKey) return false;
   e.preventDefault();
   e.stopPropagation();
 

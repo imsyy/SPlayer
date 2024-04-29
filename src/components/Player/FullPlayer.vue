@@ -388,6 +388,11 @@ onUnmounted(() => {
     &.gradient {
       background: var(--cover-bg);
     }
+    &.none {
+      &::after {
+        display: none;
+      }
+    }
   }
   // 按钮
   .menu {
