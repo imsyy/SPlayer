@@ -63,7 +63,7 @@
     "electron-vite": "^2.2.0",
     "eslint": "^8.57.0",
     "eslint-plugin-vue": "^9.25.0",
-    "naive-ui": "^2.38.1",
+    "naive-ui": "^2.38.2",
     "prettier": "^3.2.5",
     "sass": "^1.75.0",
     "terser": "^5.30.4",
