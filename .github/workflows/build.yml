@@ -47,6 +47,12 @@ jobs:
         with:
           name: SPlayer-dev
           path: dist
+      # 自动生成标签
+      - name: Autotag
+        run: |
+          $tag = "v$(date +'%Y%m%d%H%M%S')"
+          git tag $tag
+          git push origin $tag
       # 创建 GitHub Release
       - name: Release
         uses: softprops/action-gh-release@v2
