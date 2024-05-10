@@ -487,10 +487,10 @@ const songTimeSliderUpdate = (val) => {
 
 // 开启播放器
 const openFullPlayer = () => {
-  if (playMode.value === "dj") {
-    $message.warning("当前为电台模式，无法开启播放器");
-    return false;
-  }
+  // if (playMode.value === "dj") {
+  //   $message.warning("当前为电台模式，无法开启播放器");
+  //   return false;
+  // }
   if (showSpectrums.value && typeof $player !== "undefined") processSpectrum($player);
   showFullPlayer.value = true;
 };

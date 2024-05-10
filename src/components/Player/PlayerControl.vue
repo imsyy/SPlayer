@@ -10,7 +10,7 @@
       <div class="left">
         <!-- 喜欢歌曲 -->
         <n-icon
-          v-if="!music.getPlaySongData.path"
+          v-if="!music.getPlaySongData.path && playMode !== 'dj'"
           size="24"
           @click.stop="
             data.changeLikeList(
@@ -30,7 +30,7 @@
         </n-icon>
         <!-- 添加到歌单 -->
         <n-icon
-          v-if="!music.getPlaySongData.path"
+          v-if="!music.getPlaySongData.path && playMode !== 'dj'"
           class="hidden"
           size="24"
           @click.stop="addPlaylistRef?.openAddToPlaylist(music.getPlaySongData?.id)"
@@ -39,7 +39,7 @@
         </n-icon>
         <!-- 下载 -->
         <n-icon
-          v-if="!music.getPlaySongData.path"
+          v-if="!music.getPlaySongData.path && playMode !== 'dj'"
           class="hidden"
           size="24"
           @click.stop="downloadSongRef?.openDownloadModal(music.getPlaySongData)"
@@ -122,7 +122,7 @@
         </n-icon>
         <!-- 评论 -->
         <n-icon
-          v-if="!music.getPlaySongData?.path"
+          v-if="!music.getPlaySongData?.path && playMode !== 'dj'"
           class="hidden"
           size="22"
           @click.stop="
@@ -187,7 +187,7 @@
           />
         </n-icon>
         <!-- 播放列表 -->
-        <n-icon v-if="playMode === 'normal'" size="22" @click.stop="playListShow = !playListShow">
+        <n-icon v-if="playMode !== 'fm'" size="22" @click.stop="playListShow = !playListShow">
           <SvgIcon icon="queue-music-rounded" />
         </n-icon>
       </div>

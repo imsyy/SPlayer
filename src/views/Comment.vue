@@ -149,7 +149,7 @@ const scrollToComment = () => {
   }
 };
 
-// 检查是否具有视频 id
+// 检查是否具有 id
 const isHasCommentId = (id) => {
   if (!id) {
     $message.error("参数不完整");
