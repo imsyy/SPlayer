@@ -122,12 +122,10 @@
         </n-icon>
         <!-- 评论 -->
         <n-icon
-          v-if="!music.getPlaySongData?.path && playMode !== 'dj'"
+          v-if="!music.getPlaySongData?.path"
           class="hidden"
           size="22"
-          @click.stop="
-            (showFullPlayer = false), router.push(`/comment?id=${music.getPlaySongData?.id}`)
-          "
+          @click.stop="jumpToComment"
         >
           <SvgIcon icon="comment-text" />
         </n-icon>
@@ -310,6 +308,18 @@ const controlEnter = () => {
 // 控制面板移动
 const controlMove = (e) => {
   if (!e.target.closest(".slider")) e.stopPropagation();
+};
+
+// 跳转至评论
+const jumpToComment = () => {
+  showFullPlayer.value = false;
+  router.push({
+    path: "/comment",
+    query: {
+      id: music.getPlaySongData?.id,
+      type: playMode.value,
+    },
+  });
 };
 </script>
 

@@ -1,6 +1,6 @@
 <!-- 播放器 - 专辑封面 -->
 <template>
-  <div :class="['cover', playCoverType, { playing: playState }]">
+  <div :class="['mian-cover', playCoverType, { playing: playState }]">
     <!-- 指针 -->
     <img
       v-if="playCoverType === 'record'"
@@ -57,7 +57,7 @@ const { playState } = storeToRefs(status);
 </script>
 
 <style lang="scss" scoped>
-.cover {
+.mian-cover {
   position: relative;
   display: flex;
   align-items: center;
@@ -66,7 +66,6 @@ const { playState } = storeToRefs(status);
   max-width: 55vh;
   height: auto;
   aspect-ratio: 1 / 1;
-  transform: scale(0.9);
   transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   .cover-img {
     width: 100%;
@@ -208,9 +207,13 @@ const { playState } = storeToRefs(status);
       display: none;
     }
   }
-  &.playing {
-    transform: scale(1);
+  &.cover {
+    transform: scale(0.9);
+    &.playing {
+      transform: scale(1);
+    }
   }
+
   @media (max-width: 700px) {
     &.record {
       .pointer {

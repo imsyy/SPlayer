@@ -119,6 +119,20 @@ export const getDjProgram = (rid, limit = 50, offset = 0) => {
 };
 
 /**
+ * 电台 - 节目详情
+ * @param {string} id - 电台 的 id
+ */
+export const getDjProgramDetail = (id) => {
+  return axios({
+    method: "GET",
+    url: "/dj/program/detail",
+    params: {
+      id,
+    },
+  });
+};
+
+/**
  * 电台 - 订阅
  * @param {number} rid - 电台 的 id
  * @param {number} t - 操作类型，1为收藏，0为取消收藏

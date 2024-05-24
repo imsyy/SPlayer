@@ -79,13 +79,16 @@
           class="main-player"
         >
           <div
-            v-show="!(pureLyricMode && isHasLrc)"
+            v-show="!(pureLyricMode && isHasLrc) || playMode === 'dj'"
             :class="['content', { 'no-lrc': !isHasLrc || playMode === 'dj' }]"
           >
             <!-- 封面 -->
             <PlayerCover />
             <!-- 信息 -->
-            <div v-show="playCoverType === 'cover' || !isHasLrc" :class="['data', playCoverType]">
+            <div
+              v-show="playCoverType === 'cover' || !isHasLrc || playMode === 'dj'"
+              :class="['data', playCoverType]"
+            >
               <div class="desc">
                 <div class="title">
                   <span class="name">{{ music.getPlaySongData.name || "未知曲目" }}</span>

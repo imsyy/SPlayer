@@ -34,7 +34,7 @@
           <div class="creator">
             <n-avatar
               :src="(djDetail.creator?.avatarUrl + '?param=300y$300').replace(/^http:/, 'https:')"
-              fallback-src="/images/pic/avatar.jpg?assest"
+              fallback-src="/images/pic/avatar.png?assest"
               round
             />
             <n-text class="nickname">{{ djDetail.creator?.nickname || "未知创建者" }}</n-text>
