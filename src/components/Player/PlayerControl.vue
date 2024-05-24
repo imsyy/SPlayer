@@ -10,7 +10,7 @@
       <div class="left">
         <!-- 喜欢歌曲 -->
         <n-icon
-          v-if="!music.getPlaySongData.path"
+          v-if="!music.getPlaySongData.path && playMode !== 'dj'"
           size="24"
           @click.stop="
             data.changeLikeList(
@@ -30,7 +30,7 @@
         </n-icon>
         <!-- 添加到歌单 -->
         <n-icon
-          v-if="!music.getPlaySongData.path"
+          v-if="!music.getPlaySongData.path && playMode !== 'dj'"
           class="hidden"
           size="24"
           @click.stop="addPlaylistRef?.openAddToPlaylist(music.getPlaySongData?.id)"
@@ -39,7 +39,7 @@
         </n-icon>
         <!-- 下载 -->
         <n-icon
-          v-if="!music.getPlaySongData.path"
+          v-if="!music.getPlaySongData.path && playMode !== 'dj'"
           class="hidden"
           size="24"
           @click.stop="downloadSongRef?.openDownloadModal(music.getPlaySongData)"
@@ -125,9 +125,7 @@
           v-if="!music.getPlaySongData?.path"
           class="hidden"
           size="22"
-          @click.stop="
-            (showFullPlayer = false), router.push(`/comment?id=${music.getPlaySongData?.id}`)
-          "
+          @click.stop="jumpToComment"
         >
           <SvgIcon icon="comment-text" />
         </n-icon>
@@ -187,7 +185,7 @@
           />
         </n-icon>
         <!-- 播放列表 -->
-        <n-icon v-if="playMode === 'normal'" size="22" @click.stop="playListShow = !playListShow">
+        <n-icon v-if="playMode !== 'fm'" size="22" @click.stop="playListShow = !playListShow">
           <SvgIcon icon="queue-music-rounded" />
         </n-icon>
       </div>
@@ -310,6 +308,18 @@ const controlEnter = () => {
 // 控制面板移动
 const controlMove = (e) => {
   if (!e.target.closest(".slider")) e.stopPropagation();
+};
+
+// 跳转至评论
+const jumpToComment = () => {
+  showFullPlayer.value = false;
+  router.push({
+    path: "/comment",
+    query: {
+      id: music.getPlaySongData?.id,
+      type: playMode.value,
+    },
+  });
 };
 </script>
 

@@ -15,12 +15,12 @@ jobs:
     steps:
       # 检出 Git 仓库
       - name: Check out git repository
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
       # 安装 Node.js
       - name: Install Node.js
-        uses: actions/setup-node@v4.0.0
+        uses: actions/setup-node@v4
         with:
-          node-version: "18.x"
+          node-version: "20.x"
       # 复制环境变量文件
       - name: Copy .env.example
         run: |
@@ -43,7 +43,20 @@ jobs:
           npx rimraf "dist/!(*.exe)"
       # 上传构建产物
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3.1.3
+        uses: actions/upload-artifact@v4
         with:
           name: SPlayer-dev
           path: dist
+      # 创建 GitHub Release
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          tag_name: ${{ github.ref }}
+          name: ${{ github.ref }}-rc
+          body: This version is still under development, currently only provides windows version, non-developers please do not use!
+          draft: false
+          prerelease: true
+          files: dist/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}

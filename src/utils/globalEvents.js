@@ -11,7 +11,6 @@ const globalEvents = (router) => {
   // 显示播放器
   electron.ipcRenderer.on("showPlayer", () => {
     const status = siteStatus();
-    if (status.playMode === "dj") return false;
     status.showFullPlayer = true;
   });
   // 播放或暂停

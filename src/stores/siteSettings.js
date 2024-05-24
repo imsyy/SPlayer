@@ -16,6 +16,7 @@ const useSiteSettingsStore = defineStore("siteSettings", {
       autoCheckUpdates: true, // 自动检查更新
       systemFonts: "HarmonyOS Sans", // 全局字体
       justLyricArea: false, // 仅在歌词区域生效
+      hiddenVipTags: false, // 隐藏 VIP 标签
       // 主题部分
       themeType: "dark",
       themeAuto: false,

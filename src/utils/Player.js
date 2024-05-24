@@ -23,6 +23,7 @@ let spectrumsData = {
   audio: null,
   analyser: null,
   audioCtx: null,
+  scale: 1,
 };
 // 默认标题
 let defaultTitle = document.title;
@@ -56,13 +57,15 @@ export const initPlayer = async (playNow = false) => {
     if (playMode === "fm") music.playSongData = {};
     // 在线歌曲
     if (!isLocalSong) {
-      // 获取歌曲信息
-      const { id } = playSongData;
-      if (!id) return false;
+      // 获取歌曲 ID
+      let songId = playSongData?.id;
+      if (!songId) return false;
+      // 若为电台模式
+      if (playMode === "dj") songId = music.getPlaySongData?.djId;
       // 开启加载状态
       status.playLoading = true;
       // 获取播放地址
-      const url = await getNormalSongUrl(id, status, playNow);
+      const url = await getNormalSongUrl(songId, status, playNow);
       // 正常播放地址
       if (url) {
         status.playUseOtherSource = false;
@@ -90,7 +93,7 @@ export const initPlayer = async (playNow = false) => {
       // 下一曲
       else {
         if (playIndex !== playList.length - 1) {
-          changePlayIndex();
+          // changePlayIndex();
         } else {
           status.playLoading = false;
           status.playState = false;
@@ -235,7 +238,7 @@ export const createPlayer = async (src, autoPlay = true) => {
     const audioDom = player._sounds[0]._node;
     audioDom.crossOrigin = "anonymous";
     // 写入播放历史
-    music.setPlayHistory(playSongData);
+    if (playMode !== "dj") music.setPlayHistory(playSongData);
     // 生成音乐频谱
     // 由于浏览器安全策略，无法在此处启动
     if (showSpectrums && checkPlatform.electron()) processSpectrum(player);
@@ -755,8 +758,12 @@ export const processSpectrum = (sound) => {
 const updateSpectrums = (analyser, dataArray) => {
   // pinia
   const status = siteStatus();
+  // 获取频率数据
   analyser.getByteFrequencyData(dataArray);
   status.spectrumsData = [...dataArray];
+  // 计算 scale
+  const averageAmplitude = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
+  status.spectrumsScaleData = (averageAmplitude / 512 + 1).toFixed(2);
   // 递归调用，持续更新频谱数据
   requestAnimationFrame(() => {
     updateSpectrums(analyser, dataArray);

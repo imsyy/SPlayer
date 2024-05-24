@@ -170,9 +170,9 @@
       <div v-if="djData !== 'empty'" class="list">
         <Transition name="fade" mode="out-in">
           <div v-if="!searchValue" class="song-list">
-            <SongList :data="djData" type="dj" />
+            <SongList :data="djData" :sourceId="djId" type="dj" />
           </div>
-          <SongList v-else-if="searchData?.length" :data="searchData" type="dj" />
+          <SongList v-else-if="searchData?.length" :data="searchData" :sourceId="djId" type="dj" />
           <n-empty
             v-else
             :description="`搜不到关于 ${searchValue} 的任何节目`"

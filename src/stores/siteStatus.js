@@ -32,6 +32,7 @@ const useSiteStatusStore = defineStore("siteStatus", {
       pureLyricMode: false,
       // 音乐频谱数据
       spectrumsData: [],
+      spectrumsScaleData: 1,
       // 当前歌曲歌词播放索引
       playSongLyricIndex: -1,
       // 播放时长数据

@@ -77,7 +77,11 @@
             </n-text>
             <!-- 特权 -->
             <n-tag
-              v-if="showPrivilege && item.fee === 1 && userData.detail?.profile?.vipType !== 11"
+              v-if="
+                showPrivilege &&
+                item.fee === 1 &&
+                (userData.detail?.profile?.vipType !== 11 || !hiddenVipTags)
+              "
               :bordered="false"
               type="error"
               size="small"
@@ -281,7 +285,7 @@ const dataStore = siteData();
 const status = siteStatus();
 const settings = siteSettings();
 const { userData } = storeToRefs(dataStore);
-const { loadSize, playSearch, useMusicCache } = storeToRefs(settings);
+const { loadSize, playSearch, useMusicCache, hiddenVipTags } = storeToRefs(settings);
 const { playList, playSongData, playSongSource } = storeToRefs(music);
 const { playIndex, playMode, playHeartbeatMode, playLoading } = storeToRefs(status);
 

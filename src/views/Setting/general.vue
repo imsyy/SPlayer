@@ -122,6 +122,13 @@
         class="set"
       />
     </n-card>
+    <n-card class="set-item">
+      <div class="name">
+        隐藏 VIP 歌曲标签
+        <n-text class="tip">是否在歌曲列表中隐藏 VIP 歌曲标签</n-text>
+      </div>
+      <n-switch v-model:value="hiddenVipTags" :round="false" />
+    </n-card>
   </div>
 </template>
 
@@ -143,6 +150,7 @@ const {
   showSearchHistory,
   autoSignIn,
   siderShowCover,
+  hiddenVipTags,
 } = storeToRefs(settings);
 
 // 基础数据
