@@ -56,7 +56,7 @@
             >
               <template #placeholder>
                 <div class="cover-loading">
-                  <img class="loading-img" src="/images/pic/song.jpg?assest" alt="loading-img" />
+                  <img class="loading-img" src="/imgs/pic/song.jpg?assest" alt="loading-img" />
                 </div>
               </template>
             </n-image>
@@ -670,7 +670,7 @@ watch(
             justify-content: center;
             border-radius: 50%;
             animation: playerCoverRotate 18s linear infinite;
-            background: no-repeat url("/images/pic/record.png?assest") center;
+            background: no-repeat url("/imgs/pic/record.png?assest") center;
             :deep(img) {
               width: 40px;
               height: 40px;

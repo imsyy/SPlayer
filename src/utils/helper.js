@@ -90,7 +90,7 @@ export const getLocalCoverData = async (path, isAlbum = false) => {
       return lastCoverBlobUrl;
     } else {
       // 如果没有封面数据
-      return `/images/pic/${isAlbum ? "album" : "song"}.jpg?assest`;
+      return `/imgs/pic/${isAlbum ? "album" : "song"}.jpg?assest`;
     }
   } catch (error) {
     console.error("获取本地音乐封面出错：", error);

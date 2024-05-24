@@ -294,7 +294,7 @@ const changeUserPlaylists = (data) => {
                 },
               },
               [
-                h(NAvatar, { src: v?.coverSize?.s, fallbackSrc: "/images/pic/album.jpg?assest" }),
+                h(NAvatar, { src: v?.coverSize?.s, fallbackSrc: "/imgs/pic/album.jpg?assest" }),
                 h(NText, null, () => [v.name]),
               ],
             )
@@ -333,7 +333,7 @@ const changeUserPlaylists = (data) => {
                 },
               },
               [
-                h(NAvatar, { src: v?.coverSize?.s, fallbackSrc: "/images/pic/album.jpg?assest" }),
+                h(NAvatar, { src: v?.coverSize?.s, fallbackSrc: "/imgs/pic/album.jpg?assest" }),
                 h(NText, null, () => [v.name]),
               ],
             )

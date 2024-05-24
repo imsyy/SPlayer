@@ -3,7 +3,7 @@
   <nav :class="{ 'main-nav': true, 'no-sider': !showSider }">
     <div class="left">
       <div :class="['logo', asideMenuCollapsed ? 'collapsed' : null]" @click="router.push('/')">
-        <!-- <n-avatar class="logo-img" src="/images/icons/favicon.png?asset" /> -->
+        <!-- <n-avatar class="logo-img" src="/imgs/icons/favicon.png?asset" /> -->
         <n-icon class="logo-img" size="30">
           <svg
             xmlns="http://www.w3.org/2000/svg"

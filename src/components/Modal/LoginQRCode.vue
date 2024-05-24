@@ -9,7 +9,7 @@
           :class="['qr', qrStatusCode === 802 ? 'hidden' : null]"
           :size="156"
           :icon-size="30"
-          icon-src="/images/icons/favicon.png?asset"
+          icon-src="/imgs/icons/favicon.png?asset"
           error-correction-level="H"
         />
         <n-skeleton v-else class="qr" />

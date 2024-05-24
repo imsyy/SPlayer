@@ -30,7 +30,7 @@
         <img
           v-if="userLoginStatus && userData.detail?.profile?.vipType === 11"
           class="vip"
-          src="/images/pic/vip.png?assest"
+          src="/imgs/pic/vip.png?assest"
         />
         <n-icon depth="3" class="more">
           <SvgIcon icon="menu-down" />

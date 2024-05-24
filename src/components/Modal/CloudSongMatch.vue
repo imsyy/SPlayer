@@ -52,7 +52,7 @@
         >
           <template #placeholder>
             <div class="cover-loading">
-              <img class="loading-img" src="/images/pic/song.jpg?assest" alt="loading-img" />
+              <img class="loading-img" src="/imgs/pic/song.jpg?assest" alt="loading-img" />
             </div>
           </template>
         </n-image>

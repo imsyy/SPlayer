@@ -78,10 +78,10 @@ const dailySongsCoverData = computed(() => {
   if (isLogin() && dailySongsData.value.data?.length) {
     const randomIndex = Math.floor(Math.random() * dailySongsData.value.data.length);
     dailySongsCover.cover =
-      dailySongsData.value.data[randomIndex]?.coverSize?.s || "/images/pic/like.jpg";
+      dailySongsData.value.data[randomIndex]?.coverSize?.s || "/imgs/pic/like.jpg";
     return dailySongsCover;
   }
-  dailySongsCover.cover = "/images/pic/cover-2.jpg";
+  dailySongsCover.cover = "/imgs/pic/cover-2.jpg";
   return dailySongsCover;
 });
 
@@ -93,10 +93,10 @@ const likeSongsCoverData = computed(() => {
     desc: "发现你独特的音乐品味",
   };
   if (isLogin() && userLikeData.value.playlists?.length) {
-    likeSongsCover.cover = userLikeData.value.playlists[0]?.coverSize?.s || "/images/pic/like.jpg";
+    likeSongsCover.cover = userLikeData.value.playlists[0]?.coverSize?.s || "/imgs/pic/like.jpg";
     return likeSongsCover;
   }
-  likeSongsCover.cover = "/images/pic/like.jpg";
+  likeSongsCover.cover = "/imgs/pic/like.jpg";
   return likeSongsCover;
 });
 

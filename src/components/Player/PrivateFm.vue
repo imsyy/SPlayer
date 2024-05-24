@@ -13,7 +13,7 @@
     <div
       class="overlay"
       :style="{
-        backgroundImage: `url(${privateFmSong?.coverSize?.m || '/images/pic/song.jpg?assest'})`,
+        backgroundImage: `url(${privateFmSong?.coverSize?.m || '/imgs/pic/song.jpg?assest'})`,
       }"
     />
     <!-- 内容 -->
@@ -33,7 +33,7 @@
           >
             <template #placeholder>
               <div class="cover-loading">
-                <img class="loading-img" src="/images/pic/song.jpg?assest" alt="loading-img" />
+                <img class="loading-img" src="/imgs/pic/song.jpg?assest" alt="loading-img" />
               </div>
             </template>
           </n-image>

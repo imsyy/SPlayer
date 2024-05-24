@@ -2,7 +2,7 @@
 
 > 一个简约的音乐播放器
 
-![main](/screenshots/SPlayer.jpg)
+![main](/screenshot/SPlayer.jpg)
 
 ## 说明
 
@@ -57,49 +57,49 @@
 - 📱 移动端基础适配
 - ~~🌐 `i18n` 支持~~
 
-## 🖼️ Screenshots
+## 🖼️ screenshot
 
 > 开发中，仅供参考
 
 <details>
 <summary>主页面</summary>
 
-![主页面](/screenshots/SPlayer%20-%20主页面.jpg)
+![主页面](/screenshot/SPlayer%20-%20主页面.jpg)
 
 </details>
 
 <details>
 <summary>播放页面</summary>
 
-![播放页面](/screenshots/SPlayer%20-%20播放页面.jpg)
+![播放页面](/screenshot/SPlayer%20-%20播放页面.jpg)
 
 </details>
 
 <details>
 <summary>发现页面</summary>
 
-![发现页面](/screenshots/SPlayer%20-%20发现页面.jpg)
+![发现页面](/screenshot/SPlayer%20-%20发现页面.jpg)
 
 </details>
 
 <details>
 <summary>歌单页面</summary>
 
-![发现页面](/screenshots/SPlayer%20-%20歌单页面.jpg)
+![发现页面](/screenshot/SPlayer%20-%20歌单页面.jpg)
 
 </details>
 
 <details>
 <summary>评论页面</summary>
 
-![发现页面](/screenshots/SPlayer%20-%20评论页面.jpg)
+![发现页面](/screenshot/SPlayer%20-%20评论页面.jpg)
 
 </details>
 
 <details>
 <summary>本地音乐</summary>
 
-![发现页面](/screenshots/SPlayer%20-%20本地音乐.jpg)
+![发现页面](/screenshot/SPlayer%20-%20本地音乐.jpg)
 
 </details>
 
@@ -162,7 +162,7 @@ docker run -d --name SPlayer -p 7899:7899 imsyy/splayer:latest
 
 5. 将 `Build and Output Settings` 中的 `Output Directory` 改为 `out/renderer`
 
-   ![build](/screenshots/build.png)
+   ![build](/screenshot/build.png)
 
 6. 点击 `Deploy`，即可成功部署
 

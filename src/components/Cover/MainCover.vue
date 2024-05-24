@@ -40,10 +40,10 @@
                     class="loading-img"
                     :src="
                       type === 'mv'
-                        ? '/images/pic/video.jpg?assest'
+                        ? '/imgs/pic/video.jpg?assest'
                         : type === 'artist'
-                          ? '/images/pic/artist.jpg?assest'
-                          : '/images/pic/album.jpg?assest'
+                          ? '/imgs/pic/artist.jpg?assest'
+                          : '/imgs/pic/album.jpg?assest'
                     "
                     alt="song"
                   />

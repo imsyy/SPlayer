@@ -5,7 +5,7 @@
     <img
       v-if="playCoverType === 'record'"
       :class="{ pointer: true, play: playState }"
-      src="/images/pic/pointer.png?assest"
+      src="/imgs/pic/pointer.png?assest"
       alt="pointer"
     />
     <!-- 专辑图片 -->
@@ -28,7 +28,7 @@
     >
       <template #placeholder>
         <div class="cover-loading">
-          <img class="loading-img" src="/images/pic/song.jpg?assest" alt="loading-img" />
+          <img class="loading-img" src="/imgs/pic/song.jpg?assest" alt="loading-img" />
         </div>
       </template>
     </n-image>

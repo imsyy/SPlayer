@@ -106,22 +106,22 @@ export default defineConfig(({ mode }) => {
             background_color: "#efefef",
             icons: [
               {
-                src: "/images/icons/favicon-32x32.png",
+                src: "/imgs/icons/favicon-32x32.png",
                 sizes: "32x32",
                 type: "image/png",
               },
               {
-                src: "/images/icons/favicon-96x96.png",
+                src: "/imgs/icons/favicon-96x96.png",
                 sizes: "96x96",
                 type: "image/png",
               },
               {
-                src: "/images/icons/favicon-256x256.png",
+                src: "/imgs/icons/favicon-256x256.png",
                 sizes: "256x256",
                 type: "image/png",
               },
               {
-                src: "/images/icons/favicon-512x512.png",
+                src: "/imgs/icons/favicon-512x512.png",
                 sizes: "512x512",
                 type: "image/png",
               },

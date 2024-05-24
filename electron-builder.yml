@@ -21,7 +21,7 @@ win:
   # 可执行文件名
   executableName: SPlayer
   # 应用程序的图标文件路径
-  icon: public/images/icons/favicon-512x512.png
+  icon: public/imgs/icons/favicon-512x512.png
   # 构建类型
   target: nsis
 # NSIS 安装器配置
@@ -41,15 +41,15 @@ nsis:
   # 是否允许用户更改安装目录
   allowToChangeInstallationDirectory: true
   # 安装包图标
-  installerIcon: public/images/icons/favicon.ico
+  installerIcon: public/imgs/icons/favicon.ico
   # 卸载命令图标
-  uninstallerIcon: public/images/icons/favicon.ico
+  uninstallerIcon: public/imgs/icons/favicon.ico
 # macOS 平台配置
 mac:
   # 可执行文件名
   executableName: SPlayer
   # 应用程序的图标文件路径
-  icon: public/images/icons/favicon-512x512.png
+  icon: public/imgs/icons/favicon-512x512.png
   # 权限继承的文件路径
   entitlementsInherit: build/entitlements.mac.plist
   # 扩展信息，如权限描述
@@ -71,7 +71,7 @@ linux:
   # 可执行文件名
   executableName: SPlayer
   # 应用程序的图标文件路径
-  icon: public/images/icons/favicon-512x512.png
+  icon: public/imgs/icons/favicon-512x512.png
   # 构建类型
   target:
     - AppImage

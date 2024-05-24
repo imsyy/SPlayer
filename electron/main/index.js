@@ -117,7 +117,7 @@ class MainProcess {
       titleBarStyle: "customButtonsOnHover", // Macos 隐藏菜单栏
       autoHideMenuBar: true, // 失去焦点后自动隐藏菜单栏
       // 图标配置
-      icon: nativeImage.createFromPath(join(__dirname, "../../public/images/icons/favicon.png")),
+      icon: nativeImage.createFromPath(join(__dirname, "../../public/imgs/icons/favicon.png")),
       // 预加载
       webPreferences: {
         // devTools: is.dev,

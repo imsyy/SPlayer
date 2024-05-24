@@ -19,7 +19,7 @@
           >
             <template #placeholder>
               <div class="cover-loading">
-                <img class="loading-img" src="/images/pic/song.jpg?assest" alt="song" />
+                <img class="loading-img" src="/imgs/pic/song.jpg?assest" alt="song" />
               </div>
             </template>
           </n-image>
@@ -34,7 +34,7 @@
           <div class="creator">
             <n-avatar
               :src="(djDetail.creator?.avatarUrl + '?param=300y$300').replace(/^http:/, 'https:')"
-              fallback-src="/images/pic/avatar.jpg?assest"
+              fallback-src="/imgs/pic/avatar.jpg?assest"
               round
             />
             <n-text class="nickname">{{ djDetail.creator?.nickname || "未知创建者" }}</n-text>

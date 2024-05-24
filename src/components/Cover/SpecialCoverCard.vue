@@ -18,7 +18,7 @@
           class: 'cover-img',
         }"
         class="cover-main-img"
-        fallback-src="/images/pic/default.jpg?assest"
+        fallback-src="/imgs/pic/default.jpg?assest"
         preview-disabled
         @load="
           (e) => {
