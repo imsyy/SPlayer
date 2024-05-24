@@ -174,7 +174,7 @@
             >
               <template #placeholder>
                 <div class="cover-loading">
-                  <img class="loading-img" src="/images/pic/avatar.jpg?assest" alt="song" />
+                  <img class="loading-img" src="/images/pic/avatar.png?assest" alt="song" />
                 </div>
               </template>
             </n-image>
