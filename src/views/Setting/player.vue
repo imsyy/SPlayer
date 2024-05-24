@@ -103,10 +103,6 @@
             label: '主色渐变',
             value: 'gradient',
           },
-          {
-            label: '无背景',
-            value: 'none',
-          },
         ]"
         class="set"
       />

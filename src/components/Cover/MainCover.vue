@@ -40,7 +40,7 @@
                     class="loading-img"
                     :src="
                       type === 'mv'
-                        ? '/images/pic/video.jpg?assest'
+                        ? '/images/pic/video.png?assest'
                         : type === 'artist'
                           ? '/images/pic/artist.jpg?assest'
                           : '/images/pic/album.jpg?assest'

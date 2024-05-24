@@ -112,8 +112,7 @@ const formatData = (data, type = "playlist", noTracks = false) => {
       // dj
       case "dj":
         return {
-          id: v.id || v.vid,
-          djId: v.mainTrackId || v.id,
+          id: v.mainTrackId || v.id || v.vid,
           name: v.name,
           creator: v.dj,
           count: v.programCount,

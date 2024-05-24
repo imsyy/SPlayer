@@ -5,15 +5,6 @@
       <n-scrollbar style="max-height: 120px">
         {{ status.spectrumsData }}
       </n-scrollbar>
-      <n-scrollbar style="max-height: 120px">
-        {{ status.spectrumsScaleData }}
-        <div
-          :style="{
-            transform: `scale(${status.spectrumsScaleData})`,
-          }"
-          class="point"
-        ></div>
-      </n-scrollbar>
     </n-card>
     <n-card title="频谱图">
       <canvas ref="canvasRef" class="avBars" style="width: 100%" />
@@ -93,12 +84,5 @@ onMounted(() => {
     hsla(0, 0%, 100%, 0.6) 85%,
     hsla(0, 0%, 100%, 0)
   );
-}
-.point {
-  width: 30px;
-  height: 30px;
-  margin: 20px;
-  border-radius: 50%;
-  background-color: var(--main-color);
 }
 </style>

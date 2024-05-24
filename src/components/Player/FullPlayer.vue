@@ -50,7 +50,7 @@
           <div class="left">
             <!-- 歌词模式 -->
             <n-icon
-              v-if="isHasLrc && playMode !== 'dj'"
+              v-if="isHasLrc"
               :class="['lrc-open', { open: pureLyricMode }]"
               size="28"
               @click="pureLyricMode = !pureLyricMode"
@@ -78,17 +78,11 @@
           :key="`${pureLyricMode}-${playCoverType}-${isHasLrc}-${music.getPlaySongData?.id}`"
           class="main-player"
         >
-          <div
-            v-show="!(pureLyricMode && isHasLrc) || playMode === 'dj'"
-            :class="['content', { 'no-lrc': !isHasLrc || playMode === 'dj' }]"
-          >
+          <div v-show="!(pureLyricMode && isHasLrc)" :class="['content', { 'no-lrc': !isHasLrc }]">
             <!-- 封面 -->
             <PlayerCover />
             <!-- 信息 -->
-            <div
-              v-show="playCoverType === 'cover' || !isHasLrc || playMode === 'dj'"
-              :class="['data', playCoverType]"
-            >
+            <div v-show="playCoverType === 'cover' || !isHasLrc" :class="['data', playCoverType]">
               <div class="desc">
                 <div class="title">
                   <span class="name">{{ music.getPlaySongData.name || "未知曲目" }}</span>
@@ -121,7 +115,7 @@
                 <span v-if="music.getPlaySongData.alia" class="alia">
                   {{ music.getPlaySongData.alia }}
                 </span>
-                <div v-if="playMode !== 'dj'" class="artist">
+                <div class="artist">
                   <n-icon depth="3" size="20">
                     <SvgIcon icon="account-music" />
                   </n-icon>
@@ -145,7 +139,6 @@
                   </div>
                 </div>
                 <div
-                  v-if="playMode !== 'dj'"
                   class="album"
                   @click.stop="
                     () => {
@@ -168,28 +161,10 @@
                   </span>
                   <span v-else class="album">未知专辑</span>
                 </div>
-                <div
-                  v-if="playMode === 'dj'"
-                  class="dj"
-                  @click.stop="
-                    () => {
-                      if (!playSongSource) return;
-                      showFullPlayer = false;
-                      router.push(`/dj?id=${playSongSource}`);
-                    }
-                  "
-                >
-                  <n-icon depth="3" size="20">
-                    <SvgIcon icon="record" />
-                  </n-icon>
-                  <span class="dj-name">
-                    {{ music.getPlaySongData.creator?.brand || "未知电台" }}
-                  </span>
-                </div>
               </div>
             </div>
           </div>
-          <div v-if="playMode !== 'dj'" :class="['right', { pure: pureLyricMode && isHasLrc }]">
+          <div :class="['right', { pure: pureLyricMode && isHasLrc }]">
             <!-- 唱片模式下信息 -->
             <div
               v-show="(pureLyricMode && isHasLrc) || (playCoverType === 'record' && isHasLrc)"
@@ -274,7 +249,7 @@ const router = useRouter();
 const music = musicData();
 const status = siteStatus();
 const settings = siteSettings();
-const { playList, playSongLyric, playSongSource } = storeToRefs(music);
+const { playList, playSongLyric } = storeToRefs(music);
 const { playerBackgroundType, showYrc, playCoverType, showSpectrums } = storeToRefs(settings);
 const {
   playerControlShow,
@@ -284,7 +259,6 @@ const {
   coverTheme,
   coverBackground,
   pureLyricMode,
-  playMode,
 } = storeToRefs(status);
 
 // 是否有歌词
@@ -413,11 +387,6 @@ onUnmounted(() => {
     }
     &.gradient {
       background: var(--cover-bg);
-    }
-    &.none {
-      &::after {
-        display: none;
-      }
     }
   }
   // 按钮
@@ -572,25 +541,6 @@ onUnmounted(() => {
               opacity: 0.7;
               transition: opacity 0.3s;
               // -webkit-line-clamp: 2;
-              cursor: pointer;
-              &:hover {
-                opacity: 1;
-              }
-            }
-          }
-          .dj {
-            margin-top: 12px;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            .n-icon {
-              margin-right: 4px;
-              color: var(--cover-main-color);
-            }
-            .dj-name {
-              opacity: 0.7;
-              transition: opacity 0.3s;
-              -webkit-line-clamp: 2;
               cursor: pointer;
               &:hover {
                 opacity: 1;
