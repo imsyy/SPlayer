@@ -121,7 +121,7 @@ const getKuwoSongUrl = async (keyword) => {
     const url = encryptQuery
       ? "http://mobi.kuwo.cn/mobi.s?f=kuwo&q=" +
         encryptQuery(
-          "corp=kuwo&source=kwplayer_ar_8.5.5.0_apk_keluze.apk&p2p=1&type=convert_url2&sig=0&format=mp3" +
+          "corp=kuwo&source=kwplayer_ar_1.1.9_oppo_118980_320.apk&p2p=1&type=convert_url2&sig=0&format=mp3" +
             "&rid=" +
             songId,
         )

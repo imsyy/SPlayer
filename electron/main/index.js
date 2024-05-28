@@ -114,6 +114,7 @@ class MainProcess {
       center: true, // 是否出现在屏幕居中的位置
       show: false, // 初始时不显示窗口
       frame: false, // 无边框
+      // transparent: true, // 透明窗口
       titleBarStyle: "customButtonsOnHover", // Macos 隐藏菜单栏
       autoHideMenuBar: true, // 失去焦点后自动隐藏菜单栏
       // 图标配置
