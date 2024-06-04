@@ -1,4 +1,5 @@
 import netEaseApi from "NeteaseCloudMusicApi";
+import checkPort from "@main/utils/checkPort";
 
 /**
  * 启动网易云音乐 API 服务器
@@ -15,6 +16,7 @@ export const startNcmServer = async (
     host: "127.0.0.1",
   },
 ) => {
-  console.log(options);
+  const serverPort = await checkPort(options.port);
+  options.port = serverPort;
   return await netEaseApi.serveNcmApi(options);
 };
