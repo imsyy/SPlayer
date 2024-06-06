@@ -108,6 +108,9 @@ const getSystemFonts = async () => {
     allFontsData.value.push({
       label: v,
       value: v,
+      style: {
+        fontFamily: v,
+      },
     });
   });
 };
