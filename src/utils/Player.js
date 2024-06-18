@@ -543,8 +543,7 @@ export const setSeek = (seek = 0) => {
  * @return {number} seek - 获取的进度值，0-1之间的浮点数
  */
 export const getSeek = () => {
-  console.log(player.seek());
-  if (player) {
+  if (typeof player !== "undefined") {
     return player.seek();
   }
   return 0;
@@ -584,8 +583,8 @@ const setAudioTime = () => {
 const justSetSeek = () => {
   if (player?.playing()) {
     const status = siteStatus();
-    const currentTime = player?.seek() || 0;
-    status.playSeek = currentTime;
+    status.playSeek = getSeek();
+    requestAnimationFrame(justSetSeek);
   }
 };
 
@@ -838,7 +837,8 @@ export const playAllSongs = async (playlist, mode = "normal") => {
  */
 const cleanAllInterval = () => {
   clearInterval(seekInterval);
-  clearInterval(justSeekInterval);
+  // clearInterval(justSeekInterval);
+  cancelAnimationFrame(justSeekInterval);
   seekInterval = null;
   justSeekInterval = null;
 };
@@ -850,5 +850,6 @@ const setAllInterval = () => {
   cleanAllInterval();
   // 启动定时器
   seekInterval = setInterval(() => setAudioTime(), 250);
-  justSeekInterval = setInterval(() => justSetSeek(), 17);
+  // justSeekInterval = setInterval(() => justSetSeek(), 17);
+  justSeekInterval = requestAnimationFrame(justSetSeek);
 };

@@ -58,6 +58,7 @@
               <SvgIcon icon="lrc-text" />
             </n-icon>
           </div>
+          <div class="center" />
           <div class="right">
             <!-- 全屏切换 -->
             <n-icon class="hidden" @click.stop="screenfullChange">
@@ -440,7 +441,12 @@ onUnmounted(() => {
       flex-direction: row;
       align-items: center;
       justify-content: flex-end;
+    }
+    .center {
+      width: 100%;
+      height: 100%;
       flex: 1;
+      -webkit-app-region: drag;
     }
     .n-icon {
       margin-left: 12px;
