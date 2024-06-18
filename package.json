@@ -16,6 +16,7 @@
   },
   "type": "module",
   "scripts": {
+    "build:web": "npm run build",
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts,.vue --fix",
     "start": "electron-vite preview",
