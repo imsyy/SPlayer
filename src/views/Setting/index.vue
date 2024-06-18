@@ -3,15 +3,15 @@
   <div :class="{ setting: true, 'use-cover': themeAutoCover }">
     <n-h1 class="title">
       <n-text>全局设置</n-text>
-      <div class="copyright" @click="jump">
-        <div class="author">
-          <n-icon depth="3" size="18">
-            <SvgIcon icon="github" />
-          </n-icon>
-          <n-text class="author-text" depth="3">{{ packageJson.author }}</n-text>
-        </div>
-        <n-text class="version" depth="3">{{ packageJson.version }}</n-text>
-      </div>
+<!--      <div class="copyright" @click="jump">-->
+<!--        <div class="author">-->
+<!--          <n-icon depth="3" size="18">-->
+<!--            <SvgIcon icon="github" />-->
+<!--          </n-icon>-->
+<!--          <n-text class="author-text" depth="3">{{ packageJson.author }}</n-text>-->
+<!--        </div>-->
+<!--        <n-text class="version" depth="3">{{ packageJson.version }}</n-text>-->
+<!--      </div>-->
     </n-h1>
     <!-- 导航栏 -->
     <n-tabs
