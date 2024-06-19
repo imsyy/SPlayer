@@ -1,12 +1,12 @@
 import { nextTick } from "vue";
-import { createRouter, createWebHashHistory } from "vue-router";
+import { createRouter, createWebHashHistory, createWebHistory } from "vue-router";
 import { checkPlatform } from "@/utils/helper";
 import { isLogin } from "@/utils/auth";
 import routes from "@/router/routes";
 
 // 基础配置
 const router = createRouter({
-  history: createWebHashHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 });
 
