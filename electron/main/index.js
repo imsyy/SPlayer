@@ -152,7 +152,8 @@ class MainProcess {
     }
     // 生产模式
     else {
-      this.mainWindow.loadURL(`http://127.0.0.1:${import.meta.env.MAIN_VITE_MAIN_PORT ?? 7899}`);
+      console.log("生产模式渲染端口: " + process.env.MAIN_VITE_MAIN_PORT ?? 7899);
+      this.mainWindow.loadURL(`http://127.0.0.1:${process.env.MAIN_VITE_MAIN_PORT ?? 7899}`);
     }
 
     // 配置网络代理
@@ -232,24 +233,21 @@ class MainProcess {
       this.mainWindow.webContents.send("windowState", false);
     });
 
-    this.mainWindow.on("resized", () => {
+    this.mainWindow.on("resize", () => {
       this.store.set("windowSize", this.mainWindow.getBounds());
     });
 
-    this.mainWindow.on("moved", () => {
+    this.mainWindow.on("move", () => {
       this.store.set("windowSize", this.mainWindow.getBounds());
     });
 
     // 窗口关闭
     this.mainWindow.on("close", (event) => {
-      if (platform.isLinux) {
-        app.quit();
+      event.preventDefault();
+      if (!app.isQuiting) {
+        this.mainWindow.hide();
       } else {
-        if (!app.isQuiting) {
-          event.preventDefault();
-          this.mainWindow.hide();
-        }
-        return false;
+        app.exit();
       }
     });
   }
