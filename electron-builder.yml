@@ -74,6 +74,7 @@ linux:
   icon: public/imgs/icons/favicon-512x512.png
   # 构建类型
   target:
+    - pacman
     - AppImage
     - deb
     - rpm
