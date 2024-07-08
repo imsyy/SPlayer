@@ -54,14 +54,20 @@ mac:
   entitlementsInherit: build/entitlements.mac.plist
   # 扩展信息，如权限描述
   extendInfo:
-    - NSCameraUsageDescription: Application requests access to the device's camera.
-    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+    NSCameraUsageDescription: Application requests access to the device's camera.
+    NSMicrophoneUsageDescription: Application requests access to the device's microphone.
+    NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
+    NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   # 是否启用应用程序的 Notarization（苹果的安全审核）
   notarize: false
   darkModeSupport: true
   category: public.app-category.music
+  target:
+    - dmg
+    - zip
+  arch:
+    - x64
+    - arm64
 # macOS 平台的 DMG 配置
 dmg:
   # DMG 文件的生成名称
