@@ -117,7 +117,7 @@ const hotCommentData = ref(null);
 // 获取歌曲详情
 const getSongDetailData = async (id) => {
   try {
-    if (commentType.value === "normal") {
+    if (commentType.value === "normal" || "fm") {
       const detail = await getSongDetail(id);
       const data = formatData(detail?.songs?.[0], "song");
       songDetail.value = data?.[0] ?? null;
