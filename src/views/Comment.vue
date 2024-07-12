@@ -138,7 +138,7 @@ const getCommentData = async (id, pageNo = 1, sortType = 3, pageSize = 20) => {
     const cursor =
       pageNo !== 1 && commentData.value?.cursor !== "0" ? commentData.value.cursor : null;
     // 获取热门评论和普通评论
-    if (commentType.value === "normal") {
+    if (commentType.value === "normal" || "fm") {
       const [hotComments, comments] = await Promise.all([
         pageNo === 1 ? getHotComment(id, 0, 10) : null,
         getComment(id, 0, pageNo, sortType, pageSize, cursor),
