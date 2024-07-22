@@ -227,6 +227,8 @@ docker run -d --name SPlayer -p 7899:7899 imsyy/splayer:latest
 - [YesPlayMusic](https://github.com/qier222/YesPlayMusic)
 - [UnblockNeteaseMusic](https://github.com/UnblockNeteaseMusic/server)
 - [Vue-mmPlayer](https://github.com/maomao1996/Vue-mmPlayer)
+- [refined-now-playing-netease](https://github.com/solstice23/refined-now-playing-netease)
+- [material-color-utilities](https://github.com/material-foundation/material-color-utilities)
 
 ## 📢 免责声明
 
