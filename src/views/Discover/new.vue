@@ -1,8 +1,8 @@
 <!-- 发现 - 最新音乐 -->
 <template>
   <div class="dsc-new">
-    <n-space class="menu" justify="space-between">
-      <n-space class="type">
+    <n-flex class="menu" justify="space-between">
+      <n-flex class="type">
         <n-tag
           v-for="(item, index) in newTypeNames"
           :key="index"
@@ -14,8 +14,8 @@
         >
           {{ item }}
         </n-tag>
-      </n-space>
-      <n-space class="area">
+      </n-flex>
+      <n-flex class="area">
         <n-tag
           v-for="(item, index) in newAreaNames"
           :key="index"
@@ -27,8 +27,8 @@
         >
           {{ item.value }}
         </n-tag>
-      </n-space>
-    </n-space>
+      </n-flex>
+    </n-flex>
     <!-- 列表 -->
     <Transition name="fade" mode="out-in">
       <div v-if="newTypeChoose === 0" class="new-album">

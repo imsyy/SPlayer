@@ -2,7 +2,7 @@
 <template>
   <div class="dsc-playlists">
     <!-- 菜单 -->
-    <n-space class="menu" align="center" justify="space-between">
+    <n-flex class="menu" align="center" justify="space-between">
       <!-- 分类选择 -->
       <n-button
         class="cat"
@@ -20,12 +20,12 @@
         {{ catName }}
       </n-button>
       <Transition name="fade" mode="out-in">
-        <n-space v-if="getHaveHqPlaylists(data.plCatList.hqCatList, catName)" align="center">
+        <n-flex v-if="getHaveHqPlaylists(data.plCatList.hqCatList, catName)" align="center">
           <n-text>精品歌单</n-text>
           <n-switch v-model:value="hqPlOpen" :round="false" @update:value="hqPlOpenChange" />
-        </n-space>
+        </n-flex>
       </Transition>
-    </n-space>
+    </n-flex>
     <!-- 列表 -->
     <MainCover :data="allPlData" />
     <!-- 分页 -->
@@ -37,7 +37,7 @@
     />
     <!-- 加载更多 -->
     <Transition name="fade" mode="out-in">
-      <n-space justify="center">
+      <n-flex justify="center">
         <n-button
           v-if="hqPlOpen && plHasMore"
           :loading="plHasLoading"
@@ -55,7 +55,7 @@
         >
           加载更多
         </n-button>
-      </n-space>
+      </n-flex>
     </Transition>
     <!-- 分类切换 -->
     <n-modal v-model:show="catChangeShow" :bordered="false" preset="card">
@@ -80,7 +80,7 @@
               <template #prefix>
                 <n-text class="type"> {{ cat }} </n-text>
               </template>
-              <n-space>
+              <n-flex>
                 <n-tag
                   v-for="item in data.plCatList.catList.filter((v) => v.category == key)"
                   :key="item"
@@ -98,7 +98,7 @@
                     </n-icon>
                   </template>
                 </n-tag>
-              </n-space>
+              </n-flex>
             </n-list-item>
           </n-list>
         </div>

@@ -1,9 +1,19 @@
+// BlobUrl
+let lastSongBlobUrl = null;
+let lastCoverBlobUrl = null;
+let lastDownloadBlobUrl = null;
+
 /**
  * 判断当前运行环境
  */
 export const checkPlatform = {
   electron: () => {
-    return typeof electron !== "undefined";
+    // return typeof electron !== "undefined";
+    if (typeof process !== "undefined" && process.versions) {
+      return process.versions.electron ? true : false;
+    }
+    const userAgent = navigator.userAgent.toLowerCase();
+    return userAgent.includes("electron");
   },
   macOS: () => {
     if (!checkPlatform.electron()) return false;
@@ -17,6 +27,16 @@ export const checkPlatform = {
     if (!checkPlatform.electron()) return false;
     return electron.process.platform === "linux";
   },
+};
+
+/**
+ * 引入 CSS
+ */
+export const loadCSS = (href) => {
+  const linkElement = document.createElement("link");
+  linkElement.rel = "stylesheet";
+  linkElement.href = href;
+  document.head.appendChild(linkElement);
 };
 
 /**
@@ -59,30 +79,18 @@ export const getCacheData = async (key, time, request, params) => {
  */
 export const getLocalCoverData = async (path, isAlbum = false) => {
   try {
-    let blobUrl = null;
+    // 清理过期的 Blob 链接
+    if (lastCoverBlobUrl) URL.revokeObjectURL(lastCoverBlobUrl);
     const coverData = await electron.ipcRenderer.invoke("getMusicCover", path);
     if (coverData) {
       // 将 Uint8Array 数据转换为 Blob
       const blob = new Blob([coverData.coverData], { type: `image/${coverData.coverFormat}` });
       // 生成Blob URL
-      blobUrl = URL.createObjectURL(blob);
-      // 检查当前path是否与上次不一致
-      const previousPath = sessionStorage.getItem("localCoverPath");
-      if (previousPath && previousPath !== path) {
-        // 清除上次的内容
-        const previousBlobUrl = sessionStorage.getItem("localCoverBlobUrl");
-        if (previousBlobUrl) {
-          URL.revokeObjectURL(previousBlobUrl);
-          sessionStorage.removeItem("localCoverBlobUrl");
-        }
-      }
-      // 存储当前path和Blob URL
-      sessionStorage.setItem("localCoverPath", path);
-      sessionStorage.setItem("localCoverBlobUrl", blobUrl);
-      return blobUrl;
+      lastCoverBlobUrl = URL.createObjectURL(blob);
+      return lastCoverBlobUrl;
     } else {
       // 如果没有封面数据
-      return `/images/pic/${isAlbum ? "album" : "song"}.jpg?assest`;
+      return `/imgs/pic/${isAlbum ? "album" : "song"}.jpg?assest`;
     }
   } catch (error) {
     console.error("获取本地音乐封面出错：", error);
@@ -299,35 +307,40 @@ export const generateId = (fileName) => {
  * @param {String} songName - 歌曲名称
  * @returns {number} - 生成的数字ID
  */
-export const downloadFile = async (data, song, path = null) => {
+export const downloadFile = async (data, song, lyric, options) => {
   try {
     const isElectron = checkPlatform.electron();
     const songType = data.type.toLowerCase();
     // 歌曲名称
     const songName =
       song.name +
-      " - " +
+      "-" +
       (Array.isArray(song.artists)
-        ? song.artists.map((ar) => ar.name).join(" / ")
+        ? song.artists.map((ar) => ar.name).join("&")
         : song.artists || "未知歌手");
-    if (isElectron && path) {
-      console.log("开始下载：", data, song, songName, songType, path);
+    if (isElectron && options.path) {
+      console.log("开始下载：", data, song, songName, songType, options.path);
       return await electron.ipcRenderer.invoke(
         "downloadFile",
-        data,
-        JSON.stringify(song),
-        songName,
-        songType,
-        path,
+        JSON.stringify({
+          url: data?.url,
+          data: song,
+          lyric: lyric,
+          name: songName,
+          type: songType,
+        }),
+        JSON.stringify(options),
       );
     } else {
-      const songRes = await fetch(data.url.replace(/^http:/, "https:"));
+      // 清理过期的 Blob 链接
+      if (lastDownloadBlobUrl) URL.revokeObjectURL(lastDownloadBlobUrl);
+      const songRes = await fetch(data?.url.replace(/^http:/, "https:"));
       if (!songRes.ok) throw new Error("下载出错，请重试");
       const blob = await songRes.blob();
-      const url = window.URL.createObjectURL(blob);
+      lastDownloadBlobUrl = URL.createObjectURL(blob);
       // 下载数据
       const a = document.createElement("a");
-      a.href = url;
+      a.href = lastDownloadBlobUrl;
       a.download = `${songName}.${songType}`;
       document.body.appendChild(a);
       a.click();
@@ -344,7 +357,7 @@ export const downloadFile = async (data, song, path = null) => {
  * 将字节数格式化为可读的大小字符串。
  * @param {number} bytes - 要格式化的字节数
  * @param {number} [decimals=2] - 小数点位数
- * @returns {string} - 格式化后的大小字符串（例如，"10 KB"）
+ * @returns {string} - 格式化后的大小字符串（"10 KB"）
  */
 export const formatBytes = (bytes, decimals = 2) => {
   if (bytes === 0) return "0 K";
@@ -353,4 +366,32 @@ export const formatBytes = (bytes, decimals = 2) => {
   const sizes = ["K", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+};
+
+/**
+ * 获取音频文件的 Blob 链接
+ * @param {string} url - 音频文件的网络链接
+ */
+export const getBlobUrlFromUrl = async (url) => {
+  try {
+    // 清理过期的 Blob 链接
+    if (lastSongBlobUrl) URL.revokeObjectURL(lastSongBlobUrl);
+    // 是否为网络链接
+    if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("blob:")) {
+      return url;
+    }
+    // 获取音频文件数据
+    const response = await fetch(url);
+    // 检查请求是否成功
+    if (!response.ok) {
+      throw new Error("获取音频资源失败：", response.statusText);
+    }
+    const blob = await response.blob();
+    // 转换为本地 Blob 链接
+    lastSongBlobUrl = URL.createObjectURL(blob);
+    return lastSongBlobUrl;
+  } catch (error) {
+    console.error("获取 Blob 链接遇到错误：" + error);
+    throw error;
+  }
 };

@@ -25,7 +25,7 @@
                 >
                   <template #placeholder>
                     <div class="cover-loading">
-                      <img class="loading-img" src="/images/pic/avatar.jpg?assest" alt="avatar" />
+                      <img class="loading-img" src="/imgs/pic/avatar.png?assest" alt="avatar" />
                     </div>
                   </template>
                 </n-image>

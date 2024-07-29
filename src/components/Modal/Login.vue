@@ -2,19 +2,18 @@
 <template>
   <n-modal
     v-model:show="loginModalShow"
-    style="width: 400px"
-    class="login"
     :auto-focus="false"
     :mask-closable="false"
     :bordered="false"
     :close-on-esc="false"
     :closable="false"
+    style="width: 400px"
     preset="card"
     transform-origin="center"
   >
     <div class="login-content">
       <div class="title">
-        <img class="logo" src="/images/icons/favicon.png?asset" alt="logo" />
+        <img class="logo" src="/imgs/icons/favicon.png?asset" alt="logo" />
       </div>
       <!-- 登录方式 -->
       <n-tabs class="login-tabs" default-value="login-qr" type="segment" animated>
@@ -27,6 +26,7 @@
       </n-tabs>
       <!-- 关闭登录弹窗 -->
       <n-button
+        :focusable="false"
         class="close"
         strong
         secondary

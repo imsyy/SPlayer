@@ -1,8 +1,10 @@
 import { ipcMain, dialog, app, clipboard, shell } from "electron";
+import { File, Picture, Id3v2Settings } from "node-taglib-sharp";
+import { configureAutoUpdater } from "@main/utils/checkUpdates";
 import { readDirAsync } from "@main/utils/readDirAsync";
 import { parseFile } from "music-metadata";
-import { write } from "node-id3";
 import { download } from "electron-dl";
+import { getFonts } from "font-list";
 import getNeteaseMusicUrl from "@main/utils/getNeteaseMusicUrl";
 import axios from "axios";
 import fs from "fs/promises";
@@ -10,9 +12,10 @@ import fs from "fs/promises";
 /**
  * 监听主进程的 IPC 事件
  * @param {BrowserWindow} win - 要监听 IPC 事件的程序窗口
+ * @param {Store} store - 存储对象
  */
 
-const mainIpcMain = (win) => {
+const mainIpcMain = (win, store) => {
   // 窗口操作部分
   ipcMain.on("window-min", (ev) => {
     // 阻止最小化
@@ -40,6 +43,10 @@ const mainIpcMain = (win) => {
     app.isQuiting = true;
     app.relaunch();
     app.quit();
+  });
+  ipcMain.on("check-updates", () => {
+    console.info("开始检查更新");
+    configureAutoUpdater();
   });
 
   // 显示进度
@@ -193,32 +200,39 @@ const mainIpcMain = (win) => {
   });
 
   // 下载文件至指定目录
-  ipcMain.handle("downloadFile", async (_, data, song, songName, songType, path) => {
+  ipcMain.handle("downloadFile", async (_, songData, options) => {
     try {
+      const { url, data, lyric, name, type } = JSON.parse(songData);
+      const { path, downloadMeta, downloadCover, downloadLyrics } = JSON.parse(options);
       if (fs.access(path)) {
-        const songData = JSON.parse(song);
-        console.info("开始下载：", songData, data);
+        console.info("开始下载：", name, url);
         // 下载歌曲
-        const songDownload = await download(win, data.url, {
+        const songDownload = await download(win, url, {
           directory: path,
-          filename: `${songName}.${songType}`,
+          filename: `${name}.${type}`,
         });
+        // 若关闭，则不进行元信息写入
+        if (!downloadMeta) return true;
         // 下载封面
-        const coverDownload = await download(win, songData.cover, {
+        const coverDownload = await download(win, data.cover, {
           directory: path,
-          filename: `${songName}.jpg`,
+          filename: `${name}.jpg`,
         });
-        // 生成歌曲文件的元数据
-        const songTag = {
-          title: songData.name,
-          artist: Array.isArray(songData.artists)
-            ? songData.artists.map((ar) => ar.name).join(" / ")
-            : songData.artists || "未知歌手",
-          album: songData.album?.name || songData.album,
-          image: coverDownload.getSavePath(),
-        };
+        // 读取歌曲文件
+        const songFile = File.createFromPath(songDownload.getSavePath());
+        // 生成图片信息
+        const songCover = Picture.fromPath(coverDownload.getSavePath());
         // 保存修改后的元数据
-        write(songTag, songDownload.getSavePath());
+        Id3v2Settings.forceDefaultVersion = true;
+        Id3v2Settings.defaultVersion = 3;
+        songFile.tag.title = data.name || "未知曲目";
+        songFile.tag.album = data.album?.name || "未知专辑";
+        songFile.tag.performers = data?.artists?.map((ar) => ar.name) || ["未知艺术家"];
+        if (downloadLyrics) songFile.tag.lyrics = lyric;
+        if (downloadCover) songFile.tag.pictures = [songCover];
+        // 保存元信息
+        songFile.save();
+        songFile.dispose();
         // 删除封面
         await fs.unlink(coverDownload.getSavePath());
         return true;
@@ -230,6 +244,35 @@ const mainIpcMain = (win) => {
       console.error("下载文件时出错：", error);
       return false;
     }
+  });
+
+  // 读取系统全部字体
+  ipcMain.handle("getAllFonts", async () => {
+    try {
+      const fonts = await getFonts();
+      return fonts;
+    } catch (error) {
+      console.error("获取系统字体时出错：", error);
+      return [];
+    }
+  });
+
+  // 配置网络代理
+  ipcMain.on("set-proxy", (_, config) => {
+    console.log(config);
+    const proxyRules = `${config.protocol}://${config.server}:${config.port}`;
+    store.set("proxy", proxyRules);
+    win.webContents.session.setProxy({ proxyRules }, () => {
+      console.info("网络代理配置完成");
+    });
+  });
+
+  // 取消代理
+  ipcMain.on("remove-proxy", () => {
+    store.set("proxy", "");
+    win.webContents.session.setProxy({ proxyRules: "" }, () => {
+      console.info("取消网络代理配置");
+    });
   });
 };
 

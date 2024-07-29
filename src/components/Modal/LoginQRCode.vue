@@ -9,7 +9,7 @@
           :class="['qr', qrStatusCode === 802 ? 'hidden' : null]"
           :size="156"
           :icon-size="30"
-          icon-src="/images/icons/favicon.png?asset"
+          icon-src="/imgs/icons/favicon.png?asset"
           error-correction-level="H"
         />
         <n-skeleton v-else class="qr" />
@@ -133,6 +133,8 @@ onBeforeUnmount(() => {
       min-width: 180px;
       height: 180px;
       width: 180px;
+      min-height: 180px;
+      min-width: 180px;
       box-sizing: border-box;
       transition: opacity 0.3s;
       &.hidden {

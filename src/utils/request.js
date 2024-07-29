@@ -27,6 +27,15 @@ axios.interceptors.request.use(
     }
     // 附加 realIP
     if (!checkPlatform.electron()) request.params.realIP = "116.25.146.177";
+    // 附加代理
+    const proxy = JSON.parse(localStorage.getItem("siteSettings")).proxyProtocol;
+    if (proxy !== "off") {
+      const server = JSON.parse(localStorage.getItem("siteSettings")).proxyServe;
+      const port = parseInt(localStorage.getItem("siteSettings").proxyPort);
+      if (server && port) {
+        request.params.proxy = `${proxy}://${server}:${port}`;
+      }
+    }
     // 发送请求
     return request;
   },

@@ -32,7 +32,7 @@
         >
           <template #prefix>
             <n-image
-              :src="item?.coverSize?.s || '/images/pic/album.jpg?assest'"
+              :src="item?.coverSize?.s || '/imgs/pic/album.jpg?assest'"
               class="cover"
               preview-disabled
               lazy
@@ -44,7 +44,7 @@
             >
               <template #placeholder>
                 <div class="cover-loading">
-                  <img class="loading-img" src="/images/pic/album.jpg?assest" alt="song" />
+                  <img class="loading-img" src="/imgs/pic/album.jpg?assest" alt="song" />
                 </div>
               </template>
             </n-image>

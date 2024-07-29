@@ -11,6 +11,7 @@
       }"
       class="full-player"
       @mousemove="controlShowChange"
+      @mouseleave="closePlayerControlShow"
     >
       <!-- 遮罩 -->
       <Transition name="fade" mode="out-in">
@@ -48,13 +49,19 @@
         <div v-show="playerControlShow" class="menu">
           <div class="left">
             <!-- 歌词模式 -->
-            <div v-if="isHasLrc" class="n-icon" @click="pureLyricMode = !pureLyricMode">
-              <n-text>词</n-text>
-            </div>
+            <n-icon
+              v-if="isHasLrc && playMode !== 'dj'"
+              :class="['lrc-open', { open: pureLyricMode }]"
+              size="28"
+              @click="pureLyricMode = !pureLyricMode"
+            >
+              <SvgIcon icon="lrc-text" />
+            </n-icon>
           </div>
+          <div class="center" />
           <div class="right">
             <!-- 全屏切换 -->
-            <n-icon @click.stop="screenfullChange">
+            <n-icon class="hidden" @click.stop="screenfullChange">
               <SvgIcon
                 :icon="screenfullStatus ? 'fullscreen-exit-rounded' : 'fullscreen-rounded'"
               />
@@ -72,11 +79,17 @@
           :key="`${pureLyricMode}-${playCoverType}-${isHasLrc}-${music.getPlaySongData?.id}`"
           class="main-player"
         >
-          <div v-show="!(pureLyricMode && isHasLrc)" :class="['content', { 'no-lrc': !isHasLrc }]">
+          <div
+            v-show="!(pureLyricMode && isHasLrc) || playMode === 'dj'"
+            :class="['content', { 'no-lrc': !isHasLrc || playMode === 'dj' }]"
+          >
             <!-- 封面 -->
             <PlayerCover />
             <!-- 信息 -->
-            <div v-if="playCoverType === 'cover' || !isHasLrc" :class="['data', playCoverType]">
+            <div
+              v-show="playCoverType === 'cover' || !isHasLrc || playMode === 'dj'"
+              :class="['data', playCoverType]"
+            >
               <div class="desc">
                 <div class="title">
                   <span class="name">{{ music.getPlaySongData.name || "未知曲目" }}</span>
@@ -109,7 +122,7 @@
                 <span v-if="music.getPlaySongData.alia" class="alia">
                   {{ music.getPlaySongData.alia }}
                 </span>
-                <div class="artist">
+                <div v-if="playMode !== 'dj'" class="artist">
                   <n-icon depth="3" size="20">
                     <SvgIcon icon="account-music" />
                   </n-icon>
@@ -133,6 +146,7 @@
                   </div>
                 </div>
                 <div
+                  v-if="playMode !== 'dj'"
                   class="album"
                   @click.stop="
                     () => {
@@ -155,10 +169,28 @@
                   </span>
                   <span v-else class="album">未知专辑</span>
                 </div>
+                <div
+                  v-if="playMode === 'dj'"
+                  class="dj"
+                  @click.stop="
+                    () => {
+                      if (!playSongSource) return;
+                      showFullPlayer = false;
+                      router.push(`/dj?id=${playSongSource}`);
+                    }
+                  "
+                >
+                  <n-icon depth="3" size="20">
+                    <SvgIcon icon="record" />
+                  </n-icon>
+                  <span class="dj-name">
+                    {{ music.getPlaySongData.creator?.brand || "未知电台" }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-          <div :class="['right', { pure: pureLyricMode && isHasLrc }]">
+          <div v-if="playMode !== 'dj'" :class="['right', { pure: pureLyricMode && isHasLrc }]">
             <!-- 唱片模式下信息 -->
             <div
               v-show="(pureLyricMode && isHasLrc) || (playCoverType === 'record' && isHasLrc)"
@@ -225,7 +257,9 @@
         </div>
       </Transition>
       <!-- 控制中心 -->
-      <PlayerControl v-show="playerControlShow" />
+      <PlayerControl />
+      <!-- 音乐频谱 -->
+      <Spectrum v-if="showSpectrums" :show="!playerControlShow" :height="60" />
     </div>
   </Transition>
 </template>
@@ -241,8 +275,8 @@ const router = useRouter();
 const music = musicData();
 const status = siteStatus();
 const settings = siteSettings();
-const { playList, playSongLyric } = storeToRefs(music);
-const { playerBackgroundType, showYrc, playCoverType } = storeToRefs(settings);
+const { playList, playSongLyric, playSongSource } = storeToRefs(music);
+const { playerBackgroundType, showYrc, playCoverType, showSpectrums } = storeToRefs(settings);
 const {
   playerControlShow,
   controlTimeOut,
@@ -251,6 +285,7 @@ const {
   coverTheme,
   coverBackground,
   pureLyricMode,
+  playMode,
 } = storeToRefs(status);
 
 // 是否有歌词
@@ -269,9 +304,16 @@ const screenfullChange = () => {
   }
 };
 
+// 关闭控制中心
+const closePlayerControlShow = () => {
+  if (window.innerWidth <= 700) return false;
+  playerControlShow.value = false;
+};
+
 // 控制中心显隐
 const controlShowChange = throttle(() => {
   playerControlShow.value = true;
+  if (window.innerWidth <= 700) return false;
   if (controlTimeOut.value) {
     clearTimeout(controlTimeOut.value);
   }
@@ -373,6 +415,11 @@ onUnmounted(() => {
     &.gradient {
       background: var(--cover-bg);
     }
+    &.none {
+      &::after {
+        display: none;
+      }
+    }
   }
   // 按钮
   .menu {
@@ -394,18 +441,12 @@ onUnmounted(() => {
       flex-direction: row;
       align-items: center;
       justify-content: flex-end;
-      flex: 1;
     }
-    .left {
-      justify-content: flex-start;
-      .n-icon {
-        margin-left: 0;
-        margin-right: 12px;
-        .n-text {
-          font-size: 26px;
-          font-weight: bold;
-        }
-      }
+    .center {
+      width: 100%;
+      height: 100%;
+      flex: 1;
+      -webkit-app-region: drag;
     }
     .n-icon {
       margin-left: 12px;
@@ -429,6 +470,17 @@ onUnmounted(() => {
       }
       &:active {
         transform: scale(1);
+      }
+    }
+    .left {
+      justify-content: flex-start;
+      .n-icon {
+        margin-left: 0;
+        &.lrc-open {
+          &.open {
+            opacity: 0.8;
+          }
+        }
       }
     }
   }
@@ -526,6 +578,25 @@ onUnmounted(() => {
               opacity: 0.7;
               transition: opacity 0.3s;
               // -webkit-line-clamp: 2;
+              cursor: pointer;
+              &:hover {
+                opacity: 1;
+              }
+            }
+          }
+          .dj {
+            margin-top: 12px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            .n-icon {
+              margin-right: 4px;
+              color: var(--cover-main-color);
+            }
+            .dj-name {
+              opacity: 0.7;
+              transition: opacity 0.3s;
+              -webkit-line-clamp: 2;
               cursor: pointer;
               &:hover {
                 opacity: 1;
@@ -651,6 +722,41 @@ onUnmounted(() => {
     word-break: break-all;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
+  }
+  @media (max-width: 700px) {
+    .menu {
+      .hidden {
+        display: none;
+      }
+    }
+    .main-player {
+      .content {
+        width: 100%;
+        .data {
+          display: block !important;
+          &.record {
+            margin-top: 0;
+          }
+        }
+        &.no-lrc {
+          transform: translateX(0);
+        }
+      }
+      .right {
+        display: none;
+        .data {
+          .name {
+            font-size: 24px;
+            .name-alias {
+              font-size: 16px;
+            }
+          }
+          .other {
+            font-size: 14px;
+          }
+        }
+      }
+    }
   }
 }
 // 局外样式

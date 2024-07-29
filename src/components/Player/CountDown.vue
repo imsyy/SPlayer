@@ -91,6 +91,14 @@ const pointOpacity = (index) => {
     margin-right: 12px;
     border-radius: 50%;
     background-color: var(--cover-main-color);
+    @media (max-width: 900px) {
+      width: 24px;
+      height: 24px;
+    }
+    @media (max-width: 700px) {
+      width: 20px;
+      height: 20px;
+    }
   }
 }
 @keyframes breathe {

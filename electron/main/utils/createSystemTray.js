@@ -17,8 +17,8 @@ const createSystemTray = (win) => {
         join(
           __dirname,
           process.platform === "win32"
-            ? "../../public/images/icons/favicon.ico"
-            : "../../public/images/icons/favicon-32x32.png",
+            ? "../../public/imgs/icons/favicon.ico"
+            : "../../public/imgs/icons/favicon-32x32.png",
         ),
       )
       .resize({
@@ -63,8 +63,8 @@ const createIcon = (name) => {
   return nativeImage
     .createFromPath(
       isDarkMode
-        ? join(__dirname, `../../public/images/icons/${name}-dark.png`)
-        : join(__dirname, `../../public/images/icons/${name}-light.png`),
+        ? join(__dirname, `../../public/imgs/icons/${name}-dark.png`)
+        : join(__dirname, `../../public/imgs/icons/${name}-light.png`),
     )
     .resize({ width: 16, height: 16 });
 };

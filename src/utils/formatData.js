@@ -113,7 +113,7 @@ const formatData = (data, type = "playlist", noTracks = false) => {
       case "dj":
         return {
           id: v.id || v.vid,
-          mainTrackId: v.mainTrackId,
+          djId: v.mainTrackId || v.id,
           name: v.name,
           creator: v.dj,
           count: v.programCount,
@@ -141,7 +141,7 @@ const formatData = (data, type = "playlist", noTracks = false) => {
  */
 const getCoverUrl = (url, size = null) => {
   try {
-    if (!url) return "/images/pic/song.jpg?assest";
+    if (!url) return "/imgs/pic/song.jpg?assest";
     const sizeUrl = size
       ? typeof size === "number"
         ? `?param=${size}y${size}`
@@ -158,7 +158,7 @@ const getCoverUrl = (url, size = null) => {
     return imageUrl;
   } catch (error) {
     console.error("图片链接处理出错：", error);
-    return "/images/pic/song.jpg?assest";
+    return "/imgs/pic/song.jpg?assest";
   }
 };
 

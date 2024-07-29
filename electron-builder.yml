@@ -21,7 +21,7 @@ win:
   # 可执行文件名
   executableName: SPlayer
   # 应用程序的图标文件路径
-  icon: public/images/icons/favicon-512x512.png
+  icon: public/imgs/icons/favicon-512x512.png
   # 构建类型
   target: nsis
 # NSIS 安装器配置
@@ -41,27 +41,36 @@ nsis:
   # 是否允许用户更改安装目录
   allowToChangeInstallationDirectory: true
   # 安装包图标
-  installerIcon: public/images/icons/favicon.ico
+  installerIcon: public/imgs/icons/favicon.ico
   # 卸载命令图标
-  uninstallerIcon: public/images/icons/favicon.ico
+  uninstallerIcon: public/imgs/icons/favicon.ico
 # macOS 平台配置
 mac:
   # 可执行文件名
   executableName: SPlayer
   # 应用程序的图标文件路径
-  icon: public/images/icons/favicon-512x512.png
+  icon: public/imgs/icons/favicon-512x512.png
   # 权限继承的文件路径
   entitlementsInherit: build/entitlements.mac.plist
   # 扩展信息，如权限描述
   extendInfo:
-    - NSCameraUsageDescription: Application requests access to the device's camera.
-    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+    NSCameraUsageDescription: Application requests access to the device's camera.
+    NSMicrophoneUsageDescription: Application requests access to the device's microphone.
+    NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
+    NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   # 是否启用应用程序的 Notarization（苹果的安全审核）
   notarize: false
   darkModeSupport: true
   category: public.app-category.music
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+    - target: zip
+      arch:
+        - x64
+        - arm64
 # macOS 平台的 DMG 配置
 dmg:
   # DMG 文件的生成名称
@@ -71,9 +80,10 @@ linux:
   # 可执行文件名
   executableName: SPlayer
   # 应用程序的图标文件路径
-  icon: public/images/icons/favicon-512x512.png
+  icon: public/imgs/icons/favicon-512x512.png
   # 构建类型
   target:
+    - pacman
     - AppImage
     - deb
     - rpm

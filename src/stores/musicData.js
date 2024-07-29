@@ -3,26 +3,12 @@ import { defineStore } from "pinia";
 import { getPersonalFm, setFmToTrash } from "@/api/recommend";
 import { changePlayIndex } from "@/utils/Player";
 import { isLogin } from "@/utils/auth";
+import { siteStatus } from "@/stores";
 import formatData from "@/utils/formatData";
 
 const useMusicDataStore = defineStore("musicData", {
   state: () => {
     return {
-      // 当前模式
-      // normal 正常 / fm 私人 FM / dj 电台
-      playMode: "normal",
-      // normal 顺序播放 / random 随机播放 / repeat 单曲循环
-      playSongMode: "normal",
-      // 是否为心动模式
-      playHeartbeatMode: false,
-      // 默认倍速
-      playRate: 1,
-      // 默认音量
-      playVolume: 0.7,
-      // 静音前音量
-      playVolumeMute: 0,
-      // 当前播放索引
-      playIndex: 0,
       // 播放列表
       playList: [],
       playListOld: [],
@@ -33,21 +19,20 @@ const useMusicDataStore = defineStore("musicData", {
       playSongSource: 0,
       // 当前歌曲歌词数据
       playSongLyric: {
-        lrc: [],
-        yrc: [],
-        hasTran: false,
-        hasRoma: false,
+        // 是否具有普通翻译
+        hasLrcTran: false,
+        // 是否具有普通音译
+        hasLrcRoma: false,
+        // 是否具有逐字歌词
         hasYrc: false,
-      },
-      // 当前歌曲歌词播放索引
-      playSongLyricIndex: -1,
-      // 播放时长数据
-      playTimeData: {
-        currentTime: 0,
-        duration: 0,
-        bar: 0,
-        played: "00:00",
-        durationTime: "00:00",
+        // 是否具有逐字翻译
+        hasYrcTran: false,
+        // 是否具有逐字音译
+        hasYrcRoma: false,
+        // 普通歌词数组
+        lrc: [],
+        // 逐字歌词数据
+        yrc: [],
       },
       // 本地歌曲目录
       localSongPath: [],
@@ -60,7 +45,8 @@ const useMusicDataStore = defineStore("musicData", {
   getters: {
     // 获取当前播放歌曲
     getPlaySongData(state) {
-      return state.playMode === "fm" && state.privateFmSong
+      const status = siteStatus();
+      return status.playMode === "fm" && state.privateFmSong
         ? state.privateFmSong
         : state.playSongData;
     },
@@ -96,68 +82,9 @@ const useMusicDataStore = defineStore("musicData", {
       }
     },
     // 更改私人FM
-    // async setPersonalFm(getNext = false) {
-    //   try {
-    //     // 获取私人FM数据
-    //     const getPersonalFmData = async () => {
-    //       const result = await getPersonalFm();
-    //       this.privateFmData = formatData(result.data, "song");
-    //     };
-    //     // 未登录
-    //     // if (!isLogin()) return false;
-    //     // 若不存在fm数据，则获取
-    //     if (!this.privateFmData?.length) {
-    //       await getPersonalFmData();
-    //     }
-    //     // 若当前无歌曲
-    //     if (Object.keys(this.privateFmSong).length === 0) {
-    //       this.privateFmSong = this.privateFmData[0];
-    //     }
-    //     // 若上次索引为旧列表且列表只有一首
-    //     if (
-    //       this.privateFmIndex === -1 &&
-    //       this.privateFmData?.length === 1 &&
-    //       !Object.keys(this.privateFmSong)?.length
-    //     ) {
-    //       this.privateFmSong = this.privateFmData[0];
-    //     }
-    //     // 若立即播放
-    //     if (getNext) {
-    //       // 更改播放模式
-    //       this.playMode = "fm";
-    //       // 更改当前fm歌曲
-    //       this.privateFmIndex++;
-    //       // 未登录 - 仅一首
-    //       if (this.privateFmData.length === 1) {
-    //         console.log("只有一首歌，重新加载列表");
-    //         await getPersonalFmData();
-    //         this.privateFmSong = this.privateFmData[0];
-    //         return true;
-    //       }
-    //       if (this.privateFmIndex < this.privateFmData.length - 1) {
-    //         console.log("在歌单内");
-    //         this.privateFmSong = this.privateFmData[this.privateFmIndex];
-    //       } else if (this.privateFmIndex === this.privateFmData.length - 1) {
-    //         console.log("是最后一首，更新列表");
-    //         this.privateFmSong = this.privateFmData[this.privateFmData.length - 1];
-    //         this.privateFmIndex = -1;
-    //         await getPersonalFmData();
-    //       } else {
-    //         $message.error("私人FM出现错误，重新加载");
-    //         this.privateFmIndex = 0;
-    //         await this.setPersonalFm(getNext);
-    //       }
-    //       return true;
-    //     }
-    //   } catch (error) {
-    //     this.privateFmSong = {};
-    //     console.error("私人FM加载失败：", error);
-    //     $message.error("私人FM出现错误，请重试");
-    //   }
-    // },
-    // 更改私人FM
     async setPersonalFm(getNext = false) {
       try {
+        const status = siteStatus();
         // 获取私人FM数据
         const getPersonalFmData = async () => {
           const result = await getPersonalFm();
@@ -174,7 +101,7 @@ const useMusicDataStore = defineStore("musicData", {
         // 若需要播放下一首
         if (getNext) {
           // 更改播放模式
-          this.playMode = "fm";
+          status.playMode = "fm";
           // 增加索引
           this.privateFmIndex++;
           // 判断索引是否在列表范围内
@@ -198,11 +125,12 @@ const useMusicDataStore = defineStore("musicData", {
     async setPersonalFmToTrash(id) {
       try {
         if (!isLogin()) return $message.warning("请登录后使用");
+        const status = siteStatus();
         const result = await setFmToTrash(id);
         if (result.code === 200) {
           $message.success("已移至垃圾桶");
           // 更改播放模式
-          this.playMode = "fm";
+          status.playMode = "fm";
           // 下一曲
           changePlayIndex("next", true);
         }

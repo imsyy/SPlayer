@@ -13,7 +13,7 @@
     <div
       class="overlay"
       :style="{
-        backgroundImage: `url(${privateFmSong?.coverSize?.m || '/images/pic/song.jpg?assest'})`,
+        backgroundImage: `url(${privateFmSong?.coverSize?.m || '/imgs/pic/song.jpg?assest'})`,
       }"
     />
     <!-- 内容 -->
@@ -33,7 +33,7 @@
           >
             <template #placeholder>
               <div class="cover-loading">
-                <img class="loading-img" src="/images/pic/song.jpg?assest" alt="loading-img" />
+                <img class="loading-img" src="/imgs/pic/song.jpg?assest" alt="loading-img" />
               </div>
             </template>
           </n-image>
@@ -76,6 +76,7 @@
           <!-- 播放暂停 -->
           <n-button
             :loading="playMode === 'fm' && playLoading"
+            :focusable="false"
             class="play-control"
             color="#efefef"
             type="primary"
@@ -141,8 +142,8 @@ const music = musicData();
 const status = siteStatus();
 const settings = siteSettings();
 const router = useRouter();
-const { privateFmSong, playMode } = storeToRefs(music);
-const { playLoading, playState, coverTheme } = storeToRefs(status);
+const { privateFmSong } = storeToRefs(music);
+const { playLoading, playState, coverTheme, playMode } = storeToRefs(status);
 
 // 播放暂停
 const fmPlayOrPause = () => {

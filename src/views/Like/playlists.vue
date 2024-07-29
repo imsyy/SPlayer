@@ -3,7 +3,7 @@
     <Transition name="fade" mode="out-in">
       <div v-if="userLikeData.playlists?.length" class="pl-list">
         <!-- 分类 -->
-        <n-space class="type">
+        <n-flex class="type">
           <n-tag
             v-for="(item, index) in ['我创建的', '我收藏的']"
             :key="index"
@@ -14,7 +14,7 @@
           >
             {{ item }}
           </n-tag>
-        </n-space>
+        </n-flex>
         <!-- 列表 -->
         <Transition name="fade" mode="out-in">
           <div v-if="plTypeChoose === 0" class="list">

@@ -26,13 +26,13 @@
         >
           <template #placeholder>
             <div class="cover-loading">
-              <img class="loading-img" src="/images/pic/song.jpg?assest" alt="loading-img" />
+              <img class="loading-img" src="/imgs/pic/song.jpg?assest" alt="loading-img" />
             </div>
           </template>
         </n-image>
         <div class="content">
           <div class="name">{{ songDetail?.name || "未知曲目" }}</div>
-          <div class="artist">
+          <div v-if="commentType === 'normal'" class="artist">
             <n-icon depth="3" size="20">
               <SvgIcon icon="account-music" />
             </n-icon>
@@ -44,6 +44,14 @@
             <div v-else class="all-ar">
               <span class="ar"> {{ songDetail?.artists || "未知艺术家" }} </span>
             </div>
+          </div>
+          <div v-else-if="songDetail?.creator" class="artist dj">
+            <n-icon depth="3" size="20">
+              <SvgIcon icon="record" />
+            </n-icon>
+            <span class="all-ar dj-name">
+              {{ songDetail.creator?.brand || "未知电台" }}
+            </span>
           </div>
         </div>
       </n-card>
@@ -86,13 +94,17 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { getSongDetail } from "@/api/song";
-import { getComment, getHotComment } from "@/api/comment";
+import { getDjProgramDetail } from "@/api/dj";
+import { getComment, getHotComment, commentDj } from "@/api/comment";
 import formatData from "@/utils/formatData";
 
 const router = useRouter();
 
 // 歌曲 id
 const songId = ref(router.currentRoute.value.query.id);
+
+// 评论类型
+const commentType = ref(router.currentRoute.value.query.type || "normal");
 
 // 歌曲信息
 const songDetail = ref(null);
@@ -105,9 +117,15 @@ const hotCommentData = ref(null);
 // 获取歌曲详情
 const getSongDetailData = async (id) => {
   try {
-    const detail = await getSongDetail(id);
-    const data = formatData(detail?.songs?.[0], "song");
-    songDetail.value = data?.[0] ?? null;
+    if (commentType.value === "normal") {
+      const detail = await getSongDetail(id);
+      const data = formatData(detail?.songs?.[0], "song");
+      songDetail.value = data?.[0] ?? null;
+    } else if (commentType.value === "dj") {
+      const detail = await getDjProgramDetail(id);
+      const data = formatData(detail?.program, "dj");
+      songDetail.value = data?.[0] ?? null;
+    }
   } catch (error) {
     console.error("获取歌曲详情失败：", error);
   }
@@ -120,14 +138,24 @@ const getCommentData = async (id, pageNo = 1, sortType = 3, pageSize = 20) => {
     const cursor =
       pageNo !== 1 && commentData.value?.cursor !== "0" ? commentData.value.cursor : null;
     // 获取热门评论和普通评论
-    const [hotComments, comments] = await Promise.all([
-      pageNo === 1 ? getHotComment(id, 0, 10) : null,
-      getComment(id, 0, pageNo, sortType, pageSize, cursor),
-    ]);
-    // 更新数据
-    if (comments?.data.totalCount === 0) return (commentData.value = "empty");
-    commentData.value = comments?.data;
-    hotCommentData.value = hotComments?.hotComments?.[0] ? hotComments.hotComments : "no-comment";
+    if (commentType.value === "normal") {
+      const [hotComments, comments] = await Promise.all([
+        pageNo === 1 ? getHotComment(id, 0, 10) : null,
+        getComment(id, 0, pageNo, sortType, pageSize, cursor),
+      ]);
+      // 更新数据
+      if (comments?.data.totalCount === 0) return (commentData.value = "empty");
+      commentData.value = comments?.data;
+      hotCommentData.value = hotComments?.hotComments?.[0] ? hotComments.hotComments : "no-comment";
+    } else if (commentType.value === "dj") {
+      const offset = (pageNo - 1) * pageSize;
+      const { hotComments, comments, total } = await commentDj(id, pageSize, offset, cursor);
+      // 更新数据
+      if (total === 0) return (commentData.value = "empty");
+      commentData.value = { totalCount: comments?.length, comments };
+      hotCommentData.value = hotComments?.[0] ? hotComments : "no-comment";
+      console.log(commentData.value, hotCommentData.value);
+    }
   } catch (error) {
     console.error("获取评论数据出错：", error);
     $message.error("获取评论数据出错");
@@ -149,7 +177,7 @@ const scrollToComment = () => {
   }
 };
 
-// 检查是否具有视频 id
+// 检查是否具有 id
 const isHasCommentId = (id) => {
   if (!id) {
     $message.error("参数不完整");

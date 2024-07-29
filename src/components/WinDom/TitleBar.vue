@@ -1,8 +1,9 @@
 <!-- 非网页端标题栏 -->
 <template>
-  <div class="title-bar">
+  <div id="electron-bar" class="title-bar">
     <n-divider vertical />
     <n-button
+      :focusable="false"
       class="bar-icon"
       tag="div"
       style="margin-left: 0"
@@ -16,14 +17,14 @@
         </n-icon>
       </template>
     </n-button>
-    <n-button class="bar-icon" tag="div" quaternary circle @click="maxOrRestore">
+    <n-button :focusable="false" class="bar-icon" tag="div" quaternary circle @click="maxOrRestore">
       <template #icon>
         <n-icon :depth="2">
           <SvgIcon :icon="defaultWindowState ? 'window-restore' : 'window-maximize'" />
         </n-icon>
       </template>
     </n-button>
-    <n-button class="bar-icon" tag="div" quaternary circle @click="openCloseTip">
+    <n-button :focusable="false" class="bar-icon" tag="div" quaternary circle @click="openCloseTip">
       <template #icon>
         <n-icon :depth="2">
           <SvgIcon icon="window-close" />
@@ -46,15 +47,15 @@
       <n-text class="close-tip">确认关闭软件吗？</n-text>
       <n-checkbox v-model:checked="closeTipCheckbox"> 记住且不再询问 </n-checkbox>
       <template #footer>
-        <n-space justify="space-between">
+        <n-flex justify="space-between">
           <n-button strong secondary @click="closeCloseTip('cancel')"> 取消 </n-button>
-          <n-space class="type">
+          <n-flex class="type">
             <n-button strong secondary @click="closeCloseTip('close')"> 退出 </n-button>
             <n-button type="primary" strong secondary @click="closeCloseTip('hide')">
               最小化
             </n-button>
-          </n-space>
-        </n-space>
+          </n-flex>
+        </n-flex>
       </template>
     </n-modal>
   </div>
@@ -134,9 +135,11 @@ const closeCloseTip = (type) => {
 };
 
 // 窗口状态响应
-electron.ipcRenderer.on("windowState", (_, val) => {
-  defaultWindowState.value = val;
-});
+if (typeof electron !== "undefined") {
+  electron.ipcRenderer.on("windowState", (_, val) => {
+    defaultWindowState.value = val;
+  });
+}
 
 onBeforeUnmount(() => {
   clearTimeout(closeTipTimeout.value);

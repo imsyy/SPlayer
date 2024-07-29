@@ -34,6 +34,19 @@ export const getSearchSuggest = (keywords, mobile = false) => {
 };
 
 /**
+ * 默认搜索关键词
+ */
+export const getSearchDefault = () => {
+  return axios({
+    method: "GET",
+    url: "/search/default",
+    params: {
+      timestamp: new Date().getTime(),
+    },
+  });
+};
+
+/**
  * 搜索结果
  * @param {string} keywords - 搜索关键词
  * @param {number} [limit=30] - 返回数量，默认30

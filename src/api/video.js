@@ -97,3 +97,25 @@ export const likeMv = (t, mvid) => {
     },
   });
 };
+
+/**
+ * 全部 mv
+ * @param {string} area - 地区,可选值为全部,内地,港台,欧美,日本,韩国,不填则为全部
+ * @param {string} type - 类型,可选值为全部,官方版,原生,现场版,网易出品,不填则为全部
+ * @param {string} order - 排序,可选值为上升最快,最热,最新,不填则为上升最快
+ * @param {number} [limit=12] - 返回数量，默认12
+ * @param {number} [offset=0] - 偏移数量，默认0
+ */
+export const allMv = (area, type, order, limit = 12, offset = 0) => {
+  return axios({
+    method: "GET",
+    url: "/mv/all",
+    params: {
+      area,
+      type,
+      order,
+      limit,
+      offset,
+    },
+  });
+};

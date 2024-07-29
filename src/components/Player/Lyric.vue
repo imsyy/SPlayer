@@ -4,7 +4,12 @@
     :style="{
       cursor: cursorShow ? 'pointer' : 'none',
     }"
-    :class="['lyric', `lyric-${lyricsPosition}`, { pure: pureLyricMode }, playCoverType]"
+    :class="[
+      'lyric',
+      `lyric-${lyricsPosition}`,
+      playCoverType,
+      { pure: pureLyricMode, 'custom-lrc': justLyricArea },
+    ]"
     @mouseenter="lrcMouseStatus = lrcMousePause ? true : false"
     @mouseleave="lrcAllLeave"
   >
@@ -45,6 +50,7 @@
               <span
                 :style="{
                   fontSize: lyricsFontSize + 'px',
+                  fontWeight: lyricsBold ? 'bold' : 'normal',
                 }"
                 class="lrc-content"
               >
@@ -92,6 +98,7 @@
               <div
                 :style="{
                   fontSize: lyricsFontSize + 'px',
+                  fontWeight: lyricsBold ? 'bold' : 'normal',
                 }"
                 class="lrc-content"
               >
@@ -148,8 +155,8 @@ const props = defineProps({
 const music = musicData();
 const settings = siteSettings();
 const status = siteStatus();
-const { playSeek, pureLyricMode } = storeToRefs(status);
-const { playSongLyric, playSongLyricIndex } = storeToRefs(music);
+const { playSeek, pureLyricMode, playSongLyricIndex } = storeToRefs(status);
+const { playSongLyric } = storeToRefs(music);
 const {
   showYrc,
   showYrcAnimation,
@@ -162,6 +169,8 @@ const {
   showTransl,
   showRoma,
   playCoverType,
+  justLyricArea,
+  lyricsBold,
 } = storeToRefs(settings);
 
 // 歌词滚动数据
@@ -331,7 +340,6 @@ onMounted(() => {
       transform 0.35s ease-in-out;
     .lrc-content {
       font-size: 46px;
-      font-weight: bold;
       word-wrap: break-word;
       // 逐字歌词部分样式
       .lrc-text {
@@ -493,13 +501,32 @@ onMounted(() => {
   }
   &.record,
   &.pure {
-    height: calc(100vh - 340px);
-    margin-bottom: 20px;
+    height: calc(100vh - 300px);
+    margin-bottom: 40px;
     .lrc-line {
       margin-bottom: -12px;
       transform: scale(0.76);
       &.on {
         transform: scale(0.9);
+      }
+    }
+  }
+  &.custom-lrc {
+    font-family: var(--main-font-family-lyric) !important;
+  }
+  @media (max-width: 700px) {
+    :deep(.n-scrollbar-content) {
+      padding: 0 20px !important;
+    }
+    .lrc-line {
+      .lrc-content {
+        font-size: 6.5vw !important;
+      }
+      .lrc-fy {
+        font-size: 4.5vw !important;
+      }
+      .lrc-roma {
+        font-size: 4vw !important;
       }
     }
   }

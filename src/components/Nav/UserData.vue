@@ -30,7 +30,7 @@
         <img
           v-if="userLoginStatus && userData.detail?.profile?.vipType === 11"
           class="vip"
-          src="/images/pic/vip.png?assest"
+          src="/imgs/pic/vip.png?assest"
         />
         <n-icon depth="3" class="more">
           <SvgIcon icon="menu-down" />
@@ -217,6 +217,15 @@ const userMenuSelect = (key) => {
     .more {
       font-size: 20px;
       margin-left: 2px;
+    }
+  }
+  @media (max-width: 700px) {
+    padding: 0;
+    .avatar {
+      margin: 0;
+    }
+    .user-data {
+      display: none;
     }
   }
 }

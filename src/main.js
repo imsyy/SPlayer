@@ -1,6 +1,6 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
-import { checkPlatform } from "@/utils/helper";
+import { checkPlatform, loadCSS } from "@/utils/helper";
 import App from "@/App.vue";
 import router from "@/router";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
@@ -13,14 +13,15 @@ import "@/style/animate.scss";
 // 是否为 Electron
 const isElectron = checkPlatform.electron();
 
-// 根据设备类型动态添加
-const linkElement = document.createElement("link");
-linkElement.rel = "stylesheet";
-linkElement.href = isElectron
-  ? `${import.meta.env.BASE_URL}font/font.min.css`
-  : "https://s1.hdslb.com/bfs/static/jinkela/long/font/regular.css";
-document.head.appendChild(linkElement);
-document.body.classList.add(isElectron ? "electron" : null);
+// 分设备添加字体
+if (isElectron) {
+  loadCSS(`${import.meta.env.BASE_URL}font/font.css`);
+} else {
+  loadCSS("https://s1.hdslb.com/bfs/static/jinkela/long/font/regular.css");
+}
+
+// 分设备类名
+document.body.classList.add(isElectron ? "electron" : "webapp");
 
 // 程序重置
 window.$cleanAll = (tip = true) => {

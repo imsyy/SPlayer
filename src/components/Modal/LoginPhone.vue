@@ -76,7 +76,7 @@ const getCaptcha = (phone) => {
         console.log(phone + "发送验证码");
         const result = await sentCaptcha(phone);
         console.log(result);
-        if (result.code == 200) {
+        if (result.code === 200) {
           $message.success("验证码发送成功");
           let countDown = 60;
           captchaDisabled.value = true;
@@ -107,28 +107,31 @@ const phoneLogin = (e) => {
   e.preventDefault();
   phoneFormRef.value?.validate(async (errors) => {
     if (!errors) {
-      const verifyRes = await verifyCaptcha(
-        phoneFormData._value.phone,
-        phoneFormData._value.captcha,
-      );
-      console.log(verifyRes);
-      if (verifyRes.code == 200) {
-        const result = await toLogin(phoneFormData._value.phone, phoneFormData._value.captcha);
-        console.log(result);
-        if (result.code === 200) {
-          // 去除 HTTPOnly
-          result.cookie = result.cookie.replaceAll(" HTTPOnly", "");
-          // 是否含有 MUSIC_U
-          if (result.cookie && result.cookie.includes("MUSIC_U")) {
-            // 储存登录信息
-            emit("setLoginData", result);
-          } else {
-            $message.error("登录出错，请重试");
+      try {
+        const verifyRes = await verifyCaptcha(
+          phoneFormData.value.phone,
+          phoneFormData.value.captcha,
+        );
+        console.log(verifyRes);
+        if (verifyRes.code === 200) {
+          const result = await toLogin(phoneFormData.value.phone, phoneFormData.value.captcha);
+          console.log(result);
+          if (result.code === 200) {
+            // 去除 HTTPOnly
+            result.cookie = result.cookie.replaceAll(" HTTPOnly", "");
+            // 是否含有 MUSIC_U
+            if (result.cookie && result.cookie.includes("MUSIC_U")) {
+              // 储存登录信息
+              emit("setLoginData", result);
+            } else {
+              $message.error("登录出错，请重试");
+            }
           }
-        } else {
-          phoneFormData.value.captcha = null;
-          $message.error("登录出错，请重试");
         }
+      } catch (error) {
+        phoneFormData.value.captcha = null;
+        console.error("登录出错：", error);
+        $message.error("登录出错，请重试");
       }
     } else {
       $message.error("请检查你的输入");

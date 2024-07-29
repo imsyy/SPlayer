@@ -3,7 +3,7 @@
   <n-card
     :class="{
       'main-player': true,
-      'show-bar': Object.keys(music.getPlaySongData)?.length && showPlayBar,
+      'show-bar': music.getPlaySongData?.id && showPlayBar,
       'no-sider': !showSider,
     }"
     content-style="padding: 0"
@@ -31,15 +31,21 @@
     <div class="player">
       <!-- 歌曲信息 -->
       <div class="info">
-        <div class="cover" @click.stop="openFullPlayer">
-          <Transition name="fade" mode="out-in">
+        <Transition name="fade" mode="out-in">
+          <div
+            :key="`${music.getPlaySongData?.id}-${playCoverType}`"
+            :class="['cover', playCoverType]"
+            @click.stop="openFullPlayer"
+          >
             <n-image
-              :key="music.getPlaySongData?.id"
               :src="
                 music.getPlaySongData?.coverSize?.s ||
                 music.getPlaySongData?.cover ||
                 music.getPlaySongData?.localCover
               "
+              :style="{
+                animationPlayState: playState ? 'running' : 'paused',
+              }"
               class="cover-img"
               preview-disabled
               @load="
@@ -50,16 +56,16 @@
             >
               <template #placeholder>
                 <div class="cover-loading">
-                  <img class="loading-img" src="/images/pic/song.jpg?assest" alt="loading-img" />
+                  <img class="loading-img" src="/imgs/pic/song.jpg?assest" alt="loading-img" />
                 </div>
               </template>
             </n-image>
-          </Transition>
-          <!-- 打开播放器 -->
-          <n-icon class="open" size="30">
-            <SvgIcon icon="pan-zoom-rounded" />
-          </n-icon>
-        </div>
+            <!-- 打开播放器 -->
+            <n-icon class="open" size="30">
+              <SvgIcon icon="pan-zoom-rounded" />
+            </n-icon>
+          </div>
+        </Transition>
         <div class="song-info">
           <div class="name">
             <n-text class="text">
@@ -88,7 +94,7 @@
             </n-icon>
             <!-- 更多操作 -->
             <n-dropdown
-              v-if="playMode !== 'dj' && !music.getPlaySongData?.path"
+              v-if="!music.getPlaySongData?.path"
               :options="songMoreOptions"
               :show-arrow="true"
               placement="top-start"
@@ -177,6 +183,7 @@
         <!-- 播放暂停 -->
         <n-button
           :loading="playLoading"
+          :focusable="false"
           tag="div"
           type="primary"
           class="play-control"
@@ -202,7 +209,7 @@
       <Transition name="fade" mode="out-in">
         <div :key="playMode" class="menu">
           <!-- 时间进度 -->
-          <div class="time">
+          <div class="time hidden">
             <n-text class="played" depth="3">{{ playTimeData.played }}</n-text>
             <n-text depth="3">{{ playTimeData.durationTime }}</n-text>
           </div>
@@ -214,27 +221,30 @@
             trigger="hover"
             @select="playModeChange"
           >
-            <div class="mode" @click.stop @dblclick.stop>
-              <n-icon size="22">
-                <SvgIcon
-                  :icon="
-                    playHeartbeatMode
-                      ? 'heartbit'
-                      : playSongMode === 'normal'
+            <n-icon
+              class="mode hidden"
+              size="22"
+              @click.stop="playModeChange(false)"
+              @dblclick.stop
+            >
+              <SvgIcon
+                :icon="
+                  playHeartbeatMode
+                    ? 'heartbit'
+                    : playSongMode === 'normal'
                       ? 'repeat-list'
                       : playSongMode === 'random'
-                      ? 'shuffle'
-                      : 'repeat-song'
-                  "
-                  isSpecial
-                />
-              </n-icon>
-            </div>
+                        ? 'shuffle'
+                        : 'repeat-song'
+                "
+                isSpecial
+              />
+            </n-icon>
           </n-dropdown>
           <!-- 倍速 -->
           <n-popover :show-arrow="false" trigger="hover" placement="top-end" raw>
             <template #trigger>
-              <div class="speed" @click.stop="(playRate = 1), setRate(1)" @dblclick.stop>
+              <div class="speed hidden" @click.stop="(playRate = 1), setRate(1)" @dblclick.stop>
                 <n-icon v-if="playRate === 1" size="22">
                   <SvgIcon icon="speed-rounded" />
                 </n-icon>
@@ -262,7 +272,12 @@
           <!-- 音量 -->
           <n-popover trigger="hover" :show-arrow="false" raw>
             <template #trigger>
-              <n-icon class="volume" size="22" @click.stop="setVolumeMute" @wheel="changeVolume">
+              <n-icon
+                class="volume hidden"
+                size="22"
+                @click.stop="setVolumeMute"
+                @wheel="changeVolume"
+              >
                 <SvgIcon v-if="playVolume === 0" icon="no-sound-rounded" />
                 <SvgIcon
                   v-else-if="playVolume > 0 && playVolume < 0.4"
@@ -281,7 +296,7 @@
                 padding: '10px 0',
                 width: '50px',
               }"
-              class="slider-content"
+              class="slider-content hidden"
               @wheel="changeVolume"
             >
               <n-slider
@@ -335,6 +350,7 @@ import {
   setVolume,
   setVolumeMute,
   setRate,
+  processSpectrum,
 } from "@/utils/Player";
 import { getSongPlayTime } from "@/utils/timeTools";
 import debounce from "@/utils/debounce";
@@ -347,21 +363,24 @@ const data = siteData();
 const music = musicData();
 const status = siteStatus();
 const settings = siteSettings();
+const { playList, playListOld, playSongLyric } = storeToRefs(music);
 const {
-  playMode,
-  playIndex,
-  playList,
-  playListOld,
+  playLoading,
+  playState,
+  playListShow,
+  showPlayBar,
+  showFullPlayer,
+  playSongLyricIndex,
   playTimeData,
-  playVolume,
   playRate,
+  playVolume,
+  playIndex,
+  playMode,
   playSongMode,
   playHeartbeatMode,
-  playSongLyricIndex,
-  playSongLyric,
-} = storeToRefs(music);
-const { playLoading, playState, playListShow, showPlayBar, showFullPlayer } = storeToRefs(status);
-const { showYrc, bottomLyricShow, showSider, showPlaylistCount } = storeToRefs(settings);
+} = storeToRefs(status);
+const { showYrc, bottomLyricShow, showSider, showPlaylistCount, showSpectrums, playCoverType } =
+  storeToRefs(settings);
 
 // 子组件
 const addPlaylistRef = ref(null);
@@ -375,14 +394,14 @@ const renderIcon = (icon, isSpecial = false) => {
 // 播放模式数据
 const playModeOptions = ref([
   {
-    label: "列表循环",
-    key: "normal",
-    icon: renderIcon("repeat-list", true),
-  },
-  {
     label: "单曲循环",
     key: "repeat",
     icon: renderIcon("repeat-song", true),
+  },
+  {
+    label: "列表循环",
+    key: "normal",
+    icon: renderIcon("repeat-list", true),
   },
   {
     label: "随机播放",
@@ -396,6 +415,7 @@ const songMoreOptions = computed(() => [
   {
     key: "add-pl",
     label: "添加到歌单",
+    show: playMode.value !== "dj",
     props: {
       onClick: () => {
         addPlaylistRef.value?.openAddToPlaylist(music.getPlaySongData?.id);
@@ -412,6 +432,7 @@ const songMoreOptions = computed(() => [
           path: "/comment",
           query: {
             id: music.getPlaySongData?.id,
+            type: playMode.value,
           },
         });
       },
@@ -421,7 +442,9 @@ const songMoreOptions = computed(() => [
   {
     key: "mv",
     label: "观看 MV",
-    show: music.getPlaySongData?.mv && music.getPlaySongData?.mv !== 0 ? true : false,
+    show:
+      playMode.value !== "dj" &&
+      (music.getPlaySongData?.mv && music.getPlaySongData?.mv !== 0 ? true : false),
     props: {
       onClick: () => {
         router.push({
@@ -437,7 +460,7 @@ const songMoreOptions = computed(() => [
   {
     key: "download",
     label: "下载歌曲",
-    show: music.getPlaySongData?.path ? false : true,
+    show: playMode.value !== "dj" && (music.getPlaySongData?.path ? false : true),
     props: {
       onClick: () => {
         downloadSongRef.value?.openDownloadModal(music.getPlaySongData);
@@ -468,10 +491,11 @@ const songTimeSliderUpdate = (val) => {
 
 // 开启播放器
 const openFullPlayer = () => {
-  if (playMode.value === "dj") {
-    $message.warning("当前为电台模式，无法开启播放器");
-    return false;
-  }
+  // if (playMode.value === "dj") {
+  //   $message.warning("当前为电台模式，无法开启播放器");
+  //   return false;
+  // }
+  if (showSpectrums.value && typeof $player !== "undefined") processSpectrum($player);
   showFullPlayer.value = true;
 };
 
@@ -487,6 +511,11 @@ const changePlayIndexDebounce = debounce(async (type, id) => {
 
 // 播放模式切换
 const playModeChange = (mode) => {
+  const modeMap = {
+    normal: "random",
+    random: "shuffle",
+    shuffle: "normal",
+  };
   // 关闭心动模式
   if (playHeartbeatMode.value) {
     playHeartbeatMode.value = false;
@@ -496,7 +525,11 @@ const playModeChange = (mode) => {
     playListOld.value = [];
   }
   // 切换模式
-  playSongMode.value = mode;
+  if (mode) {
+    playSongMode.value = mode;
+  } else {
+    playSongMode.value = modeMap[playSongMode.value] || "normal";
+  }
 };
 
 // 音量条鼠标滚动
@@ -628,6 +661,33 @@ watch(
             opacity: 1;
             transform: scale(1);
             transition: opacity 0.3s ease-in-out;
+          }
+        }
+        &.record {
+          .cover-img {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            animation: playerCoverRotate 18s linear infinite;
+            background: no-repeat url("/imgs/pic/record.png?assest") center;
+            :deep(img) {
+              width: 40px;
+              height: 40px;
+              min-width: 40px;
+              max-width: 40px;
+              border-radius: 50%;
+              box-shadow: 0px 0px 1px 1px rgba(255, 255, 255, 0.06);
+            }
+          }
+          &:hover {
+            :deep(img) {
+              transform: none;
+              filter: brightness(0.5);
+            }
+            .open {
+              transform: scale(0.8);
+            }
           }
         }
       }
@@ -812,6 +872,31 @@ watch(
         backdrop-filter: blur(20px);
         .n-base-slot-machine {
           color: var(--main-color);
+        }
+      }
+    }
+    @media (max-width: 900px) {
+      .menu {
+        .time {
+          display: none;
+        }
+      }
+    }
+    @media (max-width: 700px) {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      .control {
+        margin-left: auto;
+        .play-prev,
+        .play-next {
+          display: none;
+        }
+      }
+      .menu {
+        .hidden {
+          display: none;
         }
       }
     }

@@ -19,7 +19,7 @@
           >
             <template #placeholder>
               <div class="cover-loading">
-                <img class="loading-img" src="/images/pic/song.jpg?assest" alt="song" />
+                <img class="loading-img" src="/imgs/pic/song.jpg?assest" alt="song" />
               </div>
             </template>
           </n-image>
@@ -42,7 +42,7 @@
             </n-text>
           </div>
           <!-- 标签 -->
-          <n-space v-if="albumDetail?.tags" class="tags">
+          <n-flex v-if="albumDetail?.tags" class="tags">
             <n-tag
               v-for="(item, index) in albumDetail.tags"
               :key="index"
@@ -58,9 +58,9 @@
             >
               {{ item }}
             </n-tag>
-          </n-space>
+          </n-flex>
           <!-- 数量 -->
-          <n-space class="num">
+          <n-flex class="num">
             <div v-if="albumDetail.count" class="num-item">
               <n-icon depth="3" size="18">
                 <SvgIcon icon="music-note" />
@@ -79,7 +79,7 @@
               </n-icon>
               <n-text depth="3">{{ getTimestampTime(albumDetail.publishTime) }} 发布</n-text>
             </div>
-          </n-space>
+          </n-flex>
           <!-- 简介 -->
           <n-ellipsis
             v-if="albumDetail.description"
@@ -101,17 +101,18 @@
       </div>
     </Transition>
     <!-- 功能区 -->
-    <n-space class="menu" justify="space-between">
-      <n-space class="left">
+    <n-flex class="menu" justify="space-between">
+      <n-flex class="left">
         <n-button
           :disabled="albumData === 'empty'"
+          :focusable="false"
           type="primary"
           class="play"
           tag="div"
           circle
           strong
           secondary
-          @click="playAllSongs"
+          @click="playAllSongs(albumData)"
         >
           <template #icon>
             <n-icon size="32">
@@ -119,7 +120,16 @@
             </n-icon>
           </template>
         </n-button>
-        <n-button size="large" tag="div" round strong secondary @click="likeOrDislike(albumId)">
+        <n-button
+          :focusable="false"
+          class="like"
+          size="large"
+          tag="div"
+          round
+          strong
+          secondary
+          @click="likeOrDislike(albumId)"
+        >
           <template #icon>
             <n-icon>
               <SvgIcon
@@ -130,7 +140,7 @@
           {{ isLikeOrDislike(albumId) ? "收藏专辑" : "取消收藏" }}
         </n-button>
         <n-dropdown :options="moreOptions" trigger="hover" placement="bottom-start">
-          <n-button size="large" tag="div" circle strong secondary>
+          <n-button :focusable="false" class="more" size="large" tag="div" circle strong secondary>
             <template #icon>
               <n-icon>
                 <SvgIcon icon="format-list-bulleted" />
@@ -138,8 +148,8 @@
             </template>
           </n-button>
         </n-dropdown>
-      </n-space>
-      <n-space class="right">
+      </n-flex>
+      <n-flex class="right">
         <!-- 模糊搜索 -->
         <Transition name="fade" mode="out-in">
           <n-input
@@ -158,8 +168,8 @@
             </template>
           </n-input>
         </Transition>
-      </n-space>
-    </n-space>
+      </n-flex>
+    </n-flex>
     <!-- 列表 -->
     <Transition name="fade" mode="out-in">
       <SongList v-if="!searchValue" :data="albumData" :sourceId="albumId" :showAlbum="false" />
@@ -185,7 +195,9 @@
   </div>
   <div v-else class="title">
     <n-text class="key">参数不完整</n-text>
-    <n-button class="back" strong secondary @click="router.go(-1)"> 返回上一页 </n-button>
+    <n-button :focusable="false" class="back" strong secondary @click="router.go(-1)">
+      返回上一页
+    </n-button>
   </div>
 </template>
 
@@ -193,11 +205,12 @@
 import { NIcon } from "naive-ui";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
-import { musicData, siteData } from "@/stores";
+import { siteData } from "@/stores";
+import { getSongDetail } from "@/api/song";
 import { getAlbumDetail, likeAlbum } from "@/api/album";
 import { formatNumber, fuzzySearch } from "@/utils/helper";
 import { getTimestampTime } from "@/utils/timeTools";
-import { fadePlayOrPause, initPlayer } from "@/utils/Player";
+import { playAllSongs } from "@/utils/Player";
 import { isLogin } from "@/utils/auth";
 import debounce from "@/utils/debounce";
 import formatData from "@/utils/formatData";
@@ -205,9 +218,7 @@ import SvgIcon from "@/components/Global/SvgIcon";
 
 const router = useRouter();
 const data = siteData();
-const music = musicData();
 const { userLikeData } = storeToRefs(data);
-const { playList, playIndex, playSongData, playHeartbeatMode, playMode } = storeToRefs(music);
 
 // 专辑 ID
 const albumId = ref(router.currentRoute.value.query.id || null);
@@ -253,35 +264,9 @@ const getAlbumAllData = async (id, justDetail = false) => {
   // 是否终止
   if (justDetail) return true;
   // 全部歌曲
-  albumData.value = formatData(detail.songs, "song");
-};
-
-// 播放专辑全部歌曲
-const playAllSongs = async () => {
-  if (!albumData.value) return false;
-  // 关闭心动模式
-  playHeartbeatMode.value = false;
-  // 更改模式和歌单
-  playMode.value = "normal";
-  playList.value = albumData.value.slice();
-  // 是否处于专辑内
-  const songId = playSongData.value?.id;
-  const existingIndex = albumData.value.findIndex((song) => song.id === songId);
-  // 若不处于
-  if (existingIndex === -1 || !songId) {
-    console.log("不在专辑内");
-    playSongData.value = albumData.value[0];
-    playIndex.value = 0;
-    // 初始化播放器
-    await initPlayer(true);
-  } else {
-    console.log("处于专辑内");
-    playSongData.value = albumData.value[existingIndex];
-    playIndex.value = existingIndex;
-    // 播放
-    fadePlayOrPause();
-  }
-  $message.info("已开始播放", { showIcon: false });
+  const ids = detail.songs.map((song) => song.id).join(",");
+  const songsDetail = await getSongDetail(ids);
+  albumData.value = formatData(songsDetail.songs, "song");
 };
 
 // 歌曲模糊搜索
@@ -389,6 +374,7 @@ onBeforeMount(() => {
       .name {
         font-size: 30px;
         font-weight: bold;
+        -webkit-line-clamp: 2;
       }
       .alia {
         margin-top: 4px;
@@ -468,9 +454,11 @@ onBeforeMount(() => {
     }
   }
   .menu {
+    flex-wrap: nowrap;
     align-items: center;
     margin: 26px 0;
     .left {
+      flex-wrap: nowrap;
       align-items: center;
       .play {
         --n-width: 46px;
@@ -489,6 +477,84 @@ onBeforeMount(() => {
           background-color 0.3s;
         &.n-input--focus {
           width: 200px;
+        }
+      }
+    }
+  }
+  @media (max-width: 700px) {
+    .detail {
+      .cover {
+        width: 140px;
+        height: 140px;
+        min-width: 140px;
+      }
+      .data {
+        .name {
+          font-size: 20px;
+          margin-bottom: 4px;
+        }
+        .alia {
+          font-size: 16px;
+        }
+        .creator {
+          .n-avatar {
+            width: 20px;
+            height: 20px;
+            margin-right: 6px;
+          }
+          .nickname {
+            font-size: 12px;
+          }
+          .create-time {
+            margin-left: 6px;
+            font-size: 12px;
+          }
+        }
+        .tags {
+          .pl-tags {
+            font-size: 12px;
+            padding: 0 12px;
+          }
+        }
+        .num,
+        .description {
+          display: none !important;
+        }
+      }
+    }
+    .menu {
+      margin: 20px 0;
+      .left {
+        .play {
+          --n-width: 40px;
+          --n-height: 40px;
+          .n-icon {
+            font-size: 22px !important;
+          }
+        }
+        .like {
+          --n-height: 36px;
+          --n-font-size: 13px;
+          --n-padding: 0 16px;
+          --n-icon-size: 18px;
+          :deep(.n-button__icon) {
+            margin: 0;
+          }
+          :deep(.n-button__content) {
+            display: none;
+          }
+        }
+        .more {
+          --n-height: 36px;
+          --n-font-size: 13px;
+          --n-icon-size: 18px;
+        }
+      }
+      .right {
+        .search {
+          height: 36px;
+          width: 130px;
+          font-size: 13px;
         }
       }
     }

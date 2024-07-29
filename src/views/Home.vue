@@ -22,11 +22,7 @@
         </n-gi>
         <!-- 喜欢的音乐 -->
         <n-gi>
-          <SpecialCover
-            :data="likeSongsCoverData"
-            :showIcon="false"
-            @click="jumpPage('like-songs')"
-          />
+          <SpecialCover :data="likeSongsCoverData" @click="jumpPage('like-songs')" />
         </n-gi>
       </n-grid>
       <PrivateFm class="rec-fm" />
@@ -35,7 +31,7 @@
     <div v-for="(item, index) in recommendData" :key="index" class="rec-public">
       <n-h3 class="title" prefix="bar" @click="item.to ? router.push(item.to) : null">
         <n-text class="name">{{ item.name }}</n-text>
-        <n-icon class="more" depth="3">
+        <n-icon v-if="item.to" class="more" depth="3">
           <SvgIcon icon="chevron-right" />
         </n-icon>
       </n-h3>
@@ -53,7 +49,15 @@
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { getGreetings } from "@/utils/timeTools";
-import { getDailyRec, getPersonalized, getTopArtists, getNewAlbum } from "@/api/recommend";
+import {
+  getDailyRec,
+  getPersonalized,
+  getRadarPlaylist,
+  getTopArtists,
+  getNewAlbum,
+} from "@/api/recommend";
+import { allMv } from "@/api/video";
+import { getDjRecommend } from "@/api/dj";
 import { siteData, siteSettings } from "@/stores";
 import { getCacheData } from "@/utils/helper";
 import { isLogin } from "@/utils/auth";
@@ -74,32 +78,40 @@ const dailySongsCoverData = computed(() => {
   if (isLogin() && dailySongsData.value.data?.length) {
     const randomIndex = Math.floor(Math.random() * dailySongsData.value.data.length);
     dailySongsCover.cover =
-      dailySongsData.value.data[randomIndex]?.coverSize?.s || "/images/pic/like.jpg";
+      dailySongsData.value.data[randomIndex]?.coverSize?.s || "/imgs/pic/like.jpg";
     return dailySongsCover;
   }
-  dailySongsCover.cover = "/images/pic/cover-2.jpg";
+  dailySongsCover.cover = "/imgs/pic/cover-2.jpg";
   return dailySongsCover;
 });
 
 // 喜欢的音乐
 const likeSongsCoverData = computed(() => {
   const likeSongsCover = {
+    id: 1024,
     name: "喜欢的音乐",
     desc: "发现你独特的音乐品味",
   };
   if (isLogin() && userLikeData.value.playlists?.length) {
-    likeSongsCover.cover = userLikeData.value.playlists[0]?.coverSize?.s || "/images/pic/like.jpg";
+    likeSongsCover.cover = userLikeData.value.playlists[0]?.coverSize?.s || "/imgs/pic/like.jpg";
     return likeSongsCover;
   }
-  likeSongsCover.cover = "/images/pic/like.jpg";
+  likeSongsCover.cover = "/imgs/pic/like.jpg";
   return likeSongsCover;
 });
 
 // 个性化推荐数据
 const recommendData = ref({
   playlist: {
-    name: "推荐歌单",
+    name: isLogin() ? "专属歌单" : "推荐歌单",
     loadingNum: 12,
+    columns: showSider.value ? undefined : "2 s:3 m:4 l:5 xl:6",
+    data: [],
+    to: "/discover/playlists",
+  },
+  radar: {
+    name: "雷达歌单",
+    loadingNum: 6,
     columns: showSider.value ? undefined : "2 s:3 m:4 l:5 xl:6",
     data: [],
     to: "/discover/playlists",
@@ -115,9 +127,16 @@ const recommendData = ref({
   mv: {
     name: "推荐 MV",
     type: "mv",
-    columns: "1 s:2 m:3 l:4 xl:5",
-    loadingNum: 2,
+    columns: "2 s:2 m:3 l:4 xl:5",
+    loadingNum: 12,
     data: [],
+  },
+  dj: {
+    name: "推荐播客",
+    type: "dj",
+    loadingNum: 6,
+    data: [],
+    to: "/dj-hot",
   },
   album: {
     name: "新碟上架",
@@ -131,31 +150,43 @@ const recommendData = ref({
 // 获取个性化推荐数据
 const getRecommendData = async () => {
   try {
-    const [playlistRes, artistRes, mvRes, albumRes] = await Promise.allSettled([
+    const [playlistRes, radarRes, artistRes, mvRes, djRes, albumRes] = await Promise.allSettled([
       // 歌单
       isLogin()
         ? getCacheData("recPl-P", 5, getDailyRec, "resource")
         : getCacheData("recPl", 5, getPersonalized),
+      // 雷达歌单
+      getCacheData("recRadar", 30, getRadarPlaylist),
       // 歌手
       getCacheData("recAr", 5, getTopArtists),
       // MV
-      getCacheData("recMv", 5, getPersonalized, "mv"),
+      getCacheData("recMv", 5, allMv),
+      // 电台
+      getCacheData("recDj", 5, getDjRecommend),
       // 专辑
       getCacheData("recAl", 5, getNewAlbum),
     ]);
     // 检查请求状态
     playlistRes.status === "fulfilled" &&
       (recommendData.value.playlist.data = formatData(
-        playlistRes.value.result || playlistRes.value.recommend,
+        isLogin()
+          ? playlistRes.value.recommend.filter((playlist) => {
+              return !playlist.name.includes("私人雷达");
+            })
+          : playlistRes.value.result,
       ));
+    radarRes.status === "fulfilled" &&
+      (recommendData.value.radar.data = formatData(radarRes.value));
     artistRes.status === "fulfilled" &&
       (recommendData.value.artist.data = formatData(artistRes.value.artists, "artist"));
     mvRes.status === "fulfilled" &&
-      (recommendData.value.mv.data = formatData(mvRes.value.result, "mv"));
+      (recommendData.value.mv.data = formatData(mvRes.value.data, "mv"));
+    djRes.status === "fulfilled" &&
+      (recommendData.value.dj.data = formatData(djRes.value.djRadios, "dj"));
     albumRes.status === "fulfilled" &&
       (recommendData.value.album.data = formatData(albumRes.value.albums, "album"));
     // 检查是否有任何请求失败
-    const anyRejected = [playlistRes, artistRes, mvRes, albumRes].some(
+    const anyRejected = [playlistRes, radarRes, artistRes, mvRes, albumRes].some(
       (res) => res.status === "rejected",
     );
     if (anyRejected) {
@@ -239,6 +270,14 @@ onBeforeMount(() => {
       height: 220px;
       margin-left: 20px;
       max-width: calc(50% - 10px);
+    }
+    @media (max-width: 700px) {
+      flex-direction: column;
+      .rec-fm {
+        margin-left: 0;
+        margin-top: 20px;
+        max-width: 100%;
+      }
     }
   }
 }

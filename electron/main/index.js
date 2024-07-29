@@ -3,7 +3,6 @@ import { app, protocol, shell, BrowserWindow, globalShortcut, nativeImage } from
 import { platform, optimizer, is } from "@electron-toolkit/utils";
 import { startNcmServer } from "@main/startNcmServer";
 import { startMainServer } from "@main/startMainServer";
-import { configureAutoUpdater } from "@main/utils/checkUpdates";
 import createSystemTray from "@main/utils/createSystemTray";
 import createGlobalShortcut from "@main/utils/createGlobalShortcut";
 import mainIpcMain from "@main/mainIpcMain";
@@ -115,18 +114,18 @@ class MainProcess {
       center: true, // 是否出现在屏幕居中的位置
       show: false, // 初始时不显示窗口
       frame: false, // 无边框
+      // transparent: true, // 透明窗口
       titleBarStyle: "customButtonsOnHover", // Macos 隐藏菜单栏
       autoHideMenuBar: true, // 失去焦点后自动隐藏菜单栏
       // 图标配置
-      icon: nativeImage.createFromPath(join(__dirname, "../../public/images/icons/favicon.png")),
+      icon: nativeImage.createFromPath(join(__dirname, "../../public/imgs/icons/favicon.png")),
       // 预加载
       webPreferences: {
-        // devTools: is.dev, //是否开启 DevTools
-        preload: join(__dirname, "../preload/index.js"),
+        // devTools: is.dev,
+        preload: join(__dirname, "../preload/index.mjs"),
         sandbox: false,
         webSecurity: false,
         hardwareAcceleration: true,
-        nodeIntegration: true,
       },
     });
 
@@ -153,7 +152,16 @@ class MainProcess {
     }
     // 生产模式
     else {
-      this.mainWindow.loadURL(`http://127.0.0.1:${import.meta.env.MAIN_VITE_MAIN_PORT ?? 7899}`);
+      console.log("生产模式渲染端口: " + process.env.MAIN_VITE_MAIN_PORT ?? 7899);
+      this.mainWindow.loadURL(`http://127.0.0.1:${process.env.MAIN_VITE_MAIN_PORT ?? 7899}`);
+    }
+
+    // 配置网络代理
+    const proxyRules = this.store.get("proxy");
+    if (proxyRules) {
+      this.mainWindow.webContents.session.setProxy({ proxyRules }, (result) => {
+        console.info("网络代理配置：", result);
+      });
     }
   }
 
@@ -162,10 +170,8 @@ class MainProcess {
     app.whenReady().then(async () => {
       // 创建主窗口
       this.createWindow();
-      // 检测更新
-      configureAutoUpdater();
       // 引入主 Ipc
-      mainIpcMain(this.mainWindow);
+      mainIpcMain(this.mainWindow, this.store);
       // 系统托盘
       createSystemTray(this.mainWindow);
       // 注册快捷键
@@ -227,24 +233,21 @@ class MainProcess {
       this.mainWindow.webContents.send("windowState", false);
     });
 
-    this.mainWindow.on("resized", () => {
+    this.mainWindow.on("resize", () => {
       this.store.set("windowSize", this.mainWindow.getBounds());
     });
 
-    this.mainWindow.on("moved", () => {
+    this.mainWindow.on("move", () => {
       this.store.set("windowSize", this.mainWindow.getBounds());
     });
 
     // 窗口关闭
     this.mainWindow.on("close", (event) => {
-      if (platform.isLinux) {
-        app.quit();
+      event.preventDefault();
+      if (!app.isQuiting) {
+        this.mainWindow.hide();
       } else {
-        if (!app.isQuiting) {
-          event.preventDefault();
-          this.mainWindow.hide();
-        }
-        return false;
+        app.exit();
       }
     });
   }

@@ -4,13 +4,13 @@
     <n-input
       ref="searchInpRef"
       v-model:value="searchInputValue"
-      :class="status.searchInputFocus ? 'input focus' : 'input'"
+      :class="searchInputFocus ? 'input focus' : 'input'"
       :input-props="{ autoComplete: false }"
+      :placeholder="searchPlaceholder"
       :allow-input="noSideSpace"
-      placeholder="搜索音乐 / 视频"
       round
       clearable
-      @focus="searchInputFocus"
+      @focus="searchInputToFocus"
       @keyup.enter="toSearch(searchInputValue)"
       @click.stop
     >
@@ -22,16 +22,20 @@
     </n-input>
     <!-- 搜索框遮罩 -->
     <Transition name="fade" mode="out-in">
-      <div
-        v-show="status.searchInputFocus"
-        class="search-mask"
-        @click.stop="status.searchInputFocus = false"
-      />
+      <div v-show="searchInputFocus" class="search-mask" @click.stop="searchInputFocus = false" />
     </Transition>
     <!-- 热搜榜及历史 -->
-    <SearchHot :searchValue="searchInputValue?.trim()" @toSearch="toSearch" />
+    <SearchHot
+      :searchValue="searchInputValue?.trim()"
+      @toSearch="toSearch"
+      @closeSearch="closeSearch"
+    />
     <!-- 搜索建议 -->
-    <SearchSuggestions :searchValue="searchInputValue?.trim()" @toSearch="toSearch" />
+    <SearchSuggestions
+      :searchValue="searchInputValue?.trim()"
+      @toSearch="toSearch"
+      @closeSearch="closeSearch"
+    />
   </div>
 </template>
 
@@ -39,6 +43,7 @@
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { getSongDetail } from "@/api/song";
+import { getSearchDefault } from "@/api/search";
 import { siteData, siteStatus, musicData } from "@/stores";
 import { addSongToNext, initPlayer } from "@/utils/Player";
 import formatData from "@/utils/formatData";
@@ -47,31 +52,63 @@ const router = useRouter();
 const music = musicData();
 const status = siteStatus();
 const data = siteData();
+const { searchHistory } = storeToRefs(data);
 const { playSongData } = storeToRefs(music);
+const { searchInputFocus } = storeToRefs(status);
 
+// 搜索框数据
 const searchInpRef = ref(null);
 const searchInputValue = ref("");
+const searchInterval = ref(null);
+const searchRealkeyword = ref(null);
+const searchPlaceholder = ref("搜索音乐 / 视频");
 
 // 搜索框输入限制
 const noSideSpace = (value) => !value.startsWith(" ");
 
 // 搜索框 focus
-const searchInputFocus = () => {
+const searchInputToFocus = () => {
   searchInpRef.value?.focus();
-  status.searchInputFocus = true;
+  searchInputFocus.value = true;
 };
 
 // 添加搜索历史
 const setSearchHistory = (name) => {
   if (!name || !name?.trim()) return false;
-  const index = data.searchHistory.indexOf(name);
+  const index = searchHistory.value.indexOf(name);
   if (index !== -1) {
-    data.searchHistory.splice(index, 1);
+    searchHistory.value.splice(index, 1);
   }
-  data.searchHistory.unshift(name);
-  if (data.searchHistory.length > 30) {
-    data.searchHistory.pop();
+  searchHistory.value.unshift(name);
+  if (searchHistory.value.length > 30) {
+    searchHistory.value.pop();
   }
+};
+
+// 更换搜索框关键词
+const updatePlaceholder = async () => {
+  try {
+    const result = await getSearchDefault();
+    searchPlaceholder.value = result.data.showKeyword;
+    searchRealkeyword.value = result.data.realkeyword;
+  } catch (error) {
+    console.error("搜索关键词获取失败：", error);
+    searchPlaceholder.value = "搜索音乐 / 视频";
+  }
+};
+
+// 更新搜索框关键词
+const changePlaceholder = () => {
+  updatePlaceholder();
+  // 5分钟
+  searchInterval.value = setInterval(updatePlaceholder, 5 * 60 * 1000);
+};
+
+// 关闭搜索
+const closeSearch = () => {
+  // 取消聚焦状态
+  status.searchInputFocus = false;
+  searchInpRef.value?.blur();
 };
 
 // 直接播放单曲
@@ -94,10 +131,17 @@ const toPlaySong = async (id) => {
 
 // 前往搜索
 const toSearch = (val, type = "song") => {
-  if (!val) return false;
+  // 未输入内容且不存在推荐
+  if (!val && searchPlaceholder.value === "搜索音乐 / 视频") return false;
+  if (!val && searchPlaceholder.value !== "搜索音乐 / 视频" && searchRealkeyword.value) {
+    val = searchRealkeyword.value?.trim();
+  }
   // 取消聚焦状态
-  status.searchInputFocus = false;
-  searchInpRef.value?.blur();
+  closeSearch();
+  // 更新推荐
+  updatePlaceholder();
+  // 触发测试
+  if (Number(val) === 114514) return router.push("/test");
   // 判断类型
   switch (type) {
     // 直接搜索
@@ -147,6 +191,14 @@ const toSearch = (val, type = "song") => {
       break;
   }
 };
+
+onMounted(() => {
+  changePlaceholder();
+});
+
+onBeforeUnmount(() => {
+  clearInterval(searchInterval.value);
+});
 </script>
 
 <style lang="scss" scoped>
@@ -171,6 +223,22 @@ const toSearch = (val, type = "song") => {
     background-color: #00000040;
     backdrop-filter: blur(20px);
     -webkit-app-region: no-drag;
+  }
+  @media (max-width: 700px) {
+    width: 100%;
+    margin-right: 12px;
+    .input {
+      width: 100%;
+      &.focus {
+        width: 100%;
+      }
+    }
+  }
+  @media (max-width: 512px) {
+    .search-mask {
+      background-color: transparent;
+      backdrop-filter: blur(0);
+    }
   }
 }
 </style>

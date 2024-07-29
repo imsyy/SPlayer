@@ -106,3 +106,31 @@ export const getCommentTime = (t) => {
     }月${userDate.getDate()}日 ${UH}:${Um}`;
   }
 };
+
+/**
+ * 电台时间戳格式化
+ * @param {number} timestamp - 要格式化的时间戳（毫秒）
+ * @returns {string} - 格式化后的日期描述
+ */
+export const djFormatDate = (timestamp) => {
+  const now = new Date();
+  const targetDate = new Date(timestamp);
+  const timeDiff = now - targetDate;
+  const oneDay = 24 * 60 * 60 * 1000; // 一天的毫秒数
+  const daysDiff = Math.floor(timeDiff / oneDay);
+  // 数字补零
+  const formatNumber = (num) => {
+    return num < 10 ? `0${num}` : num;
+  };
+  if (daysDiff === 0) {
+    return "今日";
+  } else if (daysDiff === 1) {
+    return "昨日";
+  } else if (daysDiff <= 7) {
+    return `${daysDiff}天前`;
+  } else if (targetDate.getFullYear() === now.getFullYear() - 1) {
+    return `${targetDate.getFullYear()}-${formatNumber(targetDate.getMonth() + 1)}`;
+  } else {
+    return `${formatNumber(targetDate.getMonth() + 1)}-${formatNumber(targetDate.getDate())}`;
+  }
+};

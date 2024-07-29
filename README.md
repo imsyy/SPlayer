@@ -1,10 +1,8 @@
-<div align="center">
-<img alt="logo" height="80" src="./public/images/icons/favicon.png" />
-<h2>SPlayer</h2>
-<p>一个简约的音乐播放器</p>
-<img alt="main" src="./screenshots/main.png" />
-</div>
-<br />
+# SPlayer
+
+> 一个简约的音乐播放器
+
+![main](/screenshots/SPlayer.jpg)
 
 ## 说明
 
@@ -19,9 +17,12 @@
 > - 感谢您的尊重与理解
 
 - 本项目采用 [Vue 3](https://cn.vuejs.org/) 全家桶和 [Naïve UI](https://www.naiveui.com/) 组件库及 [Electron](https://www.electronjs.org/zh/docs/latest/) 开发
-- 支持网页端与客户端，由于设备有限，目前仅适配 `Win`，其他平台可自行构建
-- ~~仅对移动端做了基础适配，**不保证功能全部可用**~~
-- 欢迎各位大佬指点和 `Star` 哦 😍
+- 支持网页端与客户端，由于设备有限，目前仅适配 `Win`，其他平台可自行解决兼容性后进行构建
+- 仅对移动端做了基础适配，**不保证功能全部可用**
+
+  > 请注意，本程序不打算开发移动端，也不会对移动端进行完美适配，仅保证基础可用性
+
+- 欢迎各位大佬 `Star` 😍
 
 ## 👀 Demo
 
@@ -29,40 +30,34 @@
 
 ## 🎉 功能
 
-- 支持扫码登录
-- 支持手机号登录
-- 自动进行每日签到及云贝签到
-- 封面主题色自适应
-- 本地歌曲管理及分类 ~~以及音乐标签编辑~~
-- **支持播放部分无版权歌曲（可能会与原曲不匹配，客户端独占功能）**
-- 下载歌曲（最高支持 Hi-Res）
-- 新建歌单及歌单编辑
-- 收藏 / 取消收藏歌单或歌手
-- 每日推荐歌曲
-- 私人 FM
-- 云盘音乐上传
-- 云盘内歌曲播放
-- 云盘内歌曲纠正
-- 云盘歌曲删除
-- 支持逐字歌词
-- 歌词滚动以及歌词翻译
-- MV 与视频播放
-- 音乐频谱显示（ 暂时去除，还待完善 ）
-- 音乐渐入渐出
-- 支持 PWA
-- 支持评论区及评论点赞
-- 明暗模式自动 / 手动切换
-- ~~移动端基础适配~~
-- ~~`i18n` 支持~~
+- ✨ 支持扫码登录
+- 📱 支持手机号登录
+- 📅 自动进行每日签到及云贝签到
+- 🎨 封面主题色自适应
+- 🌚 Light / Dark 模式自动切换
+- 📁 本地歌曲管理及分类（建议先使用 [音乐标签](https://www.cnblogs.com/vinlxc/p/11347744.html) 进行匹配后再使用）
+- 🎵 **支持播放部分无版权歌曲（可能会与原曲不匹配，客户端独占功能）**
+- ⬇️ 下载歌曲（最高支持 Hi-Res）
+- ➕ 新建歌单及歌单编辑
+- ❤️ 收藏 / 取消收藏歌单或歌手
+- 🎶 每日推荐歌曲
+- 📻 私人 FM
+- ☁️ 云盘音乐上传
+- 📂 云盘内歌曲播放
+- 🔄 云盘内歌曲纠正
+- 🗑️ 云盘歌曲删除
+- 📝 支持逐字歌词
+- 🔄 歌词滚动以及歌词翻译
+- 📹 MV 与视频播放
+- 🎶 音乐频谱显示
+- ⏭️ 音乐渐入渐出
+- 🔄 支持 PWA
+- 💬 支持评论区及评论点赞
+- 🌓 明暗模式自动 / 手动切换
+- 📱 移动端基础适配
+- ~~🌐 `i18n` 支持~~
 
-#### 待办
-
-- [ ] 完善音乐频谱
-- [ ] 添加桌面歌词
-- [ ] 多种布局方式
-- [ ] 发表评论
-
-## 🖼️ Screenshots
+## 🖼️ screenshots
 
 > 开发中，仅供参考
 
@@ -141,10 +136,13 @@ docker-compose up -d
 ### 在线部署
 
 ```bash
-# 拉取
-docker pull imsyy/splayer:2.0.0-beta.5
+# 从 Docker Hub 拉取
+docker pull imsyy/splayer:latest
+# 从 GitHub ghcr 拉取
+docker pull ghcr.io/imsyy/splayer:latest
+
 # 运行
-docker run -d --name SPlayer -p 7899:7899 imsyy/splayer:2.0.0-beta.5
+docker run -d --name SPlayer -p 7899:7899 imsyy/splayer:latest
 ```
 
 以上步骤成功后，将会在本地 [localhost:7899](http://localhost:7899/) 启动，如需更换端口，请自行修改命令行中的端口号
@@ -164,7 +162,7 @@ docker run -d --name SPlayer -p 7899:7899 imsyy/splayer:2.0.0-beta.5
 
 5. 将 `Build and Output Settings` 中的 `Output Directory` 改为 `out/renderer`
 
-   ![build](/screenshots/build.png)
+   ![build](/screenshots/build.jpg)
 
 6. 点击 `Deploy`，即可成功部署
 
@@ -228,8 +226,9 @@ docker run -d --name SPlayer -p 7899:7899 imsyy/splayer:2.0.0-beta.5
 - [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi)
 - [YesPlayMusic](https://github.com/qier222/YesPlayMusic)
 - [UnblockNeteaseMusic](https://github.com/UnblockNeteaseMusic/server)
-- [BlurLyric](https://github.com/Project-And-Factory/BlurLyric)
 - [Vue-mmPlayer](https://github.com/maomao1996/Vue-mmPlayer)
+- [refined-now-playing-netease](https://github.com/solstice23/refined-now-playing-netease)
+- [material-color-utilities](https://github.com/material-foundation/material-color-utilities)
 
 ## 📢 免责声明
 
@@ -256,7 +255,6 @@ docker run -d --name SPlayer -p 7899:7899 imsyy/splayer:2.0.0-beta.5
 
 <details>
 <summary>查看目录结构详情</summary>
-
 
 > ChatGPT 写的，如有错误，请见谅
 
@@ -423,4 +421,9 @@ docker run -d --name SPlayer -p 7899:7899 imsyy/splayer:2.0.0-beta.5
 │       └── Test.vue
 └── vercel.json                           # Vercel 部署配置
 ```
+
 </details>
+
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=imsyy/SPlayer&type=Date)](https://star-history.com/#imsyy/SPlayer&Date)

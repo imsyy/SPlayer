@@ -3,7 +3,7 @@
   <div class="dsc-artists">
     <div class="menu">
       <!-- 字母分类 -->
-      <n-space class="initial">
+      <n-flex class="initial">
         <n-tag
           v-for="item in artistInitials"
           :key="item"
@@ -14,9 +14,9 @@
         >
           {{ item.value }}
         </n-tag>
-      </n-space>
+      </n-flex>
       <!-- 地区分类 -->
-      <n-space class="category">
+      <n-flex class="category">
         <n-tag
           v-for="(item, index) in artistTypeNames"
           :key="item"
@@ -31,10 +31,10 @@
         >
           {{ item }}
         </n-tag>
-      </n-space>
+      </n-flex>
     </div>
     <MainCover :data="artistsData" columns="3 s:4 m:5 l:6" type="artist" />
-    <n-space v-if="arHasMore" justify="center">
+    <n-flex v-if="arHasMore" justify="center">
       <n-button
         :loading="arIsLoading"
         class="load-more"
@@ -46,7 +46,7 @@
       >
         加载更多
       </n-button>
-    </n-space>
+    </n-flex>
   </div>
 </template>
 

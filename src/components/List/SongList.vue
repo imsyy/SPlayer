@@ -1,19 +1,22 @@
 <!-- 歌曲列表 -->
 <template>
   <Transition name="fade" mode="out-in" @after-enter="checkHasPlaying">
-    <div v-if="data !== 'empty' && data?.length && data[0] !== 'empty'" class="song-list">
+    <div v-if="data?.[0]?.id" class="song-list">
       <div v-if="showTitle" class="song-list-header">
         <n-text class="num" depth="3"> # </n-text>
-        <n-text :class="{ info: true, 'has-cover': data[0].cover && showCover }" depth="3">
+        <n-text :class="['info', { 'has-cover': data[0].cover && showCover }]" depth="3">
           {{ type === "song" ? "歌曲" : "声音" }}
         </n-text>
-        <n-text v-if="data[0].album && showAlbum" class="album" depth="3"> 专辑 </n-text>
-        <n-text v-if="data[0].updateTime && type === 'dj'" class="update" depth="3">
+        <n-text v-if="data[0].album && showAlbum" class="album hidden" depth="3"> 专辑 </n-text>
+        <n-text v-if="data[0].updateTime && type === 'dj'" class="update hidden" depth="3">
           更新日期
         </n-text>
-        <n-text v-if="data[0].playCount && type === 'dj'" class="count" depth="3"> 播放量 </n-text>
-        <n-text v-if="data[0].duration" class="duration" depth="3"> 时长 </n-text>
-        <n-text v-if="data[0].size" class="size" depth="3"> 大小 </n-text>
+        <n-text v-if="type !== 'dj'" class="control" />
+        <n-text v-if="data[0].playCount && type === 'dj'" class="count hidden" depth="3">
+          播放量
+        </n-text>
+        <n-text v-if="data[0].duration" class="duration hidden" depth="3"> 时长 </n-text>
+        <n-text v-if="data[0].size" class="size hidden" depth="3"> 大小 </n-text>
       </div>
       <n-card
         v-for="(item, index) in data.slice(
@@ -29,8 +32,9 @@
           alignItems: 'center',
           justifyContent: 'space-between',
         }"
-        :class="music.getPlaySongData?.id === item?.id ? 'songs play' : 'songs'"
+        :class="Number(music.getPlaySongData?.id) === Number(item?.id) ? 'songs play' : 'songs'"
         hoverable
+        @click="checkCanClick(data, item, songsIndex + index)"
         @dblclick.stop="playSong(data, item, songsIndex + index)"
         @contextmenu="
           songListDropdownRef?.openDropdown($event, data, item, songsIndex + index, sourceId, type)
@@ -40,7 +44,7 @@
         <n-text v-if="music.getPlaySongData?.id !== item?.id" class="num" depth="3">
           {{ songsIndex + index + 1 }}
         </n-text>
-        <n-icon v-else class="play" size="22">
+        <n-icon v-else class="num" size="22">
           <SvgIcon icon="music-note" />
         </n-icon>
         <!-- 封面 -->
@@ -58,7 +62,7 @@
           >
             <template #placeholder>
               <div class="cover-loading">
-                <img class="loading-img" src="/images/pic/song.jpg?assest" alt="song" />
+                <img class="loading-img" src="/imgs/pic/song.jpg?assest" alt="song" />
               </div>
             </template>
           </n-image>
@@ -67,10 +71,17 @@
         <div class="info">
           <div class="title">
             <!-- 名称 -->
-            <n-text class="name" depth="2">{{ item?.name || "未知曲目" }}</n-text>
+            <!-- @click.stop="type !== 'dj' && !item.path ? router.push(`/song?id=${item.id}`) : null" -->
+            <n-text class="name" depth="2">
+              {{ item?.name || "未知曲目" }}
+            </n-text>
             <!-- 特权 -->
             <n-tag
-              v-if="showPrivilege && item.fee === 1 && userData.detail?.profile?.vipType !== 11"
+              v-if="
+                showPrivilege &&
+                item.fee === 1 &&
+                (userData.detail?.profile?.vipType !== 11 || !hiddenVipTags)
+              "
               :bordered="false"
               type="error"
               size="small"
@@ -122,15 +133,16 @@
               :key="ar.id"
               class="ar"
               @click.stop="router.push(`/artist?id=${ar.id}`)"
+              @dblclick.stop
             >
               {{ ar.name }}
             </n-text>
           </div>
           <div v-else-if="type === 'dj'" class="artist">
-            <n-text class="ar"> 电台节目 </n-text>
+            <n-text class="ar" @dblclick.stop> 电台节目 </n-text>
           </div>
           <div v-else class="artist">
-            <n-text class="ar"> {{ item.artists || "未知艺术家" }} </n-text>
+            <n-text class="ar" @dblclick.stop> {{ item.artists || "未知艺术家" }} </n-text>
           </div>
           <!-- 别名 -->
           <n-text v-if="item.alia" class="alia" depth="3">{{ item.alia }}</n-text>
@@ -139,12 +151,15 @@
         <template v-if="showAlbum && type !== 'dj'">
           <n-text
             v-if="item.album"
-            class="album"
-            @click.stop="item.album !== 'string' ? router.push(`/album?id=${item.album.id}`) : null"
+            class="album hidden"
+            @click.stop="
+              typeof item.album === 'object' ? router.push(`/album?id=${item.album.id}`) : null
+            "
+            @dblclick.stop
           >
-            {{ typeof item.album === "string" ? item.album : item.album.name }}
+            {{ typeof item.album === "object" ? item.album?.name || "未知专辑" : item.album }}
           </n-text>
-          <n-text v-else class="album">未知专辑</n-text>
+          <n-text v-else class="album hidden">未知专辑</n-text>
         </template>
         <!-- 操作 -->
         <div v-if="type !== 'dj'" class="action">
@@ -164,20 +179,32 @@
               "
             />
           </n-icon>
+          <!-- 更多操作 -->
+          <n-icon
+            class="more mobile"
+            depth="3"
+            size="20"
+            @click.stop="
+              songListDrawerRef?.drawerOpen(data, item, songsIndex + index, sourceId, type)
+            "
+            @dblclick.stop
+          >
+            <SvgIcon icon="more" />
+          </n-icon>
         </div>
         <!-- 更新日期 -->
-        <n-text v-if="type === 'dj' && item.updateTime" class="update" depth="3">
-          {{ getTimestampTime(item.updateTime, false) }}
+        <n-text v-if="type === 'dj' && item.updateTime" class="update hidden" depth="3">
+          {{ djFormatDate(item.updateTime) }}
         </n-text>
         <!-- 播放量 -->
-        <n-text v-if="type === 'dj' && item.playCount" class="count" depth="3">
+        <n-text v-if="type === 'dj' && item.playCount" class="count hidden" depth="3">
           {{ item.playCount }}次
         </n-text>
         <!-- 时长 -->
-        <n-text v-if="item.duration" class="duration" depth="3">{{ item.duration }}</n-text>
+        <n-text v-if="item.duration" class="duration hidden" depth="3">{{ item.duration }}</n-text>
         <n-text v-else class="duration"> -- </n-text>
         <!-- 大小 -->
-        <n-text v-if="item.size" class="size" depth="3">{{ item.size }}M</n-text>
+        <n-text v-if="item.size" class="size hidden" depth="3">{{ item.size }}M</n-text>
       </n-card>
       <!-- 分页 -->
       <Pagination
@@ -187,7 +214,21 @@
         @pageNumberChange="pageNumberChange"
       />
       <!-- 右键菜单 -->
-      <SongListDropdown ref="songListDropdownRef" @playSong="playSong" />
+      <SongListDropdown
+        ref="songListDropdownRef"
+        @playSong="playSong"
+        @delCloudSong="delCloudSong"
+        @deletePlaylistSong="deletePlaylistSong"
+        @delLocalSong="delLocalSong"
+      />
+      <!-- 移动端菜单 -->
+      <SongListDrawer
+        ref="songListDrawerRef"
+        @playSong="playSong"
+        @delCloudSong="delCloudSong"
+        @deletePlaylistSong="deletePlaylistSong"
+        @delLocalSong="delLocalSong"
+      />
       <!-- 定位歌曲 -->
       <Transition name="shrink" mode="out-in">
         <n-card
@@ -215,28 +256,38 @@
       style="margin-top: 60px"
       size="large"
     />
+    <!-- 错误 -->
+    <n-empty
+      v-else-if="data === 'error' || data?.[0] === 'error'"
+      description="列表获取出错，请重试"
+      style="margin-top: 60px"
+      size="large"
+    />
     <!-- 加载动画 -->
-    <n-spin v-else class="loading" size="small">
-      <template #description> 加载中 </template>
-    </n-spin>
+    <div v-else class="loading">
+      <n-skeleton :repeat="10" text />
+    </div>
   </Transition>
 </template>
 
 <script setup>
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
-import { siteData, siteSettings, musicData } from "@/stores";
+import { setCloudDel } from "@/api/cloud";
+import { addSongToPlayList } from "@/api/playlist";
+import { siteData, siteSettings, musicData, siteStatus } from "@/stores";
 import { initPlayer, fadePlayOrPause, addSongToNext } from "@/utils/Player";
-import { getTimestampTime } from "@/utils/timeTools";
+import { djFormatDate } from "@/utils/timeTools";
 
 const router = useRouter();
 const music = musicData();
 const dataStore = siteData();
+const status = siteStatus();
 const settings = siteSettings();
 const { userData } = storeToRefs(dataStore);
-const { loadSize, playSearch } = storeToRefs(settings);
-const { playList, playIndex, playSongData, playSongSource, playHeartbeatMode, playMode } =
-  storeToRefs(music);
+const { loadSize, playSearch, useMusicCache, hiddenVipTags } = storeToRefs(settings);
+const { playList, playSongData, playSongSource } = storeToRefs(music);
+const { playIndex, playMode, playHeartbeatMode, playLoading } = storeToRefs(status);
 
 // eslint-disable-next-line no-unused-vars
 const props = defineProps({
@@ -285,7 +336,8 @@ const props = defineProps({
 // 分页数据
 const pageNumber = ref(1);
 
-// 右键菜单
+// 子组件
+const songListDrawerRef = ref(null);
 const songListDropdownRef = ref(null);
 
 // 当前索引
@@ -312,6 +364,11 @@ const checkHasPlaying = (isScoll = null) => {
 // 播放歌曲
 const playSong = async (data, song, index) => {
   console.log(data, song, index);
+  // 若开启了缓存且正在加载
+  if (useMusicCache.value && playLoading.value) {
+    $message.warning("歌曲正在缓冲中，请稍后");
+    return false;
+  }
   // 更改模式
   playMode.value = props.type === "song" ? "normal" : "dj";
   // 检查当前页面
@@ -358,6 +415,72 @@ const pageNumberChange = (page) => {
   });
 };
 
+// 检查是否可执行双击
+const checkCanClick = (data, item, index) => {
+  if (window.innerWidth > 700) return false;
+  playSong(data, item, index);
+};
+
+// 云盘歌曲删除
+const delCloudSong = (data, song, index) => {
+  console.log(data, song, index);
+  $dialog.warning({
+    title: "确认删除",
+    content: `确认从云盘中删除 ${song.name}？该操作无法撤销！`,
+    positiveText: "删除",
+    negativeText: "取消",
+    onPositiveClick: async () => {
+      const result = await setCloudDel(song.id);
+      if (result.code == 200) {
+        data.splice(index, 1);
+        $message.success("删除成功");
+      } else {
+        $message.error("删除失败，请重试");
+      }
+    },
+  });
+};
+
+// 歌单歌曲删除
+const deletePlaylistSong = (pid, song, data, index) => {
+  if (!pid || !song) return $message.error("无法正确定位到歌单，请重试");
+  $dialog.warning({
+    title: "确认删除",
+    content: `确认从歌单中移除 ${song.name}？该操作无法撤销！`,
+    positiveText: "删除",
+    negativeText: "取消",
+    onPositiveClick: async () => {
+      const result = await addSongToPlayList(pid, song?.id, "del");
+      if (result.status === 200) {
+        data.length === 1 ? data.splice(0, 1, "empty") : data.splice(index, 1);
+        $message.success("歌曲删除成功");
+      } else {
+        $message.error("歌曲删除失败，请重试");
+      }
+    },
+  });
+};
+
+// 本地歌曲删除
+const delLocalSong = (data, song, index) => {
+  $dialog.warning({
+    title: "确认删除",
+    content: `确认从本地磁盘中删除 ${song.name}？该操作无法撤销！`,
+    positiveText: "删除",
+    negativeText: "取消",
+    onPositiveClick: async () => {
+      console.log(data, song, index);
+      const result = await electron.ipcRenderer.invoke("deleteFile", song?.path);
+      if (result) {
+        data.length === 1 ? data.splice(0, 1, "empty") : data.splice(index, 1);
+        $message.success("歌曲删除成功");
+      } else {
+        $message.error("歌曲删除失败，请重试");
+      }
+    },
+  });
+};
+
 // 监听歌曲变化
 watch(
   () => music.getPlaySongData?.id,
@@ -397,16 +520,20 @@ onBeforeUnmount(() => {
     .has-cover {
       margin-right: 66px;
     }
+    .control {
+      width: 40px;
+    }
     .update {
       width: 80px;
       text-align: center;
+      margin-right: auto;
     }
     .count {
       width: 120px;
       text-align: center;
     }
     .duration {
-      width: 40px;
+      width: 50px;
       text-align: center;
     }
     .size {
@@ -447,8 +574,7 @@ onBeforeUnmount(() => {
         }
       }
     }
-    .num,
-    .play {
+    .num {
       width: 30px;
       height: 30px;
       min-width: 30px;
@@ -552,6 +678,9 @@ onBeforeUnmount(() => {
           transform: scale(1);
         }
       }
+      .more {
+        display: none;
+      }
     }
     .update {
       width: 80px;
@@ -562,7 +691,7 @@ onBeforeUnmount(() => {
       text-align: center;
     }
     .duration {
-      width: 40px;
+      width: 50px;
       text-align: center;
     }
     .size {
@@ -574,7 +703,7 @@ onBeforeUnmount(() => {
       border-color: var(--main-color);
       a,
       span,
-      .play {
+      .num {
         color: var(--main-color) !important;
       }
       .artist {
@@ -624,12 +753,49 @@ onBeforeUnmount(() => {
       transform: scale(0.9);
     }
   }
+  @media (max-width: 700px) {
+    .song-list-header,
+    .songs {
+      .hidden {
+        display: none;
+      }
+    }
+    .songs {
+      .num {
+        font-size: 12px;
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+      }
+      .info {
+        .title {
+          .name {
+            font-size: 15px;
+          }
+        }
+        .artist {
+          font-size: 12px;
+        }
+      }
+      .action {
+        width: 60px;
+        justify-content: flex-end;
+        .more {
+          display: inline-block;
+          margin-left: 12px;
+        }
+      }
+    }
+  }
 }
 .loading {
-  margin: 60px 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  :deep(.n-skeleton) {
+    &:nth-of-type(1) {
+      margin-top: 0;
+    }
+    height: 80px;
+    margin-top: 12px;
+    border-radius: 8px;
+  }
 }
 </style>

@@ -7,7 +7,7 @@
     </n-h1>
     <Transition name="fade" mode="out-in">
       <div v-if="historyPlaylist?.length" class="list">
-        <n-space class="menu">
+        <n-flex class="menu">
           <n-button round strong secondary @click="cleanHistory">
             <template #icon>
               <n-icon>
@@ -16,7 +16,7 @@
             </template>
             清空列表
           </n-button>
-        </n-space>
+        </n-flex>
         <SongList :data="historyPlaylist" :showCover="false" />
         <n-divider class="tip" dashed>
           <n-text :depth="3"> 最多展示 500 条播放历史 </n-text>

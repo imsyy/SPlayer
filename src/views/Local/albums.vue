@@ -5,7 +5,7 @@
       v-if="allAlbumData"
       :style="{
         height: `calc(100vh - ${
-          Object.keys(music.playSongData)?.length && status.showPlayBar ? 380 : 300
+          Object.keys(music.playSongData)?.length && status.showPlayBar ? 445 : 365
         }px)`,
       }"
       class="local-album"
@@ -23,7 +23,7 @@
           }"
           @click="chooseAlbum = item.album"
         >
-          <img class="cover" src="/images/pic/album.jpg?assest" alt="album-cover" />
+          <img class="cover" src="/imgs/pic/album.jpg?assest" alt="album-cover" />
           <div class="content">
             <span class="album">{{ item.album }}</span>
             <span class="artist">{{ item.artist }} · {{ item.num }} 首</span>

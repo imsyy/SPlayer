@@ -36,7 +36,17 @@
             >
               <template #placeholder>
                 <div :class="['cover-loading', type]">
-                  <img class="loading-img" src="/images/pic/album.jpg?assest" alt="song" />
+                  <img
+                    class="loading-img"
+                    :src="
+                      type === 'mv'
+                        ? '/imgs/pic/video.jpg?assest'
+                        : type === 'artist'
+                          ? '/imgs/pic/artist.jpg?assest'
+                          : '/imgs/pic/album.jpg?assest'
+                    "
+                    alt="song"
+                  />
                 </div>
                 <!-- <div :class="['cover-loading', type]">
                   <n-spin size="small" />
@@ -56,8 +66,9 @@
               <n-text class="add-desc">{{ item.desc }}</n-text>
             </div>
             <!-- 播放按钮 -->
-            <n-icon class="play">
-              <SvgIcon :icon="type !== 'artist' ? 'play-circle' : 'account-music'" />
+            <CoverPlayBtn v-if="type !== 'artist'" :id="item.id" :type="type" />
+            <n-icon v-else class="play-btn">
+              <SvgIcon icon="account-music" />
             </n-icon>
           </div>
           <!-- 信息 -->
@@ -286,14 +297,18 @@ const jumpLink = (data, type) => {
           -webkit-line-clamp: 2;
         }
       }
-      .play {
+      .play-btn {
         position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         right: 8px;
         bottom: 8px;
         opacity: 0;
         color: #efefefde;
         transform: translateY(6px);
-        font-size: 50px;
+        border-radius: 50%;
+        overflow: hidden;
         z-index: 3;
         transition:
           opacity 0.3s,
@@ -356,7 +371,7 @@ const jumpLink = (data, type) => {
           top: 0;
           opacity: 1;
         }
-        .play {
+        .play-btn {
           opacity: 1;
           transform: translateY(0);
           &:hover {
@@ -385,8 +400,8 @@ const jumpLink = (data, type) => {
           border-radius: 50%;
           overflow: hidden;
         }
-        .play {
-          // display: none;
+        .play-btn {
+          font-size: 50px;
           right: auto;
           bottom: auto;
         }

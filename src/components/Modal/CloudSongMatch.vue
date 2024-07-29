@@ -52,7 +52,7 @@
         >
           <template #placeholder>
             <div class="cover-loading">
-              <img class="loading-img" src="/images/pic/song.jpg?assest" alt="loading-img" />
+              <img class="loading-img" src="/imgs/pic/song.jpg?assest" alt="loading-img" />
             </div>
           </template>
         </n-image>
@@ -78,7 +78,7 @@
       </n-card>
     </Transition>
     <template #footer>
-      <n-space justify="end">
+      <n-flex justify="end">
         <n-button @click="closeCloudSongMatch"> 取消 </n-button>
         <n-button
           :disabled="!cloudMatchValue.asid"
@@ -87,7 +87,7 @@
         >
           纠正
         </n-button>
-      </n-space>
+      </n-flex>
     </template>
   </n-modal>
 </template>
