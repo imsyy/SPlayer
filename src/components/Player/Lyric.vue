@@ -389,36 +389,6 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.floatUp {
-  width: 15em;
-  white-space: nowrap;
-  border-right: 2px solid transparent;
-  animation:
-    typing 3.5s steps(15, end),
-    blink-caret 0.75s step-end infinite;
-  overflow: hidden;
-}
-
-/* 打印效果 */
-@keyframes typing {
-  from {
-    width: 0;
-  }
-  to {
-    width: 15em;
-  }
-}
-/* 光标闪啊闪 */
-@keyframes blink-caret {
-  from,
-  to {
-    box-shadow: 1px 0 0 0 transparent;
-  }
-  50% {
-    box-shadow: 1px 0 0 0;
-  }
-}
-
 .lyric {
   width: 100%;
   display: flex;
@@ -562,7 +532,6 @@ onMounted(() => {
           -webkit-mask-position-x: 0%;
           transition-property: -webkit-mask-position-x, transform, opacity;
           transition-timing-function: linear, ease, ease;
-          // transform: translateY(-3px);
         }
         &.end-with-space {
           margin-right: 12px;
