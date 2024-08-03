@@ -569,8 +569,8 @@ onMounted(() => {
         }
         &.lrc-long {
           .filler {
-            margin: -25px;
-            padding: 25px;
+            margin: -50px;
+            padding: 50px;
             filter: drop-shadow(0px 0px 20px rgba(255, 255, 255, 0.8));
           }
         }
