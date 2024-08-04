@@ -344,6 +344,7 @@ import { useRouter } from "vue-router";
 import { musicData, siteStatus, siteData, siteSettings } from "@/stores";
 import {
   playOrPause,
+  playOrPauseInstantly,
   fadePlayOrPause,
   setSeek,
   changePlayIndex,
@@ -485,7 +486,9 @@ const sliderDragEnd = () => {
 const songTimeSliderUpdate = (val) => {
   if (playTimeData.value?.duration) {
     const currentTime = (playTimeData.value.duration / 100) * val;
+    playOrPauseInstantly();
     setSeek(currentTime);
+    playOrPauseInstantly();
   }
 };
 

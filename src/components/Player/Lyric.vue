@@ -109,6 +109,7 @@
                     'lrc-text': true,
                     'lrc-long': text.duration >= 1.5,
                     'end-with-space': text.endsWithSpace,
+                    floatUp: playSeek.value >= text.time,
                   }"
                 >
                   <span class="word">{{ text.content }}</span>
@@ -199,6 +200,128 @@ const lyricsScroll = (index) => {
   }
 };
 
+const lyricsScrollSmooth = (index) => {
+  if (lrcMouseStatus.value) {
+    const el = document.getElementById("lrc" + index);
+    el.style.transition = "filter 0.35s, opacity 0.35s, transform 0.35s ease-in-out";
+    el.style.transform = "scale(1)";
+    if (index >= 1) {
+      const prev_el = document.getElementById("lrc" + (index - 1));
+      prev_el.style.transition = "filter 0.35s, opacity 0.35s, transform 0.35s ease-in-out";
+      prev_el.style.transform = "scale(0.86)";
+    }
+    return;
+  }
+  const el = document.getElementById("lrc" + index);
+  const scrollParent = el?.parentElement;
+  const parentRect = scrollParent?.getBoundingClientRect();
+  const totalHeight = window.innerHeight || document.documentElement.clientHeight;
+  var scrollOffset; // 获取滚动偏移量
+  // 调整滚动的距离
+  const container = el?.parentElement;
+  // 调整滚动的距离
+  const scrollDistance = el.offsetTop - container.offsetTop - 80;
+  if (lyricsBlock.value === "center") {
+    scrollOffset =
+      el.offsetTop -
+      container.offsetTop +
+      parentRect.top -
+      container.parentElement.getBoundingClientRect().height * 0.5 -
+      0.5;
+  } else {
+    scrollOffset = scrollDistance + parentRect.top - (pureLyricMode.value ? 200 : 100);
+  }
+  if (scrollOffset >= totalHeight || scrollOffset <= 0) {
+    // 太长距离，或者反向滚动，该方式效果不好，直接使用原始滚动
+    lyricsScroll(index);
+    return;
+  }
+  // 下面使用二分法查找第一个在视窗内可见的元素
+  var low = 0;
+  var high = playSongLyric.value.lrc.length;
+  while (low <= high) {
+    var mid = Math.floor((low + high) / 2);
+    var midElement = document.getElementById(`lrc${mid}`);
+    if (midElement) {
+      var midRect = midElement.getBoundingClientRect();
+      if (midRect.bottom < 100) {
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    } else {
+      high = mid - 1;
+    }
+  }
+  const firstVisibleLine = low - 1; // 获取到第一个可见的元素
+  // 从第一个可见元素开始，遍历获取到最后一个可见的元素
+  for (var i = firstVisibleLine; i < playSongLyric.value.lrc.length; i++) {
+    var element = document.getElementById(`lrc${i}`);
+    if (element) {
+      var rect = element.getBoundingClientRect();
+      if (rect.bottom > totalHeight) {
+        break;
+      }
+      high = i;
+    }
+  }
+  const lastVisibleLine = Math.min(high + 3, playSongLyric.value.lrc.length); // 获取到最后一个可见的元素；因为滚动后会有新的元素出现，所以要往后多几个
+  var scrollDelay = 85; // 元素之间的滚动延迟
+  var scrollDuration = 600; // 单个歌词的滚动时间
+  const scrollTime = scrollDelay * (lastVisibleLine - firstVisibleLine) + scrollDuration; // 滚动总时间
+  var cubicBezier = "cubic-bezier(.4,1.31,.41,1.06)"; // 非线性回弹效果
+  if (
+    index + 1 < playSongLyric.value.lrc.length &&
+    scrollTime >=
+      playSongLyric.value.lrc[index + 1].time * 1000 -
+        playSongLyric.value.lrc[index].time * 1000 -
+        150
+  ) {
+    // 如果滚动总时间大于当前歌词的持续时间，就滚动得快点
+    scrollDelay = 30;
+    scrollDuration = 300;
+    cubicBezier = "cubic-bezier(0,.44,.55,1)";
+  }
+  for (var j = firstVisibleLine; j < lastVisibleLine; j++) {
+    const lrcEl = document.getElementById(`lrc${j}`);
+    if (lrcEl) {
+      if (j === index) {
+        lrcEl.style.transform = `translateY(-${scrollOffset}px) scale(${pureLyricMode.value ? 0.9 : 1.0})`; // 向上滚动的距离
+      } else {
+        lrcEl.style.transform = `translateY(-${scrollOffset}px) scale(${pureLyricMode.value ? 0.76 : 0.86})`; // 向上滚动的距离
+      }
+      lrcEl.style.transition = `transform ${scrollDuration}ms ${cubicBezier} ${
+        scrollDelay * (j - firstVisibleLine) * Math.pow(0.95, j - firstVisibleLine)
+      }ms`; // 非线性回弹效果
+    }
+  }
+  // 在动画完成后，清除所有的 transform 和 transition，并且将滚动条滚动到正确的位置
+  setTimeout(
+    () => {
+      for (let i = firstVisibleLine; i <= lastVisibleLine; i++) {
+        const el = document.getElementById(`lrc${i}`);
+        if (el) {
+          el.style.transition = "none";
+          el.style.transform = "";
+        }
+      }
+      const container = el?.parentElement;
+      // 调整滚动的距离
+      const scrollDistance = el?.offsetTop - container?.offsetTop - 80;
+      // 开始滚动
+      if (lyricsBlock.value === "center") {
+        lyricScroll.value?.scrollTo({
+          top: scrollOffset - parentRect.top + (pureLyricMode.value ? 200 : 100), // 这里为了对齐，只能再计算一遍位置了
+          behavior: "instant",
+        });
+      } else {
+        lyricScroll.value?.scrollTo({ top: scrollDistance, behavior: "instant" });
+      }
+    },
+    scrollDuration + scrollDelay * (lastVisibleLine - firstVisibleLine),
+  );
+};
+
 // 逐字歌词样式计算
 const getYrcStyle = (wordData, lyricIndex) => {
   if (showYrcAnimation.value) {
@@ -256,7 +379,7 @@ if (typeof electron !== "undefined") {
 // 监听歌词滚动
 watch(
   () => playSongLyricIndex.value,
-  (val) => lyricsScroll(val),
+  (val) => lyricsScrollSmooth(val),
 );
 watch(
   () => pureLyricMode.value,
@@ -418,11 +541,13 @@ onMounted(() => {
         &.end-with-space {
           margin-right: 12px;
         }
-        // &.lrc-long {
-        //   .filler {
-        //     filter: drop-shadow(0px 0px 10px rgba(255, 255, 255, 0.6));
-        //   }
-        // }
+        &.lrc-long {
+          .filler {
+            margin: -50px;
+            padding: 50px;
+            filter: drop-shadow(0px 0px 20px rgba(255, 255, 255, 0.8));
+          }
+        }
       }
       .lrc-fy,
       .lrc-roma {

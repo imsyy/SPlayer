@@ -212,6 +212,7 @@ import {
 import debounce from "@/utils/debounce";
 import VueSlider from "vue-slider-component";
 import "vue-slider-component/theme/default.css";
+import { playOrPauseInstantly } from "../../utils/Player";
 
 const router = useRouter();
 const data = siteData();
@@ -248,7 +249,9 @@ const sliderDragEnd = () => {
 const songTimeSliderUpdate = (val) => {
   if (playTimeData.value?.duration) {
     const currentTime = (playTimeData.value.duration / 100) * val;
+    playOrPauseInstantly();
     setSeek(currentTime);
+    playOrPauseInstantly();
   }
 };
 
