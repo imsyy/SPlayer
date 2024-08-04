@@ -201,14 +201,24 @@ const lyricsScroll = (index) => {
 };
 
 const lyricsScrollSmooth = (index) => {
+  if (lrcMouseStatus.value) {
+    const el = document.getElementById("lrc" + index);
+    el.style.transition = "filter 0.35s, opacity 0.35s, transform 0.35s ease-in-out";
+    el.style.transform = "scale(1)";
+    if (index >= 1) {
+      const prev_el = document.getElementById("lrc" + (index - 1));
+      prev_el.style.transition = "filter 0.35s, opacity 0.35s, transform 0.35s ease-in-out";
+      prev_el.style.transform = "scale(0.86)";
+    }
+    return;
+  }
   const el = document.getElementById("lrc" + index);
   const scrollParent = el?.parentElement;
   const parentRect = scrollParent?.getBoundingClientRect();
-  // const elRect = el.getBoundingClientRect();
   const totalHeight = window.innerHeight || document.documentElement.clientHeight;
   var scrollOffset; // 获取滚动偏移量
   // 调整滚动的距离
-  const container = el.parentElement;
+  const container = el?.parentElement;
   // 调整滚动的距离
   const scrollDistance = el.offsetTop - container.offsetTop - 80;
   if (lyricsBlock.value === "center") {
@@ -255,27 +265,23 @@ const lyricsScrollSmooth = (index) => {
       high = i;
     }
   }
-  const lastVisibleLine = Math.min(high + 3, playSongLyric.value.lrc.length - 1); // 获取到最后一个可见的元素；因为滚动后会有新的元素出现，所以要往后多几个
-  var scrollDelay = 65; // 元素之间的滚动延迟
+  const lastVisibleLine = Math.min(high + 3, playSongLyric.value.lrc.length); // 获取到最后一个可见的元素；因为滚动后会有新的元素出现，所以要往后多几个
+  var scrollDelay = 85; // 元素之间的滚动延迟
   var scrollDuration = 600; // 单个歌词的滚动时间
   const scrollTime = scrollDelay * (lastVisibleLine - firstVisibleLine) + scrollDuration; // 滚动总时间
+  var cubicBezier = "cubic-bezier(.4,1.31,.41,1.06)"; // 非线性回弹效果
   if (
     index + 1 < playSongLyric.value.lrc.length &&
     scrollTime >=
       playSongLyric.value.lrc[index + 1].time * 1000 -
         playSongLyric.value.lrc[index].time * 1000 -
-        200
+        150
   ) {
     // 如果滚动总时间大于当前歌词的持续时间，就滚动得快点
-    scrollDelay = 25;
-    scrollDuration = 350;
+    scrollDelay = 30;
+    scrollDuration = 300;
+    cubicBezier = "cubic-bezier(0,.44,.55,1)";
   }
-  // const scrollOffsetMax =
-  //   scrollParent.scrollHeight - scrollParent.scrollTop - scrollParent.clientHeight; // 获取最大能够滚动距离
-  // if (scrollOffset > scrollOffsetMax) {
-  //   // 如果滚动距离大于最大滚动距离，即快到最后几行歌词的情况
-  //   scrollOffset = scrollOffsetMax; // 设置滚动距离为最大滚动距离，因为剩下的只能滚动这么多了
-  // }
   for (var j = firstVisibleLine; j < lastVisibleLine; j++) {
     const lrcEl = document.getElementById(`lrc${j}`);
     if (lrcEl) {
@@ -284,9 +290,8 @@ const lyricsScrollSmooth = (index) => {
       } else {
         lrcEl.style.transform = `translateY(-${scrollOffset}px) scale(${pureLyricMode.value ? 0.76 : 0.86})`; // 向上滚动的距离
       }
-      lrcEl.style.transition = `transform ${scrollDuration}ms cubic-bezier(.4,1.31,.41,1.06)${
-        scrollDelay * (j - firstVisibleLine) +
-        10 * (j - firstVisibleLine - 1) * (j - firstVisibleLine - 1)
+      lrcEl.style.transition = `transform ${scrollDuration}ms ${cubicBezier} ${
+        scrollDelay * (j - firstVisibleLine) * Math.pow(0.95, j - firstVisibleLine)
       }ms`; // 非线性回弹效果
     }
   }
@@ -300,9 +305,9 @@ const lyricsScrollSmooth = (index) => {
           el.style.transform = "";
         }
       }
-      const container = el.parentElement;
+      const container = el?.parentElement;
       // 调整滚动的距离
-      const scrollDistance = el.offsetTop - container.offsetTop - 80;
+      const scrollDistance = el?.offsetTop - container?.offsetTop - 80;
       // 开始滚动
       if (lyricsBlock.value === "center") {
         lyricScroll.value?.scrollTo({

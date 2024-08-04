@@ -492,6 +492,20 @@ export const playOrPause = async () => {
 };
 
 /**
+ * 立即播放或暂停
+ */
+export const playOrPauseInstantly = async () => {
+  const status = player?.playing();
+  if (status) {
+    player?.pause();
+    cleanAllInterval();
+  } else {
+    player?.play();
+    setAllInterval();
+  }
+};
+
+/**
  * 设置倍速
  * @param {number} rate - 设置的倍速值
  */
