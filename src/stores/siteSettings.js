@@ -57,6 +57,8 @@ const useSiteSettingsStore = defineStore("siteSettings", {
       downloadCover: true, // 同时下载封面
       downloadLyrics: true, // 同时下载歌词
       // 网络部分
+      useRealIP: true, // 是否使用真实IP地址
+      realIP: "116.25.146.177", // 真实IP地址
       proxyProtocol: "off", // 代理协议
       proxyServe: "127.0.0.1", // 代理地址
       proxyPort: 80, // 代理端口

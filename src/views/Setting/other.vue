@@ -1,6 +1,30 @@
 <template>
   <div class="set-type">
     <n-h3 prefix="bar"> 其他 </n-h3>
+    <n-card class="set-item">
+      <div class="name">
+        使用真实 IP 地址
+        <n-text class="tip">在海外或部分地区可能会受到限制，可开启此处尝试解决</n-text>
+      </div>
+      <n-switch v-model:value="useRealIP" :round="false" />
+    </n-card>
+    <n-card class="set-item">
+      <div class="name">
+        真实 IP 地址
+        <n-text class="tip">可在此处输入国内 IP</n-text>
+      </div>
+      <n-input
+        v-model:value="realIP"
+        :disabled="!useRealIP"
+        class="set"
+        type="text"
+        placeholder="请填写真实 IP 地址"
+      >
+        <template #prefix>
+          <n-text depth="3">IP</n-text>
+        </template>
+      </n-input>
+    </n-card>
     <div v-if="checkPlatform.electron()" class="all-porxy" style="margin-bottom: 12px">
       <n-card class="set-item">
         <div class="name">
@@ -111,7 +135,7 @@ import { checkPlatform } from "@/utils/helper";
 import debounce from "@/utils/debounce";
 
 const settings = siteSettings();
-const { themeAuto, loadSize, showGithub, proxyProtocol, proxyServe, proxyPort } =
+const { themeAuto, loadSize, showGithub, proxyProtocol, proxyServe, proxyPort, useRealIP, realIP } =
   storeToRefs(settings);
 
 // 程序重置
