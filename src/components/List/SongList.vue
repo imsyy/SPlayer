@@ -192,9 +192,9 @@
               <div v-if="type !== 'radio'" class="actions" @click.stop @dblclick.stop>
                 <!-- 喜欢歌曲 -->
                 <SvgIcon
-                  :name="isLikeSong(item.id) ? 'Favorite' : 'FavoriteBorder'"
+                  :name="dataStore.isLikeSong(item.id) ? 'Favorite' : 'FavoriteBorder'"
                   :size="20"
-                  @click.stop="toLikeSong(item, !isLikeSong(item.id))"
+                  @click.stop="toLikeSong(item, !dataStore.isLikeSong(item.id))"
                   @delclick.stop
                 />
               </div>
@@ -379,11 +379,6 @@ const sortSelect = (key: SortType) => {
       scrobble: false,
     });
   }
-};
-
-// 是否为喜欢歌曲
-const isLikeSong = (id: number) => {
-  return dataStore.userLikeData.songs.includes(id);
 };
 
 // 滚动至播放歌曲

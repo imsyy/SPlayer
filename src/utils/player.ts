@@ -249,6 +249,7 @@ class Player {
    */
   private playerEvent() {
     // 获取数据
+    const dataStore = useDataStore();
     const statusStore = useStatusStore();
     const settingStore = useSettingStore();
     const playSongData = this.getPlaySongData();
@@ -268,6 +269,10 @@ class Player {
       // ipc
       if (isElectron) {
         window.electron.ipcRenderer.send("play-song-change", this.getPlayerInfo());
+        window.electron.ipcRenderer.send(
+          "like-status-change",
+          dataStore.isLikeSong(playSongData?.id || 0),
+        );
       }
     });
     // 播放
@@ -488,7 +493,7 @@ class Player {
    * @param sep 分隔符
    * @returns 播放信息
    */
-  getPlayerInfo(song?: SongType, sep: string = "&"): string | null {
+  getPlayerInfo(song?: SongType, sep: string = "/"): string | null {
     const playSongData = song || this.getPlaySongData();
     if (!playSongData) return null;
     // 标题

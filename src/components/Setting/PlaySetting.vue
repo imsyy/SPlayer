@@ -142,6 +142,13 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
+          <n-text class="name">全屏播放器留存</n-text>
+          <n-text class="tip" :depth="3">在播放器收起时是否销毁，开启将会增大内存占用</n-text>
+        </div>
+        <n-switch v-model:value="settingStore.fullPlayerCache" class="set" :round="false" />
+      </n-card>
+      <n-card class="set-item">
+        <div class="label">
           <n-text class="name">显示前奏倒计时</n-text>
           <n-text class="tip" :depth="3">部分歌曲前奏可能存在显示错误</n-text>
         </div>

@@ -74,7 +74,12 @@
     <!-- 全屏播放器 -->
     <Teleport to="body">
       <Transition name="up" mode="out-in">
-        <FullPlayer v-if="statusStore.showFullPlayer || statusStore.fullPlayerActive" />
+        <FullPlayer
+          v-if="
+            statusStore.showFullPlayer ||
+            (statusStore.fullPlayerActive && settingStore.fullPlayerCache)
+          "
+        />
       </Transition>
     </Teleport>
   </Provider>

@@ -45,8 +45,8 @@ export const formatSongsList = (data: any[]): SongType[] => {
               name: (item.album || item.al)?.name,
               cover: (item.album || item.al)?.picUrl,
             },
-      alia: isArray(item.alia || item.alias || item.transNames)
-        ? item.alia?.[0] || item.alias?.[0] || item.transNames?.[0]
+      alia: isArray(item.alia || item.alias || item.transNames || item.tns)
+        ? item.alia?.[0] || item.alias?.[0] || item.transNames?.[0] || item.tns?.[0]
         : item.alia,
       dj: item.dj
         ? {

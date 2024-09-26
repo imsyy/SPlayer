@@ -1,6 +1,8 @@
 import { isElectron } from "./helper";
 import { openUpdateApp } from "./modal";
+import { useMusicStore, useDataStore } from "@/stores";
 import player from "./player";
+import { toLikeSong } from "./auth";
 
 // 全局 IPC 事件
 const initIpc = () => {
@@ -22,6 +24,12 @@ const initIpc = () => {
     window.electron.ipcRenderer.on("volumeDown", () => player.setVolume("down"));
     // 播放模式切换
     window.electron.ipcRenderer.on("changeMode", (_, mode) => player.togglePlayMode(mode));
+    // 喜欢歌曲
+    window.electron.ipcRenderer.on("toogleLikeSong", async () => {
+      const dataStore = useDataStore();
+      const musicStore = useMusicStore();
+      await toLikeSong(musicStore.playSong, !dataStore.isLikeSong(musicStore.playSong.id));
+    });
     // 桌面歌词开关
     window.electron.ipcRenderer.on("toogleDesktopLyric", () => player.toggleDesktopLyric());
     window.electron.ipcRenderer.on("closeDesktopLyric", () => player.toggleDesktopLyric());

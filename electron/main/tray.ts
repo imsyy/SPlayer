@@ -19,12 +19,14 @@ type PlayState = "play" | "pause" | "loading";
 let playMode: PlayMode = "repeat";
 let playState: PlayState = "pause";
 let playName: string = "未播放歌曲";
+let likeSong: boolean = false;
 let desktopLyricShow: boolean = false;
 let desktopLyricLock: boolean = false;
 
 export interface MainTray {
   setTitle(title: string): void;
   setPlayMode(mode: PlayMode): void;
+  setLikeState(like: boolean): void;
   setPlayState(state: PlayState): void;
   setPlayName(name: string): void;
   setDesktopLyricShow(show: boolean): void;
@@ -34,11 +36,11 @@ export interface MainTray {
 
 // 托盘图标
 const trayIcon = (filename: string) => {
-  // const rootPath = isDev
-  //   ? join(__dirname, "../../public/icons/tray")
-  //   : join(app.getAppPath(), "../../public/icons/tray");
-  // return nativeImage.createFromPath(join(rootPath, filename));
-  return nativeImage.createFromPath(join(__dirname, `../../public/icons/tray/${filename}`));
+  const rootPath = isDev
+    ? join(__dirname, "../../public/icons/tray")
+    : join(app.getAppPath(), "../../public/icons/tray");
+  return nativeImage.createFromPath(join(rootPath, filename));
+  // return nativeImage.createFromPath(join(__dirname, `../../public/icons/tray/${filename}`));
 };
 
 // 托盘菜单
@@ -60,7 +62,6 @@ const createTrayMenu = (
       id: "name",
       label: playName,
       icon: showIcon("music"),
-      accelerator: "CmdOrCtrl+Alt+S",
       click: () => {
         win.show();
         win.focus();
@@ -71,18 +72,9 @@ const createTrayMenu = (
     },
     {
       id: "toogleLikeSong",
-      label: "添加到我喜欢",
-      icon: showIcon("unlike"),
-      accelerator: "CmdOrCtrl+Alt+L",
+      label: likeSong ? "从我喜欢中移除" : "添加到我喜欢",
+      icon: showIcon(likeSong ? "like" : "unlike"),
       click: () => win.webContents.send("toogleLikeSong"),
-    },
-    {
-      id: "unLike",
-      label: "从我喜欢中移除",
-      icon: showIcon("like"),
-      visible: false,
-      accelerator: "CmdOrCtrl+Alt+L",
-      click: () => win.webContents.send("unlike-song"),
     },
     {
       id: "changeMode",
@@ -123,21 +115,18 @@ const createTrayMenu = (
       id: "playNext",
       label: "上一曲",
       icon: showIcon("prev"),
-      accelerator: "CmdOrCtrl+Left",
       click: () => win.webContents.send("playPrev"),
     },
     {
       id: "playOrPause",
       label: playState === "pause" ? "播放" : "暂停",
       icon: showIcon(playState === "pause" ? "play" : "pause"),
-      accelerator: "CmdOrCtrl+Space",
       click: () => win.webContents.send(playState === "pause" ? "play" : "pause"),
     },
     {
       id: "playNext",
       label: "下一曲",
       icon: showIcon("next"),
-      accelerator: "CmdOrCtrl+Right",
       click: () => win.webContents.send("playNext"),
     },
     {
@@ -176,7 +165,6 @@ const createTrayMenu = (
       id: "exit",
       label: "退出",
       icon: showIcon("power"),
-      accelerator: "CmdOrCtrl+Alt+Q",
       click: () => {
         win.close();
         // app.exit(0);
@@ -252,6 +240,12 @@ class CreateTray implements MainTray {
   // 设置播放模式
   setPlayMode(mode: PlayMode) {
     playMode = mode;
+    // 更新菜单
+    this.initTrayMenu();
+  }
+  // 设置喜欢状态
+  setLikeState(like: boolean) {
+    likeSong = like;
     // 更新菜单
     this.initTrayMenu();
   }

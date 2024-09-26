@@ -1,15 +1,36 @@
 <template>
   <div class="login-qrcode">
     <div class="qr-img">
-      <n-qr-code
+      <div
         v-if="qrImg"
-        :value="qrImg"
         :class="['qr', { success: qrStatusCode === 802, error: qrStatusCode === 800 }]"
-        :size="160"
-        :icon-size="30"
-        icon-src="/icons/favicon.png?assest"
-        error-correction-level="H"
-      />
+      >
+        <n-qr-code
+          :value="qrImg"
+          :size="160"
+          :icon-size="30"
+          icon-src="/icons/favicon.png?assest"
+          error-correction-level="H"
+        />
+        <!-- 待确认 -->
+        <Transition name="fade" mode="out-in">
+          <div v-if="loginName" class="login-data">
+            <n-image
+              :src="loginAvatar.replace(/^http:/, 'https:') + '?param=100y100'"
+              class="cover"
+              preview-disabled
+              @load="coverLoaded"
+            >
+              <template #placeholder>
+                <div class="cover-loading">
+                  <img src="/images/avatar.jpg?assest" class="loading-img" alt="loading-img" />
+                </div>
+              </template>
+            </n-image>
+            <n-text>{{ loginName }}</n-text>
+          </div>
+        </Transition>
+      </div>
       <n-skeleton v-else class="qr" />
     </div>
     <n-text class="tip" depth="3">{{ qrTipText }}</n-text>
@@ -18,6 +39,7 @@
 
 <script setup lang="ts">
 import { qrKey, checkQr } from "@/api/login";
+import { coverLoaded } from "@/utils/helper";
 
 const emit = defineEmits<{
   saveLogin: [any];
@@ -41,11 +63,17 @@ const qrTipText = computed(() => {
   return qrCodeTip[qrStatusCode.value] || "遇到未知状态，请重试";
 });
 
+// 待确认数据
+const loginName = ref<string>("");
+const loginAvatar = ref<string>("");
+
 // 获取二维码
 const getQrData = async () => {
   try {
     pauseCheck();
     qrStatusCode.value = 801;
+    loginName.value = "";
+    loginAvatar.value = "";
     // 获取 key
     const res = await qrKey();
     qrImg.value = `https://music.163.com/login?codekey=${res.data.unikey}`;
@@ -63,7 +91,7 @@ const getQrData = async () => {
 const checkQrStatus = async () => {
   if (!qrUnikey.value) return;
   // 检查状态
-  const { code, cookie } = await checkQr(qrUnikey.value);
+  const { code, cookie, nickname, avatarUrl } = await checkQr(qrUnikey.value);
   switch (code) {
     // 二维码过期
     case 800:
@@ -77,6 +105,8 @@ const checkQrStatus = async () => {
     // 待确认
     case 802:
       qrStatusCode.value = 802;
+      loginName.value = nickname;
+      loginAvatar.value = avatarUrl;
       break;
     // 登录成功
     case 803:
@@ -115,15 +145,43 @@ onBeforeUnmount(pauseCheck);
     border-radius: 12px;
     overflow: hidden;
     .qr {
-      padding: 0;
-      height: 180px;
-      width: 180px;
-      min-height: 180px;
-      min-width: 180px;
-      transition: opacity 0.3s;
-      :deep(canvas) {
-        width: 100% !important;
-        height: 100% !important;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .n-qr-code {
+        padding: 0;
+        height: 180px;
+        width: 180px;
+        min-height: 180px;
+        min-width: 180px;
+        transition:
+          opacity 0.3s,
+          filter 0.3s;
+        :deep(canvas) {
+          width: 100% !important;
+          height: 100% !important;
+        }
+      }
+      .login-data {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 1;
+        .cover {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          overflow: hidden;
+          margin-bottom: 8px;
+        }
+      }
+      &.success {
+        .n-qr-code {
+          opacity: 0.5;
+          filter: blur(4px);
+        }
       }
     }
   }

@@ -80,6 +80,7 @@ interface SettingState {
   routeAnimation: "none" | "fade" | "zoom" | "slide" | "up";
   useRealIP: boolean;
   realIP: string;
+  fullPlayerCache: boolean;
 }
 
 export const useSettingStore = defineStore({
@@ -104,6 +105,7 @@ export const useSettingStore = defineStore({
     showTaskbarProgress: false, // 显示任务栏进度
     checkUpdateOnStart: true, // 启动时检查更新
     preventSleep: false, // 是否禁止休眠
+    fullPlayerCache: false, // 全屏播放器缓存
     // 播放
     songLevel: "exhigh", // 音质
     playDevice: "default", // 播放设备

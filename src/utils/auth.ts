@@ -19,6 +19,7 @@ import { openUserLogin } from "./modal";
 import { debounce } from "lodash-es";
 import { isBeforeSixAM } from "./time";
 import { dailyRecommend } from "@/api/rec";
+import { isElectron } from "./helper";
 
 // 是否登录
 export const isLogin = () => !!getCookie("MUSIC_U");
@@ -182,6 +183,8 @@ export const toLikeSong = debounce(
       }
       // 更新
       dataStore.setUserLikeData("songs", likeList);
+      // ipc
+      if (isElectron) window.electron.ipcRenderer.send("like-status-change", like);
     } else {
       window.$message.error(`${like ? "喜欢" : "取消"}音乐时发生错误`);
       return;

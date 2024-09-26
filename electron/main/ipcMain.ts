@@ -645,6 +645,11 @@ const initTrayIpcMain = (
     tray?.setPlayMode(mode);
   });
 
+  // 喜欢状态切换
+  ipcMain.on("like-status-change", (_, likeStatus: boolean) => {
+    tray?.setLikeState(likeStatus);
+  });
+
   // 桌面歌词开关
   ipcMain.on("change-desktop-lyric", (_, val: boolean) => {
     tray?.setDesktopLyricShow(val);
