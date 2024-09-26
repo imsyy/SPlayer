@@ -1,5 +1,6 @@
 import { checkPlatform } from "@/utils/helper";
 import { getCookie, isLogin } from "@/utils/auth";
+import { siteSettings } from "@/stores";
 import axios from "axios";
 
 // 全局地址
@@ -16,6 +17,7 @@ axios.defaults.withCredentials = true;
 // 请求拦截
 axios.interceptors.request.use(
   (request) => {
+    const settings = siteSettings();
     if (!request.params) request.params = {};
     // 附加 cookie
     if (!request.noCookie && (isLogin() || getCookie("MUSIC_U") !== null)) {
@@ -26,7 +28,9 @@ axios.interceptors.request.use(
       request.params.noCookie = true;
     }
     // 附加 realIP
-    if (!checkPlatform.electron()) request.params.realIP = "116.25.146.177";
+    if (settings.useRealIP) {
+      request.params.realIP = settings.realIP || "116.25.146.177";
+    }
     // 附加代理
     const proxy = JSON.parse(localStorage.getItem("siteSettings")).proxyProtocol;
     if (proxy !== "off") {
