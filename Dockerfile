@@ -1,5 +1,5 @@
 # build
-FROM node:18-alpine as builder
+FROM node:20-alpine AS builder
 
 RUN apk update && apk add --no-cache git
 
@@ -11,12 +11,13 @@ RUN npm install
 
 COPY . .
 
+# add .env.example to .env
 RUN [ ! -e ".env" ] && cp .env.example .env || true
 
 RUN npm run build
 
 # nginx
-FROM nginx:1.25.3-alpine-slim as app
+FROM nginx:1.27-alpine-slim AS app
 
 COPY --from=builder /app/out/renderer /usr/share/nginx/html
 

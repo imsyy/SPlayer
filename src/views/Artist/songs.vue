@@ -1,94 +1,74 @@
 <template>
   <div class="artist-songs">
-    <Transition name="fade" mode="out-in">
-      <div v-if="artistAllSongs !== 'empty'" class="list">
-        <!-- 列表 -->
-        <SongList :data="artistAllSongs" :showPagination="false" />
-        <!-- 分页 -->
-        <Pagination
-          v-if="artistAllSongs?.length"
-          :totalCount="totalCount"
-          :pageNumber="pageNumber"
-          @pageNumberChange="pageNumberChange"
-        />
-      </div>
-      <n-empty
-        v-else
-        description="当前歌手暂无歌曲"
-        class="tip"
-        style="margin-top: 60px"
-        size="large"
-      />
-    </Transition>
+    <SongList
+      :data="songData"
+      :loading="loading"
+      loadMore
+      @reachBottom="reachBottom"
+      @scroll="emit('scroll', $event)"
+    />
   </div>
 </template>
 
-<script setup>
-import { useRouter } from "vue-router";
-import { siteSettings } from "@/stores";
-import { getSongDetail } from "@/api/song";
-import { getArtistAllSongs } from "@/api/artist";
-import formatData from "@/utils/formatData";
+<script setup lang="ts">
+import type { SongType } from "@/types/main";
+import { artistAllSongs } from "@/api/artist";
+import { songDetail } from "@/api/song";
+import { formatSongsList } from "@/utils/format";
+import { debounce } from "lodash-es";
+import player from "@/utils/player";
 
-const router = useRouter();
-const settings = siteSettings();
+const props = defineProps<{
+  id: number;
+}>();
 
-// 歌手数据
-const artistId = ref(router.currentRoute.value.query.id);
-const artistAllSongs = ref(null);
-const totalCount = ref(0);
-const pageNumber = ref(Number(router.currentRoute.value.query?.page) || 1);
+const emit = defineEmits<{
+  scroll: [e: Event];
+}>();
+
+// 歌曲数据
+const loading = ref<boolean>(true);
+const hasMore = ref<boolean>(true);
+const songData = ref<SongType[]>([]);
+const songOffset = ref<number>(0);
 
 // 获取歌手全部歌曲
-const getArtistAllSongsData = async (id, limit = settings.loadSize, offset = 0) => {
+const getArtistAllSongs = async () => {
   try {
-    const result = await getArtistAllSongs(id, limit, offset);
-    // 数据总数
-    totalCount.value = result.total;
-    if (totalCount.value === 0) return (artistAllSongs.value = "empty");
+    if (!props.id) return;
+    loading.value = true;
+    // 获取数据
+    const result = await artistAllSongs(props.id, 100, songOffset.value);
+    // 是否还有
+    hasMore.value = result?.more;
     // 处理数据
-    const ids = result.songs.map((song) => song.id).join(",");
-    const songsDetail = await getSongDetail(ids);
-    artistAllSongs.value = formatData(songsDetail.songs, "song");
+    const ids: number[] = result?.songs.map((song: any) => song.id as number);
+    const songs = await songDetail(ids);
+    const songDetailData = formatSongsList(songs?.songs);
+    songData.value = songData.value.concat(songDetailData);
+    loading.value = false;
   } catch (error) {
-    console.error("获取歌手全部歌曲失败：", error);
+    console.error("Error getting artist all songs:", error);
   }
 };
 
-// 页数变化
-const pageNumberChange = (page) => {
-  router.push({
-    path: "/artist/songs",
-    query: {
-      id: artistId.value,
-      page: page,
-    },
-  });
+// 播放全部歌曲
+const playAllSongs = debounce(() => {
+  if (!songData.value || !songData.value?.length) return;
+  player.updatePlayList(songData.value);
+}, 300);
+
+// 列表触底
+const reachBottom = () => {
+  if (hasMore.value) {
+    songOffset.value += 100;
+    getArtistAllSongs();
+  } else {
+    loading.value = false;
+  }
 };
 
-// 监听路由变化
-watch(
-  () => router.currentRoute.value,
-  async (val) => {
-    if (val.name === "ar-songs") {
-      // 更改参数
-      artistId.value = val.query.id;
-      pageNumber.value = Number(val.query?.page) || 1;
-      // 调用接口
-      await getArtistAllSongsData(
-        artistId.value,
-        settings.loadSize,
-        (pageNumber.value - 1) * settings.loadSize,
-      );
-    }
-  },
-);
+defineExpose({ playAllSongs });
 
-onBeforeMount(async () => {
-  await getArtistAllSongsData(
-    artistId.value,
-    settings.loadSize,
-    (pageNumber.value - 1) * settings.loadSize,
-  );
-});
+onMounted(getArtistAllSongs);
 </script>

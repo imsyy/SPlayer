@@ -1,105 +1,66 @@
-<!-- 搜索 - 专辑 -->
 <template>
-  <div class="search-albums">
+  <div class="search-type">
     <Transition name="fade" mode="out-in">
-      <div v-if="searchData !== 'empty'" class="list">
-        <!-- 列表 -->
-        <MainCover :data="searchData" type="album" />
-        <!-- 分页 -->
-        <Pagination
-          v-if="searchData?.length"
-          :totalCount="totalCount"
-          :pageNumber="pageNumber"
-          @pageNumberChange="pageNumberChange"
-        />
-      </div>
+      <CoverList
+        v-if="searchCount > 0"
+        :data="searchResultData"
+        :loading="loading"
+        :loadMore="hasMore"
+        type="album"
+        @loadMore="loadMore"
+      />
       <n-empty
         v-else
-        :description="`很抱歉，未能找到与 ${searchKeywords} 相关的任何专辑`"
+        :description="`很抱歉，未能找到与 ${keyword} 相关的任何专辑`"
         style="margin-top: 60px"
         size="large"
       >
         <template #icon>
-          <n-icon>
-            <SvgIcon icon="search-off" />
-          </n-icon>
+          <SvgIcon name="SearchOff" />
         </template>
       </n-empty>
     </Transition>
   </div>
 </template>
 
-<script setup>
-import { getSearchRes } from "@/api/search";
-import { useRouter } from "vue-router";
-import { siteSettings } from "@/stores";
-import formatData from "@/utils/formatData";
+<script setup lang="ts">
+import type { CoverType } from "@/types/main";
+import { searchResult } from "@/api/search";
+import { formatCoverList } from "@/utils/format";
 
-const router = useRouter();
-const settings = siteSettings();
+const props = defineProps<{
+  keyword: string;
+}>();
 
 // 搜索数据
-const searchData = ref([]);
-const totalCount = ref(0);
-const searchKeywords = ref(router.currentRoute.value.query?.keywords || "");
-const pageNumber = ref(Number(router.currentRoute.value.query?.page) || 1);
+const hasMore = ref<boolean>(true);
+const loading = ref<boolean>(true);
+const searchOffset = ref<number>(0);
+const searchCount = ref<number>(1);
+const searchResultData = ref<CoverType[]>([]);
 
-// 获取搜索数据
-const getSearchResData = async (
-  keywords = searchKeywords.value,
-  limit = settings.loadSize,
-  offset = 0,
-  type = 10,
-) => {
-  try {
-    searchData.value = [];
-    const res = await getSearchRes(keywords, limit, offset, type);
-    console.log(res);
-    // 数据总数
-    totalCount.value = res.result.albumCount;
-    if (res.result.albumCount === 0) return (searchData.value = "empty");
-    // 处理数据
-    searchData.value = formatData(res.result.albums, "album");
-  } catch (error) {
-    console.error("搜索出现错误：", error);
-    $message.error("搜索出现错误");
-  }
+// 获取搜索结果
+const getSearchResult = async () => {
+  // 获取数据
+  loading.value = true;
+  const result = await searchResult(props.keyword, 50, searchOffset.value, 10);
+  // 是否还有
+  hasMore.value = result.result?.hasMore || result.result?.albumCount > searchOffset.value + 50;
+  // 搜索总数
+  searchCount.value = result.result?.albumCount;
+  // 处理数据
+  const albumData = formatCoverList(result.result.albums);
+  searchResultData.value = searchResultData.value?.concat(albumData);
+  loading.value = false;
 };
 
-// 页数变化
-const pageNumberChange = (page) => {
-  router.push({
-    path: "/search/albums",
-    query: {
-      keywords: searchKeywords.value,
-      page: page,
-    },
-  });
+// 加载更多
+const loadMore = () => {
+  searchOffset.value += 50;
+  getSearchResult();
 };
 
-// 监听路由变化
-watch(
-  () => router.currentRoute.value,
-  (val) => {
-    if (val.name == "sea-albums") {
-      // 更改参数
-      pageNumber.value = Number(val.query?.page) || 1;
-      searchKeywords.value = val.query?.keywords || "";
-      // 调用接口
-      getSearchResData(
-        searchKeywords.value,
-        settings.loadSize,
-        (pageNumber.value - 1) * settings.loadSize,
-      );
-    }
-  },
-);
-
-onBeforeMount(() => {
-  getSearchResData(
-    searchKeywords.value,
-    settings.loadSize,
-    (pageNumber.value - 1) * settings.loadSize,
-  );
+onMounted(() => {
+  getSearchResult();
 });
 </script>

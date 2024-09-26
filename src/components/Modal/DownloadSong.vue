@@ -1,255 +1,217 @@
-<!-- 歌曲下载 -->
 <template>
-  <n-modal
-    v-model:show="downloadSongShow"
-    :bordered="false"
-    :close-on-esc="false"
-    :auto-focus="false"
-    :mask-closable="!downloadStatus"
-    :on-after-leave="closeDownloadModal"
-    class="download-song"
-    preset="card"
-    title="歌曲下载"
-  >
-    <Transition name="fade" mode="out-in">
-      <div v-if="songData">
-        <n-alert v-if="songData.pc" :show-icon="false" class="tip">
-          当前为云盘歌曲，下载的文件均为最高音质
-        </n-alert>
-        <n-radio-group v-model:value="downloadChoose" class="download-group" name="downloadGroup">
-          <n-flex vertical>
-            <n-radio
-              v-for="item in downloadLevel"
-              :key="item"
-              :value="item.value"
-              :disabled="item.disabled"
-            >
-              <div class="song-data">
-                <n-text class="name" :depth="item.disabled ? 3 : 0">{{ item.label }}</n-text>
-                <n-text v-if="item.size" depth="3" class="size"> {{ item.size }} MB </n-text>
-                <n-text v-else-if="!item.disabled" depth="3" class="size">
-                  文件大小获取失败
-                </n-text>
-              </div>
-            </n-radio>
-          </n-flex>
-        </n-radio-group>
-      </div>
-      <n-text v-else>歌曲信息获取中</n-text>
-    </Transition>
-    <template #footer>
-      <n-flex justify="end">
-        <n-button @click="closeDownloadModal"> 关闭 </n-button>
-        <n-button
-          :disabled="!downloadChoose"
-          :loading="downloadStatus"
-          :focusable="false"
-          type="primary"
-          @click="toSongDownload(songData, lyricData, downloadChoose)"
-        >
-          下载
-        </n-button>
-      </n-flex>
-    </template>
-  </n-modal>
+  <div class="download-song">
+    <n-collapse-transition :show="!songData">
+      <n-text class="loading"> 正在加载歌曲信息... </n-text>
+    </n-collapse-transition>
+    <n-collapse-transition :show="!!songData">
+      <n-alert
+        :type="isCloudSong ? 'info' : 'warning'"
+        :title="isCloudSong ? undefined : '请知悉'"
+        closable
+      >
+        {{
+          isCloudSong
+            ? "当前为云盘歌曲，下载的文件均为上传时的源文件"
+            : "本软件仅支持从官方途径合法合规的下载歌曲，并用于学习研究用途。本功能将严格按照相应账户的权限来提供基础的下载功能"
+        }}
+      </n-alert>
+      <SongDataCard :data="songData" />
+      <n-collapse :default-expanded-names="['path']" arrow-placement="right">
+        <n-collapse-item title="音质选择" name="level">
+          <!-- 音质选择 -->
+          <n-radio-group v-model:value="songLevelChoosed" name="level">
+            <n-flex>
+              <n-radio v-for="(item, index) in songLevelRadioData" :key="index" :value="item.value">
+                <n-flex>
+                  <n-text class="name">{{ item.name }}</n-text>
+                  <!-- 文件预估大小 -->
+                  <n-text depth="3">{{ formatFileSize(item.size || 0) }}</n-text>
+                </n-flex>
+              </n-radio>
+            </n-flex>
+          </n-radio-group>
+        </n-collapse-item>
+        <n-collapse-item v-if="isElectron" title="下载路径" name="path">
+          <n-input-group>
+            <n-input :value="downloadPath || '未配置下载目录'" disabled>
+              <template #prefix>
+                <SvgIcon name="Folder" />
+              </template>
+            </n-input>
+            <n-button type="primary" strong secondary @click="changeDownloadPath">
+              <template #icon>
+                <SvgIcon name="Folder" />
+              </template>
+            </n-button>
+            <n-button type="primary" strong secondary @click="openSetting('local')">
+              <template #icon>
+                <SvgIcon name="Settings" />
+              </template>
+              更多设置
+            </n-button>
+          </n-input-group>
+        </n-collapse-item>
+      </n-collapse>
+    </n-collapse-transition>
+    <n-flex class="menu" justify="end">
+      <n-button strong secondary @click="emit('close')"> 取消 </n-button>
+      <n-button :loading="loading" type="primary" @click="download"> 下载歌曲 </n-button>
+    </n-flex>
+  </div>
 </template>
 
-<script setup>
-import { storeToRefs } from "pinia";
-import { isLogin } from "@/utils/auth";
-import { useRouter } from "vue-router";
-import { siteData, siteSettings } from "@/stores";
-import { getSongDetail, getSongDownload, getSongLyric } from "@/api/song";
-import { downloadFile, checkPlatform } from "@/utils/helper";
-import formatData from "@/utils/formatData";
+<script setup lang="ts">
+import type { SongLevelType, SongLevelDataType, SongType } from "@/types/main";
+import { songDetail, songQuality, songDownloadUrl, songLyric } from "@/api/song";
+import { useSettingStore } from "@/stores";
+import { songLevelData, getLevelsUpTo } from "@/utils/meta";
+import { formatSongsList } from "@/utils/format";
+import { cloneDeep, reduce } from "lodash-es";
+import { formatFileSize, isElectron } from "@/utils/helper";
+import { openSetting } from "@/utils/modal";
+import { saveAs } from "file-saver";
+import player from "@/utils/player";
 
-const router = useRouter();
-const data = siteData();
-const settings = siteSettings();
-const { userData } = storeToRefs(data);
-const { downloadPath, downloadMeta, downloadCover, downloadLyrics } = storeToRefs(settings);
+const props = defineProps<{ id: number }>();
+const emit = defineEmits<{ close: [] }>();
 
-// 歌曲下载数据
-const songId = ref(null);
-const songData = ref(null);
-const lyricData = ref(null);
-const downloadStatus = ref(false);
-const downloadSongShow = ref(false);
-const downloadChoose = ref(null);
-const downloadLevel = ref(null);
+const settingStore = useSettingStore();
+
+// 歌曲数据
+const songData = ref<SongType | null>(null);
+
+// 下载数据
+const loading = ref<boolean>(false);
+const downloadPath = ref<string>(settingStore.downloadPath);
+const songLevelChoosed = ref<SongLevelType>("h");
+const songLevelRadioData = ref<SongLevelDataType[]>([]);
+
+// 是否为云盘歌曲
+const isCloudSong = computed(() => songData.value && songData.value?.pc);
 
 // 获取歌曲详情
-const getMusicDetailData = async (id) => {
-  try {
-    const songResult = await getSongDetail(id);
-    const lyricResult = await getSongLyric(id);
-    // 获取歌曲详情
-    songData.value = formatData(songResult?.songs?.[0], "song")[0];
-    lyricData.value = lyricResult?.lrc?.lyric || null;
-    // 生成音质列表
-    generateLists(songResult);
-  } catch (error) {
-    closeDownloadModal();
-    console.error("歌曲信息获取失败：", error);
-  }
+const getSongDetail = async (): Promise<any> => {
+  if (!props.id) return;
+  const result = await songDetail(props.id);
+  songData.value = formatSongsList(result.songs)[0];
+  // 获取音质信息
+  const quality = await songQuality(props.id);
+  console.log(quality);
+  // 获取下载信息
+  const level = getLevelsUpTo(result?.privileges?.[0]?.downloadMaxBrLevel);
+  if (!level) return window.$message.error("获取下载信息失败，请重试");
+  songLevelRadioData.value = getSongLevelsData(level, quality?.data);
 };
 
-// 歌曲下载
-const toSongDownload = async (song, lyric, br) => {
+// 获取音质列表
+const getSongLevelsData = (
+  level: Partial<typeof songLevelData>,
+  quality: Record<string, any>,
+): SongLevelDataType[] => {
+  if (!level || !quality) return [];
+  return reduce(
+    level,
+    (result, value, key) => {
+      if (quality[key] && value) {
+        result.push({
+          name: value.name,
+          level: value.level,
+          value: key as SongLevelType,
+          br: quality[key]?.br,
+          size: quality[key]?.size,
+        });
+      }
+      return result;
+    },
+    [] as SongLevelDataType[],
+  );
+};
+
+// 更改下载路径
+const changeDownloadPath = async () => {
+  const path = await window.electron.ipcRenderer.invoke("choose-path");
+  if (path) downloadPath.value = path;
+};
+
+// 下载歌曲
+const download = async () => {
+  if (!songData.value) return;
+  loading.value = true;
+  downloadPath.value = settingStore.downloadPath;
   try {
-    console.log(song, lyric, br);
-    downloadStatus.value = true;
-    // 获取下载数据
-    const result = await getSongDownload(song?.id, br);
-    // 开始下载
-    if (!downloadPath.value && checkPlatform.electron()) {
-      $notification["warning"]({
-        content: "缺少配置",
-        meta: "请前往设置页配置默认下载目录",
-        duration: 3000,
+    // 获取下载链接
+    const result = await songDownloadUrl(props.id, songLevelChoosed.value);
+    if (result.code !== 200 || !result?.data?.url) {
+      window.$message.error(result.message || "获取下载链接失败，请重试");
+      return;
+    }
+    // 校验下载路径
+    if (downloadPath.value === "" && isElectron) {
+      window.$notification.warning({
+        title: "缺少配置",
+        description: "请前往设置页配置默认下载目录",
+        duration: 5000,
       });
+      return;
     }
-    if (!result.data?.url) {
-      downloadStatus.value = false;
-      return $message.error("下载失败，请重试");
-    }
-    // 获取下载结果
-    const isDownloaded = await downloadFile(result.data, song, lyric, {
-      path: downloadPath.value,
-      downloadMeta: downloadMeta.value,
-      downloadCover: downloadCover.value,
-      downloadLyrics: downloadLyrics.value,
-    });
-    console.log(lyric);
-    if (isDownloaded) {
-      $message.success("下载完成");
-      closeDownloadModal();
+    // 下载相关数据
+    const { url, type = "mp3" } = result.data;
+    const songName = player.getPlayerInfo(songData.value) || "未知曲目";
+    // 区分设备下载
+    if (isElectron) {
+      await electronDownload(url, songName, type.toLowerCase());
     } else {
-      downloadStatus.value = false;
-      $message.error("下载失败，请重试");
+      saveAs(result.data.url, `${songName}.${result.data?.type || "mp3"}`);
     }
+    emit("close");
+    window.$message.success("歌曲下载成功");
   } catch (error) {
-    console.error("歌曲下载出错：", error);
-    $message.error("歌曲下载失败，请重试");
+    console.error("Error downloading song:", error);
+    window.$message.error("下载歌曲出现错误，请重试");
+  } finally {
+    loading.value = false;
   }
 };
 
-// 生成可下载列表
-const generateLists = (data) => {
-  const br = data.privileges[0].downloadMaxbr;
-  downloadLevel.value = [
-    {
-      value: "128000",
-      label: "标准音质",
-      disabled: br >= 128000 ? false : true,
-      size: getSongSize(data, "l"),
-    },
-    {
-      value: "192000",
-      label: "较高音质",
-      disabled: br >= 192000 ? false : true,
-      size: getSongSize(data, "m"),
-    },
-    {
-      value: "320000",
-      label: "极高音质",
-      disabled: br >= 320000 ? false : true,
-      size: getSongSize(data, "h"),
-    },
-    {
-      value: "420000",
-      label: "无损音质",
-      disabled: [128000, 192000, 320000].includes(parseInt(br)),
-      size: getSongSize(data, "sq"),
-    },
-    {
-      value: "999000",
-      label: "Hi-Res",
-      disabled: br >= 999000 ? false : true,
-      size: getSongSize(data, "hr"),
-    },
-  ];
-  console.log(downloadLevel.value);
-};
-
-// 获取下载大小
-const getSongSize = (data, type) => {
-  let fileSize = 0;
-  // 转换文件大小
-  const convertSize = (num) => {
-    if (!num) return 0;
-    return (num / (1024 * 1024)).toFixed(2);
+// 客户端下载
+const electronDownload = async (url: string, songName: string, fileType: string) => {
+  const { downloadMeta, downloadCover, downloadLyric, saveMetaFile } = settingStore;
+  // 获取歌词
+  let lyric = "";
+  if (downloadLyric) {
+    const lyricResult = await songLyric(props.id);
+    lyric = lyricResult?.lrc?.lyric || "";
+  }
+  // 下载歌曲
+  const config = {
+    fileName: songName,
+    fileType,
+    path: downloadPath.value,
+    downloadMeta,
+    downloadCover,
+    downloadLyric,
+    saveMetaFile,
+    songData: cloneDeep(songData.value),
+    lyric,
   };
-  if (type === "l") {
-    fileSize = convertSize(data.songs[0]?.l?.size);
-  } else if (type === "m") {
-    fileSize = convertSize(data.songs[0]?.m?.size);
-  } else if (type === "h") {
-    fileSize = convertSize(data.songs[0]?.h?.size);
-  } else if (type === "sq") {
-    fileSize = convertSize(data.songs[0]?.sq?.size);
-  } else if (type === "hr") {
-    fileSize = convertSize(data.songs[0]?.hr?.size);
-  }
-  return fileSize;
+  // 开始下载
+  const isSuccess = await window.electron.ipcRenderer.invoke("download-file", url, config);
+  if (!isSuccess) throw new Error("下载歌曲出现错误，请重试");
 };
 
-// 开启歌曲下载
-const openDownloadModal = (data) => {
-  console.log(data);
-  // 执行下载
-  const toDownload = () => {
-    songId.value = data.id.toString();
-    downloadSongShow.value = true;
-    getMusicDetailData(songId.value);
-  };
-  if (isLogin()) {
-    // 普通歌曲或为云盘歌曲
-    if (
-      router.currentRoute.value.name === "cloud" ||
-      data?.fee === 0 ||
-      data?.pc ||
-      userData.value.detail?.profile?.vipType !== 0
-    ) {
-      return toDownload();
-    }
-    // 权限不足
-    if (data?.fee !== 0 && userData.value.detail?.profile?.vipType !== 11 && !data?.pc) {
-      return $message.warning("账号会员等级不足，请提升权限");
-    }
-    $message.warning("账号会员等级不足，请提升权限");
-  } else {
-    $message.warning("请登录后使用");
-  }
-};
-
-// 关闭歌曲下载
-const closeDownloadModal = () => {
-  songId.value = null;
-  songData.value = null;
-  downloadStatus.value = false;
-  downloadSongShow.value = false;
-  downloadChoose.value = null;
-};
-
-// 暴露方法
-defineExpose({
-  openDownloadModal,
-});
+onMounted(() => getSongDetail());
 </script>
 
 <style lang="scss" scoped>
 .download-song {
-  .tip {
-    border-radius: 8px;
+  .n-alert {
     margin-bottom: 20px;
   }
-  .download-group {
-    .song-data {
-      .size {
-        font-size: 13px;
-      }
-    }
+  .n-collapse {
+    margin-top: 20px;
+  }
+  .menu {
+    margin-top: 20px;
   }
 }
 </style>

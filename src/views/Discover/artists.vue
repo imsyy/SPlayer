@@ -1,16 +1,15 @@
-<!-- 发现 - 歌手 -->
 <template>
-  <div class="dsc-artists">
+  <div class="discover-artists">
     <div class="menu">
       <!-- 字母分类 -->
       <n-flex class="initial">
         <n-tag
-          v-for="item in artistInitials"
-          :key="item"
+          v-for="(item, index) in artistInitials"
+          :key="index"
           :bordered="false"
-          :class="['tag', { choose: item.key == artistInitialChoose }]"
+          :class="{ choose: item.key == artistInitialChoose }"
           round
-          @click="artistInitialChange(item.key)"
+          @click="artistQueryChange(item.key, artistTypeNamesChoose)"
         >
           {{ item.value }}
         </n-tag>
@@ -20,44 +19,25 @@
         <n-tag
           v-for="(item, index) in artistTypeNames"
           :key="item"
-          :class="[
-            'tag',
-            item.length > 2 ? 'hidden' : 'show',
-            { choose: index == artistTypeNamesChoose },
-          ]"
+          :class="{ choose: index == artistTypeNamesChoose }"
           :bordered="false"
           round
-          @click="artistTypeChange(index)"
+          @click="artistQueryChange(artistInitialChoose, index)"
         >
           {{ item }}
         </n-tag>
       </n-flex>
     </div>
-    <MainCover :data="artistsData" columns="3 s:4 m:5 l:6" type="artist" />
-    <n-flex v-if="arHasMore" justify="center">
-      <n-button
-        :loading="arIsLoading"
-        class="load-more"
-        size="large"
-        strong
-        secondary
-        round
-        @click="arLoadMore"
-      >
-        加载更多
-      </n-button>
-    </n-flex>
+    <ArtistList :data="artistsData" :loading="loading" :loadMore="hasMore" @loadMore="loadMore" />
   </div>
 </template>
 
-<script setup>
-import { useRouter } from "vue-router";
-import { siteSettings } from "@/stores";
-import { getArtistList } from "@/api/artist";
-import formatData from "@/utils/formatData";
+<script setup lang="ts">
+import type { ArtistType } from "@/types/main";
+import { artistTypeList } from "@/api/artist";
+import { formatArtistsList } from "@/utils/format";
 
 const router = useRouter();
-const settings = siteSettings();
 
 // 歌手标签数据
 const artistInitials = [
@@ -68,154 +48,92 @@ const artistInitials = [
   })),
   { key: 0, value: "#" },
 ];
-const artistInitialChoose = ref(router.currentRoute.value.query?.initial || artistInitials[0].key);
+const artistInitialChoose = ref<number | string>(
+  (router.currentRoute.value.query?.initial as string) || artistInitials[0].key,
+);
 
 // 歌手分类数据
 const artistTypeNames = [
   "全部",
-  ...["华语", "欧美", "日本", "韩国"].flatMap((region) => [
-    `${region}`,
-    `${region}男`,
-    `${region}女`,
-    `${region}组合`,
+  ...["华语", "欧美", "日本", "韩国"].flatMap((type) => [
+    `${type}`,
+    `${type}男`,
+    `${type}女`,
+    `${type}组合`,
   ]),
   "其他",
 ];
 const artistType = [-1, -1, 1, 2, 3, -1, 1, 2, 3, -1, 1, 2, 3, -1, 1, 2, 3, -1];
 const artistArea = [-1, 7, 7, 7, 7, 96, 96, 96, 96, 8, 8, 8, 8, 16, 16, 16, 16, 0];
-const artistTypeNamesChoose = ref(Number(router.currentRoute.value.query?.type) || 0);
+const artistTypeNamesChoose = ref<number>(
+  Number(router.currentRoute.value.query?.type as string) || 0,
+);
 
 // 歌手数据
-const artistsData = ref([]);
-const artistsOffset = ref(0);
-const arHasMore = ref(false);
-const arIsLoading = ref(false);
+const hasMore = ref<boolean>(true);
+const loading = ref<boolean>(true);
+const artistsOffset = ref<number>(0);
+const artistsData = ref<ArtistType[]>([]);
 
 // 获取歌手数据
-const getArtistListData = (
-  type = artistType[artistTypeNamesChoose.value] || -1,
-  area = artistArea[artistTypeNamesChoose.value] || -1,
-  offset = artistsOffset.value,
-  initial = artistInitialChoose.value,
-  limit = settings.loadSize,
-) => {
-  getArtistList(type, area, offset, initial, limit).then((res) => {
-    // 是否还有更多
-    res.more ? (arHasMore.value = true) : (arHasMore.value = false);
-    arIsLoading.value = false;
-    // 获取数据
-    artistsData.value.push(...formatData(res.artists, "artist"));
-  });
+const getArtistListData = async () => {
+  // 获取数据
+  loading.value = true;
+  const result = await artistTypeList(
+    // 类型
+    artistType[artistTypeNamesChoose.value] || -1,
+    // 地区
+    artistArea[artistTypeNamesChoose.value] || -1,
+    // 首字母索引
+    artistInitialChoose.value,
+    artistsOffset.value,
+    50,
+  );
+  // 是否还有
+  hasMore.value = result?.more;
+  // 处理数据
+  const arData = formatArtistsList(result.artists);
+  artistsData.value = artistsData.value?.concat(arData);
+  loading.value = false;
 };
 
-// 歌手标签变化
-const artistInitialChange = (key) => {
+// 参数变化
+const artistQueryChange = (initial: number | string, type: number) => {
+  artistsOffset.value = 0;
   router.push({
-    path: "/discover/artists",
-    query: {
-      type: artistTypeNamesChoose.value,
-      initial: key,
-      page: 1,
-    },
-  });
-};
-
-// 歌手分类变化
-const artistTypeChange = (key) => {
-  router.push({
-    path: "/discover/artists",
-    query: {
-      type: key,
-      initial: artistInitialChoose.value,
-      page: 1,
-    },
+    name: "discover-artists",
+    query: { initial, type },
   });
 };
 
 // 加载更多
-const arLoadMore = () => {
-  arIsLoading.value = true;
-  artistsOffset.value += settings.loadSize;
+const loadMore = () => {
+  artistsOffset.value += 50;
   getArtistListData();
 };
 
-// 监听路由参数变化
-watch(
-  () => router.currentRoute.value,
-  (val) => {
-    if (val.name === "dsc-artists") {
-      artistsData.value = [];
-      artistsOffset.value = 0;
-      artistTypeNamesChoose.value = Number(val.query?.type) || 0;
-      artistInitialChoose.value = val.query?.initial || artistInitials[0].key;
-      getArtistListData(
-        artistType[artistTypeNamesChoose.value],
-        artistArea[artistTypeNamesChoose.value],
-        artistsOffset.value,
-        artistInitialChoose.value,
-      );
-    }
-  },
-);
-
-onMounted(() => {
+// 参数变化
+onBeforeRouteUpdate((to) => {
+  if (to.name !== "discover-artists") return;
+  // 更新参数
+  artistInitialChoose.value = (to.query?.initial as string) || artistInitials[0].key;
+  artistTypeNamesChoose.value = Number(to.query?.type as string) || 0;
+  // 获取歌单
+  loading.value = true;
+  artistsData.value = [];
   getArtistListData();
 });
+
+onMounted(getArtistListData);
 </script>
 
 <style lang="scss" scoped>
-.dsc-artists {
+.discover-artists {
   .menu {
-    margin-bottom: 16px;
-    @media (max-width: 768px) {
-      .initial {
-        display: none !important;
-      }
+    margin-top: 20px;
+    .initial {
+      margin-bottom: 20px;
     }
-    @media (max-width: 480px) {
-      .category {
-        gap: initial !important;
-        .hidden {
-          display: none !important;
-        }
-        .show {
-          margin-right: 12px;
-          margin-bottom: 8px;
-        }
-      }
-    }
-    .tag {
-      font-size: 13px;
-      padding: 0 16px;
-      line-height: 0;
-      cursor: pointer;
-      transition:
-        transform 0.3s,
-        background-color 0.3s,
-        color 0.3s;
-      &:hover {
-        background-color: var(--main-second-color);
-        color: var(--main-color);
-      }
-      &:active {
-        transform: scale(0.95);
-      }
-      &.choose {
-        background-color: var(--main-second-color);
-        color: var(--main-color);
-      }
-    }
-    .category {
-      margin-top: 18px;
-    }
-  }
-  .artistlists {
-    @media (max-width: 480px) {
-      padding-top: 12px;
-    }
-  }
-  .load-more {
-    margin: 30px 0 20px 0;
   }
 }
 </style>

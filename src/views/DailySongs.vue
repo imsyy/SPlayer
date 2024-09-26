@@ -5,100 +5,82 @@
       <n-text class="name">每日推荐</n-text>
       <div class="tip">
         <Transition name="fade" mode="out-in">
-          <n-text :key="showTime" depth="3">
+          <n-text :key="updatedTime" depth="3">
             根据你的音乐口味 ·
-            {{ showTime && updatedTime ? "更新于 " + updatedTime : "每日 6:00 更新" }}
+            {{ updatedTime ? "更新于 " + updatedTime : "每日 6:00 更新" }}
           </n-text>
         </Transition>
       </div>
-      <!-- 操作 -->
-      <n-flex class="control">
+      <n-flex class="menu">
         <n-button
-          :disabled="dailySongsData.data?.length === 0"
           :focusable="false"
+          type="primary"
           size="large"
-          tag="div"
-          round
           strong
           secondary
-          @click="playAllSongs(dailySongsData.data)"
+          round
+          v-debounce="() => player.updatePlayList(musicStore.dailySongsData.list)"
         >
           <template #icon>
-            <n-icon>
-              <SvgIcon icon="play-arrow-rounded" />
-            </n-icon>
+            <SvgIcon name="Play" />
           </template>
           播放全部
         </n-button>
-        <n-dropdown :options="moreOptions" trigger="hover" placement="bottom-start">
-          <n-button size="large" tag="div" circle strong secondary>
+        <!-- 更多 -->
+        <n-dropdown :options="moreOptions" trigger="click" placement="bottom-start">
+          <n-button :focusable="false" size="large" class="more" circle strong secondary>
             <template #icon>
-              <n-icon>
-                <SvgIcon icon="format-list-bulleted" />
-              </n-icon>
+              <SvgIcon name="List" />
             </template>
           </n-button>
         </n-dropdown>
       </n-flex>
     </div>
     <!-- 列表 -->
-    <SongList :data="dailySongsData.data" />
+    <SongList :data="musicStore.dailySongsData.list" :loading="true" disableVirtualList />
   </div>
 </template>
 
-<script setup>
-import { NIcon } from "naive-ui";
-import { storeToRefs } from "pinia";
-import { siteData } from "@/stores";
-import { playAllSongs } from "@/utils/Player";
-import SvgIcon from "@/components/Global/SvgIcon";
+<script setup lang="ts">
+import type { DropdownOption } from "naive-ui";
+import { useMusicStore } from "@/stores";
+import { updateDailySongsData } from "@/utils/auth";
+import { formatTimestamp } from "@/utils/time";
+import { renderIcon } from "@/utils/helper";
+import { openBatchList } from "@/utils/modal";
+import player from "@/utils/player";
 
-const data = siteData();
-const { dailySongsData } = storeToRefs(data);
+const musicStore = useMusicStore();
 
-const showTime = ref(false);
-const showTimeOut = ref(null);
+// 更新日期
+const updatedTime = computed(() =>
+  formatTimestamp(musicStore.dailySongsData.timestamp || 0, "MM-DD HH:mm"),
+);
 
-// 图标渲染
-const renderIcon = (icon) => {
-  return () => h(NIcon, null, { default: () => h(SvgIcon, { icon }, null) });
-};
-
-// 获取更新时间戳
-const updatedTime = computed(() => {
-  const timestamp = dailySongsData.value.timestamp;
-  if (!timestamp) return null;
-  const date = new Date(timestamp);
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const day = date.getDate().toString().padStart(2, "0");
-  const hours = date.getHours().toString().padStart(2, "0");
-  const minutes = date.getMinutes().toString().padStart(2, "0");
-  return `${month}/${day} ${hours}:${minutes}`;
-});
-
-// 更多操作数据
-const moreOptions = computed(() => [
+// 更多操作
+const moreOptions = computed<DropdownOption[]>(() => [
   {
     label: "更新日推",
     key: "refresh",
     props: {
-      onclick: async () => {
-        await data.setDailySongsData(true);
+      onClick: async () => {
+        await updateDailySongsData(true);
       },
     },
-    icon: renderIcon("refresh"),
+    icon: renderIcon("Refresh"),
+  },
+  {
+    label: "批量操作",
+    key: "batch",
+    props: {
+      onClick: () => openBatchList(musicStore.dailySongsData.list, false),
+    },
+    icon: renderIcon("Batch"),
   },
 ]);
 
-onMounted(() => {
-  showTimeOut.value = setTimeout(() => {
-    showTime.value = true;
-  }, 1500);
-});
-
-onBeforeUnmount(() => {
-  clearTimeout(showTimeOut.value);
-});
+onActivated(updateDailySongsData);
+onMounted(updateDailySongsData);
 </script>
 
 <style lang="scss" scoped>
@@ -108,7 +90,7 @@ onBeforeUnmount(() => {
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    height: 30vh;
+    height: 300px;
     margin-bottom: 20px;
     .name {
       font-size: 55px;
@@ -122,7 +104,7 @@ onBeforeUnmount(() => {
       animation: fade-down 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
       animation-delay: 0.5s;
     }
-    .control {
+    .menu {
       margin-top: 30px;
     }
   }

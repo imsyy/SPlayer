@@ -1,234 +1,272 @@
 <template>
   <div class="cloud">
-    <n-h1 class="title">我的云盘</n-h1>
-    <!-- 基础状态 -->
-    <n-progress
-      :percentage="100 / (userCloudSpace[1] / userCloudSpace[0])"
-      class="status"
-      type="line"
-    >
-      <div class="tip">
-        <n-text class="space" depth="3">
-          云盘容量 {{ userCloudSpace[0] ?? 0 }}GB / {{ userCloudSpace[1] ?? 0 }}GB
+    <div class="title">
+      <n-text class="keyword">我的云盘</n-text>
+      <n-flex class="status">
+        <n-text class="item">
+          <SvgIcon name="Music" :depth="3" />
+          <n-number-animation :from="0" :to="cloudCount || cloudData?.length || 0" /> 首
         </n-text>
-        <n-text class="buy" @click="goBuy"> 扩容 </n-text>
-      </div>
-    </n-progress>
-    <!-- 功能区 -->
+        <n-text class="item">
+          <SvgIcon name="Storage" :depth="3" />
+          <n-progress
+            :percentage="100 / (cloudSize.maxSize / cloudSize.size)"
+            class="status"
+            type="line"
+          >
+            <n-text class="space" depth="3">
+              {{ cloudSize.size ?? 0 }}GB / {{ cloudSize.maxSize ?? 0 }}GB
+            </n-text>
+          </n-progress>
+        </n-text>
+      </n-flex>
+    </div>
     <n-flex class="menu" justify="space-between">
-      <n-flex class="left">
+      <n-flex class="left" align="flex-end">
         <n-button
-          :disabled="userCloudData?.length === 0"
           :focusable="false"
+          :disabled="loading || !cloudData?.length"
+          :loading="loading"
           type="primary"
-          class="play"
-          tag="div"
-          circle
           strong
           secondary
-          @click="playAllSongs(userCloudData)"
+          round
+          v-debounce="() => player.updatePlayList(cloudData)"
         >
           <template #icon>
-            <n-icon size="32">
-              <SvgIcon icon="play-arrow-rounded" />
-            </n-icon>
+            <SvgIcon name="Play" />
           </template>
+          {{
+            loading
+              ? `
+              正在更新... (${cloudData.length === cloudCount ? 0 : cloudData.length}/${cloudCount})`
+              : "播放"
+          }}
         </n-button>
-        <n-button size="large" round strong secondary @click="upCloudSongRef?.openUpSongModal()">
+        <n-button :focusable="false" class="more" strong secondary circle @click="getAllCloudMusic">
           <template #icon>
-            <n-icon>
-              <SvgIcon icon="cloud-arrow-up" />
-            </n-icon>
+            <SvgIcon name="Refresh" />
           </template>
-          上传歌曲
         </n-button>
-        <!-- 歌曲上传弹窗 -->
-        <UpCloudSong ref="upCloudSongRef" @getUserCloudData="getUserCloudData" />
-      </n-flex>
-      <n-flex class="right">
-        <!-- 模糊搜索 -->
-        <Transition name="fade" mode="out-in">
-          <n-input
-            v-if="userCloudData?.length"
-            v-model:value="searchValue"
-            :input-props="{ autoComplete: false }"
-            class="search"
-            placeholder="模糊搜索"
-            clearable
-            @input="localSearch"
-          >
-            <template #prefix>
-              <n-icon size="18">
-                <SvgIcon icon="search-rounded" />
-              </n-icon>
+        <!-- 更多 -->
+        <n-dropdown :options="moreOptions" trigger="click" placement="bottom-start">
+          <n-button :focusable="false" class="more" circle strong secondary>
+            <template #icon>
+              <SvgIcon name="List" />
             </template>
-          </n-input>
-        </Transition>
+          </n-button>
+        </n-dropdown>
       </n-flex>
+      <!-- 模糊搜索 -->
+      <n-input
+        v-if="cloudData?.length"
+        v-model:value="searchValue"
+        :input-props="{ autocomplete: 'off' }"
+        class="search"
+        placeholder="模糊搜索"
+        clearable
+        round
+      >
+        <template #prefix>
+          <SvgIcon name="Search" />
+        </template>
+      </n-input>
     </n-flex>
     <!-- 列表 -->
     <Transition name="fade" mode="out-in">
-      <div v-if="userCloudData !== 'empty'" class="list">
-        <Transition name="fade" mode="out-in">
-          <SongList v-if="!searchValue" :data="userCloudData" :showPrivilege="false" />
-          <SongList v-else-if="searchData?.length" :data="searchData" :showPrivilege="false" />
-          <n-empty
-            v-else
-            :description="`搜不到关于 ${searchValue} 的任何歌曲呀`"
-            style="margin-top: 60px"
-            size="large"
-          >
-            <template #icon>
-              <n-icon>
-                <SvgIcon icon="search-off" />
-              </n-icon>
-            </template>
-          </n-empty>
-        </Transition>
-      </div>
-      <n-empty v-else class="empty" description="你还有任何歌曲，快去上传吧" />
+      <SongList v-if="!searchValue || searchData?.length" :data="listData" :loading="loading" />
+      <n-empty
+        v-else
+        :description="`搜不到关于 ${searchValue} 的任何歌曲呀`"
+        style="margin-top: 60px"
+        size="large"
+      >
+        <template #icon>
+          <SvgIcon name="SearchOff" />
+        </template>
+      </n-empty>
     </Transition>
   </div>
 </template>
 
-<script setup>
-import { indexedDBData } from "@/stores";
-import { getUserCloud } from "@/api/cloud";
-import { fuzzySearch } from "@/utils/helper";
-import { playAllSongs } from "@/utils/Player";
-import debounce from "@/utils/debounce";
-import formatData from "@/utils/formatData";
+<script setup lang="ts">
+import type { SongType } from "@/types/main";
+import type { DropdownOption } from "naive-ui";
+import { useDataStore } from "@/stores";
+import { userCloud } from "@/api/cloud";
+import { formatSongsList } from "@/utils/format";
+import { fuzzySearch, renderIcon } from "@/utils/helper";
+import { openBatchList } from "@/utils/modal";
+import player from "@/utils/player";
 
-const indexedDB = indexedDBData();
+const router = useRouter();
+const dataStore = useDataStore();
+
+// 是否激活
+const isActivated = ref<boolean>(false);
 
 // 云盘数据
-const userCloudSpace = ref([]);
-const userCloudData = ref([]);
-const upCloudSongRef = ref(null);
+const loading = ref<boolean>(false);
+const cloudCount = ref<number>(0);
+const cloudData = shallowRef<SongType[]>(dataStore.cloudPlayList);
+const cloudSize = ref<{ size: number; maxSize: number }>({ size: 0, maxSize: 0 });
 
 // 模糊搜索数据
-const searchValue = ref(null);
-const searchData = ref([]);
+const searchValue = ref<string>("");
+const searchData = ref<SongType[]>([]);
 
-// 获取用户云盘缓存数据
-const getUserCloudDataCatch = async () => {
-  const result = await indexedDB.getfilesDB("userCloudList");
-  userCloudData.value = result;
-};
-
-// 获取用户云盘列表
-const getUserCloudData = async (isOnce = false) => {
-  try {
-    // 初始化数据
-    let offset = 0;
-    let totalCount = null;
-    let resultArr = [];
-    // 获取数据
-    while (totalCount === null || offset < totalCount) {
-      const res = await getUserCloud(100, offset);
-      resultArr.push(formatData(res.data, "song"));
-      offset += 100;
-      // 歌曲总数
-      totalCount = res.count;
-      // 云盘空间
-      userCloudSpace.value = [
-        (res.size / Math.pow(1024, 3)).toFixed(2),
-        (res.maxSize / Math.pow(1024, 3)).toFixed(0),
-      ];
-      if (res.count === 0) {
-        console.log("云盘为空");
-        userCloudData.value = "empty";
-        return false;
-      }
-      if (isOnce) break;
-    }
-    // 展平并赋值
-    const resultArrFlat = resultArr.flat();
-    userCloudData.value = resultArrFlat;
-    // 更新本地歌曲
-    await indexedDB.setfilesDB("userCloudList", resultArrFlat.slice());
-  } catch (error) {
-    console.error("云盘数据加载失败：", error);
-    $message.error("云盘数据加载失败");
-  }
-};
-
-// 歌曲模糊搜索
-const localSearch = debounce((val) => {
-  const searchValue = val?.trim();
-  // 是否为空
-  if (!searchValue || searchValue === "") {
-    return true;
-  }
-  // 返回结果
-  const result = fuzzySearch(searchValue, userCloudData.value);
-  searchData.value = result;
-}, 300);
-
-// 云盘扩容
-const goBuy = () => {
-  window.open("https://music.163.com/#/store/product/detail?id=34001");
-};
-
-onMounted(async () => {
-  await getUserCloudDataCatch();
-  await getUserCloudData();
+// 列表歌曲
+const listData = computed<SongType[]>(() => {
+  if (searchValue.value && searchData.value.length) return searchData.value;
+  return cloudData.value;
 });
 
-onMounted(() => {
-  window.$refreshCloudCatch = getUserCloudDataCatch;
+// 是否处于云盘页面
+const isCloudPage = computed<boolean>(() => router.currentRoute.value.name === "cloud");
+
+// 更多操作
+const moreOptions = computed<DropdownOption[]>(() => [
+  {
+    label: "批量操作",
+    key: "batch",
+    props: {
+      onClick: () => openBatchList(cloudData.value, false),
+    },
+    icon: renderIcon("Batch"),
+  },
+]);
+
+// 获取全部云盘歌曲
+const getAllCloudMusic = async () => {
+  loading.value = true;
+  // 必要数据
+  let offset: number = 0;
+  const limit: number = 500;
+  const listData: SongType[] = [];
+  // 循环获取
+  do {
+    const result = await userCloud(limit, offset);
+    const songData = formatSongsList(result.data);
+    // 歌曲总数
+    cloudCount.value = result.count;
+    // 云盘空间
+    cloudSize.value = {
+      size: Number((result.size / Math.pow(1024, 3)).toFixed(2)),
+      maxSize: Number((result.maxSize / Math.pow(1024, 3)).toFixed(0)),
+    };
+    // 更新数据
+    listData.push(...songData);
+    cloudData.value = listData;
+    offset += limit;
+  } while (offset < cloudCount.value && isCloudPage.value);
+  // 更新云盘数据
+  dataStore.setCloudPlayList(cloudData.value);
+  loading.value = false;
+};
+
+watchDebounced(
+  () => [searchValue.value, cloudData.value],
+  () => {
+    const search = searchValue.value.trim();
+    if (!search || search === "" || !cloudData.value.length) return;
+    // 获取搜索结果
+    const result = fuzzySearch(search, cloudData.value);
+    searchData.value = result;
+  },
+  { debounce: 300, maxWait: 1000 },
+);
+
+onActivated(() => {
+  if (!isActivated.value) {
+    isActivated.value = true;
+  } else {
+    getAllCloudMusic();
+  }
 });
+
+onMounted(getAllCloudMusic);
 </script>
 
 <style lang="scss" scoped>
 .cloud {
+  display: flex;
+  flex-direction: column;
   .title {
-    margin: 20px 0;
-    font-size: 36px;
-    font-weight: bold;
-  }
-  .status {
-    width: 340px;
-    --n-fill-color: var(--main-color);
-    .tip {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      .buy {
-        margin-left: 8px;
+    display: flex;
+    align-items: flex-end;
+    line-height: normal;
+    margin-top: 12px;
+    margin-bottom: 20px;
+    height: 40px;
+    .keyword {
+      font-size: 30px;
+      font-weight: bold;
+      margin-right: 12px;
+      line-height: normal;
+    }
+    .status {
+      font-size: 15px;
+      font-weight: normal;
+      line-height: 30px;
+      .item {
+        display: flex;
+        align-items: center;
+        opacity: 0.9;
+        .n-icon {
+          margin-right: 4px;
+        }
+      }
+      .n-progress {
+        --n-fill-color: var(--primary-hex);
+        margin-left: 4px;
         cursor: pointer;
-        &::after {
-          content: ">";
-          margin-left: 2px;
+        :deep(.n-progress-graph) {
+          width: 80px;
+        }
+        .space {
+          display: inline-block;
+          font-size: 12px;
+          transform: translateX(-5px);
+          opacity: 0;
+          transition:
+            opacity 0.3s,
+            transform 0.3s;
+        }
+        &:hover {
+          .space {
+            opacity: 1;
+            transform: translateX(0);
+          }
         }
       }
     }
   }
   .menu {
-    align-items: center;
-    margin: 26px 0;
-    .left {
+    width: 100%;
+    margin-bottom: 20px;
+    height: 40px;
+    .n-button {
+      height: 40px;
+    }
+    .more {
+      width: 40px;
+    }
+    .search {
+      height: 40px;
+      width: 130px;
+      display: flex;
       align-items: center;
-      .play {
-        --n-width: 46px;
-        --n-height: 46px;
+      border-radius: 25px;
+      transition: all 0.3s var(--n-bezier);
+      &.n-input--focus {
+        width: 200px;
       }
     }
-    .right {
-      .search {
-        height: 40px;
-        width: 130px;
-        display: flex;
-        align-items: center;
-        border-radius: 40px;
-        transition:
-          width 0.3s,
-          background-color 0.3s;
-        &.n-input--focus {
-          width: 200px;
-        }
-      }
-    }
+  }
+  .song-list {
+    flex: 1;
+    overflow: hidden;
+    max-height: calc((var(--layout-height) - 132) * 1px);
   }
 }
 </style>

@@ -1,77 +1,112 @@
-<!-- 新建歌单 -->
 <template>
-  <n-modal
-    v-model:show="createPlaylistShow"
-    :auto-focus="false"
-    :bordered="false"
-    class="create-playlist"
-    title="新建歌单"
-    preset="card"
-    transform-origin="center"
-    @after-leave="closeCreatePlaylist"
-  >
-    <n-input
-      v-model:value="createName"
-      placeholder="输入歌单标题"
-      style="margin-bottom: 12px"
-      maxlength="40"
-      show-count
-      clearable
-    />
-    <!-- 隐私歌单 -->
-    <n-checkbox v-model:checked="createPrivacy"> 设为隐私歌单 </n-checkbox>
-    <template #footer>
-      <n-flex justify="end">
-        <n-button @click="closeCreatePlaylist"> 取消 </n-button>
-        <n-button
-          :disabled="!createName"
-          type="primary"
-          @click="createPlaylistBtn(createName, createPrivacy)"
-        >
-          新建
-        </n-button>
-      </n-flex>
-    </template>
-  </n-modal>
+  <div class="create-playlist">
+    <n-tabs v-model:value="playlistType" type="segment" animated>
+      <n-tab-pane name="online" tab="在线歌单">
+        <n-form ref="onlineFormRef" :model="onlineFormData" :rules="onlineFormRules">
+          <n-form-item label="歌单名称" path="name">
+            <n-input v-model:value="onlineFormData.name" placeholder="请输入歌单名称" />
+          </n-form-item>
+          <n-form-item label="歌单类型" path="type">
+            <n-select v-model:value="onlineFormData.type" :options="onlinePlaylistType" />
+          </n-form-item>
+          <n-form-item label="设为隐私歌单" path="privacy" label-placement="left">
+            <n-switch v-model:value="onlineFormData.privacy" />
+          </n-form-item>
+        </n-form>
+      </n-tab-pane>
+      <n-tab-pane name="local" tab="本地歌单">
+        <n-empty description="暂未实现" />
+      </n-tab-pane>
+    </n-tabs>
+    <n-button class="create" type="primary" @click="toCreatePlaylist"> 新建 </n-button>
+  </div>
 </template>
 
-<script setup>
-import { siteData } from "@/stores";
+<script setup lang="ts">
+import type { FormInst, FormRules, SelectOption } from "naive-ui";
+import { useDataStore } from "@/stores";
+import { textRule } from "@/utils/rules";
+import { debounce } from "lodash-es";
 import { createPlaylist } from "@/api/playlist";
+import { updateUserLikePlaylist } from "@/utils/auth";
 
-const data = siteData();
+const emit = defineEmits<{ close: [] }>();
 
-// 新建歌单数据
-const createPlaylistShow = ref(false);
-const createPrivacy = ref(false);
-const createName = ref(null);
+// 表单类型
+interface OnlineFormType {
+  name: string;
+  type: "NORMAL" | "VIDEO" | "SHARED";
+  privacy?: boolean;
+}
 
-// 开启新建歌单弹窗
-const openCreatePlaylist = () => {
-  createPlaylistShow.value = true;
-};
+const dataStore = useDataStore();
+
+// 歌单类别
+const playlistType = ref<"online" | "local">("online");
+
+// 在线歌单数据
+const onlineFormRef = ref<FormInst | null>(null);
+const onlineFormData = ref<OnlineFormType>({ name: "", type: "NORMAL", privacy: false });
+const onlineFormRules: FormRules = { name: textRule };
+
+// 在线歌单类型
+const onlinePlaylistType: SelectOption[] = [
+  {
+    label: "普通歌单",
+    value: "NORMAL",
+  },
+  {
+    label: "视频歌单",
+    disabled: true,
+    value: "VIDEO",
+  },
+  {
+    label: "共享歌单",
+    disabled: true,
+    value: "SHARED",
+  },
+];
 
 // 新建歌单
-const createPlaylistBtn = async (name, privacy = false) => {
-  const result = await createPlaylist(name, privacy ? "10" : null);
-  if (result.code === 200) {
-    closeCreatePlaylist();
-    $message.success("新建歌单成功");
-    await data.setUserLikePlaylists();
-  } else {
-    $message.error("新建歌单失败，请重试");
-  }
-};
-
-// 关闭新建歌单
-const closeCreatePlaylist = () => {
-  createName.value = null;
-  createPrivacy.value = false;
-  createPlaylistShow.value = false;
-};
-
-// 暴露方法
-defineExpose({
-  openCreatePlaylist,
-});
+const toCreatePlaylist = debounce(
+  async (e: MouseEvent) => {
+    e.preventDefault();
+    if (playlistType.value === "online") {
+      // 是否输入
+      await onlineFormRef.value?.validate((errors) => errors);
+      // 新建歌单
+      const result = await createPlaylist(
+        onlineFormData.value.name,
+        onlineFormData.value.privacy,
+        onlineFormData.value.type,
+      );
+      if (result.code === 200) {
+        emit("close");
+        window.$message.success("新建歌单成功");
+        if (dataStore.userData.createdPlaylistCount) {
+          dataStore.userData.createdPlaylistCount++;
+        }
+        await updateUserLikePlaylist();
+      } else {
+        window.$message.error(result.message || "新建歌单失败，请重试");
+      }
+    }
+  },
+  300,
+  { leading: true, trailing: false },
+);
 </script>
+
+<style lang="scss" scoped>
+.create-playlist {
+  .n-form {
+    margin-top: 12px;
+  }
+  .create {
+    width: 100%;
+  }
+  .n-empty {
+    padding: 40px 0;
+  }
+}
+</style>

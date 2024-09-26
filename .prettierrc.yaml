@@ -1,8 +1,0 @@
-# 是否使用单引号而不是双引号
-singleQuote: false
-# 是否在语句末尾使用分号
-semi: true
-# 每行的最大打印宽度
-printWidth: 100
-# 是否在对象和数组的末尾加上逗号
-trailingComma: all

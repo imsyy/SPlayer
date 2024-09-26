@@ -1,88 +1,65 @@
-<!-- 搜索 - 歌手 -->
 <template>
-  <div class="search-artists">
-    <!-- 列表 -->
+  <div class="search-type">
     <Transition name="fade" mode="out-in">
-      <div v-if="searchData !== 'empty'" class="list">
-        <MainCover :data="searchData" type="artist" columns="3 s:4 m:5 l:6" />
-      </div>
+      <ArtistList
+        v-if="searchCount > 0"
+        :data="searchResultData"
+        :loading="loading"
+        :loadMore="hasMore"
+        @loadMore="loadMore"
+      />
       <n-empty
         v-else
-        :description="`很抱歉，未能找到与 ${searchKeywords} 相关的任何歌手`"
+        :description="`很抱歉，未能找到与 ${keyword} 相关的任何歌手`"
         style="margin-top: 60px"
         size="large"
       >
         <template #icon>
-          <n-icon>
-            <SvgIcon icon="search-off" />
-          </n-icon>
+          <SvgIcon name="SearchOff" />
         </template>
       </n-empty>
     </Transition>
   </div>
 </template>
 
-<script setup>
-import { getSearchRes } from "@/api/search";
-import { useRouter } from "vue-router";
-import { siteSettings } from "@/stores";
-import formatData from "@/utils/formatData";
+<script setup lang="ts">
+import type { ArtistType } from "@/types/main";
+import { searchResult } from "@/api/search";
+import { formatArtistsList } from "@/utils/format";
 
-const router = useRouter();
-const settings = siteSettings();
+const props = defineProps<{
+  keyword: string;
+}>();
 
 // 搜索数据
-const searchData = ref([]);
-const totalCount = ref(0);
-const searchKeywords = ref(router.currentRoute.value.query?.keywords || "");
-const pageNumber = ref(Number(router.currentRoute.value.query?.page) || 1);
+const hasMore = ref<boolean>(true);
+const loading = ref<boolean>(true);
+const searchOffset = ref<number>(0);
+const searchCount = ref<number>(1);
+const searchResultData = ref<ArtistType[]>([]);
 
-// 获取搜索数据
-const getSearchResData = (
-  keywords = searchKeywords.value,
-  limit = settings.loadSize,
-  offset = 0,
-  type = 100,
-) => {
-  try {
-    searchData.value = [];
-    getSearchRes(keywords, limit, offset, type).then((res) => {
-      console.log(res);
-      // 数据总数
-      totalCount.value = res.result.artistCount;
-      if (res.result.artistCount === 0) return (searchData.value = "empty");
-      // 处理数据
-      searchData.value = formatData(res.result.artists, "artist");
-    });
-  } catch (error) {
-    console.error("搜索出现错误：", error);
-    $message.error("搜索出现错误");
-  }
+// 获取搜索结果
+const getSearchResult = async () => {
+  // 获取数据
+  loading.value = true;
+  const result = await searchResult(props.keyword, 50, searchOffset.value, 100);
+  // 是否还有
+  hasMore.value = result.result?.hasMore || result.result?.artistCount > searchOffset.value + 50;
+  // 搜索总数
+  searchCount.value = result.result?.artistCount;
+  // 处理数据
+  const artistData = formatArtistsList(result.result.artists);
+  searchResultData.value = searchResultData.value?.concat(artistData);
+  loading.value = false;
 };
 
-// 监听路由变化
-watch(
-  () => router.currentRoute.value,
-  (val) => {
-    if (val.name == "sea-artists") {
-      // 更改参数
-      pageNumber.value = Number(val.query?.page) || 1;
-      searchKeywords.value = val.query?.keywords || "";
-      // 调用接口
-      getSearchResData(
-        searchKeywords.value,
-        settings.loadSize,
-        (pageNumber.value - 1) * settings.loadSize,
-      );
-    }
-  },
-);
+// 加载更多
+const loadMore = () => {
+  searchOffset.value += 50;
+  getSearchResult();
+};
 
-onBeforeMount(() => {
-  getSearchResData(
-    searchKeywords.value,
-    settings.loadSize,
-    (pageNumber.value - 1) * settings.loadSize,
-  );
+onMounted(() => {
+  getSearchResult();
 });
 </script>

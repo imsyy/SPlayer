@@ -8,5 +8,5 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     ports:
-      - 7899:7899
+      - 25884:25884
     restart: always

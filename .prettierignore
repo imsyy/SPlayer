@@ -2,7 +2,7 @@ out
 dist
 pnpm-lock.yaml
 LICENSE.md
-tsconfig.json
-tsconfig.*.json
 auto-imports.d.ts
 components.d.ts
+# tsconfig.json
+# tsconfig.*.json

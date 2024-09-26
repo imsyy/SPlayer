@@ -1,99 +1,58 @@
 <template>
-  <div class="artist-videos">
-    <Transition name="fade" mode="out-in">
-      <div v-if="artistVideos !== 'empty'" class="list">
-        <!-- 列表 -->
-        <MainCover :data="artistVideos" columns="1 s:2 m:3 l:4 xl:5" type="mv" />
-        <!-- 分页 -->
-        <Pagination
-          v-if="artistVideos?.length"
-          :totalCount="totalCount"
-          :pageNumber="pageNumber"
-          @pageNumberChange="pageNumberChange"
-        />
-      </div>
-      <n-empty
-        v-else
-        description="当前歌手暂无视频"
-        class="tip"
-        style="margin-top: 60px"
-        size="large"
-      />
-    </Transition>
+  <div class="artist-type">
+    <CoverList
+      :data="videoData"
+      :loading="loading"
+      :loadMore="hasMore"
+      type="video"
+      cols="2 600:2 800:3 900:4 1200:5 1400:6"
+      @loadMore="loadMore"
+    />
   </div>
 </template>
 
-<script setup>
-import { useRouter } from "vue-router";
-import { siteSettings } from "@/stores";
-import { getArtistVideos } from "@/api/artist";
-import formatData from "@/utils/formatData";
+<script setup lang="ts">
+import type { CoverType } from "@/types/main";
+import { artistVideos } from "@/api/artist";
+import { formatCoverList } from "@/utils/format";
 
-const router = useRouter();
-const settings = siteSettings();
-const props = defineProps({
-  // 视频总数
-  mvSize: {
-    type: Number,
-    default: 0,
-  },
-});
+const props = defineProps<{
+  id: number;
+}>();
 
-// 歌手数据
-const artistId = ref(router.currentRoute.value.query.id);
-const artistVideos = ref(null);
-const totalCount = ref(0);
-const pageNumber = ref(Number(router.currentRoute.value.query?.page) || 1);
+// 歌曲数据
+const loading = ref<boolean>(true);
+const hasMore = ref<boolean>(true);
+const videoData = ref<CoverType[]>([]);
+const videoOffset = ref<number>(0);
 
 // 获取歌手全部视频
-const getArtistVideosData = async (id, limit = settings.loadSize, offset = 0) => {
+const getArtistAllVideos = async () => {
   try {
-    artistVideos.value = null;
-    const result = await getArtistVideos(id, limit, offset);
-    // 数据总数
-    totalCount.value = props.mvSize;
-    if (totalCount.value === 0) return (artistVideos.value = "empty");
+    if (!props.id) return;
+    loading.value = true;
+    // 获取数据
+    const result = await artistVideos(props.id, 50, videoOffset.value);
+    // 是否还有
+    hasMore.value = result?.hasMore;
     // 处理数据
-    artistVideos.value = formatData(result.mvs, "mv");
+    const listData = formatCoverList(result?.mvs);
+    videoData.value = videoData.value.concat(listData);
+    loading.value = false;
   } catch (error) {
-    console.error("获取歌手视频失败：", error);
+    console.error("Error getting artist all videos:", error);
   }
 };
 
-// 页数变化
-const pageNumberChange = (page) => {
-  router.push({
-    path: "/artist/videos",
-    query: {
-      id: artistId.value,
-      page: page,
-    },
-  });
+// 加载更多
+const loadMore = () => {
+  if (hasMore.value) {
+    videoOffset.value += 50;
+    getArtistAllVideos();
+  } else {
+    loading.value = false;
+  }
 };
 
-// 监听路由变化
-watch(
-  () => router.currentRoute.value,
-  async (val) => {
-    if (val.name === "ar-videos") {
-      // 更改参数
-      artistId.value = val.query.id;
-      pageNumber.value = Number(val.query?.page) || 1;
-      // 调用接口
-      await getArtistVideosData(
-        artistId.value,
-        settings.loadSize,
-        (pageNumber.value - 1) * settings.loadSize,
-      );
-    }
-  },
-);
-
-onBeforeMount(async () => {
-  await getArtistVideosData(
-    artistId.value,
-    settings.loadSize,
-    (pageNumber.value - 1) * settings.loadSize,
-  );
-});
+onMounted(getArtistAllVideos);
 </script>

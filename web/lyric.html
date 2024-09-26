@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPlayer - 桌面歌词</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      box-sizing: border-box;
+      -webkit-user-drag: none;
+    }
+
+    :root {
+      --font-size: 30;
+      --main-color: #fff;
+      --shadow-color: rgba(0, 0, 0, 0.5);
+    }
+
+    body {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      padding: 12px;
+      cursor: pointer;
+      color: var(--main-color);
+      overflow: hidden;
+      transition: opacity 0.3s;
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 16px;
+        background-color: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(10px);
+        z-index: 0;
+        opacity: 0;
+        cursor: move;
+        transition: opacity 0.3s;
+      }
+
+      &:hover {
+        &::after {
+          opacity: 1;
+        }
+
+        header {
+          .meta {
+            opacity: 0;
+          }
+
+          .tools {
+            opacity: 1;
+          }
+        }
+      }
+
+      &.lock-lyric {
+        cursor: none;
+        /* 鼠标穿透 */
+        pointer-events: none;
+
+        * {
+          pointer-events: none;
+        }
+
+        &::after {
+          opacity: 0;
+        }
+
+        &:hover {
+          opacity: 0;
+        }
+
+        header {
+          .meta {
+            opacity: 1;
+          }
+
+          .tools {
+            opacity: 0;
+          }
+        }
+      }
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+
+      .meta {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 14px;
+        opacity: 0.9;
+        transition: opacity 0.3s;
+      }
+
+      .tools {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        opacity: 0;
+        transition: opacity 0.3s;
+        gap: 8px;
+
+        .item {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px;
+          border-radius: 8px;
+          cursor: pointer;
+          transition:
+            transform 0.3s,
+            background-color 0.3s;
+
+          &.hidden {
+            display: none;
+          }
+
+          &:hover {
+            background-color: rgba(0, 0, 0, 0.4);
+          }
+
+          &:active {
+            transform: scale(0.95);
+          }
+
+          svg {
+            width: 24px;
+            height: 24px;
+          }
+        }
+      }
+
+      #song-artist {
+        margin-top: 4px;
+        font-size: 12px;
+        opacity: 0.8;
+      }
+    }
+
+    main {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 12px;
+      margin: 12px;
+      z-index: 1;
+      max-width: 100%;
+      pointer-events: auto;
+
+      #lyric-text {
+        font-size: calc(var(--font-size) * 1px);
+        font-weight: bold;
+      }
+
+      #lyric-tran {
+        font-size: calc(var(--font-size) * 1px - 5px);
+        margin-top: 8px;
+        opacity: 0.6;
+      }
+    }
+
+    span {
+      padding: 0 4px;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-shadow: 0 0 4px var(--shadow-color);
+      transition: opacity 0.3s;
+      /* animation: 15s wordsLoop linear infinite normal; */
+    }
+
+    @keyframes wordsLoop {
+      0% {
+        transform: translateX(0px);
+      }
+
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="meta">
+      <span id="song-name">SPlayer</span>
+      <span id="song-artist">未知艺术家</span>
+    </div>
+    <div class="tools" id="tools">
+      <div id="show-app" class="item" title="打开应用">
+        <svg viewBox="0 0 1024 1024" version="1.1" width="32" height="32">
+          <path
+            d="M511.764091 131.708086a446.145957 446.145957 0 1 0 446.145957 446.145957 446.145957 446.145957 0 0 0-446.145957-446.145957z m0 519.76004A71.829499 71.829499 0 1 1 583.59359 580.530919 72.275645 72.275645 0 0 1 511.764091 651.468126z"
+            fill="#F55E55" p-id="11551"></path>
+          <path
+            d="M802.205109 0.541175l-168.197026 37.030114a67.814185 67.814185 0 0 0-53.091369 66.029602V223.614153l3.569168 349.778431h114.213365V223.614153h108.859613a26.322611 26.322611 0 0 0 26.768758-26.322611V26.863786a26.768757 26.768757 0 0 0-32.122509-26.322611z"
+            fill="#F9BBB8" p-id="11552"></path>
+          <path
+            d="M511.764091 386.457428a186.935156 186.935156 0 1 0 186.935156 186.48901A186.935156 186.935156 0 0 0 511.764091 386.457428z m0 264.564552a71.383353 71.383353 0 1 1 71.383353-71.383353 71.383353 71.383353 0 0 1-71.383353 71.383353z"
+            fill="#F9BBB8" p-id="11553"></path>
+        </svg>
+      </div>
+      <div id="font-size-reduce" class="item" title="缩小字体">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M10.5 7h-2L3 21h2.2l1.1-3h6.2l1.1 3H16zm-3.4 9l2.4-6.3l2.4 6.3zM22 7h-8V5h8z" />
+        </svg>
+      </div>
+      <div id="font-size-add" class="item" title="放大字体">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+          <path fill="currentColor"
+            d="M8.5 7h2L16 21h-2.4l-1.1-3H6.3l-1.1 3H3zm-1.4 9h4.8L9.5 9.7zM22 5v2h-3v3h-2V7h-3V5h3V2h2v3z" />
+        </svg>
+      </div>
+      <div id="play-prev" class="item" title="上一首">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+          <path fill="currentColor"
+            d="M7 6c.55 0 1 .45 1 1v10c0 .55-.45 1-1 1s-1-.45-1-1V7c0-.55.45-1 1-1m3.66 6.82l5.77 4.07c.66.47 1.58-.01 1.58-.82V7.93c0-.81-.91-1.28-1.58-.82l-5.77 4.07a1 1 0 0 0 0 1.64" />
+        </svg>
+      </div>
+      <!-- 播放暂停 -->
+      <div id="pause" class="item hidden" title="暂停">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+          <path fill="currentColor"
+            d="M8 19c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2s-2 .9-2 2v10c0 1.1.9 2 2 2m6-12v10c0 1.1.9 2 2 2s2-.9 2-2V7c0-1.1-.9-2-2-2s-2 .9-2 2" />
+        </svg>
+      </div>
+      <div id="play" class="item" title="播放">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+          <path fill="currentColor"
+            d="M8 6.82v10.36c0 .79.87 1.27 1.54.84l8.14-5.18a1 1 0 0 0 0-1.69L9.54 5.98A.998.998 0 0 0 8 6.82" />
+        </svg>
+      </div>
+      <div id="play-next" class="item" title="下一首">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+          <path fill="currentColor"
+            d="m7.58 16.89l5.77-4.07c.56-.4.56-1.24 0-1.63L7.58 7.11C6.91 6.65 6 7.12 6 7.93v8.14c0 .81.91 1.28 1.58.82M16 7v10c0 .55.45 1 1 1s1-.45 1-1V7c0-.55-.45-1-1-1s-1 .45-1 1" />
+        </svg>
+      </div>
+      <!-- 锁定 -->
+      <div id="lock-lyric" class="item" title="锁定/解锁">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+          <path fill="currentColor"
+            d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2M9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9zm9 14H6V10h12zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2s-2 .9-2 2s.9 2 2 2" />
+        </svg>
+      </div>
+      <!-- 关闭 -->
+      <div id="close-lyric" class="item" title="关闭">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+          <path fill="currentColor"
+            d="M13.46 12L19 17.54V19h-1.46L12 13.46L6.46 19H5v-1.46L10.54 12L5 6.46V5h1.46L12 10.54L17.54 5H19v1.46z" />
+        </svg>
+      </div>
+    </div>
+  </header>
+  <main id="lyric-content">
+    <span id="lyric-text">该歌曲暂无歌词</span>
+    <span id="lyric-tran"></span>
+  </main>
+  <script>
+    class LyricsWindow {
+      constructor() {
+        // 获取元素
+        this.songNameDom = document.getElementById("song-name");
+        this.songArtistDom = document.getElementById("song-artist");
+        this.lyricContentDom = document.getElementById("lyric-content");
+        this.lyricTextDom = document.getElementById("lyric-text");
+        this.lyricTranDom = document.getElementById("lyric-tran");
+        this.pauseDom = document.getElementById("pause");
+        this.playDom = document.getElementById("play");
+        // 窗口位置
+        this.isDragging = false;
+        this.startX = 0;
+        this.startY = 0;
+        this.startWinX = 0;
+        this.startWinY = 0;
+        this.winWidth = 0;
+        this.winHeight = 0;
+        // 临时变量
+        // this.lyricIndex = -1;
+        // 初始化
+        this.restoreOptions();
+        this.menuClick();
+        this.setupIPCListeners();
+        this.setupWindowDragListeners();
+        this.setupMutationObserver();
+      }
+      // 歌词切换动画
+      updateLyrics(content = "纯音乐，请欣赏", translation = "") {
+        // document.startViewTransition(() => {
+        //   this.lyricTextDom.innerHTML = content;
+        //   this.lyricTranDom.innerHTML = translation;
+        // });
+        this.lyricTextDom.innerHTML = content;
+        this.lyricTranDom.innerHTML = translation;
+      }
+      // 获取配置
+      async restoreOptions() {
+        try {
+          const defaultOptions = await window.electron.ipcRenderer.invoke(
+            "get-desktop-lyric-option",
+          );
+          if (defaultOptions) this.changeOptions(defaultOptions);
+          return defaultOptions;
+        } catch (error) {
+          console.error("Failed to restore options:", error);
+        }
+      }
+      // 修改配置
+      changeOptions(options, callback = true) {
+        if (!options) return;
+        const { fontSize, mainColor, shadowColor } = options;
+        document.documentElement.style.setProperty("--font-size", fontSize);
+        document.documentElement.style.setProperty("--main-color", mainColor);
+        document.documentElement.style.setProperty("--shadow-color", shadowColor);
+        if (callback) window.electron.ipcRenderer.send("set-desktop-lyric-option", options);
+      }
+      // 菜单点击事件
+      menuClick() {
+        const toolsDom = document.getElementById("tools");
+        if (!toolsDom) return;
+        // 菜单项点击
+        toolsDom.addEventListener("click", async (event) => {
+          const target = event.target.closest("div");
+          if (!target) return;
+          console.log(target);
+          const id = target.id;
+          if (!id) return;
+          // 获取配置
+          const options = await this.restoreOptions();
+          switch (id) {
+            case "show-app": {
+              window.electron.ipcRenderer.send("win-show");
+              break;
+            }
+            case "font-size-add": {
+              let fontSize = options.fontSize;
+              if (fontSize < 60) {
+                fontSize++;
+                this.changeOptions({ ...options, fontSize });
+              }
+              break;
+            }
+            case "font-size-reduce": {
+              let fontSize = options.fontSize;
+              if (fontSize > 20) {
+                fontSize--;
+                this.changeOptions({ ...options, fontSize });
+              }
+              break;
+            }
+            case "play": {
+              window.electron.ipcRenderer.send("send-main-event", "play");
+              break;
+            }
+            case "pause": {
+              window.electron.ipcRenderer.send("send-main-event", "pause");
+              break;
+            }
+            case "play-prev": {
+              window.electron.ipcRenderer.send("send-main-event", "playPrev");
+              break;
+            }
+            case "play-next": {
+              window.electron.ipcRenderer.send("send-main-event", "playNext");
+              break;
+            }
+            case "close-lyric": {
+              window.electron.ipcRenderer.send("closeDesktopLyric");
+              break;
+            }
+            case "lock-lyric": {
+              window.electron.ipcRenderer.send("toogleDesktopLyricLock", true);
+              document.body.classList.toggle("lock-lyric", true);
+              break;
+            }
+            default:
+              break;
+          }
+        });
+      }
+      // 监听 IPC 事件
+      setupIPCListeners() {
+        window.electron.ipcRenderer.on("play-song-change", (_, title) => {
+          if (!title) return;
+          const [songName, songArtist] = title.split(" - ");
+          this.songNameDom.innerHTML = songName;
+          this.songArtistDom.innerHTML = songArtist;
+          this.updateLyrics(title);
+        });
+
+        window.electron.ipcRenderer.on("play-lyric-change", (_, lyricData) => {
+          if (!lyricData) return;
+          this.parsedLyricsData(lyricData);
+        });
+
+        window.electron.ipcRenderer.on("play-status-change", (_, status) => {
+          this.playDom.classList.toggle("hidden", status);
+          this.pauseDom.classList.toggle("hidden", !status);
+        });
+
+        // 配置变化
+        window.electron.ipcRenderer.on("desktop-lyric-option-change", (_, options) => {
+          this.changeOptions(options, false);
+        });
+
+        // 歌词锁定
+        window.electron.ipcRenderer.on("toogleDesktopLyricLock", (_, lock) => {
+          document.body.classList.toggle("lock-lyric", lock);
+          window.electron.ipcRenderer.send("toogleDesktopLyricLock", lock);
+        });
+      }
+      // 解析歌词
+      parsedLyricsData(lyricData) {
+        if (!this.lyricContentDom || !this.lyricTextDom) return;
+        const { index, lyric } = lyricData;
+        // 更换文字
+        if (!lyric || index < 0) {
+          if (lyric.length === 0) this.updateLyrics();
+        } else {
+          const { content, tran } = lyric[index];
+          this.updateLyrics(content, tran || "");
+        }
+      }
+      // 拖拽窗口
+      setupWindowDragListeners() {
+        document.addEventListener("mousedown", this.startDrag.bind(this));
+        document.addEventListener("mousemove", this.dragWindow.bind(this));
+        document.addEventListener("mouseup", this.endDrag.bind(this));
+      }
+      // 开始拖拽
+      async startDrag(event) {
+        this.isDragging = true;
+        const { screenX, screenY } = event;
+        const {
+          x: winX,
+          y: winY,
+          width,
+          height,
+        } = await window.electron.ipcRenderer.invoke("get-window-bounds");
+        this.startX = screenX;
+        this.startY = screenY;
+        this.startWinX = winX;
+        this.startWinY = winY;
+        this.winWidth = width;
+        this.winHeight = height;
+      }
+      // 拖拽
+      async dragWindow(event) {
+        if (!this.isDragging) return;
+        const { screenX, screenY } = event;
+        let newWinX = this.startWinX + (screenX - this.startX);
+        let newWinY = this.startWinY + (screenY - this.startY);
+        const { width: screenWidth, height: screenHeight } =
+          await window.electron.ipcRenderer.invoke("get-screen-size");
+        newWinX = Math.max(0, Math.min(screenWidth - this.winWidth, newWinX));
+        newWinY = Math.max(0, Math.min(screenHeight - this.winHeight, newWinY));
+        window.electron.ipcRenderer.send(
+          "move-window",
+          newWinX,
+          newWinY,
+          this.winWidth,
+          this.winHeight,
+        );
+      }
+      // 结束拖拽
+      endDrag() {
+        this.isDragging = false;
+      }
+      // 更新高度
+      updateWindowHeight() {
+        const bodyHeight = document.body.scrollHeight;
+        window.electron.ipcRenderer.send("update-window-height", bodyHeight);
+      }
+      // 动态监听高度
+      setupMutationObserver() {
+        const observer = new MutationObserver(this.updateWindowHeight.bind(this));
+        observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+        this.updateWindowHeight();
+      }
+    }
+
+    new LyricsWindow();
+  </script>
+</body>
+
+</html>

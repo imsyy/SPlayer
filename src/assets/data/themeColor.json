@@ -1,0 +1,57 @@
+{
+  "default": {
+    "label": "default",
+    "name": "默认",
+    "color": "#fe7971"
+  },
+  "orange": {
+    "label": "orange",
+    "name": "橙色",
+    "color": "#ff8c00"
+  },
+  "blue": {
+    "label": "blue",
+    "name": "蓝色",
+    "color": "#3b5998"
+  },
+  "pink": {
+    "label": "pink",
+    "name": "粉色",
+    "color": "#e91e63"
+  },
+  "brown": {
+    "label": "brown",
+    "name": "棕色",
+    "color": "#795548"
+  },
+  "indigo": {
+    "label": "indigo",
+    "name": "靛青色",
+    "color": "#3f51b5"
+  },
+  "green": {
+    "label": "green",
+    "name": "绿色",
+    "color": "#2ecc71"
+  },
+  "purple": {
+    "label": "purple",
+    "name": "紫色",
+    "color": "#9c27b0"
+  },
+  "yellow": {
+    "label": "yellow",
+    "name": "黄色",
+    "color": "#FBC02D"
+  },
+  "teal": {
+    "label": "teal",
+    "name": "青色",
+    "color": "#009688"
+  },
+  "custom": {
+    "label": "custom",
+    "name": "自定义",
+    "color": ""
+  }
+}

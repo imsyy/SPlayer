@@ -1,106 +1,56 @@
 <template>
-  <div class="like-playlists">
+  <div class="like-type">
+    <!-- 分类 -->
+    <n-flex class="type">
+      <n-tag
+        v-for="(item, index) in plTypeName"
+        :key="index"
+        :bordered="false"
+        :class="['tag', { choose: index === plTypeChoose }]"
+        round
+        @click="changeType(index)"
+      >
+        {{ item }}
+      </n-tag>
+    </n-flex>
     <Transition name="fade" mode="out-in">
-      <div v-if="userLikeData.playlists?.length" class="pl-list">
-        <!-- 分类 -->
-        <n-flex class="type">
-          <n-tag
-            v-for="(item, index) in ['我创建的', '我收藏的']"
-            :key="index"
-            :bordered="false"
-            :class="['tag', { choose: index === plTypeChoose }]"
-            round
-            @click="plTypeChange(index)"
-          >
-            {{ item }}
-          </n-tag>
-        </n-flex>
-        <!-- 列表 -->
-        <Transition name="fade" mode="out-in">
-          <div v-if="plTypeChoose === 0" class="list">
-            <MainCover
-              :data="
-                userLikeData.playlists.filter((playlist) => playlist.userId === userData?.userId)
-              "
-            />
-          </div>
-          <div v-else class="list">
-            <MainCover
-              :data="
-                userLikeData.playlists.filter((playlist) => playlist.userId !== userData?.userId)
-              "
-            />
-          </div>
-        </Transition>
-      </div>
-      <n-empty
-        v-else
-        description="当前暂无收藏歌单"
-        class="tip"
-        style="margin-top: 60px"
-        size="large"
-      />
+      <CoverList :key="plTypeChoose" :data="listData" :loading="true" type="playlist" />
     </Transition>
   </div>
 </template>
 
-<script setup>
-import { storeToRefs } from "pinia";
-import { siteData } from "@/stores";
-import { useRouter } from "vue-router";
+<script setup lang="ts">
+import { useDataStore } from "@/stores";
 
-const router = useRouter();
-const data = siteData();
-const { userData, userLikeData } = storeToRefs(data);
+const dataStore = useDataStore();
 
-// 默认分类
-const plTypeChoose = ref(Number(router.currentRoute.value.query?.type) || 0);
+// 歌单分类
+const plTypeChoose = ref(0);
+const plTypeName = ["我创建的", "我收藏的"];
 
-// 默认分类变化
-const plTypeChange = (type) => {
-  router.push({
-    path: "/like/playlists",
-    query: {
-      type,
-    },
-  });
-};
-
-// 监听路由参数变化
-watch(
-  () => router.currentRoute.value,
-  (val) => {
-    if (val.name === "like-playlists") {
-      plTypeChoose.value = Number(val.query?.type) || 0;
-    }
-  },
+// 歌单列表内容
+const listData = computed(() =>
+  dataStore.userLikeData.playlists
+    ?.filter((pl) =>
+      plTypeChoose.value === 0
+        ? pl.userId === dataStore.userData.userId
+        : pl?.userId !== dataStore.userData.userId,
+    )
+    .slice(plTypeChoose.value === 0 ? 1 : 0),
 );
+
+// 更换歌单类型
+const changeType = (index: number) => (plTypeChoose.value = index);
 </script>
 
 <style lang="scss" scoped>
-.like-playlists {
-  .type {
-    margin-bottom: 20px;
-    .tag {
-      font-size: 13px;
-      padding: 0 16px;
-      line-height: 0;
-      cursor: pointer;
-      transition:
-        transform 0.3s,
-        background-color 0.3s,
-        color 0.3s;
-      &:hover {
-        background-color: var(--main-second-color);
-        color: var(--main-color);
-      }
-      &:active {
-        transform: scale(0.95);
-      }
-      &.choose {
-        background-color: var(--main-second-color);
-        color: var(--main-color);
-      }
+.type {
+  margin-top: 20px;
+  .n-tag {
+    font-size: 14px;
+    padding: 0 16px;
+    &.choose {
+      background-color: rgba(var(--primary), 0.14);
     }
   }
 }

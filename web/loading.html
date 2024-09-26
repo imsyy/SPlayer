@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SPlayer</title>
+    <style>
+      :root {
+        --bg-color: #fff;
+        --font-coloe: #000;
+        --primary: #f55e55;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-color: #161616;
+          --font-coloe: #fff;
+        }
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        user-select: none;
+        box-sizing: border-box;
+        -webkit-user-drag: none;
+      }
+
+      body {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--bg-color);
+      }
+
+      main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      footer {
+        position: absolute;
+        bottom: 20px;
+        font-size: 14px;
+        color: var(--primary);
+        opacity: 0.6;
+      }
+
+      .logo {
+        width: 120px;
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .loader,
+      .loader:before,
+      .loader:after {
+        border-radius: 50%;
+        width: 2.5em;
+        height: 2.5em;
+        animation-fill-mode: both;
+        animation: bblFadInOut 1.8s infinite ease-in-out;
+      }
+
+      .loader {
+        color: var(--primary);
+        font-size: 6px;
+        position: relative;
+        text-indent: -9999em;
+        transform: translateZ(0);
+        animation-delay: -0.16s;
+        margin: 40px 0;
+      }
+
+      .loader:before,
+      .loader:after {
+        content: "";
+        position: absolute;
+        top: 0;
+      }
+
+      .loader:before {
+        left: -3.5em;
+        animation-delay: -0.32s;
+      }
+
+      .loader:after {
+        left: 3.5em;
+      }
+
+      #startApp {
+        opacity: 0;
+        margin-top: 10px;
+        outline: none;
+        border: 2px solid var(--primary);
+        height: 36px;
+        width: 90px;
+        font-size: 14px;
+        border-radius: 12px;
+        color: var(--primary);
+        font-weight: bold;
+        background-color: transparent;
+        cursor: pointer;
+        transition: opacity 0.3s;
+      }
+
+      @keyframes bblFadInOut {
+        0%,
+        80%,
+        100% {
+          box-shadow: 0 2.5em 0 -1.3em;
+        }
+
+        40% {
+          box-shadow: 0 2.5em 0 0;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <main>
+      <div class="logo">
+        <svg
+          t="1663641871751"
+          class="icon"
+          viewBox="0 0 1024 1024"
+          version="1.1"
+          xmlns="http://www.w3.org/2000/svg"
+          p-id="11550"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          width="200"
+          height="200"
+        >
+          <path
+            d="M511.764091 131.708086a446.145957 446.145957 0 1 0 446.145957 446.145957 446.145957 446.145957 0 0 0-446.145957-446.145957z m0 519.76004A71.829499 71.829499 0 1 1 583.59359 580.530919 72.275645 72.275645 0 0 1 511.764091 651.468126z"
+            fill="#F55E55"
+            p-id="11551"
+          ></path>
+          <path
+            d="M802.205109 0.541175l-168.197026 37.030114a67.814185 67.814185 0 0 0-53.091369 66.029602V223.614153l3.569168 349.778431h114.213365V223.614153h108.859613a26.322611 26.322611 0 0 0 26.768758-26.322611V26.863786a26.768757 26.768757 0 0 0-32.122509-26.322611z"
+            fill="#F9BBB8"
+            p-id="11552"
+          ></path>
+          <path
+            d="M511.764091 386.457428a186.935156 186.935156 0 1 0 186.935156 186.48901A186.935156 186.935156 0 0 0 511.764091 386.457428z m0 264.564552a71.383353 71.383353 0 1 1 71.383353-71.383353 71.383353 71.383353 0 0 1-71.383353 71.383353z"
+            fill="#F9BBB8"
+            p-id="11553"
+          ></path>
+        </svg>
+      </div>
+      <div class="loader"></div>
+      <button id="startApp">直接启动</button>
+    </main>
+    <footer>
+      <span>SPlayer · Copyright &copy; <span id="year"></span> IMSYY</span>
+    </footer>
+
+    <script>
+      const startAppDom = document.getElementById("startApp");
+
+      // 更改年份
+      const currentYear = new Date().getFullYear();
+      document.getElementById("year").innerHTML = currentYear;
+
+      startAppDom.addEventListener("click", () => {
+        window.electron.ipcRenderer.send("win-loaded");
+      });
+
+      window.addEventListener("load", () => {
+        setTimeout(() => {
+          startAppDom.style.opacity = 1;
+        }, 3000);
+      });
+    </script>
+  </body>
+</html>

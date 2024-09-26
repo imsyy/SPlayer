@@ -1,0 +1,19 @@
+{
+  "extends": "@electron-toolkit/tsconfig/tsconfig.web.json",
+  "include": [
+    "src/env.d.ts",
+    "src/**/*",
+    "src/**/*.vue",
+    "electron/main/index.d.ts",
+    "electron/preload/index.d.ts"
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "maxNodeModuleJsDepth": 2,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "types": ["node", "electron", "electron-vite/node", "./auto-imports.d.ts", "./components.d.ts"]
+  }
+}

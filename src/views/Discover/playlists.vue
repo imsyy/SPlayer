@@ -1,11 +1,9 @@
-<!-- 发现 - 歌单 -->
 <template>
-  <div class="dsc-playlists">
-    <!-- 菜单 -->
-    <n-flex class="menu" align="center" justify="space-between">
-      <!-- 分类选择 -->
+  <div class="discover-playlists">
+    <n-flex justify="space-between" align="center" class="menu">
+      <!-- 分类 -->
       <n-button
-        class="cat"
+        :focusable="false"
         icon-placement="right"
         strong
         secondary
@@ -14,284 +12,198 @@
       >
         <template #icon>
           <n-icon class="more" depth="3">
-            <SvgIcon icon="chevron-right" />
+            <SvgIcon name="Right" />
           </n-icon>
         </template>
         {{ catName }}
       </n-button>
+      <!-- 精品 -->
       <Transition name="fade" mode="out-in">
-        <n-flex v-if="getHaveHqPlaylists(data.plCatList.hqCatList, catName)" align="center">
-          <n-text>精品歌单</n-text>
-          <n-switch v-model:value="hqPlOpen" :round="false" @update:value="hqPlOpenChange" />
-        </n-flex>
-      </Transition>
-    </n-flex>
-    <!-- 列表 -->
-    <MainCover :data="allPlData" />
-    <!-- 分页 -->
-    <Pagination
-      v-if="!hqPlOpen"
-      :totalCount="plTotalCount"
-      :pageNumber="pageNumber"
-      @pageNumberChange="pageNumberChange"
-    />
-    <!-- 加载更多 -->
-    <Transition name="fade" mode="out-in">
-      <n-flex justify="center">
-        <n-button
-          v-if="hqPlOpen && plHasMore"
-          :loading="plHasLoading"
-          class="load-more"
-          size="large"
-          strong
-          secondary
-          round
-          @click="
-            () => {
-              plHasLoading = true;
-              getDscPlaylistData(catName);
-            }
+        <n-tabs
+          v-if="hasHqPlaylist"
+          v-model:value="catHqType"
+          class="tabs"
+          type="segment"
+          @update:value="
+            (name: string) => changeCatName(catName, name === 'normal' ? 'false' : 'true')
           "
         >
-          加载更多
-        </n-button>
-      </n-flex>
-    </Transition>
-    <!-- 分类切换 -->
-    <n-modal v-model:show="catChangeShow" :bordered="false" preset="card">
+          <n-tab name="normal"> 推荐 </n-tab>
+          <n-tab name="hq"> 精品 </n-tab>
+        </n-tabs>
+      </Transition>
+    </n-flex>
+    <CoverList
+      v-if="playlistCount > 0"
+      :data="playlistData"
+      :loading="loading"
+      :loadMore="hasMore"
+      type="playlist"
+      @loadMore="loadMore"
+    />
+    <!-- 分类选择 -->
+    <n-modal
+      v-model:show="catChangeShow"
+      :bordered="false"
+      display-directive="show"
+      style="width: 600px"
+      preset="card"
+    >
       <template #header>
-        <div class="cat-header">
+        <n-flex align="center" class="cat-header">
           <n-text>歌单分类</n-text>
           <n-tag
             :type="catName == '全部歌单' ? 'primary' : 'default'"
             :bordered="false"
             round
-            class="tag"
             @click="changeCatName('全部歌单')"
           >
             全部歌单
           </n-tag>
-        </div>
+        </n-flex>
       </template>
-      <n-scrollbar style="max-height: 70vh">
-        <div v-if="data.plCatList.catList?.length" class="all-cat">
-          <n-list>
-            <n-list-item v-for="(cat, key) in data.plCatList.allCat" :key="cat">
-              <template #prefix>
-                <n-text class="type"> {{ cat }} </n-text>
+      <n-tabs type="segment" animated>
+        <n-tab-pane
+          v-for="(item, key, index) in dataStore.catData.type"
+          :key="index"
+          :name="key"
+          :tab="item"
+        >
+          <n-flex class="cat-list">
+            <n-tag
+              v-for="(cat, catIndex) in dataStore.catData.cats.filter(
+                (cat) => cat.category === Number(key),
+              )"
+              :key="catIndex"
+              :bordered="false"
+              :class="{ choose: catName === cat.name }"
+              size="large"
+              round
+              @click="changeCatName(cat.name)"
+            >
+              {{ cat.name }}
+              <template #icon>
+                <SvgIcon v-if="cat.hot" :depth="3" name="Fire" />
               </template>
-              <n-flex>
-                <n-tag
-                  v-for="item in data.plCatList.catList.filter((v) => v.category == key)"
-                  :key="item"
-                  :bordered="false"
-                  :type="item.name == catName ? 'primary' : 'default'"
-                  round
-                  class="tag"
-                  size="large"
-                  @click="changeCatName(item.name)"
-                >
-                  {{ item.name }}
-                  <template #icon>
-                    <n-icon v-if="item.hot" class="hot">
-                      <SvgIcon icon="fire" />
-                    </n-icon>
-                  </template>
-                </n-tag>
-              </n-flex>
-            </n-list-item>
-          </n-list>
-        </div>
-        <div v-else class="error">
-          <n-text>加载失败</n-text>
-        </div>
-      </n-scrollbar>
+            </n-tag>
+          </n-flex>
+        </n-tab-pane>
+      </n-tabs>
     </n-modal>
   </div>
 </template>
 
-<script setup>
-import { useRouter } from "vue-router";
-import { siteData, siteSettings } from "@/stores";
-import { getDscPlaylist } from "@/api/playlist";
-import formatData from "@/utils/formatData";
+<script setup lang="ts">
+import type { CoverType } from "@/types/main";
+import { useDataStore } from "@/stores";
+import { allCatlistPlaylist } from "@/api/playlist";
+import { formatCoverList } from "@/utils/format";
 
-const data = siteData();
-const settings = siteSettings();
 const router = useRouter();
+const dataStore = useDataStore();
 
-// 路由数据
-const pageNumber = ref(Number(router.currentRoute.value.query?.page) || 1);
-const catName = ref(router.currentRoute.value.query?.cat || "全部歌单");
-const hqPlOpen = ref(router.currentRoute.value.query?.hq === "true" ?? false);
+const catChangeShow = ref<boolean>(false);
+
+// 歌单分类
+const catName = ref<string>((router.currentRoute.value.query?.cat as string) || "全部歌单");
+const catHqType = ref<string>(
+  (router.currentRoute.value.query?.hq as string) === "true" ? "hq" : "normal",
+);
 
 // 歌单数据
-const catChangeShow = ref(false);
-const allPlData = ref([]);
-const plHasMore = ref(false);
-const plHasLoading = ref(false);
-const plTotalCount = ref(0);
+const hasMore = ref<boolean>(true);
+const loading = ref<boolean>(true);
+const playlistOffset = ref<number>(0);
+const playlistCount = ref<number>(1);
+const playlistData = ref<CoverType[]>([]);
 
-// 获取是否有精品歌单
-const getHaveHqPlaylists = (array, name) => {
-  if (array?.length <= 0) return false;
-  if (name == "全部歌单") {
-    return true;
-  } else {
-    return array.some((item) => {
-      return item.name == name;
-    });
-  }
+// 是否有精品歌单
+const hasHqPlaylist = computed<boolean>(() => {
+  if (dataStore.catData.hqCats?.length === 0) return false;
+  if (catName.value === "全部歌单") return true;
+  return dataStore.catData.hqCats.some((item) => item.name === catName.value);
+});
+
+// 获取歌单数据
+const getAllCatlistPlaylist = async () => {
+  // before
+  const before = playlistData.value?.at(-1)?.updateTime ?? undefined;
+  // 获取数据
+  loading.value = true;
+  const result = await allCatlistPlaylist(
+    catName.value,
+    50,
+    playlistOffset.value,
+    catHqType.value === "hq" ? true : false,
+    before,
+  );
+  // 是否还有
+  playlistCount.value = result?.total;
+  hasMore.value = result.more || result?.total > playlistOffset.value + 50;
+  // 处理数据
+  const listData = formatCoverList(result.playlists);
+  playlistData.value = playlistData.value?.concat(listData);
+  loading.value = false;
 };
 
-// 获取歌单
-const getDscPlaylistData = (cat = "全部歌单", limit = settings.loadSize, offset = 0) => {
-  try {
-    // 获取 before
-    const allPlDataLength = allPlData.value.length;
-    const resBefore = allPlDataLength > 0 ? allPlData.value[allPlDataLength - 1].updateTime : null;
-    // 获取数据
-    getDscPlaylist(cat, limit, offset, hqPlOpen.value, resBefore).then((res) => {
-      // 数据总数
-      plTotalCount.value = res.total;
-      // 列表数据
-      if (hqPlOpen.value) {
-        // 是否有更多
-        res.more ? (plHasMore.value = true) : (plHasMore.value = false);
-        plHasLoading.value = false;
-        allPlData.value.push(...formatData(res.playlists));
-      } else {
-        allPlData.value = [];
-        allPlData.value = formatData(res.playlists);
-      }
-    });
-  } catch (error) {
-    plHasMore.value = false;
-    console.error("歌单列表获取失败：", error);
-    $message.error("歌单列表获取失败");
-  }
-};
-
-// 精品歌单切换
-const hqPlOpenChange = (val) => {
-  allPlData.value = [];
-  router.push({
-    path: "/discover/playlists",
-    query: {
-      cat: catName.value,
-      hq: val ? true : false,
-    },
-  });
+// 加载更多
+const loadMore = () => {
+  playlistOffset.value += 50;
+  getAllCatlistPlaylist();
 };
 
 // 分类切换
-const changeCatName = (key) => {
-  allPlData.value = [];
-  router.push({
-    path: "/discover/playlists",
-    query: {
-      cat: key,
-      page: 1,
-    },
-  });
+const changeCatName = (cat: string, hq: string = "false") => {
   catChangeShow.value = false;
-};
-
-// 页数变化
-const pageNumberChange = (page) => {
-  allPlData.value = [];
   router.push({
-    path: "/discover/playlists",
-    query: {
-      cat: catName.value,
-      page: page,
-    },
+    name: "discover-playlists",
+    query: { cat, hq },
   });
 };
 
-// 监听路由变化
-watch(
-  () => router.currentRoute.value,
-  (val) => {
-    if (val.name === "dsc-playlists") {
-      // 更改参数
-      pageNumber.value = Number(val.query?.page) || 1;
-      catName.value = val.query?.cat || "全部歌单";
-      hqPlOpen.value = val.query?.hq === "true" ?? false;
-      // 调用接口
-      getDscPlaylistData(
-        catName.value,
-        settings.loadSize,
-        (pageNumber.value - 1) * settings.loadSize,
-      );
-    }
-  },
-);
+// 参数变化
+onBeforeRouteUpdate((to) => {
+  if (to.name !== "discover-playlists") return;
+  catName.value = (to.query?.cat as string) || "全部歌单";
+  catHqType.value = (to.query?.hq as string) === "true" ? "hq" : "normal";
+  playlistData.value = [];
+  // 获取歌单
+  getAllCatlistPlaylist();
+});
 
 onMounted(() => {
-  // 获取分类列表
-  data.setPlCatList();
-  // 获取歌单列表
-  getDscPlaylistData(catName.value, settings.loadSize, (pageNumber.value - 1) * settings.loadSize);
+  dataStore.getPlaylistCatList();
+  // 获取歌单
+  getAllCatlistPlaylist();
 });
 </script>
 
 <style lang="scss" scoped>
-.dsc-playlists {
+.discover-playlists {
   .menu {
-    margin-bottom: 20px;
-  }
-  .load-more {
-    margin-top: 40px;
+    margin-top: 20px;
+    .n-button {
+      height: 40px;
+    }
+    .n-tabs {
+      height: 40px;
+      width: 140px;
+      --n-tab-border-radius: 25px !important;
+      :deep(.n-tabs-rail) {
+        outline: 1px solid var(--n-tab-color-segment);
+      }
+    }
   }
 }
-.cat-header {
-  display: flex;
-  align-items: center;
+.cat-list {
+  align-content: flex-start;
+  min-height: 140px;
+  margin-top: 8px;
   .n-tag {
-    margin-left: 12px;
-    font-size: 12px;
-    transition:
-      transform 0.3s,
-      background-color 0.3s,
-      color 0.3s;
-    cursor: pointer;
-    &:hover {
-      background-color: var(--main-second-color);
-      color: var(--main-color);
-    }
-    &:active {
-      transform: scale(0.95);
-    }
-  }
-}
-.all-cat {
-  .type {
-    white-space: nowrap;
-    &::after {
-      content: ">";
-      margin-left: 6px;
-      opacity: 0.6;
-    }
-  }
-  .tag {
-    background-color: var(--n-action-color);
-    transition:
-      transform 0.3s,
-      background-color 0.3s,
-      color 0.3s;
-    cursor: pointer;
-    .hot {
-      color: var(--main-color);
+    font-size: 14px;
+    .n-icon {
       font-size: 16px;
       margin-left: 4px;
-    }
-    &:hover {
-      background-color: var(--main-second-color);
-      color: var(--main-color);
-    }
-    &:active {
-      transform: scale(0.95);
     }
   }
 }
