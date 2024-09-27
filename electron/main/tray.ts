@@ -36,11 +36,11 @@ export interface MainTray {
 
 // 托盘图标
 const trayIcon = (filename: string) => {
-  const rootPath = isDev
-    ? join(__dirname, "../../public/icons/tray")
-    : join(app.getAppPath(), "../../public/icons/tray");
-  return nativeImage.createFromPath(join(rootPath, filename));
-  // return nativeImage.createFromPath(join(__dirname, `../../public/icons/tray/${filename}`));
+  // const rootPath = isDev
+  //   ? join(__dirname, "../../public/icons/tray")
+  //   : join(app.getAppPath(), "../../public/icons/tray");
+  // return nativeImage.createFromPath(join(rootPath, filename));
+  return nativeImage.createFromPath(join(__dirname, `../../public/icons/tray/${filename}`));
 };
 
 // 托盘菜单

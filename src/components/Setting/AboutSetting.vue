@@ -13,16 +13,39 @@
         <n-button type="primary" strong secondary @click="checkUpdate"> 检查更新 </n-button>
       </n-card>
       <n-collapse-transition :show="!!updateData">
-        <n-card class="set-item" id="update-data">
+        <n-card class="set-item update-data">
           <n-flex class="version">
             <n-text>最新版本</n-text>
             <n-tag :bordered="false" size="small" type="primary">
-              {{ updateData?.version || "v0.0.0" }}
+              {{ newVersion?.version || "v0.0.0" }}
             </n-tag>
-            <n-text :depth="3" class="time">{{ updateData?.time }}</n-text>
+            <n-text :depth="3" class="time">{{ newVersion?.time }}</n-text>
           </n-flex>
-          <div class="changelog" v-html="updateData?.changelog" />
+          <div class="changelog" v-html="newVersion?.changelog" />
         </n-card>
+      </n-collapse-transition>
+    </div>
+    <div class="set-list">
+      <n-h3 prefix="bar"> 历史版本 </n-h3>
+      <n-collapse-transition :show="oldVersion?.length > 0">
+        <n-collapse accordion>
+          <n-collapse-item
+            v-for="(item, index) in oldVersion"
+            :key="index"
+            :title="item.version"
+            :name="item.version"
+          >
+            <n-card class="set-item update-data">
+              <n-flex class="version" justify="space-between">
+                <n-tag :bordered="false" size="small" type="primary">
+                  {{ item?.version || "v0.0.0" }}
+                </n-tag>
+                <n-text :depth="3" class="time">{{ item?.time }}</n-text>
+              </n-flex>
+              <div class="changelog" v-html="item?.changelog" />
+            </n-card>
+          </n-collapse-item>
+        </n-collapse>
       </n-collapse-transition>
     </div>
     <div class="set-list">
@@ -64,7 +87,16 @@ const communityData = [
 ];
 
 // 更新日志数据
-const updateData = ref<UpdateLogType | null>(null);
+const updateData = ref<UpdateLogType[] | null>(null);
+
+// 最新版本
+const newVersion = computed<UpdateLogType | undefined>(() => updateData.value?.[0]);
+
+// 历史版本
+const oldVersion = computed<UpdateLogType[]>(() => {
+  const oldData = updateData.value?.slice(1);
+  return oldData ? oldData : [];
+});
 
 // 检查更新
 const checkUpdate = debounce(() => {
@@ -95,10 +127,10 @@ onMounted(getUpdateData);
     border-radius: 6px;
   }
 }
-#update-data {
+.update-data {
   :deep(.n-card__content) {
-    flex-direction: column;
-    align-items: normal;
+    flex-direction: column !important;
+    align-items: normal !important;
   }
   .version {
     padding-left: 4px;

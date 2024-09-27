@@ -1,9 +1,11 @@
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import relativeTime from "dayjs/plugin/relativeTime";
+import localizedFormat from "dayjs/plugin/localizedFormat";
 
 dayjs.extend(duration);
 dayjs.extend(relativeTime);
+dayjs.extend(localizedFormat);
 
 // 秒转为时间
 export const secondsToTime = (seconds: number) => {
@@ -120,10 +122,19 @@ export const getGreeting = () => {
  * 是否为当天的6点之前
  * @param timestamp 当前时间戳
  */
-export const isBeforeSixAM  = (timestamp: number) => {
+export const isBeforeSixAM = (timestamp: number) => {
   // 当天的早上 6 点
-  const sixAM = dayjs().startOf('day').add(6, 'hour');
+  const sixAM = dayjs().startOf("day").add(6, "hour");
   // 判断输入时间是否在六点之前
   const inputTime = dayjs(timestamp);
   return inputTime.isBefore(sixAM);
+};
+
+/**
+ * 将 ISO 8601 格式的时间字符串转换为本地时间
+ * @param isoString - ISO 8601 格式的时间字符串
+ * @returns
+ */
+export const convertToLocalTime = (isoString: string): string => {
+  return dayjs(isoString).format("YYYY-MM-DD HH:mm:ss");
 };

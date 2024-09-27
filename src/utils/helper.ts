@@ -4,6 +4,8 @@ import { h, VNode } from "vue";
 import { useClipboard } from "@vueuse/core";
 import { getCacheData } from "./cache";
 import { updateLog } from "@/api/other";
+import { isEmpty } from "lodash-es";
+import { convertToLocalTime } from "./time";
 import { marked } from "marked";
 import SvgIcon from "@/components/Global/SvgIcon.vue";
 
@@ -266,12 +268,16 @@ export const formatForGlobalShortcut = (shortcut: string): string => {
 };
 
 // 获取更新日志
-export const getUpdateLog = async (): Promise<UpdateLogType> => {
-  const result = await getCacheData(updateLog, { key: "updateLog", time: 60 });
-  return {
-    version: result.tag_name,
-    changelog: await marked(result.body),
-    time: result.published_at,
-    url: result.html_url,
-  };
+export const getUpdateLog = async (): Promise<UpdateLogType[]> => {
+  const result = await getCacheData(updateLog, { key: "updateLog", time: 10 });
+  if (!result || isEmpty(result)) return [];
+  const updateLogs = await Promise.all(
+    result.map(async (v: any) => ({
+      version: v.tag_name,
+      changelog: await marked(v.body),
+      time: convertToLocalTime(v.published_at),
+      url: v.html_url,
+    })),
+  );
+  return updateLogs;
 };
