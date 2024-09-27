@@ -237,3 +237,13 @@ body {
   background-color: var(--primary-hex);
   color: var(--background-hex);
 }
+
+// markdown
+.markdown-body {
+  --bgColor-default: var(--background-hex) !important;
+  --bgColor-muted: var(--background-hex) !important;
+  --fgColor-default: var(--n-text-color) !important;
+  margin-top: 12px !important;
+  padding: 20px;
+  border-radius: 8px;
+}

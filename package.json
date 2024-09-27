@@ -57,6 +57,7 @@
     "electron-updater": "^6.3.4",
     "file-saver": "^2.0.5",
     "font-list": "^1.5.1",
+    "github-markdown-css": "^5.7.0",
     "howler": "^2.2.4",
     "js-cookie": "^3.0.5",
     "jss": "^10.10.0",

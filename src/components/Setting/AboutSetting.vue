@@ -19,9 +19,12 @@
             <n-tag :bordered="false" size="small" type="primary">
               {{ newVersion?.version || "v0.0.0" }}
             </n-tag>
+            <n-tag v-if="newVersion?.prerelease" class="test" size="small" type="warning">
+              测试版
+            </n-tag>
             <n-text :depth="3" class="time">{{ newVersion?.time }}</n-text>
           </n-flex>
-          <div class="changelog" v-html="newVersion?.changelog" />
+          <div class="markdown-body" v-html="newVersion?.changelog" />
         </n-card>
       </n-collapse-transition>
     </div>
@@ -42,7 +45,7 @@
                 </n-tag>
                 <n-text :depth="3" class="time">{{ item?.time }}</n-text>
               </n-flex>
-              <div class="changelog" v-html="item?.changelog" />
+              <div class="markdown-body" v-html="item?.changelog" />
             </n-card>
           </n-collapse-item>
         </n-collapse>
@@ -135,20 +138,12 @@ onMounted(getUpdateData);
   .version {
     padding-left: 4px;
     .n-tag {
+      pointer-events: none;
       border-radius: 6px;
     }
     .time {
       margin-left: auto;
       font-size: 13px;
-    }
-  }
-  .changelog {
-    margin-top: 12px;
-    padding: 20px;
-    background-color: var(--n-border-color);
-    border-radius: 8px;
-    :deep(ul) {
-      margin: 1rem 0 0 1rem;
     }
   }
 }

@@ -212,6 +212,7 @@ export type UpdateLogType = {
   changelog: string;
   time: number;
   url: string;
+  prerelease: boolean;
   force?: boolean;
 };
 
@@ -232,4 +233,5 @@ interface UpdateInfoType {
   releaseDate: string;
   releaseName: string;
   releaseNotes: string;
+  prerelease: boolean;
 }

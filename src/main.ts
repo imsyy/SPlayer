@@ -15,6 +15,7 @@ import initIpc from "@/utils/initIpc";
 // 全局样式
 import "@/style/main.scss";
 import "@/style/animate.scss";
+import "github-markdown-css/github-markdown.css";
 
 // 初始化 ipc
 initIpc();

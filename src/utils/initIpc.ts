@@ -38,10 +38,7 @@ const initIpc = () => {
       window.$message.success("当前已是最新版本");
     });
     // 有更新
-    window.electron.ipcRenderer.on("update-available", (_, info) => {
-      console.log(info);
-      openUpdateApp(info);
-    });
+    window.electron.ipcRenderer.on("update-available", (_, info) => openUpdateApp(info));
     // 更新错误
     window.electron.ipcRenderer.on("update-error", (_, error) => {
       console.error("Error updating:", error);

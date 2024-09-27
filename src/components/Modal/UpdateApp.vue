@@ -9,8 +9,8 @@
         {{ data?.version || "v0.0.0" }}
       </n-tag>
     </n-flex>
-    <div v-if="data?.releaseNotes" class="changelog" v-html="data.releaseNotes" />
-    <div v-else class="changelog">暂无更新日志</div>
+    <div v-if="data?.releaseNotes" class="markdown-body" v-html="data.releaseNotes" />
+    <div v-else class="markdown-body">暂无更新日志</div>
     <n-flex class="menu" justify="end">
       <n-button strong secondary @click="emit('close')"> 取消 </n-button>
       <n-button type="warning" strong secondary @click="goDownload"> 前往下载 </n-button>
@@ -25,9 +25,7 @@
 import type { UpdateInfoType } from "@/types/main";
 import packageJson from "@/../package.json";
 
-defineProps<{
-  data: UpdateInfoType;
-}>();
+defineProps<{ data: UpdateInfoType }>();
 
 const emit = defineEmits<{ close: [] }>();
 
@@ -74,15 +72,6 @@ const goDownload = () => {
     .time {
       margin-left: auto;
       font-size: 13px;
-    }
-  }
-  .changelog {
-    margin-top: 12px;
-    padding: 20px;
-    background-color: var(--n-border-color);
-    border-radius: 8px;
-    :deep(ul) {
-      margin: 1rem 0 0 1rem;
     }
   }
   .menu {

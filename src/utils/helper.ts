@@ -251,6 +251,7 @@ export const getUpdateLog = async (): Promise<UpdateLogType[]> => {
       changelog: await marked(v.body),
       time: convertToLocalTime(v.published_at),
       url: v.html_url,
+      prerelease: v.prerelease,
     })),
   );
   return updateLogs;

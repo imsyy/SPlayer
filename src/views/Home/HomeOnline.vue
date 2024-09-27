@@ -8,6 +8,7 @@
           <SongListCard
             :data="musicStore.dailySongsData.list"
             :title="dailySongsTitle"
+            :height="90"
             description="根据你的音乐口味 · 每日更新"
             size="small"
             @click="router.push({ name: 'daily-songs' })"
@@ -15,6 +16,7 @@
           <!-- 我喜欢的音乐 -->
           <SongListCard
             :data="dataStore.likeSongsList.data"
+            :height="90"
             title="我喜欢的音乐"
             description="发现你独特的音乐品味"
             size="small"

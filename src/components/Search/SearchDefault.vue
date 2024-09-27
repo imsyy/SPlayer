@@ -20,7 +20,7 @@
               round
               @click="emit('toSearch', item)"
             >
-              {{ item }}
+              {{ item.length > 10 ? item.slice(0, 10) + "..." : item }}
             </n-tag>
           </n-flex>
         </div>
