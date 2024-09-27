@@ -54,7 +54,9 @@
               :class="['song-item', { play: musicStore.playSong.id === item.id }]"
               :style="{ margin }"
               @dblclick.stop="playSong(item)"
-              @contextmenu="songListMenuRef?.openDropdown($event, data, item, index, type)"
+              @contextmenu="
+                songListMenuRef?.openDropdown($event, data, item, index, type, playListId)
+              "
             >
               <!-- 序号 -->
               <div class="num" @dblclick.stop>
@@ -226,7 +228,7 @@
         </template>
       </DynamicScroller>
       <!-- 右键菜单 -->
-      <SongListMenu ref="songListMenuRef" />
+      <SongListMenu ref="songListMenuRef" @removeSong="removeSong" />
       <!-- 列表操作 -->
       <Teleport to="body">
         <Transition name="fade" mode="out-in">
@@ -300,6 +302,8 @@ const emit = defineEmits<{
   reachBottom: [];
   // 滚动
   scroll: [e: Event];
+  // 删除歌曲
+  removeSong: [id: number[]];
 }>();
 
 // 右键菜单
@@ -431,6 +435,9 @@ const onScroll = (e: Event) => {
   // 滚动事件
   emit("scroll", e);
 };
+
+// 删除指定索引
+const removeSong = (id: number[]) => emit("removeSong", id);
 
 onDeactivated(() => {
   floatToolShow.value = false;

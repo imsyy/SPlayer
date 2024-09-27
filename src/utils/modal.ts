@@ -118,8 +118,9 @@ export const openPlaylistAdd = (data: SongType[], isLocal: boolean) => {
  * 开启批量操作
  * @param data 歌曲列表
  * @param isLocal 是否为本地音乐
+ * @param playListId 歌单 id
  */
-export const openBatchList = (data: SongType[], isLocal: boolean) => {
+export const openBatchList = (data: SongType[], isLocal: boolean, playListId?: number) => {
   window.$modal.create({
     preset: "card",
     transformOrigin: "center",
@@ -128,7 +129,7 @@ export const openBatchList = (data: SongType[], isLocal: boolean) => {
       maxWidth: "70vw",
     },
     title: "批量操作",
-    content: () => h(batchList, { data, isLocal }),
+    content: () => h(batchList, { data, isLocal, playListId }),
   });
 };
 

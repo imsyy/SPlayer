@@ -189,6 +189,7 @@
         :playListId="playlistId"
         hidden-padding
         @scroll="listScroll"
+        @removeSong="removeSong"
       />
       <n-empty
         v-else
@@ -216,8 +217,8 @@ import { isLogin, updateUserLikePlaylist } from "@/utils/auth";
 import { debounce } from "lodash-es";
 import { useDataStore, useStatusStore } from "@/stores";
 import { openBatchList, openUpdatePlaylist } from "@/utils/modal";
-import player from "@/utils/player";
 import { formatTimestamp } from "@/utils/time";
+import player from "@/utils/player";
 
 const router = useRouter();
 const dataStore = useDataStore();
@@ -291,7 +292,12 @@ const moreOptions = computed<DropdownOption[]>(() => [
     label: "批量操作",
     key: "batch",
     props: {
-      onClick: () => openBatchList(playlistDataShow.value, false),
+      onClick: () =>
+        openBatchList(
+          playlistDataShow.value,
+          false,
+          isUserPlaylist.value ? playlistId.value : undefined,
+        ),
     },
     icon: renderIcon("Batch"),
   },
@@ -452,6 +458,12 @@ const toDeletePlaylist = async () => {
       }
     },
   });
+};
+
+// 删除指定索引歌曲
+const removeSong = (ids: number[]) => {
+  if (!playlistData.value) return;
+  playlistData.value = playlistData.value.filter((song) => !ids.includes(song.id));
 };
 
 // 编辑歌单

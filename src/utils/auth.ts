@@ -20,6 +20,7 @@ import { debounce } from "lodash-es";
 import { isBeforeSixAM } from "./time";
 import { dailyRecommend } from "@/api/rec";
 import { isElectron } from "./helper";
+import { playlistTracks } from "@/api/playlist";
 
 // 是否登录
 export const isLogin = () => !!getCookie("MUSIC_U");
@@ -255,6 +256,38 @@ export const updateDailySongsData = async (refresh = false) => {
     if (refresh) window.$message.success("每日推荐更新成功");
   } catch (error) {
     console.error("❌ Error updating daily songs data:", error);
+    throw error;
+  }
+};
+
+/**
+ * 删除歌曲
+ * @param pid 歌单id
+ * @param ids 要删除的歌曲id
+ */
+export const deleteSongs = async (pid: number, ids: number[], callback?: () => void) => {
+  try {
+    window.$dialog.warning({
+      title: "删除歌曲",
+      content: ids?.length > 1 ? "确定删除这些选中的歌曲吗？" : "确定删除这个歌曲吗？",
+      positiveText: "删除",
+      negativeText: "取消",
+      onPositiveClick: async () => {
+        const result = await playlistTracks(pid, ids, "del");
+        if (result.status === 200) {
+          if (result.body?.code !== 200) {
+            window.$message.error(result.body?.message || "删除歌曲失败，请重试");
+            return;
+          }
+          callback && callback();
+          window.$message.success("删除成功");
+        } else {
+          window.$message.error(result?.message || "删除歌曲失败，请重试");
+        }
+      },
+    });
+  } catch (error) {
+    console.error("❌ Error deleting songs:", error);
     throw error;
   }
 };

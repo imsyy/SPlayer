@@ -10,6 +10,25 @@
     <n-flex class="batch-footer" justify="space-between" align="center">
       <n-text :depth="3" class="count">已选择 {{ checkCount }} 首</n-text>
       <n-flex class="menu">
+        <!-- 批量删除 -->
+        <n-button
+          v-if="playListId"
+          :disabled="!checkCount"
+          type="error"
+          strong
+          secondary
+          @click="
+            deleteSongs(
+              playListId,
+              checkSongData.map((item) => item.id),
+            )
+          "
+        >
+          <template #icon>
+            <SvgIcon name="Delete" />
+          </template>
+          删除选中的歌曲
+        </n-button>
         <!-- 添加到歌单 -->
         <n-button
           :disabled="!checkCount"
@@ -33,6 +52,7 @@ import type { DataTableColumns, DataTableRowKey } from "naive-ui";
 import type { SongType } from "@/types/main";
 import { isArray, isObject } from "lodash-es";
 import { openPlaylistAdd } from "@/utils/modal";
+import { deleteSongs } from "@/utils/auth";
 
 interface DataType {
   key?: number;
@@ -47,6 +67,7 @@ interface DataType {
 const props = defineProps<{
   data: SongType[];
   isLocal: boolean;
+  playListId?: number;
 }>();
 
 // 选中数据

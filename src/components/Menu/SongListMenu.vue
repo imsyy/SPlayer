@@ -18,7 +18,7 @@
 <script setup lang="ts">
 import type { SongType } from "@/types/main";
 import { NAlert, type DropdownOption } from "naive-ui";
-import { useStatusStore, useSettingStore, useLocalStore, useDataStore } from "@/stores";
+import { useStatusStore, useLocalStore, useDataStore } from "@/stores";
 import { renderIcon, copyData } from "@/utils/helper";
 import { deleteCloudSong } from "@/api/cloud";
 import {
@@ -28,13 +28,14 @@ import {
   openSongInfoEditor,
 } from "@/utils/modal";
 import player from "@/utils/player";
+import { deleteSongs } from "@/utils/auth";
+
+const emit = defineEmits<{ removeSong: [index: number[]] }>();
 
 const router = useRouter();
-
 const dataStore = useDataStore();
 const localStore = useLocalStore();
 const statusStore = useStatusStore();
-const settingStore = useSettingStore();
 
 // 右键菜单数据
 const dropdownX = ref<number>(0);
@@ -49,19 +50,23 @@ const openDropdown = (
   song: SongType,
   index: number,
   type: "song" | "radio",
+  playListId?: number,
 ) => {
   try {
     e.preventDefault();
     dropdownShow.value = false;
+    // 用户歌单
+    const userPlaylistsData = dataStore.userLikeData.playlists?.filter(
+      (pl) => pl.userId === dataStore.userData.userId,
+    );
     // 当前状态
     const isHasMv = !!song?.mv && song.mv !== 0;
     const isCloud = router.currentRoute.value.name === "cloud";
-    const isSong = song.type === "song";
     const isLocal = !!song?.path;
     // 是否当前播放
     const isCurrent = statusStore.playIndex === index;
-    console.log(isHasMv, isCloud, isLocal, data, index, settingStore.showTran);
-
+    // 是否为用户歌单
+    const isUserPlaylist = !!playListId && userPlaylistsData.some((pl) => pl.id === playListId);
     // 生成菜单
     nextTick().then(() => {
       dropdownOptions.value = [
@@ -93,7 +98,7 @@ const openDropdown = (
         {
           key: "mv",
           label: "观看 MV",
-          show: isSong && isHasMv,
+          show: type === "song" && isHasMv,
           props: {
             onClick: () => router.push({ name: "video", query: { id: song.mv, type: "mv" } }),
           },
@@ -161,6 +166,15 @@ const openDropdown = (
           type: "divider",
         },
         {
+          key: "delete",
+          label: "从歌单中删除",
+          show: isUserPlaylist && !isCloud,
+          props: {
+            onClick: () => deleteSongs(playListId!, [song.id], () => emit("removeSong", [song.id])),
+          },
+          icon: renderIcon("Delete"),
+        },
+        {
           key: "cloud-delete",
           label: "从云盘中删除",
           show: isCloud,
@@ -207,7 +221,7 @@ const openDropdown = (
         {
           key: "download",
           label: "下载歌曲",
-          show: !isLocal && isSong,
+          show: !isLocal && type === "song",
           props: { onClick: () => openDownloadSong(song) },
           icon: renderIcon("Download"),
         },
