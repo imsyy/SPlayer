@@ -1,6 +1,11 @@
 <template>
   <div class="local-songs">
-    <SongList :data="data" :loading="loading" :hidden-cover="!settingStore.showLocalCover" />
+    <SongList
+      :key="data?.length"
+      :data="data"
+      :loading="loading"
+      :hidden-cover="!settingStore.showLocalCover"
+    />
   </div>
 </template>
 

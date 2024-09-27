@@ -44,7 +44,6 @@
     <!-- 分类选择 -->
     <n-modal
       v-model:show="catChangeShow"
-      :bordered="false"
       display-directive="show"
       style="width: 600px"
       preset="card"

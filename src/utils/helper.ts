@@ -1,11 +1,12 @@
-import { type ImageRenderToolbarProps, NTooltip, SelectOption } from "naive-ui";
 import type { SongType, UpdateLogType } from "@/types/main";
+import { NTooltip, SelectOption } from "naive-ui";
 import { h, VNode } from "vue";
 import { useClipboard } from "@vueuse/core";
 import { getCacheData } from "./cache";
 import { updateLog } from "@/api/other";
 import { isEmpty } from "lodash-es";
 import { convertToLocalTime } from "./time";
+import { useSettingStore } from "@/stores";
 import { marked } from "marked";
 import SvgIcon from "@/components/Global/SvgIcon.vue";
 
@@ -61,19 +62,6 @@ export const renderOption = ({ node, option }: { node: VNode; option: SelectOpti
       default: () => option.label,
     },
   );
-
-// 排序选项
-export const sortOptions = {
-  default: { name: "默认排序", show: "all", icon: renderIcon("Sort") },
-  titleAZ: { name: "标题升序（ A - Z ）", show: "all", icon: renderIcon("SortAZ") },
-  titleZA: { name: "标题降序（ Z - A ）", show: "all", icon: renderIcon("SortZA") },
-  arAZ: { name: "歌手升序（ A - Z ）", show: "song", icon: renderIcon("SortAZ") },
-  arZA: { name: "歌手降序（ Z - A ）", show: "song", icon: renderIcon("SortZA") },
-  timeUp: { name: "时长升序", show: "all", icon: renderIcon("SortClockUp") },
-  timeDown: { name: "时长降序", show: "all", icon: renderIcon("SortClockDown") },
-  dateUp: { name: "日期升序", show: "radio", icon: renderIcon("SortDateUp") },
-  dateDown: { name: "日期降序", show: "radio", icon: renderIcon("SortDateDown") },
-};
 
 // 模糊搜索
 export const fuzzySearch = (keyword: string, data: SongType[]): SongType[] => {
@@ -190,20 +178,6 @@ export const convertImageUrlToBlobUrl = async (imageUrl: string) => {
   return imageBlobURL;
 };
 
-// 自定义图片工具栏
-export const renderToolbar = ({ nodes }: ImageRenderToolbarProps) => {
-  return [
-    nodes.prev,
-    nodes.next,
-    nodes.rotateCounterclockwise,
-    nodes.rotateClockwise,
-    nodes.resizeToOriginalSize,
-    nodes.zoomOut,
-    nodes.zoomIn,
-    nodes.close,
-  ];
-};
-
 // 复制文本
 export const copyData = async (text: any, message?: string) => {
   const { copy, copied, isSupported } = useClipboard({ legacy: true });
@@ -280,4 +254,35 @@ export const getUpdateLog = async (): Promise<UpdateLogType[]> => {
     })),
   );
   return updateLogs;
+};
+
+/**
+ * 更改本地目录
+ * @param delIndex 删除文件夹路径的索引
+ */
+export const changeLocalPath = async (delIndex?: number) => {
+  try {
+    if (!isElectron) return;
+    const settingStore = useSettingStore();
+    if (typeof delIndex === "number" && delIndex >= 0) {
+      settingStore.localFilesPath.splice(delIndex, 1);
+    } else {
+      const selectedDir = await window.electron.ipcRenderer.invoke("choose-path");
+      if (!selectedDir) return;
+      // 检查是否为子文件夹
+      const defaultMusicPath = await window.electron.ipcRenderer.invoke("get-default-dir", "music");
+      const allPath = [defaultMusicPath, ...settingStore.localFilesPath];
+      const isSubfolder = allPath.some((existingPath) => {
+        return selectedDir.startsWith(existingPath);
+      });
+      if (!isSubfolder) {
+        settingStore.localFilesPath.push(selectedDir);
+      } else {
+        window.$message.error("添加的目录与现有目录有重叠，请重新选择");
+      }
+    }
+  } catch (error) {
+    console.error("Error changing local path:", error);
+    window.$message.error("更改本地歌曲文件夹出错，请重试");
+  }
 };

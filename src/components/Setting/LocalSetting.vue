@@ -10,6 +10,36 @@
         </div>
         <n-switch class="set" v-model:value="settingStore.showLocalCover" :round="false" />
       </n-card>
+      <n-card class="set-item" id="local-list-choose" content-style="flex-direction: column">
+        <n-flex justify="space-between">
+          <div class="label">
+            <n-text class="name">本地歌曲目录</n-text>
+            <n-text class="tip" :depth="3">可在此增删本地歌曲目录，歌曲增删实时同步</n-text>
+          </div>
+          <n-button strong secondary @click="changeLocalPath()">
+            <template #icon>
+              <SvgIcon name="Folder" />
+            </template>
+            更改
+          </n-button>
+        </n-flex>
+        <n-collapse-transition :show="settingStore.localFilesPath.length > 0">
+          <n-card
+            v-for="(item, index) in settingStore.localFilesPath"
+            :key="index"
+            class="set-item"
+          >
+            <div class="label">
+              <n-text class="name">{{ item }}</n-text>
+            </div>
+            <n-button strong secondary @click="changeLocalPath(index)">
+              <template #icon>
+                <SvgIcon name="Delete" />
+              </template>
+            </n-button>
+          </n-card>
+        </n-collapse-transition>
+      </n-card>
     </div>
     <div class="set-list">
       <n-h3 prefix="bar"> 下载配置 </n-h3>
@@ -89,6 +119,7 @@
 
 <script setup lang="ts">
 import { useSettingStore } from "@/stores";
+import { changeLocalPath } from "@/utils/helper";
 
 const settingStore = useSettingStore();
 
@@ -98,3 +129,14 @@ const choosePath = async () => {
   if (path) settingStore.downloadPath = path;
 };
 </script>
+
+<style lang="scss" scoped>
+#local-list-choose {
+  .n-flex {
+    width: 100%;
+  }
+  .n-collapse-transition {
+    margin-top: 12px;
+  }
+}
+</style>

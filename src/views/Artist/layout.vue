@@ -140,7 +140,8 @@
 <script setup lang="ts">
 import type { DropdownOption } from "naive-ui";
 import type { ArtistType } from "@/types/main";
-import { coverLoaded, renderIcon, renderToolbar } from "@/utils/helper";
+import { coverLoaded, renderIcon } from "@/utils/helper";
+import { renderToolbar } from "@/utils/meta";
 import { artistDetail } from "@/api/artist";
 import { formatArtistsList } from "@/utils/format";
 import { useDataStore, useSettingStore } from "@/stores";
