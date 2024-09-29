@@ -38,8 +38,11 @@
 
 <script setup lang="ts">
 import { useStatusStore, useDataStore } from "@/stores";
-import SearchInpMenu from "@/components/Menu/SearchInpMenu.vue";
 import { searchDefault } from "@/api/search";
+import SearchInpMenu from "@/components/Menu/SearchInpMenu.vue";
+import player from "@/utils/player";
+import { songDetail } from "@/api/song";
+import { formatSongsList } from "@/utils/format";
 
 const router = useRouter();
 const dataStore = useDataStore();
@@ -90,7 +93,7 @@ const updatePlaceholder = async () => {
 };
 
 // 前往搜索
-const toSearch = (key: any, type: string = "keyword") => {
+const toSearch = async (key: any, type: string = "keyword") => {
   // 未输入内容且不存在推荐
   if (!key && searchPlaceholder.value === "搜索音乐 / 视频") return;
   if (!key && searchPlaceholder.value !== "搜索音乐 / 视频" && searchRealkeyword.value) {
@@ -110,8 +113,12 @@ const toSearch = (key: any, type: string = "keyword") => {
       });
       setSearchHistory(key);
       break;
-    case "songs":
+    case "songs": {
+      const result = await songDetail(key?.id);
+      const song = formatSongsList(result.songs)[0];
+      player.addNextSong(song, true);
       break;
+    }
     case "playlists":
       router.push({
         name: "playlist",
@@ -119,6 +126,10 @@ const toSearch = (key: any, type: string = "keyword") => {
       });
       break;
     case "artists":
+      router.push({
+        name: "artist",
+        query: { id: key?.id },
+      });
       break;
     case "albums":
       router.push({
