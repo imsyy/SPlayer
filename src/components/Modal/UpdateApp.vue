@@ -39,7 +39,7 @@ const startDownload = async () => {
   window.electron.ipcRenderer.send("start-download-update");
   // 监听状态
   window.electron.ipcRenderer.on("download-progress", (_, progress) => {
-    downloadProgress.value = Number(progress);
+    downloadProgress.value = Number(progress?.percent || 0);
   });
   // 更新错误
   window.electron.ipcRenderer.on("update-error", (_, error) => {

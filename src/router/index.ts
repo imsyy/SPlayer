@@ -9,22 +9,22 @@ const router: Router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
   routes,
   // 保留滚动
-  scrollBehavior(to, _, savedPosition) {
-    if (savedPosition) {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve(savedPosition);
-        }, 300);
-      });
-    } else if (to.hash) {
-      return {
-        el: to.hash,
-        behavior: "smooth",
-      };
-    } else {
-      return { top: 0, left: 0, behavior: "smooth" };
-    }
-  },
+  // scrollBehavior(to, _, savedPosition) {
+  //   if (savedPosition) {
+  //     return new Promise((resolve) => {
+  //       setTimeout(() => {
+  //         resolve(savedPosition);
+  //       }, 300);
+  //     });
+  //   } else if (to.hash) {
+  //     return {
+  //       el: to.hash,
+  //       behavior: "smooth",
+  //     };
+  //   } else {
+  //     return { top: 0, left: 0, behavior: "smooth" };
+  //   }
+  // },
 });
 
 // 前置守卫

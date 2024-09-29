@@ -199,6 +199,9 @@ const changeGlobalTheme = () => {
             railColor: `rgba(${colorSchemes.primary}, 0.2)`,
             railColorHover: `rgba(${colorSchemes.primary}, 0.3)`,
           },
+          Popover: {
+            color: `rgb(${colorSchemes["surface-container"]})`,
+          },
         };
   } catch (error) {
     themeOverrides.value = {};

@@ -36,11 +36,6 @@
           <n-text>{{ item.name }}</n-text>
           <SvgIcon v-if="item.path" :size="26" name="Right" />
         </n-h3>
-        <!-- <n-button :focusable="false" quaternary circle>
-          <template #icon>
-            <SvgIcon name="Refresh" />
-          </template>
-        </n-button> -->
       </n-flex>
       <!-- 列表 -->
       <ArtistList v-if="item.type === 'artist'" :data="item.list" :loading="true" />

@@ -80,10 +80,10 @@ const keyDownEvent = debounce((event: KeyboardEvent) => {
           player.playOrPause();
           break;
         case "playPrev":
-          player.nextOrPrev("next");
+          player.nextOrPrev("prev");
           break;
         case "playNext":
-          player.nextOrPrev("prev");
+          player.nextOrPrev("next");
           break;
         case "volumeUp":
           player.setVolume("up");
