@@ -69,10 +69,12 @@ class Player {
   /**
    * 清理播放器
    */
-  private cleanPlayer() {
+  private async cleanPlayer() {
     Howler.unload();
     // this.player?.stop();
     // this.player?.unload();
+    // 延时防止 bug
+    await sleep(50);
   }
   /**
    * 获取当前播放歌曲
@@ -201,7 +203,7 @@ class Player {
    * @param src 播放地址
    * @param autoPlay 是否自动播放
    */
-  private createPlayer(src: string, autoPlay: boolean = true) {
+  private async createPlayer(src: string, autoPlay: boolean = true) {
     // 获取数据
     const dataStore = useDataStore();
     const musicStore = useMusicStore();
@@ -210,7 +212,7 @@ class Player {
     // 播放信息
     const { id, path, type } = musicStore.playSong;
     // 清理播放器
-    this.cleanPlayer();
+    await this.cleanPlayer();
     // 禁用自动解锁
     Howler.autoUnlock = false;
     // 创建播放器
@@ -530,7 +532,7 @@ class Player {
       statusStore.playLoading = true;
       // 本地歌曲
       if (path) {
-        this.createPlayer(path, autoPlay);
+        await this.createPlayer(path, autoPlay);
         // 获取歌曲元信息
         await this.parseLocalMusicInfo(path);
       }
@@ -542,7 +544,7 @@ class Player {
         // 正常播放地址
         if (url) {
           statusStore.playUblock = false;
-          this.createPlayer(url, autoPlay);
+          await this.createPlayer(url, autoPlay);
         }
         // 尝试解灰
         else if (isElectron && type !== "radio" && settingStore.useSongUnlock) {
@@ -550,7 +552,7 @@ class Player {
           if (unlockUrl) {
             statusStore.playUblock = true;
             console.log("🎼 Song unlock successfully:", unlockUrl);
-            this.createPlayer(unlockUrl, autoPlay);
+            await this.createPlayer(unlockUrl, autoPlay);
           } else {
             statusStore.playUblock = false;
             // 是否为最后一首
@@ -850,7 +852,7 @@ class Player {
         statusStore.$patch({ playIndex, lyricIndex: -1 });
         // 清理并播放
         await this.resetStatus();
-        this.initPlayer();
+        await this.initPlayer();
       }
     } else {
       const playIndex =
@@ -858,7 +860,7 @@ class Player {
       statusStore.$patch({ playIndex, lyricIndex: -1 });
       // 清理并播放
       await this.resetStatus();
-      this.initPlayer();
+      await this.initPlayer();
     }
     // 更改播放歌单
     musicStore.playPlaylistId = pid ?? 0;
@@ -952,7 +954,7 @@ class Player {
     const statusStore = useStatusStore();
     // 停止播放
     await this.resetStatus();
-    this.cleanPlayer();
+    await this.cleanPlayer();
     // 清空数据
     statusStore.$patch({
       playListShow: false,

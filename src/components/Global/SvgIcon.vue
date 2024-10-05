@@ -37,6 +37,6 @@ onMounted(() => loadSVG(props.name));
   margin: 0;
   padding: 0;
   // transition: all 0.3s;
-  color: var(--primary-hex);
+  // color: var(--primary-hex);
 }
 </style>

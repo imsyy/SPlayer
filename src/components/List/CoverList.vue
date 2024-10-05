@@ -10,32 +10,17 @@
           >
             <!-- 封面 -->
             <div class="cover">
-              <n-image
+              <s-image
+                :key="item.cover"
                 :src="
                   type === 'video' ? `${item.cover}?param=464y260` : item.coverSize?.m || item.cover
                 "
+                :default-src="
+                  type !== 'video' ? '/images/album.jpg?assest' : '/images/video.jpg?assest'
+                "
                 class="cover-img"
-                preview-disabled
-                lazy
-                @load="coverLoaded"
-              >
-                <template #placeholder>
-                  <div class="cover-loading">
-                    <img
-                      v-if="type !== 'video'"
-                      src="/images/album.jpg?assest"
-                      class="loading-img"
-                      alt="loading-img"
-                    />
-                    <img
-                      v-else
-                      src="/images/video.jpg?assest"
-                      class="loading-img"
-                      alt="loading-img"
-                    />
-                  </div>
-                </template>
-              </n-image>
+                once
+              />
               <template v-if="item.playCount">
                 <!-- 遮罩 -->
                 <div v-if="type !== 'album'" class="cover-mask" />
@@ -129,7 +114,7 @@
 <script setup lang="ts">
 import type { CoverType, SongType } from "@/types/main";
 import { albumDetail } from "@/api/album";
-import { coverLoaded, formatNumber } from "@/utils/helper";
+import { formatNumber } from "@/utils/helper";
 import { useMusicStore, useStatusStore } from "@/stores";
 import { debounce } from "lodash-es";
 import { formatSongsList } from "@/utils/format";
@@ -255,7 +240,7 @@ const getListData = async (id: number): Promise<SongType[]> => {
       :deep(img) {
         width: 100%;
         height: 100%;
-        opacity: 0;
+        // opacity: 0;
         transition: opacity 0.35s ease-in-out;
       }
       .cover-img {

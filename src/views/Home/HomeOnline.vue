@@ -83,7 +83,7 @@ const dailySongsTitle = computed(() => {
   const day = new Date().getDate();
   return h("div", { class: "date" }, [
     h("div", { class: "date-icon" }, [
-      h(SvgIcon, { name: "Calendar-Empty", size: 30 }),
+      h(SvgIcon, { name: "Calendar-Empty", size: 30, depth: 2 }),
       h(NText, null, () => day),
     ]),
     h(NText, { class: "name" }, () => ["每日推荐"]),

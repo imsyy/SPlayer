@@ -56,7 +56,7 @@
                   :key="textIndex"
                   :class="{
                     'content-text': true,
-                    'content-long': text.duration >= 1.5,
+                    'content-long': text.duration >= 1.5 && playSeek <= text.endTime,
                     'end-with-space': text.endsWithSpace,
                   }"
                 >
@@ -149,8 +149,8 @@
 import type { LyricContentType } from "@/types/main";
 import { NScrollbar } from "naive-ui";
 import { useMusicStore, useSettingStore, useStatusStore } from "@/stores";
-import player from "@/utils/player";
 import { openSetting } from "@/utils/modal";
+import player from "@/utils/player";
 
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
@@ -364,7 +364,11 @@ onBeforeUnmount(() => {
           );
           -webkit-mask-size: 220% 100%;
           -webkit-mask-repeat: no-repeat;
-          transition: opacity 0.3s !important;
+          transition:
+            opacity 0.3s,
+            filter 0.5s,
+            margin 0.3s,
+            padding 0.3s !important;
         }
         &.end-with-space {
           margin-right: 12px;

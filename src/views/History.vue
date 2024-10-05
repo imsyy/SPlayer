@@ -43,6 +43,14 @@
         hiddenCover
         hiddenSize
       />
+      <!-- <SongListNew
+        v-if="dataStore.historyList.length > 0"
+        :data="dataStore.historyList"
+        :loading="true"
+        hiddenPadding
+        hiddenCover
+        hiddenSize
+      /> -->
       <n-empty
         v-else
         description="暂无记录，快去播放一些歌曲吧"

@@ -29,6 +29,17 @@
         />
       </div>
     </Transition>
+    <!-- 独立歌词 -->
+    <Transition name="fade" mode="out-in">
+      <div
+        v-if="isShowComment && !statusStore.pureLyricMode"
+        :key="instantLyrics.content"
+        class="lrc-instant"
+      >
+        <span class="lrc">{{ instantLyrics.content }}</span>
+        <span v-if="instantLyrics.tran" class="lrc-tran">{{ instantLyrics.tran }}</span>
+      </div>
+    </Transition>
     <!-- 菜单 -->
     <PlayerMenu @mouseenter.stop="stopHide" @mouseleave.stop="playerMove" />
     <!-- 主内容 -->
@@ -120,6 +131,15 @@ const playerContentKey = computed(() => {
 
 // 是否显示评论
 const isShowComment = computed(() => !musicStore.playSong.path && statusStore.showPlayerComment);
+
+// 当前实时歌词
+const instantLyrics = computed(() => {
+  const isYrc = musicStore.songLyric.yrcData?.length && settingStore.showYrc;
+  const content = isYrc
+    ? musicStore.songLyric.yrcData[statusStore.lyricIndex]
+    : musicStore.songLyric.lrcData[statusStore.lyricIndex];
+  return { content: content?.content, tran: content?.tran };
+});
 
 // 播放器主色
 const mainColor = computed(() => {
@@ -220,6 +240,23 @@ onBeforeUnmount(() => {
         transform: scale(1.5);
         filter: blur(80px) contrast(1.2);
       }
+    }
+  }
+  .lrc-instant {
+    position: absolute;
+    top: 0;
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    .lrc {
+      font-size: 18px;
+    }
+    .lrc-tran {
+      font-size: 14px;
+      opacity: 0.6;
     }
   }
   .player-content {

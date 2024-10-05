@@ -5,7 +5,7 @@
     <n-scrollbar class="scrollbar">
       <n-flex class="date" justify="center">
         <n-tag round>生效日期：2024 年 7 月 16 日</n-tag>
-        <n-tag type="warning" round>更新日期：2024 年 7 月 16 日</n-tag>
+        <n-tag type="warning" round>更新日期：2024 年 9 月 28 日</n-tag>
       </n-flex>
       <n-p>
         欢迎使用 SPlayer（以下简称“本软件”）。本软件是一个本地音乐播放软件，可能会调用第三方 API

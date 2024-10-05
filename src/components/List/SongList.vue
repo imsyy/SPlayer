@@ -82,22 +82,13 @@
               <!-- 标题 -->
               <div class="title">
                 <!-- 封面 -->
-                <n-image
+                <s-image
                   v-if="!hiddenCover"
                   :key="item.cover"
                   :src="item.path ? item.cover : item.coverSize?.s || item.cover"
-                  fallback-src="/images/song.jpg?assest"
                   class="cover"
-                  preview-disabled
-                  v-visible="(show: boolean) => localCover(show, item?.path, index)"
-                  @load="coverLoaded"
-                >
-                  <template #placeholder>
-                    <div class="cover-loading">
-                      <img src="/images/song.jpg?assest" class="loading-img" alt="loading-img" />
-                    </div>
-                  </template>
-                </n-image>
+                  @update:show.once="(show: boolean) => localCover(show, item?.path, index)"
+                />
                 <!-- 信息 -->
                 <div class="info">
                   <!-- 名称 -->
@@ -392,14 +383,6 @@ const scrollTo = (index: number) => {
   scrollerRef.value?.scrollToItem(index);
 };
 
-// 封面加载完成
-const coverLoaded = (e: Event) => {
-  const target = e.target as HTMLElement | null;
-  if (target && target.nodeType === Node.ELEMENT_NODE) {
-    target.style.opacity = "1";
-  }
-};
-
 // 加载本地歌曲封面
 const localCover = async (show: boolean, path: string, index: number) => {
   if (!isElectron || !show || !path) return;
@@ -527,12 +510,6 @@ onActivated(() => {
         align-items: center;
         justify-content: center;
         overflow: hidden;
-        :deep(img) {
-          width: 100%;
-          height: 100%;
-          opacity: 0;
-          transition: opacity 0.35s ease-in-out;
-        }
       }
       .info {
         display: flex;

@@ -53,29 +53,6 @@ export const throttleDirective = {
 };
 
 // 元素可见
-// export const visibleDirective = {
-//   mounted(el: HTMLElement, binding: any) {
-//     const { modifiers, value } = binding;
-
-//     const { stop } = useIntersectionObserver(
-//       el,
-//       ([entry]) => {
-//         if (entry.isIntersecting) {
-//           el.classList.add("visible");
-//           // 触发回调
-//           if (typeof value === "function") value(entry);
-//           // 只触发一次
-//           if (modifiers.once) stop();
-//         } else if (!modifiers.once) {
-//           el.classList.remove("visible");
-//         }
-//       },
-//       {
-//         threshold: 0.1,
-//       },
-//     );
-//   },
-// };
 export const visibleDirective = {
   mounted(el: HTMLElement, binding: any) {
     const { modifiers, value } = binding;

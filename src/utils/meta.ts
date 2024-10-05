@@ -72,7 +72,7 @@ export const sortOptions = {
   timeDown: { name: "时长降序", show: "all", icon: renderIcon("SortClockDown") },
   dateUp: { name: "日期升序", show: "radio", icon: renderIcon("SortDateUp") },
   dateDown: { name: "日期降序", show: "radio", icon: renderIcon("SortDateDown") },
-};
+} as const;
 
 // 自定义图片工具栏
 export const renderToolbar = ({ nodes }: ImageRenderToolbarProps) => {

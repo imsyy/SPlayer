@@ -30,7 +30,7 @@ module.exports = {
     "@typescript-eslint/no-explicit-any": "off",
     "vue/multi-word-component-names": "off",
   },
-  global: {
+  globals: {
     h: "readonly",
     ref: "readonly",
     computed: "readonly",
