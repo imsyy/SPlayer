@@ -74,6 +74,13 @@ export default defineConfig(({ command, mode }) => {
           "@": resolve(__dirname, "src/"),
         },
       },
+      css: {
+        preprocessorOptions: {
+          scss: {
+            silenceDeprecations: ["legacy-js-api"],
+          },
+        },
+      },
       server: {
         port: webPort,
         // 代理
