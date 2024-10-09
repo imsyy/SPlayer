@@ -60,7 +60,7 @@ export default defineConfig(({ command, mode }) => {
           ],
           eslintrc: {
             enabled: true,
-            filepath: "./.eslintrc-auto-import.json",
+            filepath: "./auto-eslint.mjs",
           },
         }),
         Components({

@@ -7,9 +7,6 @@ import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 import router from "@/router";
 // 自定义指令
 import { debounceDirective, throttleDirective, visibleDirective } from "@/utils/instruction";
-// VueVirtualScroller
-import VueVirtualScroller from "vue-virtual-scroller";
-import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
 // ipc
 import initIpc from "@/utils/initIpc";
 // 全局样式
@@ -28,8 +25,6 @@ pinia.use(piniaPluginPersistedstate);
 app.use(pinia);
 // router
 app.use(router);
-// VueVirtualScroller
-app.use(VueVirtualScroller);
 // 自定义指令
 app.directive("debounce", debounceDirective);
 app.directive("throttle", throttleDirective);

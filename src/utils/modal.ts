@@ -176,7 +176,7 @@ export const openUpdatePlaylist = (id: number, data: CoverType, func: () => Prom
         onSuccess: () => {
           modal.destroy();
           // 触发回调
-          isFunction(func) && func();
+          if (isFunction(func)) func();
         },
       });
     },

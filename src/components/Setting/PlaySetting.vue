@@ -73,6 +73,13 @@
         </div>
         <n-switch v-model:value="settingStore.useSongUnlock" class="set" :round="false" />
       </n-card>
+      <n-card class="set-item">
+        <div class="label">
+          <n-text class="name">听歌打卡</n-text>
+          <n-text class="tip" :depth="3">是否将播放歌曲同步至网易云音乐</n-text>
+        </div>
+        <n-switch v-model:value="settingStore.scrobbleSong" class="set" :round="false" />
+      </n-card>
       <n-card v-if="isElectron" class="set-item">
         <div class="label">
           <n-text class="name">音频输出设备</n-text>

@@ -16,11 +16,13 @@ import { formatCoverList, formatArtistsList, formatSongsList } from "@/utils/for
 import { useDataStore, useMusicStore } from "@/stores";
 import { logout, refreshLogin } from "@/api/login";
 import { openUserLogin } from "./modal";
-import { debounce } from "lodash-es";
+import { debounce, isFunction } from "lodash-es";
 import { isBeforeSixAM } from "./time";
 import { dailyRecommend } from "@/api/rec";
 import { isElectron } from "./helper";
-import { playlistTracks } from "@/api/playlist";
+import { likePlaylist, playlistTracks } from "@/api/playlist";
+import { likeArtist } from "@/api/artist";
+import { radioSub } from "@/api/radio";
 
 // 是否登录
 export const isLogin = () => !!getCookie("MUSIC_U");
@@ -195,6 +197,75 @@ export const toLikeSong = debounce(
   { leading: true, trailing: false },
 );
 
+// 收藏/取消收藏歌单
+export const toLikePlaylist = debounce(
+  async (id: number, like: boolean) => {
+    if (!id) return;
+    if (!isLogin()) {
+      window.$message.warning("请登录后使用");
+      openUserLogin();
+      return;
+    }
+    const { code } = await likePlaylist(id, like ? 1 : 2);
+    if (code === 200) {
+      window.$message.success((like ? "收藏" : "取消收藏") + "歌单成功");
+      // 更新
+      await updateUserLikePlaylist();
+    } else {
+      window.$message.success((like ? "收藏" : "取消收藏") + "歌单失败，请重试");
+      return;
+    }
+  },
+  300,
+  { leading: true, trailing: false },
+);
+
+// 收藏/取消收藏歌手
+export const toLikeArtist = debounce(
+  async (id: number, like: boolean) => {
+    if (!id) return;
+    if (!isLogin()) {
+      window.$message.warning("请登录后使用");
+      openUserLogin();
+      return;
+    }
+    const { code } = await likeArtist(id, like ? 1 : 2);
+    if (code === 200) {
+      window.$message.success((like ? "收藏" : "取消收藏") + "歌手成功");
+      // 更新
+      await updateUserLikeArtists();
+    } else {
+      window.$message.success((like ? "收藏" : "取消收藏") + "歌手失败，请重试");
+      return;
+    }
+  },
+  300,
+  { leading: true, trailing: false },
+);
+
+// 订阅/取消订阅播客
+export const toSubRadio = debounce(
+  async (id: number, like: boolean) => {
+    if (!id) return;
+    if (!isLogin()) {
+      window.$message.warning("请登录后使用");
+      openUserLogin();
+      return;
+    }
+    const { code } = await radioSub(id, like ? 1 : 0);
+    if (code === 200) {
+      window.$message.success((like ? "订阅" : "取消订阅") + "播客成功");
+      // 更新
+      await updateUserLikeDjs();
+    } else {
+      window.$message.success((like ? "订阅" : "取消订阅") + "播客失败，请重试");
+      return;
+    }
+  },
+  300,
+  { leading: true, trailing: false },
+);
+
 // 循环获取用户喜欢数据
 const setUserLikeDataLoop = async <T>(
   apiFunction: (limit: number, offset: number) => Promise<{ data: any[]; count: number }>,
@@ -279,7 +350,7 @@ export const deleteSongs = async (pid: number, ids: number[], callback?: () => v
             window.$message.error(result.body?.message || "删除歌曲失败，请重试");
             return;
           }
-          callback && callback();
+          if (isFunction(callback)) callback();
           window.$message.success("删除成功");
         } else {
           window.$message.error(result?.message || "删除歌曲失败，请重试");

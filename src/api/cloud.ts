@@ -57,3 +57,40 @@ export const uploadCloudSong = (file: File) => {
     },
   });
 };
+
+/**
+ * 云盘导入歌曲
+ * @param {number} id - 歌曲 id
+ * @param {string} song - 歌曲名称
+ * @param {string} fileType - 歌曲格式
+ * @param {number} fileSize - 歌曲大小
+ * @param {number} bitrate - 歌曲比特率
+ * @param {string} md5 - 歌曲 md5
+ * @param {string} artist - 歌手
+ * @param {string} album - 专辑
+ */
+export const importCloudSong = (
+  song: string,
+  fileType: string,
+  fileSize: number,
+  bitrate: number,
+  md5: string,
+  id?: number,
+  artist?: string,
+  album?: string,
+) => {
+  return request({
+    url: "/cloud/import",
+    method: "POST",
+    params: {id,
+      song,
+      fileType,
+      fileSize,
+      bitrate,
+      md5,
+      artist,
+      album,
+      timestamp: Date.now(),
+    },
+  });
+};

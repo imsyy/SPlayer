@@ -74,7 +74,7 @@
     </n-flex>
     <!-- 列表 -->
     <Transition name="fade" mode="out-in">
-      <SongList v-if="!searchValue || searchData?.length" :data="listData" :loading="loading" />
+      <SongList v-if="!searchValue || searchData?.length" :data="listDataShow" :loading="loading" />
       <n-empty
         v-else
         :description="`搜不到关于 ${searchValue} 的任何歌曲呀`"
@@ -116,7 +116,7 @@ const searchValue = ref<string>("");
 const searchData = ref<SongType[]>([]);
 
 // 列表歌曲
-const listData = computed<SongType[]>(() => {
+const listDataShow = computed<SongType[]>(() => {
   if (searchValue.value && searchData.value.length) return searchData.value;
   return cloudData.value;
 });

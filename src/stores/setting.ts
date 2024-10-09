@@ -81,6 +81,7 @@ interface SettingState {
   useRealIP: boolean;
   realIP: string;
   fullPlayerCache: boolean;
+  scrobbleSong: boolean;
 }
 
 export const useSettingStore = defineStore({
@@ -123,6 +124,7 @@ export const useSettingStore = defineStore({
     smtcOpen: true, // 是否开启 SMTC
     smtcOutputHighQualityCover: false, // 是否输出高清封面
     playSongDemo: false, // 是否播放试听歌曲
+    scrobbleSong: false, // 是否打卡
     // 歌词
     lyricFontSize: 46, // 歌词大小
     lyricTranFontSize: 22, // 歌词翻译大小
@@ -161,11 +163,13 @@ export const useSettingStore = defineStore({
     setThemeMode(mode?: "auto" | "light" | "dark") {
       // 若未传入
       if (mode === undefined) {
-        this.themeMode === "auto"
-          ? (this.themeMode = "light")
-          : this.themeMode === "light"
-            ? (this.themeMode = "dark")
-            : (this.themeMode = "auto");
+        if (this.themeMode === "auto") {
+          this.themeMode = "light";
+        } else if (this.themeMode === "light") {
+          this.themeMode = "dark";
+        } else {
+          this.themeMode = "auto";
+        }
       } else {
         this.themeMode = mode;
       }

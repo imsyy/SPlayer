@@ -20,15 +20,16 @@ import type { SongType } from "@/types/main";
 import { NAlert, type DropdownOption } from "naive-ui";
 import { useStatusStore, useLocalStore, useDataStore } from "@/stores";
 import { renderIcon, copyData } from "@/utils/helper";
-import { deleteCloudSong } from "@/api/cloud";
+import { deleteCloudSong, importCloudSong } from "@/api/cloud";
 import {
   openCloudMatch,
   openDownloadSong,
   openPlaylistAdd,
   openSongInfoEditor,
 } from "@/utils/modal";
-import player from "@/utils/player";
 import { deleteSongs } from "@/utils/auth";
+import { songUrl } from "@/api/song";
+import player from "@/utils/player";
 
 const emit = defineEmits<{ removeSong: [index: number[]] }>();
 
@@ -166,6 +167,15 @@ const openDropdown = (
           type: "divider",
         },
         {
+          key: "cloud-import",
+          label: "导入至云盘",
+          show: !isCloud && type === "song" && !isLocal,
+          props: {
+            onClick: () => importSongToCloud(song),
+          },
+          icon: renderIcon("Cloud"),
+        },
+        {
           key: "delete",
           label: "从歌单中删除",
           show: isUserPlaylist && !isCloud,
@@ -288,6 +298,27 @@ const deleteCloudSongData = (song: SongType, index: number) => {
       }
     },
   });
+};
+
+// 导入至云盘
+const importSongToCloud = async (song: SongType) => {
+  if (!song?.id) return;
+  // 获取歌曲下载信息
+  const songData = await songUrl(song.id);
+  const songDetail = songData?.data?.[0];
+  // 开始尝试导入
+  const { id, type, size, br, md5 } = songDetail;
+  const result = await importCloudSong(song?.name, type, size, Math.floor(br / 1000), md5, id);
+  if (result.code === 200) {
+    const failed = result?.data?.failed?.[0];
+    if (failed?.code !== -200) {
+      window.$message.success("导入成功");
+    } else {
+      window.$message.error(failed?.msg || "导入失败，请重试");
+    }
+  } else {
+    window.$message.error("导入失败，请重试");
+  }
 };
 
 defineExpose({ openDropdown });

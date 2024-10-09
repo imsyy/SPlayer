@@ -52,7 +52,7 @@ const updateScroll = () => {
 
 // 滚动动画定时器
 let animationId: number | null = null;
-let scrollTimeoutId: NodeJS.Timeout | null = null;
+let scrollTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
 // 开始滚动
 const startScrolling = () => {

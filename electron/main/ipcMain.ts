@@ -142,8 +142,10 @@ const initWinIpcMain = (
 
   // 切换桌面歌词
   ipcMain.on("change-desktop-lyric", (_, val: boolean) => {
-    val ? lyricWin?.show() : lyricWin?.hide();
-    if (val) lyricWin?.setAlwaysOnTop(true, "screen-saver");
+    if (val) {
+      lyricWin?.show();
+      lyricWin?.setAlwaysOnTop(true, "screen-saver");
+    } else lyricWin?.hide();
   });
 
   // 是否阻止系统息屏

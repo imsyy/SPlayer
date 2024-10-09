@@ -616,7 +616,8 @@ class Player {
    */
   playOrPause() {
     const statusStore = useStatusStore();
-    statusStore.playStatus ? this.pause() : this.play();
+    if (statusStore.playStatus) this.pause();
+    else this.play();
   }
   /**
    * 下一首或上一首
@@ -835,7 +836,7 @@ class Player {
     // 获取配置
     const { showTip, scrobble, play } = options;
     // 打卡
-    scrobble && this.scrobbleSong();
+    if (scrobble) this.scrobbleSong();
     // 更新列表
     await dataStore.setPlayList(cloneDeep(data));
     // 关闭特殊模式
@@ -1088,8 +1089,10 @@ class Player {
   async scrobbleSong() {
     const musicStore = useMusicStore();
     const statusStore = useStatusStore();
+    const settingStore = useSettingStore();
     try {
       if (!isLogin()) return;
+      if (!settingStore.scrobbleSong) return;
       // 获取所需数据
       const playSongData = this.getPlaySongData();
       if (!playSongData) return;

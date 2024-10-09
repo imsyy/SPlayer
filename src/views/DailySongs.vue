@@ -37,7 +37,7 @@
       </n-flex>
     </div>
     <!-- 列表 -->
-    <SongList :data="musicStore.dailySongsData.list" :loading="true" disableVirtualList />
+    <SongList :data="musicStore.dailySongsData.list" :loading="true" height="auto" />
   </div>
 </template>
 
@@ -107,6 +107,9 @@ onMounted(updateDailySongsData);
     .menu {
       margin-top: 30px;
     }
+  }
+  .song-list {
+    height: auto;
   }
 }
 </style>

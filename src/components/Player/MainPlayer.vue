@@ -598,9 +598,6 @@ const changeVolume = (e: WheelEvent) => {
   width: 64px;
   height: 200px;
   padding: 12px 16px;
-  .n-slider {
-    --n-rail-width-vertical: 18px;
-  }
   .slider-num {
     margin-top: 4px;
     font-size: 12px;

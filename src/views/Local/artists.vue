@@ -20,7 +20,7 @@
         :key="chooseArtist"
         :data="chooseArtist ? artistData[chooseArtist] : []"
         :loading="true"
-        hidden-cover
+        :hidden-cover="!settingStore.showLocalCover"
       />
     </Transition>
   </div>

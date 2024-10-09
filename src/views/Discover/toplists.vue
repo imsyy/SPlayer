@@ -16,7 +16,7 @@
               <template #info>
                 <div
                   v-for="(song, songIndex) in item.tracks"
-                  :key="index"
+                  :key="songIndex"
                   class="song-item text-hidden"
                 >
                   <n-text class="name">{{ songIndex + 1 }}. {{ song.first }}</n-text>

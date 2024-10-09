@@ -48,7 +48,7 @@
     "@pixi/filter-color-matrix": "^7.4.2",
     "@pixi/sprite": "^7.4.2",
     "@vueuse/core": "^10.11.1",
-    "NeteaseCloudMusicApi": "^4.23.0",
+    "NeteaseCloudMusicApi": "^4.23.1",
     "axios": "^1.7.7",
     "change-case": "^5.4.4",
     "dayjs": "^1.11.13",
@@ -69,8 +69,7 @@
     "pinia": "^2.2.4",
     "pinia-plugin-persistedstate": "^3.2.3",
     "plyr": "^3.7.8",
-    "vue-virt-list": "^1.5.2",
-    "vue-virtual-scroller": "2.0.0-beta.8"
+    "vue-virt-list": "^1.5.2"
   },
   "devDependencies": {
     "@electron-toolkit/preload": "^3.0.1",
@@ -84,8 +83,8 @@
     "@types/howler": "^2.2.12",
     "@types/js-cookie": "^3.0.6",
     "@types/node": "^22.7.4",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
+    "@typescript-eslint/eslint-plugin": "^8.8.0",
+    "@typescript-eslint/parser": "^8.8.0",
     "@vitejs/plugin-vue": "^5.1.4",
     "ajv": "^8.17.1",
     "crypto-js": "^4.2.0",
@@ -93,7 +92,7 @@
     "electron-builder": "^24.13.3",
     "electron-log": "^5.2.0",
     "electron-vite": "^2.3.0",
-    "eslint": "^8.57.1",
+    "eslint": "^9.12.0",
     "eslint-plugin-vue": "^9.28.0",
     "fast-glob": "^3.3.2",
     "fastify": "^4.28.1",

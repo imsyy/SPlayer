@@ -1,4 +1,4 @@
-{
+export default {
   "globals": {
     "Component": true,
     "ComponentPublicInstance": true,

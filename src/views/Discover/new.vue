@@ -139,7 +139,6 @@ onMounted(getAllNewData);
     margin-top: 20px;
   }
   .song-list {
-    margin-top: 20px;
     flex: 1;
   }
 }

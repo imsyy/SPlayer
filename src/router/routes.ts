@@ -141,6 +141,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/radio",
     name: "radio",
+
     beforeEnter: (to, _, next) => {
       if (!to.query.id) next({ path: "/403" });
       else next();

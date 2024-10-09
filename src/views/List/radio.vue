@@ -101,11 +101,17 @@
                     : "播放"
                 }}
               </n-button>
-              <n-button :focusable="false" strong secondary round>
+              <n-button
+                :focusable="false"
+                strong
+                secondary
+                round
+                @click="toSubRadio(radioId, !isLikeRadio)"
+              >
                 <template #icon>
-                  <SvgIcon :name="isLikePlaylist ? 'Favorite' : 'FavoriteBorder'" />
+                  <SvgIcon :name="isLikeRadio ? 'Favorite' : 'FavoriteBorder'" />
                 </template>
-                {{ isLikePlaylist ? "取消收藏" : "收藏播客" }}
+                {{ isLikeRadio ? "取消订阅" : "订阅播客" }}
               </n-button>
               <!-- 更多 -->
               <n-dropdown :options="moreOptions" trigger="click" placement="bottom-start">
@@ -151,7 +157,6 @@
         :height="songListHeight"
         :radioId="radioId"
         type="radio"
-        hidden-padding
         @scroll="listScroll"
       />
       <n-empty
@@ -179,6 +184,7 @@ import { useDataStore, useStatusStore } from "@/stores";
 import { radioAllProgram, radioDetail } from "@/api/radio";
 import player from "@/utils/player";
 import { formatTimestamp } from "@/utils/time";
+import { toSubRadio } from "@/utils/auth";
 
 const router = useRouter();
 const dataStore = useDataStore();
@@ -214,14 +220,12 @@ const songListHeight = computed(() => {
 });
 
 // 是否处于收藏播客
-const isLikePlaylist = computed(() => {
-  return dataStore.userLikeData.playlists.some(
-    (playlist) => playlist.id === radioDetailData.value?.id,
-  );
+const isLikeRadio = computed(() => {
+  return dataStore.userLikeData.djs.some((radio) => radio.id === radioDetailData.value?.id);
 });
 
 // 是否处于播客页面
-const isPlaylistPage = computed<boolean>(() => router.currentRoute.value.name === "playlist");
+const isPlaylistPage = computed<boolean>(() => router.currentRoute.value.name === "radio");
 
 // 是否为相同播客
 const isSamePlaylist = computed<boolean>(() => oldRadioId.value === radioId.value);

@@ -138,7 +138,14 @@
                 </template>
                 编辑歌单
               </n-button>
-              <n-button v-else :focusable="false" strong secondary round>
+              <n-button
+                v-else
+                :focusable="false"
+                strong
+                secondary
+                round
+                @click="toLikePlaylist(playlistId, !isLikePlaylist)"
+              >
                 <template #icon>
                   <SvgIcon :name="isLikePlaylist ? 'Favorite' : 'FavoriteBorder'" />
                 </template>
@@ -187,7 +194,6 @@
         :loading="loading"
         :height="songListHeight"
         :playListId="playlistId"
-        hidden-padding
         @scroll="listScroll"
         @removeSong="removeSong"
       />
@@ -213,7 +219,7 @@ import { playlistDetail, playlistAllSongs, deletePlaylist } from "@/api/playlist
 import { formatCoverList, formatSongsList } from "@/utils/format";
 import { coverLoaded, formatNumber, fuzzySearch, renderIcon } from "@/utils/helper";
 import { renderToolbar } from "@/utils/meta";
-import { isLogin, updateUserLikePlaylist } from "@/utils/auth";
+import { isLogin, toLikePlaylist, updateUserLikePlaylist } from "@/utils/auth";
 import { debounce } from "lodash-es";
 import { useDataStore, useStatusStore } from "@/stores";
 import { openBatchList, openUpdatePlaylist } from "@/utils/modal";

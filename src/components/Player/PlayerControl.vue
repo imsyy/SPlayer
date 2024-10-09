@@ -20,6 +20,10 @@
           >
             <SvgIcon name="AddList" />
           </div>
+          <!-- 下载 -->
+          <div class="menu-icon" @click.stop="openDownloadSong(musicStore.playSong)">
+            <SvgIcon name="Download" />
+          </div>
         </n-flex>
         <div class="center">
           <div class="btn">
@@ -109,7 +113,7 @@
 <script setup lang="ts">
 import { useMusicStore, useStatusStore, useDataStore } from "@/stores";
 import { secondsToTime, calculateCurrentTime } from "@/utils/time";
-import { openPlaylistAdd } from "@/utils/modal";
+import { openDownloadSong, openPlaylistAdd } from "@/utils/modal";
 import { toLikeSong } from "@/utils/auth";
 import player from "@/utils/player";
 

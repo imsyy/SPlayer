@@ -120,6 +120,7 @@ const checkQrStatus = async () => {
         window.$message.error("登录出错，请重试");
         getQrData();
       }
+      break;
     default:
       break;
   }

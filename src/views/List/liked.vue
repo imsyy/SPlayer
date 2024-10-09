@@ -149,7 +149,6 @@
         :loading="loading"
         :height="songListHeight"
         :playListId="playlistId"
-        hidden-padding
         @scroll="listScroll"
         @removeSong="removeSong"
       />

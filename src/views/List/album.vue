@@ -141,7 +141,6 @@
         :data="albumDataShow"
         :loading="loading"
         :height="songListHeight"
-        hidden-padding
         hidden-album
         @scroll="listScroll"
       />
