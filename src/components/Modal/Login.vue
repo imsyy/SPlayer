@@ -4,10 +4,10 @@
     <!-- 登录方式 -->
     <n-tabs class="login-tabs" default-value="login-qr" type="segment" animated>
       <n-tab-pane name="login-qr" tab="扫码登录">
-        <loginQRCode @saveLogin="saveLogin" />
+        <LoginQRCode @saveLogin="saveLogin" />
       </n-tab-pane>
       <n-tab-pane name="login-phone" tab="验证码登录">
-        <loginPhone @saveLogin="saveLogin" />
+        <LoginPhone @saveLogin="saveLogin" />
       </n-tab-pane>
     </n-tabs>
     <!-- 关闭登录 -->
