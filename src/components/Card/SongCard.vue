@@ -205,12 +205,16 @@ const localCover = async (show: boolean) => {
     border: 2px solid rgba(var(--primary), 0.12);
     background-color: var(--surface-container-hex);
     transition:
+      transform 0.1s,
       background-color 0.3s var(--n-bezier),
       border-color 0.3s var(--n-bezier);
     &.play {
       border-color: rgba(var(--primary), 0.58);
       background-color: rgba(var(--primary), 0.28);
     }
+    // &:active {
+    //   transform: scale(0.99);
+    // }
     &:hover {
       border-color: rgba(var(--primary), 0.58);
       .num {

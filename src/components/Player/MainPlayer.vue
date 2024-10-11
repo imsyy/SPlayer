@@ -449,6 +449,7 @@ const changeVolume = (e: WheelEvent) => {
           transition: color 0.3s;
         }
         .like {
+          color: var(--primary-hex);
           margin-left: 8px;
           transition: transform 0.3s;
           cursor: pointer;

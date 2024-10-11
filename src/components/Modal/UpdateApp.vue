@@ -9,8 +9,10 @@
         {{ data?.version || "v0.0.0" }}
       </n-tag>
     </n-flex>
-    <div v-if="data?.releaseNotes" class="markdown-body" v-html="data.releaseNotes" />
-    <div v-else class="markdown-body">暂无更新日志</div>
+    <n-scrollbar style="max-height: 500px">
+      <div v-if="data?.releaseNotes" class="markdown-body" v-html="data.releaseNotes" />
+      <div v-else class="markdown-body">暂无更新日志</div>
+    </n-scrollbar>
     <n-flex class="menu" justify="end">
       <n-button strong secondary @click="emit('close')"> 取消 </n-button>
       <n-button type="warning" strong secondary @click="goDownload"> 前往下载 </n-button>
@@ -39,7 +41,7 @@ const startDownload = async () => {
   window.electron.ipcRenderer.send("start-download-update");
   // 监听状态
   window.electron.ipcRenderer.on("download-progress", (_, progress) => {
-    downloadProgress.value = Number(progress?.percent || 0);
+    downloadProgress.value = Number((progress?.percent || 0).toFixed(2));
   });
   // 更新错误
   window.electron.ipcRenderer.on("update-error", (_, error) => {
@@ -76,6 +78,9 @@ const goDownload = () => {
   }
   .menu {
     margin-top: 20px;
+  }
+  .markdown-body {
+    margin-top: 0 !important;
   }
 }
 </style>

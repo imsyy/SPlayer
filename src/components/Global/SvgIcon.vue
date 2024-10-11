@@ -46,7 +46,7 @@ onMounted(() => loadSVG(props.name));
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--primary-hex);
+    // color: var(--primary-hex);
   }
 }
 </style>

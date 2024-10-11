@@ -9,14 +9,14 @@ Object.assign(console, log.functions);
 
 // 日志配置
 log.transports.file.level = "info";
-log.transports.file.maxSize = 2 * 1024 * 1024;
+log.transports.file.maxSize = 2 * 1024 * 1024; // 2M
 if (log.transports.ipc) log.transports.ipc.level = false;
 
 // 控制台输出
 log.transports.console.useStyles = true;
 
 // 文件输出
-log.transports.file.format = "{h}:{i}:{s}:{ms} {text}";
+log.transports.file.format = "{y}-{m}-{d} {h}:{i}:{s}:{ms} {text}";
 
 // 本地输出
 if (!isDev) {

@@ -26,7 +26,10 @@ const init = async () => {
   // 加载数据
   await dataStore.loadData();
   // 初始化播放器
-  player.initPlayer(settingStore.autoPlay);
+  player.initPlayer(
+    settingStore.autoPlay,
+    settingStore.memoryLastSeek ? statusStore.currentTime : 0,
+  );
   // 同步播放模式
   player.playModeSyncIpc();
 
@@ -109,7 +112,6 @@ const keyDownEvent = debounce((event: KeyboardEvent) => {
 const printVersion = async () => {
   log.success(`🚀 ${packageJson.version}`, packageJson.productName);
   log.info(`👤 ${packageJson.author}`, packageJson.github);
-
 };
 
 export default init;
