@@ -176,6 +176,13 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
+          <n-text class="name">动态封面</n-text>
+          <n-text class="tip" :depth="3">可展示部分歌曲的动态封面，仅在封面模式有效</n-text>
+        </div>
+        <n-switch v-model:value="settingStore.dynamicCover" class="set" :round="false" />
+      </n-card>
+      <n-card class="set-item">
+        <div class="label">
           <n-text class="name">音乐频谱</n-text>
           <n-text class="tip" :depth="3">开启音乐频谱会极大影响性能，如遇问题请关闭</n-text>
         </div>

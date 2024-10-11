@@ -82,6 +82,7 @@ interface SettingState {
   realIP: string;
   fullPlayerCache: boolean;
   scrobbleSong: boolean;
+  dynamicCover: boolean;
 }
 
 export const useSettingStore = defineStore({
@@ -125,6 +126,7 @@ export const useSettingStore = defineStore({
     smtcOutputHighQualityCover: false, // 是否输出高清封面
     playSongDemo: false, // 是否播放试听歌曲
     scrobbleSong: false, // 是否打卡
+    dynamicCover: true, // 动态封面
     // 歌词
     lyricFontSize: 46, // 歌词大小
     lyricTranFontSize: 22, // 歌词翻译大小

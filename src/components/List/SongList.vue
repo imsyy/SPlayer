@@ -116,6 +116,7 @@ import { useMusicStore, useStatusStore } from "@/stores";
 import { VirtList } from "vue-virt-list";
 import { cloneDeep, entries, isEmpty } from "lodash-es";
 import { sortOptions } from "@/utils/meta";
+import { renderIcon } from "@/utils/helper";
 import SongListMenu from "@/components/Menu/SongListMenu.vue";
 import player from "@/utils/player";
 
@@ -225,7 +226,7 @@ const sortMenuOptions = computed<DropdownOption[]>(() =>
     key,
     label: name,
     show: show === "all" ? true : show === props.type ? true : false,
-    icon,
+    icon: renderIcon(icon),
   })),
 );
 

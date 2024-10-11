@@ -1,11 +1,24 @@
 <!-- 图片组件 -->
 <template>
-  <div ref="imgRef" class="s-image">
-    <Transition name="fade" mode="out-in">
-      <img :key="imgSrc" :src="imgSrc" :alt="alt || 'image'" />
-    </Transition>
-    <img v-if="!isLoaded" class="loading" :src="src" @load="imageLoaded" />
-  </div>
+  <Transition name="fade" mode="out-in">
+    <div ref="imgContainer" :key="src" class="s-image">
+      <!-- 加载图片 -->
+      <Transition name="fade">
+        <img v-if="!isLoaded" :src="defaultSrc" class="loading" alt="loading" />
+      </Transition>
+      <!-- 真实图片 -->
+      <img
+        v-if="src"
+        ref="imgRef"
+        :src="imgSrc"
+        :key="imgSrc"
+        :alt="alt || 'image'"
+        :class="['cover', { loaded: isLoaded }]"
+        @load="imageLoaded"
+        @error="imageError"
+      />
+    </div>
+  </Transition>
 </template>
 
 <script setup lang="ts">
@@ -23,19 +36,22 @@ const props = withDefaults(
 const emit = defineEmits<{
   // 加载完成
   load: [e: Event];
+  // 加载失败
+  error: [e: Event];
   // 可视状态变化
   "update:show": [show: boolean];
 }>();
 
 // 图片数据
 const imgRef = ref<HTMLImageElement>();
-const imgSrc = ref<string>(props.defaultSrc);
+const imgSrc = ref<string>();
+const imgContainer = ref<HTMLImageElement>();
 
 // 是否加载完成
 const isLoaded = ref<boolean>(false);
 
 // 是否可视
-const isCanLook = useElementVisibility(imgRef);
+const isCanLook = useElementVisibility(imgContainer);
 
 // 图片加载完成
 const imageLoaded = (e: Event) => {
@@ -44,23 +60,51 @@ const imageLoaded = (e: Event) => {
   emit("load", e);
 };
 
+// 图片加载失败
+const imageError = (e: Event) => {
+  isLoaded.value = false;
+  imgSrc.value = props.defaultSrc;
+  // 加载失败
+  emit("error", e);
+};
+
 // 可视状态变化
 watchOnce(isCanLook, (show) => {
-  if (show) imgSrc.value = props.src || props.defaultSrc;
   emit("update:show", show);
+  if (show) imgSrc.value = props.src;
 });
 </script>
 
 <style lang="scss" scoped>
 .s-image {
   position: relative;
+  width: 100%;
+  height: 100%;
   img {
     width: 100%;
     height: 100%;
+    overflow: hidden;
+    transition: all 0.3s;
   }
   .loading {
     position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+  .cover {
+    // position: absolute;
+    // top: 0;
+    // left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
     opacity: 0;
+    &.loaded {
+      opacity: 1;
+    }
   }
 }
 </style>

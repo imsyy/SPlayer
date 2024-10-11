@@ -279,21 +279,19 @@ class Player {
     });
     // 播放
     this.player.on("play", () => {
+      window.document.title = this.getPlayerInfo() || "SPlayer";
       // ipc
       if (isElectron) {
         window.electron.ipcRenderer.send("play-status-change", true);
         window.electron.ipcRenderer.send("play-song-change", this.getPlayerInfo());
       }
-      // 更改标题
-      if (!isElectron) window.document.title = this.getPlayerInfo() || "SPlayer";
       console.log("▶️ song play:", playSongData);
     });
     // 暂停
     this.player.on("pause", () => {
+      window.document.title = "SPlayer";
       // ipc
       if (isElectron) window.electron.ipcRenderer.send("play-status-change", false);
-      // 更改标题
-      if (!isElectron) window.document.title = "SPlayer";
       console.log("⏸️ song pause:", playSongData);
     });
     // 结束

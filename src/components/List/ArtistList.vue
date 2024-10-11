@@ -15,25 +15,16 @@
           <div class="artist-item">
             <!-- 封面 -->
             <div class="cover">
-              <n-image
+              <s-image
                 :src="item.coverSize?.m || item.cover"
+                default-src="/images/artist.jpg?assest"
                 class="cover-img"
-                preview-disabled
-                lazy
-                @load="coverLoaded"
-              >
-                <template #placeholder>
-                  <div class="cover-loading">
-                    <img src="/images/artist.jpg?assest" class="loading-img" alt="loading-img" />
-                  </div>
-                </template>
-              </n-image>
+              />
               <!-- 封面背板 -->
-              <n-image
-                class="cover-shadow"
-                preview-disabled
-                lazy
+              <s-image
                 :src="item.coverSize?.m || item.cover"
+                default-src="/images/artist.jpg?assest"
+                class="cover-shadow"
               />
               <!-- 图标 -->
               <SvgIcon name="Artist" />
@@ -78,7 +69,6 @@
 
 <script setup lang="ts">
 import type { ArtistType } from "@/types/main";
-import { coverLoaded } from "@/utils/helper";
 
 interface Props {
   data: ArtistType[];
@@ -124,15 +114,6 @@ const router = useRouter();
       aspect-ratio: 1 / 1;
       border-radius: 50%;
       transition: border-radius 0.3s;
-      :deep(img) {
-        width: 100%;
-        height: 100%;
-        opacity: 0;
-        transition:
-          opacity 0.3s,
-          filter 0.3s,
-          transform 0.3s;
-      }
       .cover-img {
         border-radius: 50%;
         overflow: hidden;
@@ -145,6 +126,7 @@ const router = useRouter();
         opacity: 0;
         position: absolute;
         border-radius: 50%;
+        overflow: hidden;
         top: 20%;
         width: 80%;
         height: auto;

@@ -109,3 +109,15 @@ export const matchSong = (
     params: { title, artist, album, duration, md5 },
   });
 };
+
+/**
+ * 歌曲动态封面
+ * @param {number} id - 歌曲 id
+ */
+
+export const songDynamicCover = (id: number) => {
+  return request({
+    url: "/song/dynamic/cover",
+    params: { id },
+  });
+};

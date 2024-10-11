@@ -8,36 +8,79 @@
       alt="pointer"
     />
     <!-- 专辑图片 -->
-    <n-image
+    <s-image
       :key="musicStore.getSongCover()"
       :src="musicStore.getSongCover('l')"
       class="cover-img"
-      preview-disabled
-      @load="coverLoaded"
-    >
-      <template #placeholder>
-        <div class="cover-loading">
-          <img src="/images/song.jpg?assest" class="loading-img" alt="loading-img" />
-        </div>
-      </template>
-    </n-image>
+    />
+    <!-- 动态封面 -->
+    <Transition name="fade" mode="out-in">
+      <video
+        v-if="dynamicCover && settingStore.dynamicCover && settingStore.playerType === 'cover'"
+        ref="videoRef"
+        :src="dynamicCover"
+        :class="['dynamic-cover', { loaded: dynamicCoverLoaded }]"
+        muted
+        autoplay
+        @loadeddata="dynamicCoverLoaded = true"
+        @ended="dynamicCoverEnded"
+      />
+    </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
+import { songDynamicCover } from "@/api/song";
 import { useSettingStore, useStatusStore, useMusicStore } from "@/stores";
+import { isEmpty } from "lodash-es";
 
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
 const settingStore = useSettingStore();
 
-// 封面加载完成
-const coverLoaded = (e: Event) => {
-  const target = e.target as HTMLElement | null;
-  if (target && target.nodeType === Node.ELEMENT_NODE) {
-    target.style.opacity = "1";
+// 动态封面
+const dynamicCover = ref<string>("");
+const dynamicCoverLoaded = ref<boolean>(false);
+
+// 视频元素
+const videoRef = ref<HTMLVideoElement | null>(null);
+
+// 封面再放送
+const { start: dynamicCoverStart, stop: dynamicCoverStop } = useTimeoutFn(
+  () => {
+    dynamicCoverLoaded.value = true;
+    videoRef.value?.play();
+  },
+  2000,
+  { immediate: false },
+);
+
+// 获取动态封面
+const getDynamicCover = async () => {
+  if (!musicStore.playSong.id || !settingStore.dynamicCover || settingStore.playerType !== "cover")
+    return;
+  dynamicCoverStop();
+  dynamicCoverLoaded.value = false;
+  const result = await songDynamicCover(musicStore.playSong.id);
+  if (!isEmpty(result.data) && result?.data?.videoPlayUrl) {
+    dynamicCover.value = result.data.videoPlayUrl;
+  } else {
+    dynamicCover.value = "";
   }
 };
+
+// 封面播放结束
+const dynamicCoverEnded = () => {
+  dynamicCoverLoaded.value = false;
+  dynamicCoverStart();
+};
+
+watch(
+  () => [musicStore.playSong.id, settingStore.dynamicCover, settingStore.playerType],
+  () => getDynamicCover(),
+);
+
+onMounted(getDynamicCover);
 </script>
 
 <style lang="scss" scoped>
@@ -56,16 +99,26 @@ const coverLoaded = (e: Event) => {
   .cover-img {
     width: 100%;
     height: 100%;
-    border-radius: 32px;
-    overflow: hidden;
+    object-fit: cover;
     z-index: 1;
     box-shadow: 0 0 20px 10px rgba(0, 0, 0, 0.1);
     transition: opacity 0.1s ease-in-out;
-    :deep(img) {
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      transition: opacity 0.3s ease-in-out;
+  }
+  .dynamic-cover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 32px;
+    overflow: hidden;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    &.loaded {
+      opacity: 1;
     }
   }
   &.record {
@@ -177,6 +230,8 @@ const coverLoaded = (e: Event) => {
     }
   }
   &.cover {
+    border-radius: 32px;
+    overflow: hidden;
     transform: scale(0.9);
     &.playing {
       transform: scale(1);
