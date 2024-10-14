@@ -383,7 +383,7 @@ const getPlaylistAllSongs = async (
 ) => {
   loading.value = true;
   // 加载提示
-  loadingMsgShow(!refresh);
+  loadingMsgShow(!refresh, count);
   // 循环获取
   let offset: number = 0;
   const limit: number = 500;
@@ -415,8 +415,9 @@ const clearInput = () => {
 };
 
 // 加载提示
-const loadingMsgShow = (show: boolean = true) => {
+const loadingMsgShow = (show: boolean = true, count?: number) => {
   if (show) {
+    if (count && count <= 800) return;
     loadingMsg.value?.destroy();
     loadingMsg.value = window.$message.loading("该歌单歌曲数量过多，请稍等", {
       duration: 0,

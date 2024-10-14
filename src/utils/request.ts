@@ -24,7 +24,8 @@ server.interceptors.request.use(
     if (!request.params) request.params = {};
     // Cookie
     if (!request.params.noCookie && (isLogin() || getCookie("MUSIC_U") !== null)) {
-      request.params.cookie = `MUSIC_U=${getCookie("MUSIC_U")};`;
+      const cookie = `MUSIC_U=${getCookie("MUSIC_U")};`;
+      request.params.cookie = encodeURIComponent(cookie);
     }
     // realIP
     if (!isElectron && !request.url?.includes("/login")) {

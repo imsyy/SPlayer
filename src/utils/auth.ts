@@ -15,7 +15,6 @@ import { likeSong } from "@/api/song";
 import { formatCoverList, formatArtistsList, formatSongsList } from "@/utils/format";
 import { useDataStore, useMusicStore } from "@/stores";
 import { logout, refreshLogin } from "@/api/login";
-import { openUserLogin } from "./modal";
 import { debounce, isFunction } from "lodash-es";
 import { isBeforeSixAM } from "./time";
 import { dailyRecommend } from "@/api/rec";
@@ -25,7 +24,11 @@ import { likeArtist } from "@/api/artist";
 import { radioSub } from "@/api/radio";
 
 // 是否登录
-export const isLogin = () => !!getCookie("MUSIC_U");
+export const isLogin = (): 0 | 1 | 2 => {
+  const dataStore = useDataStore();
+  if (dataStore.loginType === "uid") return 2;
+  return getCookie("MUSIC_U") ? 1 : 0;
+};
 
 // 退出登录
 export const toLogout = async () => {
@@ -88,7 +91,6 @@ export const updateUserData = async () => {
       subPlaylistCount: subcountData.subPlaylistCount,
       createdPlaylistCount: subcountData.createdPlaylistCount,
     };
-
     // 获取用户喜欢数据
     const allUserLikeResult = await Promise.allSettled([
       updateUserLikeSongs(),
@@ -102,11 +104,37 @@ export const updateUserData = async () => {
     ]);
     // 若部分失败
     const hasFailed = allUserLikeResult.some((result) => result.status === "rejected");
-    console.log(allUserLikeResult);
-
     if (hasFailed) throw new Error("Failed to update some user data");
   } catch (error) {
     console.error("❌ Error updating user data:", error);
+    throw error;
+  }
+};
+
+// 更新用户信息 - 特殊登录模式
+export const updateSpecialUserData = async (userData?: any) => {
+  try {
+    const dataStore = useDataStore();
+    if (!userData) {
+      const result = await userDetail(dataStore.userData.userId);
+      userData = result?.profile;
+    }
+    // 更改用户信息
+    dataStore.userData = {
+      userId: userData.userId,
+      userType: userData.userType,
+      vipType: userData.vipType,
+      name: userData.nickname,
+      level: userData.level,
+      avatarUrl: userData.avatarUrl,
+      backgroundUrl: userData.backgroundUrl,
+      createTime: userData.createTime,
+      createDays: userData.createDays,
+    };
+    // 获取用户喜欢数据
+    await updateUserLikePlaylist();
+  } catch (error) {
+    console.error("❌ Error updating special user data:", error);
     throw error;
   }
 };
@@ -124,6 +152,11 @@ export const updateUserLikePlaylist = async () => {
   const dataStore = useDataStore();
   const userId = dataStore.userData.userId;
   if (!isLogin() || !userId) return;
+  if (dataStore.loginType === "uid") {
+    const result = await userPlaylist(30, 0, userId);
+    dataStore.setUserLikeData("playlists", formatCoverList(result.playlist));
+    return;
+  }
   // 计算数量
   const { createdPlaylistCount, subPlaylistCount } = dataStore.userData;
   const number = (createdPlaylistCount || 0) + (subPlaylistCount || 0) || 50;
@@ -162,7 +195,10 @@ export const toLikeSong = debounce(
   async (song: SongType, like: boolean) => {
     if (!isLogin()) {
       window.$message.warning("请登录后使用");
-      openUserLogin();
+      return;
+    }
+    if (isLogin() === 2) {
+      window.$message.warning("该登录模式暂不支持该操作");
       return;
     }
     const dataStore = useDataStore();
@@ -203,7 +239,10 @@ export const toLikePlaylist = debounce(
     if (!id) return;
     if (!isLogin()) {
       window.$message.warning("请登录后使用");
-      openUserLogin();
+      return;
+    }
+    if (isLogin() === 2) {
+      window.$message.warning("该登录模式暂不支持该操作");
       return;
     }
     const { code } = await likePlaylist(id, like ? 1 : 2);
@@ -226,7 +265,10 @@ export const toLikeArtist = debounce(
     if (!id) return;
     if (!isLogin()) {
       window.$message.warning("请登录后使用");
-      openUserLogin();
+      return;
+    }
+    if (isLogin() === 2) {
+      window.$message.warning("该登录模式暂不支持该操作");
       return;
     }
     const { code } = await likeArtist(id, like ? 1 : 2);
@@ -249,7 +291,10 @@ export const toSubRadio = debounce(
     if (!id) return;
     if (!isLogin()) {
       window.$message.warning("请登录后使用");
-      openUserLogin();
+      return;
+    }
+    if (isLogin() === 2) {
+      window.$message.warning("该登录模式暂不支持该操作");
       return;
     }
     const { code } = await radioSub(id, like ? 1 : 0);

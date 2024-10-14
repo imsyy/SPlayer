@@ -32,6 +32,7 @@
 <script setup lang="ts">
 import { songDynamicCover } from "@/api/song";
 import { useSettingStore, useStatusStore, useMusicStore } from "@/stores";
+import { isLogin } from "@/utils/auth";
 import { isEmpty } from "lodash-es";
 
 const musicStore = useMusicStore();
@@ -57,7 +58,12 @@ const { start: dynamicCoverStart, stop: dynamicCoverStop } = useTimeoutFn(
 
 // 获取动态封面
 const getDynamicCover = async () => {
-  if (!musicStore.playSong.id || !settingStore.dynamicCover || settingStore.playerType !== "cover")
+  if (
+    !isLogin() ||
+    !musicStore.playSong.id ||
+    !settingStore.dynamicCover ||
+    settingStore.playerType !== "cover"
+  )
     return;
   dynamicCoverStop();
   dynamicCoverLoaded.value = false;

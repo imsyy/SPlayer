@@ -1,6 +1,8 @@
 import request from "@/utils/request";
 
-// 获取账号详情
+/**
+ * 获取用户账号信息
+ */
 export const userAccount = () => {
   return request({
     url: "/user/account",

@@ -32,8 +32,8 @@ import { useRouter, RouterLink } from "vue-router";
 import { isElectron, renderIcon } from "@/utils/helper";
 import { openCreatePlaylist } from "@/utils/modal";
 import { debounce } from "lodash-es";
-import player from "@/utils/player";
 import { isLogin } from "@/utils/auth";
+import player from "@/utils/player";
 
 const router = useRouter();
 const dataStore = useDataStore();
@@ -72,7 +72,7 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
         {
           key: "personal-fm",
           label: "私人漫游",
-          show: isLogin(),
+          show: isLogin() !== 0,
           icon: renderIcon("Radio", {
             style: {
               transform: "translateY(-1px)",
@@ -122,7 +122,7 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
           key: "cloud",
           link: "cloud",
           label: "我的云盘",
-          show: isElectron,
+          show: isElectron && dataStore.loginType !== "uid",
           icon: renderIcon("Cloud"),
         },
         {

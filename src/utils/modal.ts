@@ -4,7 +4,7 @@ import { isLogin } from "./auth";
 import { isArray, isFunction } from "lodash-es";
 import { useDataStore } from "@/stores";
 import router from "@/router";
-import Login from "@/components/Modal/Login.vue";
+import Login from "@/components/Modal/Login/Login.vue";
 import JumpArtist from "@/components/Modal/JumpArtist.vue";
 import UserAgreement from "@/components/Modal/UserAgreement.vue";
 import SongInfoEditor from "@/components/Modal/SongInfoEditor.vue";

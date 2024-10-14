@@ -234,3 +234,6 @@ interface UpdateInfoType {
   releaseNotes: string;
   prerelease: boolean;
 }
+
+// 登录方式
+export type LoginType = "qr" | "phone" | "cookie" | "uid";

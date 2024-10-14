@@ -39,10 +39,15 @@
 
 <script setup lang="ts">
 import { qrKey, checkQr } from "@/api/login";
+import { LoginType } from "@/types/main";
 import { coverLoaded } from "@/utils/helper";
 
+const props = defineProps<{
+  pause?: boolean;
+}>();
+
 const emit = defineEmits<{
-  saveLogin: [any];
+  saveLogin: [any, LoginType];
 }>();
 
 // 状态提示
@@ -89,7 +94,7 @@ const getQrData = async () => {
 
 // 检查二维码状态
 const checkQrStatus = async () => {
-  if (!qrUnikey.value) return;
+  if (!qrUnikey.value || props.pause) return;
   // 检查状态
   const { code, cookie, nickname, avatarUrl } = await checkQr(qrUnikey.value);
   switch (code) {
@@ -115,7 +120,7 @@ const checkQrStatus = async () => {
       // 是否含有 MUSIC_U
       if (cookie && cookie.includes("MUSIC_U")) {
         // 储存登录信息
-        emit("saveLogin", { code: 200, cookie });
+        emit("saveLogin", { code: 200, cookie }, "qr");
       } else {
         window.$message.error("登录出错，请重试");
         getQrData();

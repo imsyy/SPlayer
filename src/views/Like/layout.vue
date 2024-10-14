@@ -2,7 +2,7 @@
   <div class="like">
     <div class="title">
       <n-text class="keyword">我的收藏</n-text>
-      <n-flex class="status">
+      <n-flex v-if="dataStore.loginType !== 'uid'" class="status">
         <div
           v-for="(item, index) in likeData"
           :key="index"
@@ -16,6 +16,7 @@
     </div>
     <!-- 标签页 -->
     <n-tabs
+      v-if="dataStore.loginType !== 'uid'"
       v-model:value="likeType"
       class="tabs"
       type="segment"

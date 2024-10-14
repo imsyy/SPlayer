@@ -179,7 +179,12 @@
           <n-text class="name">动态封面</n-text>
           <n-text class="tip" :depth="3">可展示部分歌曲的动态封面，仅在封面模式有效</n-text>
         </div>
-        <n-switch v-model:value="settingStore.dynamicCover" class="set" :round="false" />
+        <n-switch
+          v-model:value="settingStore.dynamicCover"
+          :disabled="!isLogin()"
+          :round="false"
+          class="set"
+        />
       </n-card>
       <n-card class="set-item">
         <div class="label">
@@ -222,6 +227,7 @@
 <script setup lang="ts">
 import type { SelectOption } from "naive-ui";
 import { useSettingStore } from "@/stores";
+import { isLogin } from "@/utils/auth";
 import { isElectron, renderOption } from "@/utils/helper";
 import { uniqBy } from "lodash";
 import player from "@/utils/player";

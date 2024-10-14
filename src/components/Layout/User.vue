@@ -33,7 +33,7 @@
     </template>
     <div class="user-menu" @click="userMenuShow = false">
       <!-- 喜欢数量 -->
-      <div class="like-num">
+      <div v-if="dataStore.loginType !== 'uid'" class="like-num">
         <div
           v-for="(item, index) in userLikeData"
           :key="index"
@@ -44,6 +44,10 @@
           <n-text :depth="3">{{ item.label }}</n-text>
         </div>
       </div>
+      <n-flex v-else align="center" vertical>
+        <n-text>UID 登录模式</n-text>
+        <n-text :depth="3">部分功能暂不可用</n-text>
+      </n-flex>
       <n-divider />
       <!-- 退出登录 -->
       <n-button :focusable="false" class="logout" strong secondary round @click="isLogout">
@@ -60,7 +64,13 @@
 import { useDataStore } from "@/stores";
 import { openUserLogin } from "@/utils/modal";
 import { getLoginState } from "@/api/login";
-import { toLogout, isLogin, refreshLoginData, updateUserData } from "@/utils/auth";
+import {
+  toLogout,
+  isLogin,
+  refreshLoginData,
+  updateUserData,
+  updateSpecialUserData,
+} from "@/utils/auth";
 
 const router = useRouter();
 const dataStore = useDataStore();
@@ -100,6 +110,11 @@ const userLikeData = computed(() => {
 
 // 检查登录状态
 const checkLoginStatus = async () => {
+  // 若为 UID 登录
+  if (dataStore.loginType === "uid") {
+    await updateSpecialUserData();
+    return;
+  }
   // 获取登录状态
   const loginState = await getLoginState();
   // 登录正常

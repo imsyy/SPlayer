@@ -47,9 +47,10 @@ import { countryList, sentCaptcha, verifyCaptcha, loginPhone } from "@/api/login
 import { numberRule, phoneRule } from "@/utils/rules";
 import { getCacheData } from "@/utils/cache";
 import { debounce } from "lodash-es";
+import { LoginType } from "@/types/main";
 
 const emit = defineEmits<{
-  saveLogin: [any];
+  saveLogin: [any, LoginType];
 }>();
 
 // 表单类型
@@ -66,11 +67,18 @@ const phoneFormData = ref<PhoneFormType>({
   phone: null,
   captcha: null,
 });
-const phoneFormRules: FormRules = {
+const phoneFormRules = computed<FormRules>(() => ({
   country: { ...numberRule, message: "请选择国家" },
-  phone: { ...phoneRule, key: "phone" },
+  phone:
+    phoneFormData.value.country === 86
+      ? { ...phoneRule, key: "phone" }
+      : {
+          ...numberRule,
+          key: "phone",
+          message: "请输入手机号",
+        },
   captcha: { ...numberRule, message: "请输入正确的验证码" },
-};
+}));
 
 // 验证码数据
 const captchaTime = ref<number>(60);
@@ -182,7 +190,7 @@ const login = debounce(async (e: MouseEvent) => {
     // 去除 HTTPOnly
     loginResult.cookie = loginResult.cookie.replaceAll(" HTTPOnly", "");
     // 储存登录信息
-    emit("saveLogin", loginResult);
+    emit("saveLogin", loginResult, "phone");
   } else {
     window.$message.error("登录出错，请重试");
   }

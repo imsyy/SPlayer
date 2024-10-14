@@ -1,5 +1,12 @@
 import { defineStore } from "pinia";
-import type { SongType, CoverType, UserDataType, UserLikeDataType, CatType } from "@/types/main";
+import type {
+  SongType,
+  CoverType,
+  UserDataType,
+  UserLikeDataType,
+  CatType,
+  LoginType,
+} from "@/types/main";
 import { playlistCatlist } from "@/api/playlist";
 import { cloneDeep, isEmpty } from "lodash-es";
 import { isLogin } from "@/utils/auth";
@@ -13,6 +20,7 @@ interface ListState {
   searchHistory: string[];
   localPlayList: CoverType[];
   userLoginStatus: boolean;
+  loginType: LoginType;
   userData: UserDataType;
   userLikeData: UserLikeDataType;
   likeSongsList: {
@@ -55,8 +63,10 @@ export const useDataStore = defineStore({
     localPlayList: [],
     // 云盘歌单
     cloudPlayList: [],
-    // 用户状态
+    // 登录状态
     userLoginStatus: false,
+    // 登录方式
+    loginType: "qr",
     // 用户数据
     userData: {
       userId: 0,
@@ -229,6 +239,7 @@ export const useDataStore = defineStore({
     async clearUserData() {
       try {
         this.userLoginStatus = false;
+        this.loginType = "qr";
         this.userData = {
           userId: 0,
           userType: 0,
@@ -285,6 +296,6 @@ export const useDataStore = defineStore({
   persist: {
     key: "data-store",
     storage: localStorage,
-    paths: ["userLoginStatus", "userData", "searchHistory", "catData"],
+    paths: ["userLoginStatus", "loginType", "userData", "searchHistory", "catData"],
   },
 });
