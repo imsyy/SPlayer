@@ -23,6 +23,7 @@ declare module 'vue' {
     KeyboardSetting: typeof import('./src/components/Setting/KeyboardSetting.vue')['default']
     LocalSetting: typeof import('./src/components/Setting/LocalSetting.vue')['default']
     Login: typeof import('./src/components/Modal/Login/Login.vue')['default']
+    LoginCookie: typeof import('./src/components/Modal/Login/LoginCookie.vue')['default']
     LoginPhone: typeof import('./src/components/Modal/Login/LoginPhone.vue')['default']
     LoginQRCode: typeof import('./src/components/Modal/Login/LoginQRCode.vue')['default']
     LoginUID: typeof import('./src/components/Modal/Login/LoginUID.vue')['default']

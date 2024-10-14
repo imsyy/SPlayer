@@ -128,6 +128,7 @@ const checkLoginStatus = async () => {
   // 若还有用户数据，则登录过期
   else if (dataStore.userData.userId !== 0) {
     dataStore.userLoginStatus = false;
+    dataStore.userData.userId = 0;
     window.$message.warning("登录已过期，请重新登录", { duration: 2000 });
     openUserLogin();
   }

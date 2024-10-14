@@ -12,11 +12,13 @@
     </n-tabs>
     <!-- 其他方式 -->
     <n-flex align="center" class="other">
-      <n-button :focusable="false" size="small" quaternary round @click="saveLoginByUID">
+      <n-button :focusable="false" size="small" quaternary round @click="specialLogin('uid')">
         UID 登录
       </n-button>
       <n-divider vertical />
-      <n-button :focusable="false" size="small" quaternary round> Cookie 登录 </n-button>
+      <n-button :focusable="false" size="small" quaternary round @click="specialLogin('cookie')">
+        Cookie 登录
+      </n-button>
     </n-flex>
     <!-- 关闭登录 -->
     <n-button :focusable="false" class="close" strong secondary round @click="emit('close')">
@@ -34,6 +36,7 @@ import { updateSpecialUserData, updateUserData } from "@/utils/auth";
 import { useDataStore } from "@/stores";
 import { LoginType } from "@/types/main";
 import LoginUID from "./LoginUID.vue";
+import LoginCookie from "./LoginCookie.vue";
 
 const emit = defineEmits<{
   close: [];
@@ -69,18 +72,24 @@ const saveLogin = async (loginData: any, type: LoginType = "qr") => {
   }
 };
 
-// UID 登录
-const saveLoginByUID = () => {
+// 特殊登录
+const specialLogin = (type: "uid" | "cookie" = "uid") => {
   qrPause.value = true;
   const loginModal = window.$modal.create({
-    title: "UID 登录",
+    title: type === "uid" ? "UID 登录" : "Cookie 登录",
     preset: "card",
     transformOrigin: "center",
     style: { width: "400px" },
     content: () => {
-      return h(LoginUID, { onClose: () => loginModal.destroy(), onSaveLogin: saveLogin });
+      return h(type === "uid" ? LoginUID : LoginCookie, {
+        onClose: () => loginModal.destroy(),
+        onSaveLogin: saveLogin,
+      });
     },
-    onClose: () => (qrPause.value = false),
+    onClose: () => {
+      qrPause.value = false;
+      loginModal.destroy();
+    },
   });
 };
 

@@ -148,6 +148,8 @@ onBeforeUnmount(pauseCheck);
   .qr-img {
     display: flex;
     margin: 20px 0;
+    width: 180px;
+    height: 180px;
     border-radius: 12px;
     overflow: hidden;
     .qr {
@@ -155,6 +157,8 @@ onBeforeUnmount(pauseCheck);
       display: flex;
       align-items: center;
       justify-content: center;
+      width: 100%;
+      height: 100%;
       .n-qr-code {
         padding: 0;
         height: 180px;
