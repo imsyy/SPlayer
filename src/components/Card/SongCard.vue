@@ -25,7 +25,7 @@
           :key="song.cover"
           :src="song.path ? song.cover : song.coverSize?.s || song.cover"
           class="cover"
-          @update:show.once="localCover"
+          @update:show="localCover"
         />
         <!-- 信息 -->
         <div class="info">
