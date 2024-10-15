@@ -364,7 +364,7 @@ const handleOnlinePlaylist = async (id: number, getList: boolean, refresh: boole
     return;
   }
   // 如果已登录且歌曲数量少于 800，直接加载所有歌曲
-  if (isLogin() && (playlistDetailData.value?.count as number) < 800) {
+  if (isLogin() === 1 && (playlistDetailData.value?.count as number) < 800) {
     const ids: number[] = detail.privileges.map((song: any) => song.id as number);
     const result = await songDetail(ids);
     playlistData.value = formatSongsList(result.songs);

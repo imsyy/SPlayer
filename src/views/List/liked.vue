@@ -178,6 +178,7 @@ import { debounce, isObject } from "lodash-es";
 import { useDataStore, useStatusStore } from "@/stores";
 import { openBatchList, openUpdatePlaylist } from "@/utils/modal";
 import { formatTimestamp } from "@/utils/time";
+import { isLogin } from "@/utils/auth";
 import player from "@/utils/player";
 
 const router = useRouter();
@@ -297,7 +298,7 @@ const getPlaylistData = async (id: number, getList: boolean, refresh: boolean) =
     return;
   }
   // 如果已登录且歌曲数量少于 800，直接加载所有歌曲
-  if ((playlistDetailData.value?.count as number) < 800) {
+  if (isLogin() === 1 && (playlistDetailData.value?.count as number) < 800) {
     const ids: number[] = detail.privileges.map((song: any) => song.id as number);
     const result = await songDetail(ids);
     playlistData.value = formatSongsList(result.songs);
