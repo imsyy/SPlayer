@@ -27,7 +27,7 @@ import {
   openPlaylistAdd,
   openSongInfoEditor,
 } from "@/utils/modal";
-import { deleteSongs } from "@/utils/auth";
+import { deleteSongs, isLogin } from "@/utils/auth";
 import { songUrl } from "@/api/song";
 import player from "@/utils/player";
 
@@ -64,6 +64,7 @@ const openDropdown = (
     const isHasMv = !!song?.mv && song.mv !== 0;
     const isCloud = router.currentRoute.value.name === "cloud";
     const isLocal = !!song?.path;
+    const isLoginNormal = isLogin() === 1;
     // 是否当前播放
     const isCurrent = statusStore.playIndex === index;
     // 是否为用户歌单
@@ -169,7 +170,7 @@ const openDropdown = (
         {
           key: "cloud-import",
           label: "导入至云盘",
-          show: !isCloud && type === "song" && !isLocal,
+          show: !isCloud && isLoginNormal && type === "song" && !isLocal,
           props: {
             onClick: () => importSongToCloud(song),
           },
@@ -178,7 +179,7 @@ const openDropdown = (
         {
           key: "delete",
           label: "从歌单中删除",
-          show: isUserPlaylist && !isCloud,
+          show: isUserPlaylist && isLoginNormal && !isCloud,
           props: {
             onClick: () => deleteSongs(playListId!, [song.id], () => emit("removeSong", [song.id])),
           },

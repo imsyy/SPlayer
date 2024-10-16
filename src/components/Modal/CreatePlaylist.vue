@@ -1,7 +1,7 @@
 <template>
   <div class="create-playlist">
     <n-tabs v-model:value="playlistType" type="segment" animated>
-      <n-tab-pane name="online" tab="在线歌单">
+      <n-tab-pane :disabled="isLogin() !== 1" name="online" tab="在线歌单">
         <n-form ref="onlineFormRef" :model="onlineFormData" :rules="onlineFormRules">
           <n-form-item label="歌单名称" path="name">
             <n-input v-model:value="onlineFormData.name" placeholder="请输入歌单名称" />
@@ -28,7 +28,7 @@ import { useDataStore } from "@/stores";
 import { textRule } from "@/utils/rules";
 import { debounce } from "lodash-es";
 import { createPlaylist } from "@/api/playlist";
-import { updateUserLikePlaylist } from "@/utils/auth";
+import { isLogin, updateUserLikePlaylist } from "@/utils/auth";
 
 const emit = defineEmits<{ close: [] }>();
 
@@ -42,7 +42,7 @@ interface OnlineFormType {
 const dataStore = useDataStore();
 
 // 歌单类别
-const playlistType = ref<"online" | "local">("online");
+const playlistType = ref<"online" | "local">(isLogin() === 1 ? "online" : "local");
 
 // 在线歌单数据
 const onlineFormRef = ref<FormInst | null>(null);

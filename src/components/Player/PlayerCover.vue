@@ -59,7 +59,7 @@ const { start: dynamicCoverStart, stop: dynamicCoverStop } = useTimeoutFn(
 // 获取动态封面
 const getDynamicCover = async () => {
   if (
-    !isLogin() ||
+    isLogin() !== 1 ||
     !musicStore.playSong.id ||
     !settingStore.dynamicCover ||
     settingStore.playerType !== "cover"

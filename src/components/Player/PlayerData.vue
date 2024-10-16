@@ -27,7 +27,12 @@
     <div v-if="musicStore.playSong.type !== 'radio'" class="artists">
       <SvgIcon :depth="3" name="Artist" size="20" />
       <div v-if="Array.isArray(musicStore.playSong.artists)" class="ar-list">
-        <span v-for="ar in musicStore.playSong.artists" :key="ar.id" class="ar">
+        <span
+          v-for="ar in musicStore.playSong.artists"
+          :key="ar.id"
+          class="ar"
+          @click="jumpPage({ name: 'artist', query: { id: ar.id } })"
+        >
           {{ ar.name }}
         </span>
       </div>
@@ -44,16 +49,23 @@
     <!-- 专辑 -->
     <div v-if="musicStore.playSong.type !== 'radio'" class="album">
       <SvgIcon :depth="3" name="Album" size="20" />
-      <span class="name-text text-hidden">
-        {{
-          typeof musicStore.playSong.album === "string"
-            ? musicStore.playSong.album || "未知专辑"
-            : musicStore.playSong.album?.name || "未知专辑"
-        }}
+      <span
+        v-if="isObject(musicStore.playSong.album)"
+        class="name-text text-hidden"
+        @click="jumpPage({ name: 'album', query: { id: musicStore.playSong.album.id } })"
+      >
+        {{ musicStore.playSong.album?.name || "未知专辑" }}
+      </span>
+      <span v-else class="name-text text-hidden">
+        {{ musicStore.playSong.album || "未知专辑" }}
       </span>
     </div>
     <!-- 电台 -->
-    <div v-if="musicStore.playSong.type === 'radio'" class="dj">
+    <div
+      v-if="musicStore.playSong.type === 'radio'"
+      class="dj"
+      @click="jumpPage({ name: 'dj', query: { id: musicStore.playSong.dj?.id } })"
+    >
       <SvgIcon :depth="3" name="Podcast" size="20" />
       <span class="name-text text-hidden">{{ musicStore.playSong.dj?.name || "播客电台" }}</span>
     </div>
@@ -61,16 +73,32 @@
 </template>
 
 <script setup lang="ts">
+import type { RouteLocationRaw } from "vue-router";
 import { useMusicStore, useStatusStore, useSettingStore } from "@/stores";
+import { debounce, isObject } from "lodash-es";
 
 defineProps<{
   center?: boolean;
   theme?: string;
 }>();
 
+const router = useRouter();
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
 const settingStore = useSettingStore();
+
+const jumpPage = debounce(
+  (go: RouteLocationRaw) => {
+    if (!go) return;
+    statusStore.showFullPlayer = false;
+    router.push(go);
+  },
+  300,
+  {
+    leading: true,
+    trailing: false,
+  },
+);
 </script>
 
 <style lang="scss" scoped>

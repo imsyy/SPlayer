@@ -181,7 +181,7 @@
         </div>
         <n-switch
           v-model:value="settingStore.dynamicCover"
-          :disabled="!isLogin()"
+          :disabled="isLogin() !== 1"
           :round="false"
           class="set"
         />

@@ -101,7 +101,7 @@ export const openSongInfoEditor = (song: SongType) => {
 // 添加到歌单
 export const openPlaylistAdd = (data: SongType[], isLocal: boolean) => {
   if (!data.length) return window.$message.warning("请正确选择歌曲");
-  if (!isLogin()) return openUserLogin();
+  if (!isLogin() && !isLocal) return openUserLogin();
   const modal = window.$modal.create({
     preset: "card",
     transformOrigin: "center",

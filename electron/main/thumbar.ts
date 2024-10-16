@@ -14,6 +14,7 @@ type ThumbarMap = Map<ThumbarKeys, ThumbarButton>;
 
 export interface Thumbar {
   clearThumbar(): void;
+  updateThumbar(playing: boolean, clean?: boolean): void;
 }
 
 // 工具栏图标
@@ -32,12 +33,12 @@ const createThumbarButtons = (win: BrowserWindow): ThumbarMap => {
     .set(ThumbarKeys.Prev, {
       tooltip: "上一曲",
       icon: thumbarIcon("prev"),
-      click: () => win.webContents.send("play-prev"),
+      click: () => win.webContents.send("playPrev"),
     })
     .set(ThumbarKeys.Next, {
       tooltip: "下一曲",
       icon: thumbarIcon("next"),
-      click: () => win.webContents.send("play-next"),
+      click: () => win.webContents.send("playNext"),
     })
     .set(ThumbarKeys.Play, {
       tooltip: "播放",
@@ -47,7 +48,7 @@ const createThumbarButtons = (win: BrowserWindow): ThumbarMap => {
     .set(ThumbarKeys.Pause, {
       tooltip: "暂停",
       icon: thumbarIcon("pause"),
-      click: () => win.webContents.send("play-pause"),
+      click: () => win.webContents.send("pause"),
     });
 };
 
@@ -75,7 +76,7 @@ class createThumbar implements Thumbar {
     this.updateThumbar();
   }
   // 更新工具栏
-  private updateThumbar(playing: boolean = false, clean: boolean = false) {
+  updateThumbar(playing: boolean = false, clean: boolean = false) {
     if (clean) return this.clearThumbar();
     this._win.setThumbarButtons([this._prev, playing ? this._pause : this._play, this._next]);
   }

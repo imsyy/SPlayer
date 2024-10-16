@@ -666,6 +666,10 @@ const initTrayIpcMain = (
 // thumbar
 const initThumbarIpcMain = (thumbar: Thumbar | null): void => {
   if (!thumbar) return;
+  // 更新工具栏
+  ipcMain.on("play-status-change", (_, playStatus: boolean) => {
+    thumbar?.updateThumbar(playStatus);
+  });
 };
 
 // store

@@ -57,7 +57,7 @@ import { useDataStore } from "@/stores";
 import { coverLoaded } from "@/utils/helper";
 import { playlistTracks } from "@/api/playlist";
 import { debounce } from "lodash-es";
-import { updateUserLikePlaylist, updateUserLikeSongs } from "@/utils/auth";
+import { isLogin, updateUserLikePlaylist, updateUserLikeSongs } from "@/utils/auth";
 import { openCreatePlaylist } from "@/utils/modal";
 
 const props = defineProps<{
@@ -86,6 +86,10 @@ const onlinePlaylists = computed(() => {
 // 添加到歌单
 const addPlaylist = debounce(
   async (id: number, index: number) => {
+    if (isLogin() === 2) {
+      window.$message.warning("该登录模式暂不支持该操作");
+      return;
+    }
     loadingMsg.value = window.$message.loading("正在添加歌曲至歌单", { duration: 0 });
     const ids = props.data.map((item) => item.id).filter((item) => item !== 0);
     const result = await playlistTracks(id, ids);

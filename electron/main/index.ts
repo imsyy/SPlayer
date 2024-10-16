@@ -38,7 +38,7 @@ class MainProcess {
   constructor() {
     log.info("🚀 Main process startup");
     // 禁用 Windows 7 的 GPU 加速功能
-    if (release().startsWith("6.1") && type() == 'Windows_NT') app.disableHardwareAcceleration();
+    if (release().startsWith("6.1") && type() == "Windows_NT") app.disableHardwareAcceleration();
     // 单例锁
     if (!app.requestSingleInstanceLock()) {
       log.error("❌ There is already a program running and this process is terminated");
@@ -236,6 +236,10 @@ class MainProcess {
   }
   // 窗口事件
   handleWindowEvents() {
+    this.mainWindow?.on("ready-to-show", () => {
+      if (!this.mainWindow) return;
+      this.thumbar = initThumbar(this.mainWindow);
+    });
     this.mainWindow?.on("show", () => {
       // this.mainWindow?.webContents.send("lyricsScroll");
     });
