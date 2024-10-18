@@ -1,6 +1,6 @@
 import type { SongType, CoverType, ArtistType, CommentType, MetaData, CatType } from "@/types/main";
 import { msToTime } from "./time";
-import { isArray } from "lodash-es";
+import { flatMap, isArray, uniqBy } from "lodash-es";
 
 type CoverDataType = {
   cover: string;
@@ -81,7 +81,10 @@ export const formatCoverList = (data: any[]): CoverType[] => {
     const creator = isArray(item.creator) ? item.creator[0] : item.creator;
     // 获取歌手信息
     const artists = (): string | MetaData[] => {
-      const artistData = [item.artist, item.artists, item.ar].flat().filter(Boolean);
+      const artistData = uniqBy(
+        flatMap([item.artist, item.artists, item.ar]).filter(Boolean),
+        "id",
+      );
       if (artistData.length === 0) return "";
       return artistData.map((artist) => ({
         id: artist?.id,

@@ -281,9 +281,11 @@ onBeforeUnmount(() => {
 <style lang="scss" scoped>
 .song-list {
   height: 100%;
+  border-radius: 12px 0 0 12px;
+  overflow: hidden;
   .song-card {
     padding-bottom: 12px;
-    padding-right: 4px;
+    // padding-right: 4px;
   }
   // 悬浮顶栏
   .list-header {
@@ -293,8 +295,8 @@ onBeforeUnmount(() => {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 18px 8px 12px;
-    margin-right: 4px;
+    padding: 8px 12px;
+    // margin-right: 4px;
     border: 1px solid transparent;
     background-color: var(--background-hex);
     .n-text {

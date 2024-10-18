@@ -117,6 +117,10 @@
 
 [Dev Workflow](https://github.com/imsyy/SPlayer/actions/workflows/build.yml)
 
+## Snap Store
+
+[![Get it from the Snap Store](https://snapcraft.io/en/dark/install.svg)](https://snapcraft.io/splayer)
+
 ## ⚙️ Docker 部署
 
 > 安装及配置 `Docker` 将不在此处说明，请自行解决

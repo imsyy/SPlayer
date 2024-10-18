@@ -6,13 +6,13 @@ on:
   push:
     tags:
       - v*
+  workflow_dispatch:
 
 jobs:
   # Windows
   build-windows:
     name: Build for Windows
     runs-on: windows-latest
-    timeout-minutes: 30
     steps:
       # 检出 Git 仓库
       - name: Check out git repository
@@ -50,7 +50,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v')
         with:
-          draft: false
           files: dist/*.*
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
@@ -58,7 +57,6 @@ jobs:
   build-macos:
     name: Build for macOS
     runs-on: macos-latest
-    timeout-minutes: 30
     steps:
       # 检出 Git 仓库
       - name: Check out git repository
@@ -97,7 +95,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v')
         with:
-          draft: false
           files: dist/*.*
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
@@ -105,7 +102,6 @@ jobs:
   build-linux:
     name: Build for Linux
     runs-on: ubuntu-22.04
-    timeout-minutes: 30
     steps:
       # 检出 Git 仓库
       - name: Check out git repository
@@ -124,6 +120,11 @@ jobs:
           sudo apt-get install --no-install-recommends -y rpm &&
           sudo apt-get install --no-install-recommends -y libarchive-tools &&
           sudo apt-get install --no-install-recommends -y libopenjp2-tools
+      # 安装 Snapcraft
+      - name: Install Snapcraft
+        uses: samuelmeuli/action-snapcraft@v2
+        with:
+          snapcraft_token: ${{ secrets.SNAPCRAFT_TOKEN }}
       # 复制环境变量文件
       - name: Copy .env.example
         run: |
@@ -141,6 +142,11 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+      # 上传 Snap 包到 Snapcraft 商店
+      - name: Publish Snap to Snap Store
+        run: snapcraft upload dist/*.snap --release stable
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_TOKEN }}
       # 上传构建产物
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
@@ -153,7 +159,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v')
         with:
-          draft: false
           files: dist/*.*
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}

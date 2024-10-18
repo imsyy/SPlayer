@@ -93,6 +93,7 @@ linux:
     - AppImage
     - deb
     - rpm
+    - snap
     - tar.gz
   # 维护者信息
   maintainer: imsyy.top

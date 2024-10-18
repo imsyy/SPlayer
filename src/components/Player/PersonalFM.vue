@@ -195,6 +195,7 @@ onMounted(player.initPersonalFM);
         --n-width: 46px;
         --n-height: 46px;
         .n-icon {
+          color: var(--primary-hex);
           transition: opacity 0.1s ease-in-out;
         }
       }
@@ -205,6 +206,7 @@ onMounted(player.initPersonalFM);
         width: 38px;
         height: 38px;
         border-radius: 50%;
+        color: var(--primary-hex);
         transition:
           background-color 0.3s,
           transform 0.3s;

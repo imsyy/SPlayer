@@ -138,7 +138,7 @@ const instantLyrics = computed(() => {
   const content = isYrc
     ? musicStore.songLyric.yrcData[statusStore.lyricIndex]
     : musicStore.songLyric.lrcData[statusStore.lyricIndex];
-  return { content: content?.content, tran: content?.tran };
+  return { content: content?.content, tran: settingStore.showTran && content?.tran };
 });
 
 // 播放器主色

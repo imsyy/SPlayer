@@ -49,7 +49,11 @@
             <n-flex class="meta">
               <div class="item">
                 <SvgIcon name="Person" :depth="3" />
-                <div v-if="Array.isArray(albumDetailData.artists)" class="artists text-hidden">
+                <div
+                  v-if="Array.isArray(albumDetailData.artists)"
+                  class="artists text-hidden"
+                  @click="openJumpArtist(albumDetailData.artists)"
+                >
                   <n-text
                     v-for="(ar, arIndex) in albumDetailData.artists"
                     :key="arIndex"
@@ -58,7 +62,11 @@
                     {{ ar.name || "未知艺术家" }}
                   </n-text>
                 </div>
-                <div v-else class="artists text-hidden">
+                <div
+                  v-else
+                  class="artists text-hidden"
+                  @click="openJumpArtist(albumDetailData.artists || '')"
+                >
                   <n-text class="ar"> {{ albumDetailData.artists || "未知艺术家" }} </n-text>
                 </div>
               </div>
@@ -169,6 +177,7 @@ import { renderToolbar } from "@/utils/meta";
 import { useDataStore, useStatusStore } from "@/stores";
 import { debounce } from "lodash-es";
 import { formatTimestamp } from "@/utils/time";
+import { openJumpArtist } from "@/utils/modal";
 import player from "@/utils/player";
 
 const router = useRouter();
