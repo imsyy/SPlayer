@@ -1,8 +1,8 @@
 # 应用程序的唯一标识符
-appId: com.imsyy.splayer
+appId: com.stephenshawn.splayer
 # 应用程序的产品名称
-productName: SPlayer
-copyright: Copyright © imsyy 2023
+productName: 音乐播放器
+copyright: Copyright © StephenShawn 2025
 # 构建资源所在的目录
 directories:
   buildResources: public
@@ -21,7 +21,7 @@ asarUnpack:
   - public/**
 win:
   # 可执行文件名
-  executableName: SPlayer
+  executableName: 音乐播放器
   # 应用程序的图标文件路径
   icon: public/icons/favicon-512x512.png
   # 构建类型
@@ -96,7 +96,7 @@ linux:
     - snap
     - tar.gz
   # 维护者信息
-  maintainer: imsyy.top
+  maintainer: shawnyoung.top
   # 应用程序类别
   category: Audio;Music
 # AppImage 配置

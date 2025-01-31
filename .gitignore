@@ -14,7 +14,7 @@ dist-ssr
 coverage
 *.local
 out
-.env
+#.env
 auto-imports.d.ts
 components.d.ts
 
