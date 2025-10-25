@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, BrowserWindowConstructorOptions } from "electron";
+import { app, shell, BrowserWindow, BrowserWindowConstructorOptions, ipcMain } from "electron";
 import { electronApp } from "@electron-toolkit/utils";
 import { join } from "path";
 import { release, type } from "os";
@@ -280,6 +280,11 @@ class MainProcess {
         this.store?.set("lyric", { ...this.store?.get("lyric"), width, height });
       }
     });
+
+    this.lyricWindow?.on("close", (e) => {
+      e.preventDefault();
+      ipcMain.emit("closeDesktopLyric");
+    })
 
     // 窗口关闭
     this.mainWindow?.on("close", (event) => {
