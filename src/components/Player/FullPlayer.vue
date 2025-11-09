@@ -30,8 +30,8 @@
         :class="[
           'player-content',
           {
-            pure: statusStore.pureLyricMode && musicStore.isHasLrc,
-            'no-lrc': settingStore.showYrc ? !musicStore.isHasYrc : !musicStore.isHasLrc,
+            pure: statusStore.pureLyricMode && isHasLyric(),
+            'no-lrc': !isHasLyric(),
           },
         ]"
         @mousemove="playerMove"
@@ -39,7 +39,7 @@
         <Transition name="zoom">
           <div
             v-if="
-              !(statusStore.pureLyricMode && musicStore.isHasLrc) ||
+              !(statusStore.pureLyricMode && isHasLyric()) ||
               musicStore.playSong.type === 'radio'
             "
             :key="musicStore.playSong.id"
@@ -55,7 +55,7 @@
         <div class="content-right">
           <!-- 数据 -->
           <PlayerData
-            v-if="statusStore.pureLyricMode && musicStore.isHasLrc"
+            v-if="statusStore.pureLyricMode && isHasLyric()"
             :center="statusStore.pureLyricMode"
             :theme="statusStore.mainColor"
           />
@@ -86,6 +86,7 @@ import { useStatusStore, useMusicStore, useSettingStore } from "@/stores";
 import { isElectron } from "@/utils/env";
 import { throttle } from "lodash-es";
 import player from "@/utils/player";
+import { isHasLyric } from "@/utils/lyric";
 
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
@@ -102,7 +103,7 @@ const playerContentKey = computed(() => `${statusStore.pureLyricMode}`);
 // 数据是否居中
 const playerDataCenter = computed<boolean>(
   () =>
-    !musicStore.isHasLrc ||
+    !isHasLyric() ||
     statusStore.pureLyricMode ||
     settingStore.playerType === "record" ||
     musicStore.playSong.type === "radio",

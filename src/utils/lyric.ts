@@ -51,6 +51,17 @@ export const resetSongLyric = () => {
 };
 
 /**
+ * 当前是否有歌词
+ */
+export const isHasLyric = () => {
+  const musicStore = useMusicStore();
+  const settingStore = useSettingStore();
+  const useYrc = settingStore.showYrc && musicStore.songLyric.yrcData?.length;
+  return useYrc ? musicStore.isHasYrc : musicStore.isHasLrc;
+};
+
+
+/**
  * 解析歌词数据
  * @param lyricData 歌词数据
  * @param skipExclude 是否跳过排除
