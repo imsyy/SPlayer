@@ -31,7 +31,7 @@
           'player-content',
           {
             pure: statusStore.pureLyricMode && musicStore.isHasLrc,
-            'no-lrc': !musicStore.isHasLrc,
+            'no-lrc': settingStore.showYrc ? !musicStore.isHasYrc : !musicStore.isHasLrc,
           },
         ]"
         @mousemove="playerMove"
