@@ -33,13 +33,14 @@
 </template>
 
 <script setup lang="ts">
+import type { LyricLine } from "@applemusic-like-lyrics/core";
 import { LyricPlayer } from "@applemusic-like-lyrics/vue";
-import { LyricLine } from "@applemusic-like-lyrics/core";
 import { useMusicStore, useSettingStore, useStatusStore } from "@/stores";
-import { msToS } from "@/utils/time";
 import { getLyricLanguage } from "@/utils/lyric";
 import player from "@/utils/player";
+import { msToS } from "@/utils/time";
 import LyricMenu from "./LyricMenu.vue";
+import "@applemusic-like-lyrics/core/style.css";
 
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
@@ -78,7 +79,13 @@ const amLyricsData = computed<LyricLine[]>(() => {
   // 简单检查歌词有效性
   if (!Array.isArray(lyrics) || lyrics.length === 0) return [];
 
-  return lyrics;
+  // 把 Proxy 转成数组, AMLL Core 要用 structuredClone 复制它
+  try {
+    return JSON.parse(JSON.stringify(lyrics));
+  } catch (e) {
+    console.error("Failed to clone lyrics data:", e);
+    return [];
+  }
 });
 
 // 进度跳转
