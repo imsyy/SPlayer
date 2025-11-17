@@ -16,8 +16,8 @@
         :alignPosition="settingStore.lyricsScrollPosition === 'center' ? 0.5 : 0.2"
         :enableBlur="settingStore.lyricsBlur"
         :style="{
-          '--amll-lyric-view-color': mainColor,
-          '--amll-lyric-player-font-size': settingStore.lyricFontSize + 'px',
+          '--amll-lp-color': mainColor,
+          '--amll-lp-font-size': settingStore.lyricFontSize + 'px',
           '--ja-font-family':
             settingStore.japaneseLyricFont !== 'follow' ? settingStore.japaneseLyricFont : '',
           'font-weight': settingStore.lyricFontBold ? 'bold' : 'normal',
@@ -180,7 +180,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--amll-lyric-view-color, #efefef);
+  color: var(--amll-lp-color, #efefef);
   font-size: 22px;
 }
 </style>
