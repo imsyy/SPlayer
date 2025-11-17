@@ -97,12 +97,12 @@ const jumpSeek = (line: any) => {
 
 // 处理歌词语言
 const processLyricLanguage = (player = lyricPlayerRef.value) => {
-  const lyricLinesEl = player?.lyricPlayer?.lyricLinesEl;
-  if (!lyricLinesEl || lyricLinesEl.length === 0) {
+  const lyricLineObjects = player?.lyricPlayer?.currentLyricLineObjects;
+  if (!Array.isArray(lyricLineObjects) || lyricLineObjects.length === 0) {
     return;
   }
   // 遍历歌词行
-  for (let e of lyricLinesEl) {
+  for (let e of lyricLineObjects) {
     // 获取歌词行内容 (合并逐字歌词为一句)
     const content = e.lyricLine.words.map((word: any) => word.word).join("");
     // 获取歌词语言
