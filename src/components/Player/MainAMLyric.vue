@@ -3,6 +3,9 @@
     <div
       :key="amLyricsData?.[0]?.words?.length"
       :class="['lyric-am', { pure: statusStore.pureLyricMode }]"
+      :style="{
+        '--amll-lp-color': mainColor,
+      }"
     >
       <div v-if="statusStore.lyricLoading" class="lyric-loading">歌词正在加载中...</div>
       <LyricPlayer
@@ -16,7 +19,6 @@
         :alignPosition="settingStore.lyricsScrollPosition === 'center' ? 0.5 : 0.2"
         :enableBlur="settingStore.lyricsBlur"
         :style="{
-          '--amll-lp-color': mainColor,
           '--amll-lp-font-size': settingStore.lyricFontSize + 'px',
           '--ja-font-family':
             settingStore.japaneseLyricFont !== 'follow' ? settingStore.japaneseLyricFont : '',
