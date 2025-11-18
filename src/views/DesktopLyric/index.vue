@@ -453,10 +453,28 @@ const startDrag = async (event: MouseEvent) => {
 };
 
 /**
+ * 触发函数节流
+ * @param fn 需要触发的函数
+ * @param wait 等待时间
+ */
+const throttle = (fn: Function, wait: number = 12)=> {
+  let canRun = true;
+
+  return function (this: any, ...args: any[]) {
+    if (!canRun) return;
+    canRun = false
+    setTimeout(()=>{
+      fn.apply(this,args);
+      canRun = true
+    },wait)
+  };
+};
+
+/**
  * 桌面歌词拖动移动
  * @param event 鼠标事件
  */
-const onDocMouseMove = async (event: MouseEvent) => {
+const onDocMouseMove = throttle(async (event: MouseEvent) => {
   if (!dragState.isDragging || lyricConfig.isLock) return;
   const screenX = event?.screenX ?? 0;
   const screenY = event?.screenY ?? 0;
@@ -477,7 +495,7 @@ const onDocMouseMove = async (event: MouseEvent) => {
     dragState.winWidth,
     dragState.winHeight,
   );
-};
+});
 
 /**
  * 桌面歌词拖动结束
