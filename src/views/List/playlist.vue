@@ -58,9 +58,9 @@
                 placement: 'bottom',
               }"
             >
-              <span style="white-space: pre;">
-                  {{ playlistDetailData.description }}
-              </span>
+              <div style="white-space: pre-line; max-width: 90vw;" >
+                {{ playlistDetailData.description }}
+              </div>
             </n-ellipsis>
             <!-- 信息 -->
             <n-flex class="meta">
