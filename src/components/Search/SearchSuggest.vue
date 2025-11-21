@@ -99,6 +99,10 @@ const searchSuggestionsType = {
     name: "歌单",
     icon: "MusicList",
   },
+  share: {
+    name: "分享的内容",
+    icon: "Link",
+  },
 };
 
 // 获取搜索建议
@@ -126,11 +130,53 @@ const calcSearchSuggestHeights = () => {
   }
 };
 
+// 识别链接类型
+const getLinkType = (val: string) => {
+  const regex = /music\.163\.com\/(?:#\/)?(song|playlist|album|artist)\?id=(\d+)/;
+  const match = val.match(regex);
+  if (match) {
+    const typeMap: Record<string, string> = {
+      song: "songs",
+      playlist: "playlists",
+      album: "albums",
+      artist: "artists",
+    };
+    const nameMap: Record<string, string> = {
+      song: "歌曲",
+      playlist: "歌单",
+      album: "专辑",
+      artist: "歌手",
+    };
+    return {
+      type: typeMap[match[1]],
+      typeName: nameMap[match[1]],
+      id: match[2],
+    };
+  }
+  return null;
+};
+
 // 搜索框改变
 watchDebounced(
   () => statusStore.searchInputValue,
   (val) => {
     if (!val || val === "" || !settingStore.useOnlineService) return;
+    // 识别链接
+    const linkData = getLinkType(val);
+    if (linkData) {
+      searchSuggestData.value = {
+        order: ["share"],
+        share: [
+          {
+            name: `前往分享的${linkData.typeName}`,
+            id: linkData.id,
+            realType: linkData.type,
+          },
+        ],
+      };
+      nextTick(calcSearchSuggestHeights);
+      return;
+    }
     getSearchSuggest(val);
   },
   { debounce: 300 },

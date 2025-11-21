@@ -150,6 +150,11 @@ const toSearch = async (key: any, type: string = "keyword") => {
         query: { id: key?.id },
       });
       break;
+    case "share":
+      if (key?.realType && key?.id) {
+        toSearch({ id: key.id }, key.realType);
+      }
+      break;
     default:
       break;
   }
