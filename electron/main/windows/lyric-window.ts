@@ -17,6 +17,11 @@ class LyricWindow {
     this.win.on("ready-to-show", () => {
       this.win?.show();
     });
+    // 页面加载完成后设置标题
+    // 这里的标题设置是为了 Linux 能够为桌面歌词单独设置窗口规则
+    this.win.webContents.on("did-finish-load", () => {
+      this.win?.setTitle("SPlayer - 桌面歌词");
+    });
     // 歌词窗口缩放
     this.win?.on("resized", () => {
       const store = useStore();
