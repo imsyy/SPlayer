@@ -156,7 +156,7 @@
                 </n-button>
               </n-dropdown>
             </n-flex>
-            <n-flex class="right">
+            <n-flex class="right" align="center">
               <!-- 模糊搜索 -->
               <n-input
                 v-if="playlistData?.length"
