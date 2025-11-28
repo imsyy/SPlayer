@@ -141,6 +141,13 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
+          <n-text class="name">显示MV标签</n-text>
+          <n-text class="tip" :depth="3">是否在歌曲列表中显示MV标签</n-text>
+        </div>
+        <n-switch class="set" v-model:value="settingStore.showSongMVTag" :round="false" />
+      </n-card>
+      <n-card class="set-item">
+        <div class="label">
           <n-text class="name">开启页面缓存</n-text>
           <n-text class="tip" :depth="3">是否开启部分页面的缓存，这将会增加内存占用</n-text>
         </div>

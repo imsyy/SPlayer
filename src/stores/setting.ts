@@ -199,6 +199,8 @@ export interface SettingState {
   showSongPrivilegeTag: boolean;
   /** 显示原唱翻唱标签 */
   showSongOriginalTag: boolean;
+  /** 显示歌曲MV标签 */
+  showSongMVTag: boolean;
   /** 隐藏发现音乐 */
   hideDiscover: boolean;
   /** 隐藏私人漫游 */
@@ -334,6 +336,7 @@ export const useSettingStore = defineStore("setting", {
     showSongQuality: true,
     showSongPrivilegeTag: true,
     showSongOriginalTag: true,
+    showSongMVTag: true,
     hideDiscover: false,
     hidePersonalFM: false,
     hideRadioHot: false,
