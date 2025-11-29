@@ -208,6 +208,13 @@ export interface SettingState {
   appLaunchCount: number;
   /** 隐藏 Star 弹窗 */
   hideStarPopup: boolean;
+  /** 首页栏目顺序和显示配置 */
+  homePageSections: Array<{
+    key: "playlist" | "radar" | "artist" | "video" | "radio" | "album";
+    name: string;
+    visible: boolean;
+    order: number;
+  }>;
 }
 
 export const useSettingStore = defineStore("setting", {
@@ -309,6 +316,14 @@ export const useSettingStore = defineStore("setting", {
     enableSearchKeyword: true,
     appLaunchCount: 0,
     hideStarPopup: true,
+    homePageSections: [
+      { key: "playlist", name: "专属歌单", visible: true, order: 0 },
+      { key: "radar", name: "雷达歌单", visible: true, order: 1 },
+      { key: "artist", name: "歌手推荐", visible: true, order: 2 },
+      { key: "video", name: "推荐 MV", visible: true, order: 3 },
+      { key: "radio", name: "推荐播客", visible: true, order: 4 },
+      { key: "album", name: "新碟上架", visible: true, order: 5 },
+    ],
   }),
   getters: {
     /**

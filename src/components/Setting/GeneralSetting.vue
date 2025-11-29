@@ -118,6 +118,20 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
+          <n-text class="name">首页栏目配置</n-text>
+          <n-text class="tip" :depth="3">调整首页各栏目的显示顺序或隐藏不需要的栏目</n-text>
+        </div>
+        <n-button
+          type="primary"
+          strong
+          secondary
+          @click="openHomePageSectionManager"
+        >
+          配置
+        </n-button>
+      </n-card>
+      <n-card class="set-item">
+        <div class="label">
           <n-text class="name">显示歌曲音质</n-text>
           <n-text class="tip" :depth="3">是否列表中显示歌曲音质</n-text>
         </div>
@@ -331,7 +345,7 @@ import { isDev, isElectron } from "@/utils/env";
 import { getCoverColor } from "@/utils/player-utils/song";
 import { isEmpty } from "lodash-es";
 import themeColor from "@/assets/data/themeColor.json";
-import { openSidebarHideManager } from "@/utils/modal";
+import { openSidebarHideManager, openHomePageSectionManager } from "@/utils/modal";
 
 const dataStore = useDataStore();
 const musicStore = useMusicStore();

@@ -22,6 +22,7 @@ import AutoClose from "@/components/Modal/AutoClose.vue";
 import Equalizer from "@/components/Modal/Equalizer.vue";
 import SongUnlockManager from "@/components/Modal/SongUnlockManager.vue";
 import SidebarHideManager from "@/components/Modal/SidebarHideManager.vue";
+import HomePageSectionManager from "@/components/Modal/HomePageSectionManager.vue";
 import { NScrollbar } from "naive-ui";
 
 // 用户协议
@@ -346,6 +347,20 @@ export const openSidebarHideManager = () => {
     title: "侧边栏隐藏管理",
     content: () => {
       return h(SidebarHideManager);
+    },
+  });
+};
+
+/** 打开首页栏目配置弹窗 */
+export const openHomePageSectionManager = () => {
+  window.$modal.create({
+    preset: "card",
+    transformOrigin: "center",
+    autoFocus: false,
+    style: { width: "500px" },
+    title: "首页栏目配置",
+    content: () => {
+      return h(HomePageSectionManager);
     },
   });
 };

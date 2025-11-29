@@ -28,6 +28,7 @@ declare module 'vue' {
     ExcludeLyrics: typeof import('./src/components/Modal/ExcludeLyrics.vue')['default']
     FullPlayer: typeof import('./src/components/Player/FullPlayer.vue')['default']
     GeneralSetting: typeof import('./src/components/Setting/GeneralSetting.vue')['default']
+    HomePageSectionManager: typeof import('./src/components/Modal/HomePageSectionManager.vue')['default']
     JumpArtist: typeof import('./src/components/Modal/JumpArtist.vue')['default']
     KeyboardSetting: typeof import('./src/components/Setting/KeyboardSetting.vue')['default']
     LocalSetting: typeof import('./src/components/Setting/LocalSetting.vue')['default']
