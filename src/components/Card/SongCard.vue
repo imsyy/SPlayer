@@ -144,6 +144,10 @@
       <n-text v-if="song.type === 'radio'" class="meta" depth="3">
         {{ formatNumber(song.playCount || 0) }}
       </n-text>
+      <!-- 加入时间 (歌单中) -->
+      <n-text v-if="displayAddTime" class="meta addTime" depth="3">
+        {{ formatTimestamp(song.addTime) }}
+      </n-text>
       <!-- 时长 -->
       <n-text class="meta" depth="3">{{ msToTime(song.duration) }}</n-text>
       <!-- 大小 -->
@@ -419,6 +423,9 @@ const localCover = async (show: boolean) => {
     }
     &.date {
       width: 80px;
+    }
+    &.addTime {
+      width: 120px;
     }
   }
   &.header {

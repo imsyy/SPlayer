@@ -236,6 +236,8 @@ const statusStore = useStatusStore();
 // 歌单数据
 const playlistData = shallowRef<SongType[]>([]);
 const playlistDetailData = ref<CoverType | null>(null);
+// 歌单中的 trackIds 映射表（用于获取歌曲加入时间）- 使用 shallowRef 优化性能
+const trackIdsMap = shallowRef<Map<number, { at: number }>>(new Map());
 
 // 模糊搜索数据
 const searchValue = ref<string>("");
@@ -383,6 +385,20 @@ const handleOnlinePlaylist = async (id: number, getList: boolean, refresh: boole
   // 检查是否仍然是当前请求的歌单
   if (currentRequestId.value !== id) return;
   playlistDetailData.value = formatCoverList(detail.playlist)[0];
+
+  // 性能优化：使用 for 循环代替 map，避免中间数组创建
+  if (detail.playlist?.trackIds?.length) {
+    const newMap = new Map<number, { at: number }>();
+    for (const trackInfo of detail.playlist.trackIds) {
+      if (trackInfo?.id && trackInfo?.at) {
+        newMap.set(trackInfo.id, { at: trackInfo.at });
+      }
+    }
+    trackIdsMap.value = newMap;
+  } else {
+    trackIdsMap.value = new Map();
+  }
+
   const count = playlistDetailData.value?.count || 0;
   // 不需要获取列表或无歌曲
   if (!getList || count === 0) {
@@ -395,7 +411,7 @@ const handleOnlinePlaylist = async (id: number, getList: boolean, refresh: boole
     const result = await songDetail(ids);
     // 检查是否仍然是当前请求的歌单
     if (currentRequestId.value !== id) return;
-    playlistData.value = formatSongsList(result.songs);
+    playlistData.value = formatSongsList(result.songs, trackIdsMap.value);
   } else {
     await getPlaylistAllSongs(id, count, refresh);
   }
@@ -430,7 +446,7 @@ const getPlaylistAllSongs = async (
       loadingMsgShow(false);
       return;
     }
-    const songData = formatSongsList(result.songs);
+    const songData = formatSongsList(result.songs, trackIdsMap.value);
     listData.push(...songData);
     if (!refresh) playlistData.value = playlistData.value.concat(songData);
     // 更新数据

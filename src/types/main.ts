@@ -66,6 +66,8 @@ export type SongType = {
   createTime?: number;
   updateTime?: number;
   playCount?: number;
+  // 歌曲加入歌单的时间戳（毫秒）
+  addTime?: number;
   // 歌曲类型
   type: "song" | "radio";
 };

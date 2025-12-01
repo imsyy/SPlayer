@@ -30,6 +30,7 @@
             <n-text v-if="type !== 'radio'" class="actions">操作</n-text>
             <n-text v-if="type === 'radio'" class="meta date">更新日期</n-text>
             <n-text v-if="type === 'radio'" class="meta">播放量</n-text>
+            <n-text v-if="showAddTimeColumn" class="meta addTime">加入时间</n-text>
             <n-text class="meta">时长</n-text>
             <n-text v-if="data?.[0].size && !hiddenSize" class="meta size">大小</n-text>
           </div>
@@ -432,15 +433,41 @@ onBeforeUnmount(() => {
       &.date {
         width: 80px;
       }
+      &.addTime {
+        width: 120px;
+      }
     }
   }
-  .virtual-list-wrapper {
-    height: 100%;
-    position: relative;
-    .sticky-header {
-      position: sticky;
-      top: 0;
-      z-index: 10;
+  // 滚动条
+  .virt-list__client {
+    transition:
+      height 0.3s,
+      width 0.3s,
+      opacity 0.3s;
+    -webkit-overflow-scrolling: touch;
+    &::-webkit-scrollbar {
+      width: 6px;
+      background-color: transparent;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(var(--primary), 0.28);
+      border-radius: 12px;
+    }
+  }
+  &.hidden-scrollbar {
+    .list-header {
+      padding: 8px 12px;
+    }
+    .song-card {
+      padding-right: 0;
+    }
+    .virt-list__client {
+      &::-webkit-scrollbar {
+        display: none;
+      }
     }
   }
   // 加载更多

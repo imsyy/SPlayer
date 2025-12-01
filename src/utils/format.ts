@@ -16,11 +16,17 @@ type CoverDataType = {
 /**
  * 格式化歌曲列表
  * @param data 歌曲数据
+ * @param trackIdsMap 歌单中的 trackIds 映射表（可选），用于获取歌曲加入时间（应传入 Map 类型以获得最佳性能）
  * @returns 格式化后的歌曲列表
  */
-export const formatSongsList = (data: any[]): SongType[] => {
+export const formatSongsList = (data: any[], trackIdsMap?: Map<number, { at: number }> | Record<number, { at: number }>): SongType[] => {
   if (!data) return [];
   data = isArray(data) ? data : [data];
+
+  // 性能优化：直接使用 Map，避免重复转换
+  // 调用者应该预先构建 Map 类型的 trackIdsMap
+  const trackIdMap: Map<number, { at: number }> | null = trackIdsMap instanceof Map ? trackIdsMap : null;
+
   return data.map((item) => {
     // 特殊处理
     item = item?.simpleSong ? { ...item.simpleSong, pc: true } : item?.songInfo || item;
@@ -38,6 +44,10 @@ export const formatSongsList = (data: any[]): SongType[] => {
         alias: ar?.alias,
       }));
     };
+
+    // 获取歌曲的加入时间（如果提供了 trackIds 映射）
+    const addTime = trackIdMap?.get(item.id)?.at;
+
     return {
       id: item.id,
       name: item.name,
@@ -74,6 +84,7 @@ export const formatSongsList = (data: any[]): SongType[] => {
       playCount: Number(item.playCount || item.listenerCount || 0),
       createTime: Number(item.createTime || item.publishTime) || undefined,
       updateTime: Number(item.lastProgramCreateTime || item.scheduledPublishTime) || undefined,
+      addTime,
       type: item?.dj ? "radio" : "song",
     };
   });
