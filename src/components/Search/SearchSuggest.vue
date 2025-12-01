@@ -143,7 +143,11 @@ const getSearchSuggest = async (keywords: string) => {
 
     switch (type) {
       case "songs": {
-        return formatSongsList(data);
+        try {
+          return formatSongsList(data);
+        } catch (e) {
+          return null;
+        }
       }
       case "playlists":
       case "albums": {
