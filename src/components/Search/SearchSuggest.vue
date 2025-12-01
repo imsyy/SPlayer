@@ -151,7 +151,12 @@ const getSearchSuggest = async (keywords: string) => {
       }
       case "playlists":
       case "albums": {
-        const formatted = formatCoverList(data);
+        let formatted;
+        try {
+          formatted = formatCoverList(data);
+        } catch (e) {
+          return null;
+        }
         const resourceType = type === "albums" ? "album" : "playlist";
         const filtered = filterValidPlaylists(formatted, resourceType);
         return filtered.length > 0 ? filtered : null;
