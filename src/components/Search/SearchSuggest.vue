@@ -298,7 +298,12 @@ const fetchIdResourceData = async (id: string) => {
       switch (type) {
         case "songs": {
           if (result?.songs?.length > 0) {
-            return formatSongsList(result.songs);
+            try {
+              return formatSongsList(result.songs);
+            } catch (e) {
+              // Optionally log the error, e.g., console.error('Error formatting songs:', e);
+              return null;
+            }
           }
           break;
         }
