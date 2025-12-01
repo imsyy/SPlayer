@@ -379,7 +379,13 @@ const fetchLinkResourceData = async (linkData: any) => {
     const currentController = searchAbortController;
 
     // 清除旧数据
-    searchSuggestData.value = {};
+    searchSuggestData.value = {
+      order: [],
+      songs: [],
+      playlists: [],
+      albums: [],
+      artists: [],
+    };
 
     const { type, id } = linkData;
     const numId = parseInt(id, 10);
