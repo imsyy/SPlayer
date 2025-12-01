@@ -56,7 +56,7 @@ const searchInpMenuRef = ref<InstanceType<typeof SearchInpMenu> | null>(null);
 // 搜索框数据
 const searchInputRef = ref<HTMLInputElement | null>(null);
 const searchPlaceholder = ref<string>(
-  settingStore.useOnlineService ? "搜索音乐 / 视频" : "搜索本地音乐",
+  settingStore.useOnlineService ? "搜索关键词、ID或链接" : "搜索本地音乐",
 );
 const searchRealkeyword = ref<string>("");
 
@@ -65,8 +65,19 @@ const noSideSpace = (value: string) => !value.startsWith(" ");
 
 // 搜索框 focus
 const searchInputToFocus = () => {
-  // searchInpRef.value?.focus();
+  const wasAlreadyFocused = statusStore.searchFocus;
   statusStore.searchFocus = true;
+
+  // 如果搜索框已经聚焦且有内容，则重新搜索该内容
+  if (wasAlreadyFocused && statusStore.searchInputValue?.trim()) {
+    // 强制重新触发搜索建议更新
+    // 这通过改变搜索值再改回来实现
+    const currentValue = statusStore.searchInputValue;
+    statusStore.searchInputValue = "";
+    nextTick(() => {
+      statusStore.searchInputValue = currentValue;
+    });
+  }
 };
 
 // 添加搜索历史
@@ -131,9 +142,15 @@ const toSearch = async (key: any, type: string = "keyword") => {
       setSearchHistory(key);
       break;
     case "songs": {
-      const result = await songDetail(key?.id);
-      const song = formatSongsList(result.songs)[0];
-      player.addNextSong(song, true);
+      // 如果已经是完整的歌曲对象，直接使用；否则获取详情
+      if (key?.id && !key?.dt && !key?.ar) {
+        const result = await songDetail(key.id);
+        const song = formatSongsList(result.songs)[0];
+        player.addNextSong(song, true);
+      } else {
+        // 已经是完整对象
+        player.addNextSong(key, true);
+      }
       break;
     }
     case "playlists":
@@ -154,11 +171,6 @@ const toSearch = async (key: any, type: string = "keyword") => {
         query: { id: key?.id },
       });
       break;
-    case "share":
-      if (key?.realType && key?.id) {
-        toSearch({ id: key.id }, key.realType);
-      }
-      break;
     default:
       break;
   }
@@ -177,7 +189,7 @@ onMounted(() => {
   position: relative;
   -webkit-app-region: no-drag;
   .search-input {
-    width: 200px;
+    width: 205px;
     height: 40px;
     border-radius: 50px;
     transition:

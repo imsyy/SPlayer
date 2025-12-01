@@ -28,8 +28,8 @@
         <Transition name="fade" mode="out-in" @after-leave="calcSearchSuggestHeights">
           <div
             v-if="
-              Object.keys(searchSuggestData)?.length &&
               searchSuggestData?.order &&
+              searchSuggestData.order.length > 0 &&
               settingStore.useOnlineService
             "
             ref="searchSuggestRef"
@@ -46,13 +46,29 @@
                 class="suggest-item"
                 @click="emit('toSearch', suggestItem, item)"
               >
-                <n-text class="name">{{ suggestItem.name }}</n-text>
-                <n-text v-if="suggestItem?.artist" class="artist" depth="3">
-                  {{ suggestItem.artist.name }}
-                </n-text>
-                <n-text v-else-if="suggestItem?.artists" class="artist" depth="3">
-                  {{ suggestItem.artists[0].name }}
-                </n-text>
+                <!-- 封面 -->
+                <img
+                  v-if="suggestItem?.cover || suggestItem?.picUrl || suggestItem?.picture"
+                  :src="suggestItem.cover || suggestItem.picUrl || suggestItem.picture"
+                  :alt="suggestItem.name"
+                  class="cover"
+                />
+                <!-- 内容 -->
+                <div class="content">
+                  <n-text class="name">{{ suggestItem.name }}</n-text>
+                  <n-text v-if="suggestItem?.artist" class="artist" depth="3">
+                    {{ suggestItem.artist.name }}
+                  </n-text>
+                  <n-text v-else-if="suggestItem?.artists" class="artist" depth="3">
+                    {{ suggestItem.artists[0].name }}
+                  </n-text>
+                  <n-text v-else-if="suggestItem?.creator?.name" class="creator" depth="3">
+                    {{ suggestItem.creator.name }}
+                  </n-text>
+                  <n-text v-else-if="suggestItem?.description" class="desc" depth="3">
+                    {{ suggestItem.description }}
+                  </n-text>
+                </div>
               </div>
             </div>
           </div>
@@ -65,6 +81,11 @@
 <script setup lang="ts">
 import { searchSuggest } from "@/api/search";
 import { useStatusStore, useSettingStore } from "@/stores";
+import { songDetail } from "@/api/song";
+import { playlistDetail } from "@/api/playlist";
+import { albumDetail } from "@/api/album";
+import { artistDetail } from "@/api/artist";
+import { formatSongsList, formatCoverList } from "@/utils/format";
 
 const emit = defineEmits<{
   toSearch: [key: number | string, type: string];
@@ -80,6 +101,9 @@ const searchSuggestHeights = ref<number>(0);
 // 搜索建议元素
 const directSearchRef = ref<HTMLElement | null>(null);
 const searchSuggestRef = ref<HTMLElement | null>(null);
+
+// 请求控制
+let searchAbortController: AbortController | null = null;
 
 // 搜索建议分类
 const searchSuggestionsType = {
@@ -99,17 +123,62 @@ const searchSuggestionsType = {
     name: "歌单",
     icon: "MusicList",
   },
-  share: {
-    name: "分享的内容",
-    icon: "Link",
-  },
 };
 
 // 获取搜索建议
 const getSearchSuggest = async (keywords: string) => {
-  searchSuggestData.value = {};
+  searchSuggestData.value = {
+    order: [],
+    songs: [],
+    playlists: [],
+    albums: [],
+    artists: [],
+  };
   const result = await searchSuggest(keywords);
-  searchSuggestData.value = result.result;
+  const apiResult = result.result || {};
+
+  // 格式化处理函数
+  const processData = (type: string, data: any[]): any[] | null => {
+    if (!data?.length) return null;
+
+    switch (type) {
+      case "songs": {
+        return formatSongsList(data);
+      }
+      case "playlists":
+      case "albums": {
+        const formatted = formatCoverList(data);
+        const filtered = filterValidPlaylists(formatted);
+        return filtered.length > 0 ? filtered : null;
+      }
+      case "artists": {
+        // 单独处理
+        return null;
+      }
+      default:
+        return null;
+    }
+  };
+
+  // 处理各个类型的数据
+  const processedSongs = processData("songs", apiResult.songs);
+  if (processedSongs) {
+    searchSuggestData.value.songs = processedSongs;
+    searchSuggestData.value.order.push("songs");
+  }
+
+  const processedPlaylists = processData("playlists", apiResult.playlists);
+  if (processedPlaylists) {
+    searchSuggestData.value.playlists = processedPlaylists;
+    searchSuggestData.value.order.push("playlists");
+  }
+
+  const processedAlbums = processData("albums", apiResult.albums);
+  if (processedAlbums) {
+    searchSuggestData.value.albums = processedAlbums;
+    searchSuggestData.value.order.push("albums");
+  }
+
   // 计算高度
   nextTick(calcSearchSuggestHeights);
 };
@@ -141,45 +210,264 @@ const getLinkType = (val: string) => {
       album: "albums",
       artist: "artists",
     };
-    const nameMap: Record<string, string> = {
-      song: "歌曲",
-      playlist: "歌单",
-      album: "专辑",
-      artist: "歌手",
-    };
     return {
       type: typeMap[match[1]],
-      typeName: nameMap[match[1]],
+      urlType: match[1],
       id: match[2],
     };
   }
   return null;
 };
 
+// 检查是否为ID
+const isNumericId = (val: string): string | null => {
+  val = val.trim();
+  if (/^\d+$/.test(val) && val.length >= 4 && val.length <= 20) {
+    return val;
+  }
+  return null;
+};
+
+// 过滤无效结果
+const filterValidPlaylists = (data: any[]): any[] => {
+  return data.filter((item) => {
+    const creatorName = item?.creator?.name || "";
+    if (creatorName === "未知用户名" || creatorName === "") {
+      return false;
+    }
+    const trackCount = item?.count ?? item?.trackCount ?? 0;
+    if (trackCount <= 0) {
+      return false;
+    }
+    return true;
+  });
+};
+
+// 根据ID遍历所有类型
+const fetchIdResourceData = async (id: string) => {
+  try {
+    // 创建新的 AbortController 用于这次搜索
+    searchAbortController = new AbortController();
+    const currentController = searchAbortController;
+
+    // 清除旧数据
+    searchSuggestData.value = {
+      order: [],
+      songs: [],
+      playlists: [],
+      albums: [],
+      artists: [],
+    };
+
+    const numId = parseInt(id, 10);
+
+    // 并发请求所有类型
+    const requests = [
+      { type: "songs", promise: songDetail(numId) },
+      { type: "playlists", promise: playlistDetail(numId) },
+      { type: "albums", promise: albumDetail(numId) },
+      { type: "artists", promise: artistDetail(numId) },
+    ];
+
+    // 为每个请求添加标识，以便追踪结果
+    const trackedRequests = requests.map(({ type, promise }) =>
+      promise
+        .then((result) => ({ type, result, status: "fulfilled" }))
+        .catch((error) => ({ type, error, status: "rejected" }))
+    );
+
+    // 并发所有请求
+    const allPromises = Promise.all(trackedRequests);
+
+    // 处理格式化和过滤的统一函数
+    const formatAndProcess = (type: string, result: any): any[] | null => {
+      switch (type) {
+        case "songs": {
+          if (result?.songs?.length > 0) {
+            return formatSongsList(result.songs);
+          }
+          break;
+        }
+        case "playlists": {
+          if (result?.playlist?.id) {
+            const formatted = formatCoverList([result.playlist]);
+            const filtered = filterValidPlaylists(formatted);
+            return filtered.length > 0 ? filtered : null;
+          }
+          break;
+        }
+        case "albums": {
+          if (result?.album?.id) {
+            const formatted = formatCoverList([result.album]);
+            const filtered = filterValidPlaylists(formatted);
+            return filtered.length > 0 ? filtered : null;
+          }
+          break;
+        }
+        case "artists": {
+          const artistData = result?.artist || result?.data?.artist || result;
+          if (artistData?.id) {
+            return [
+              {
+                ...artistData,
+                description: artistData.description || artistData.briefDesc || "",
+              },
+            ];
+          }
+          break;
+        }
+      }
+      return null;
+    };
+
+    // 为每个请求单独处理，动态显示结果
+    trackedRequests.forEach((promise) => {
+      promise.then((res) => {
+        // 检查用户是否关闭了搜索框
+        if (currentController !== searchAbortController) {
+          return;
+        }
+
+        if (res.status === "fulfilled") {
+          const { type } = res;
+          const result = (res as any).result;
+          const formattedData = formatAndProcess(type, result);
+
+          // 立即更新 UI 显示这个结果
+          if (formattedData && formattedData.length > 0) {
+            if (!searchSuggestData.value.order.includes(type)) {
+              searchSuggestData.value.order.push(type);
+              searchSuggestData.value[type] = formattedData;
+              nextTick(calcSearchSuggestHeights);
+            }
+          }
+        }
+      });
+    });
+
+    // 等待所有请求完成
+    await allPromises;
+  } catch (error) {
+    console.error("Error fetching ID resource data:", error);
+  }
+};
+
+// 根据链接获取详情数据，支持取消
+const fetchLinkResourceData = async (linkData: any) => {
+  try {
+    // 创建新的 AbortController 用于这次搜索
+    searchAbortController = new AbortController();
+    const currentController = searchAbortController;
+
+    // 清除旧数据
+    searchSuggestData.value = {};
+
+    const { type, id } = linkData;
+    const numId = parseInt(id, 10);
+
+    let resourceData: any = null;
+
+    // 统一的格式化和处理逻辑
+    switch (type) {
+      case "songs": {
+        const result = await songDetail(numId);
+        const songs = formatSongsList(result.songs);
+        resourceData = songs[0];
+        break;
+      }
+      case "playlists": {
+        const result = await playlistDetail(numId);
+        const formatted = formatCoverList([result.playlist]);
+        const filtered = filterValidPlaylists(formatted);
+        resourceData = filtered[0] || null;
+        break;
+      }
+      case "albums": {
+        const result = await albumDetail(numId);
+        const formatted = formatCoverList([result.album]);
+        const filtered = filterValidPlaylists(formatted);
+        resourceData = filtered[0] || null;
+        break;
+      }
+      case "artists": {
+        try {
+          const result = await artistDetail(numId);
+          // artistDetail 可能返回多种格式，统一处理
+          const artistData = result?.artist || result?.data?.artist || result;
+          if (artistData?.id) {
+            // 确保 description 字段存在（UI 使用它）
+            resourceData = {
+              ...artistData,
+              description: artistData.description || artistData.briefDesc || "",
+            };
+          }
+        } catch (err) {
+          // API 调用失败，resourceData 保持为 null
+          console.error("Failed to fetch artist detail:", err);
+        }
+        break;
+      }
+    }
+
+    // 检查搜索是否已被取消（用户关闭了搜索框）
+    if (currentController !== searchAbortController) {
+      return;
+    }
+
+    if (resourceData) {
+      searchSuggestData.value = {
+        order: [type],
+        [type]: [resourceData],
+      };
+      nextTick(calcSearchSuggestHeights);
+    }
+  } catch (error) {
+    console.error("Error fetching link resource data:", error);
+  }
+};
+
 // 搜索框改变
 watchDebounced(
   () => statusStore.searchInputValue,
   (val) => {
-    if (!val || val === "" || !settingStore.useOnlineService) return;
-    // 识别链接
-    const linkData = getLinkType(val);
-    if (linkData) {
-      searchSuggestData.value = {
-        order: ["share"],
-        share: [
-          {
-            name: `前往分享的${linkData.typeName}`,
-            id: linkData.id,
-            realType: linkData.type,
-          },
-        ],
-      };
-      nextTick(calcSearchSuggestHeights);
+    // 清空输入时，清除搜索结果
+    if (!val || val === "") {
+      searchSuggestData.value = {};
       return;
     }
+
+    // 不在线时不搜索
+    if (!settingStore.useOnlineService) return;
+
+    // 1. 尝试识别链接
+    const linkData = getLinkType(val);
+    if (linkData) {
+      fetchLinkResourceData(linkData);
+      return;
+    }
+
+    // 2. 尝试识别纯数字ID
+    const numericId = isNumericId(val);
+    if (numericId) {
+      fetchIdResourceData(numericId);
+      return;
+    }
+
+    // 3. 普通关键词搜索
     getSearchSuggest(val);
   },
   { debounce: 300 },
+);
+
+// 监听搜索框关闭，取消未完成的请求
+watch(
+  () => statusStore.searchFocus,
+  (focused) => {
+    if (!focused) {
+      // 用户关闭搜索框，设置为 null 阻止后续请求完成时的 UI 更新
+      searchAbortController = null;
+    }
+  },
 );
 </script>
 
@@ -236,17 +524,55 @@ watchDebounced(
         }
       }
       .suggest-item {
-        padding: 14px 18px 14px 22px;
+        padding: 8px 10px;
         margin-bottom: 8px;
         border-radius: 8px;
         transition: background-color 0.3s;
         cursor: pointer;
-        .name {
-          white-space: normal;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        .cover {
+          width: 48px;
+          height: 48px;
+          border-radius: 4px;
+          object-fit: cover;
+          flex-shrink: 0;
         }
-        .artist {
-          &::before {
-            content: " - ";
+        .content {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          flex: 1;
+          min-width: 0;
+          .name {
+            white-space: normal;
+            word-break: break-word;
+            font-weight: 500;
+          }
+          .artist {
+            font-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            &::before {
+              content: " - ";
+            }
+          }
+          .creator {
+            font-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            &::before {
+              content: "创建者: ";
+            }
+          }
+          .desc {
+            font-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
         }
         &:last-child {
