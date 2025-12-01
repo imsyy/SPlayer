@@ -391,7 +391,7 @@ const fetchLinkResourceData = async (linkData: any) => {
       case "songs": {
         const result = await songDetail(numId);
         const songs = formatSongsList(result.songs);
-        resourceData = songs[0];
+        resourceData = songs?.[0] || null;
         break;
       }
       case "playlists": {
