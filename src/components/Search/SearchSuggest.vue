@@ -148,7 +148,8 @@ const getSearchSuggest = async (keywords: string) => {
       case "playlists":
       case "albums": {
         const formatted = formatCoverList(data);
-        const filtered = filterValidPlaylists(formatted);
+        const resourceType = type === "albums" ? "album" : "playlist";
+        const filtered = filterValidPlaylists(formatted, resourceType);
         return filtered.length > 0 ? filtered : null;
       }
       case "artists": {
@@ -228,13 +229,17 @@ const isNumericId = (val: string): string | null => {
   return null;
 };
 
-// 过滤无效结果
-const filterValidPlaylists = (data: any[]): any[] => {
+// 过滤无效的歌单/专辑结果
+const filterValidPlaylists = (data: any[], type: "playlist" | "album" = "playlist"): any[] => {
   return data.filter((item) => {
-    const creatorName = item?.creator?.name || "";
-    if (creatorName === "未知用户名" || creatorName === "") {
-      return false;
+    // 歌单需要检查创建者信息
+    if (type === "playlist") {
+      const creatorName = item?.creator?.name || "";
+      if (creatorName === "未知用户名" || creatorName === "") {
+        return false;
+      }
     }
+    // 歌单和专辑都需要检查有效的歌曲数量
     const trackCount = item?.count ?? item?.trackCount ?? 0;
     if (trackCount <= 0) {
       return false;
@@ -291,7 +296,7 @@ const fetchIdResourceData = async (id: string) => {
         case "playlists": {
           if (result?.playlist?.id) {
             const formatted = formatCoverList([result.playlist]);
-            const filtered = filterValidPlaylists(formatted);
+            const filtered = filterValidPlaylists(formatted, "playlist");
             return filtered.length > 0 ? filtered : null;
           }
           break;
@@ -299,7 +304,7 @@ const fetchIdResourceData = async (id: string) => {
         case "albums": {
           if (result?.album?.id) {
             const formatted = formatCoverList([result.album]);
-            const filtered = filterValidPlaylists(formatted);
+            const filtered = filterValidPlaylists(formatted, "album");
             return filtered.length > 0 ? filtered : null;
           }
           break;
@@ -378,14 +383,14 @@ const fetchLinkResourceData = async (linkData: any) => {
       case "playlists": {
         const result = await playlistDetail(numId);
         const formatted = formatCoverList([result.playlist]);
-        const filtered = filterValidPlaylists(formatted);
+        const filtered = filterValidPlaylists(formatted, "playlist");
         resourceData = filtered[0] || null;
         break;
       }
       case "albums": {
         const result = await albumDetail(numId);
         const formatted = formatCoverList([result.album]);
-        const filtered = filterValidPlaylists(formatted);
+        const filtered = filterValidPlaylists(formatted, "album");
         resourceData = filtered[0] || null;
         break;
       }
