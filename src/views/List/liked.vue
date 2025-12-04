@@ -189,6 +189,8 @@ const isActivated = ref<boolean>(false);
 // 歌单数据
 const playlistData = shallowRef<SongType[]>([]);
 const playlistDetailData = ref<CoverType | null>(null);
+// trackIds 映射表，用于获取歌曲加入时间
+const trackIdsMap = shallowRef<Map<number, { at: number }>>(new Map());
 
 // 模糊搜索数据
 const searchValue = ref<string>("");
@@ -309,6 +311,20 @@ const getPlaylistData = async (id: number, getList: boolean, refresh: boolean) =
   // 检查是否仍然是当前请求的歌单
   if (currentRequestId.value !== id) return;
   playlistDetailData.value = formatCoverList(detail.playlist)[0];
+
+  // 构建 trackIds 映射表，用于获取歌曲加入时间
+  if (detail.playlist?.trackIds?.length) {
+    const newMap = new Map<number, { at: number }>();
+    for (const trackInfo of detail.playlist.trackIds) {
+      if (trackInfo?.id && trackInfo?.at) {
+        newMap.set(trackInfo.id, { at: trackInfo.at });
+      }
+    }
+    trackIdsMap.value = newMap;
+  } else {
+    trackIdsMap.value = new Map();
+  }
+
   // 不需要获取列表或无歌曲
   if (!getList || playlistDetailData.value.count === 0) {
     loading.value = false;
@@ -321,7 +337,7 @@ const getPlaylistData = async (id: number, getList: boolean, refresh: boolean) =
     // 检查是否仍然是当前请求的歌单
     if (currentRequestId.value !== id) return;
     // 直接批量详情返回时也进行一次按 id 去重
-    playlistData.value = uniqBy(formatSongsList(result.songs), "id");
+    playlistData.value = uniqBy(formatSongsList(result.songs, trackIdsMap.value), "id");
   } else {
     await getPlaylistAllSongs(id, playlistDetailData.value.count || 0, refresh);
   }
@@ -369,7 +385,7 @@ const getPlaylistAllSongs = async (
       loadingMsgShow(false);
       return;
     }
-    const songData = formatSongsList(result.songs);
+    const songData = formatSongsList(result.songs, trackIdsMap.value);
     listData.push(...songData);
     // 非刷新模式下，增量拼接时进行去重，避免与缓存或上一页数据重复
     if (!refresh) playlistData.value = uniqBy([...playlistData.value, ...songData], "id");

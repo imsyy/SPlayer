@@ -91,6 +91,8 @@ interface StatusState {
     /** 等待歌曲结束 */
     waitSongEnd: boolean;
   };
+  /** 加入时间显示格式（full: YYYY-MM-DD HH:mm, short: MM-DD） */
+  addTimeFormat: "full" | "short";
 }
 
 export const useStatusStore = defineStore("status", {
@@ -136,6 +138,7 @@ export const useStatusStore = defineStore("status", {
       remainTime: 0,
       waitSongEnd: true,
     },
+    addTimeFormat: "full",
   }),
   getters: {
     // 播放音量图标

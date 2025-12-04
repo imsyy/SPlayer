@@ -146,7 +146,7 @@
       </n-text>
       <!-- 加入时间 (歌单中) -->
       <n-text v-if="displayAddTime" class="meta addTime" depth="3">
-        {{ formatTimestamp(song.addTime) }}
+        {{ formattedAddTime }}
       </n-text>
       <!-- 时长 -->
       <n-text class="meta" depth="3">{{ msToTime(song.duration) }}</n-text>
@@ -199,6 +199,23 @@ const qualityColor = computed(() => {
   if (song.value.quality === QualityType.SQ) return "warning";
   if (song.value.quality === QualityType.HQ) return "info";
   return "primary";
+});
+
+// 显示加入时间
+const displayAddTime = computed(() => {
+  return settingStore.showSongAddTime && song.value.addTime && song.value.type !== 'radio';
+});
+
+// 格式化加入时间（根据状态切换显示格式）
+const formattedAddTime = computed(() => {
+  if (!song.value.addTime) return "";
+  if (statusStore.addTimeFormat === "full") {
+    // full 格式：YYYY-MM-DD HH:mm
+    return formatTimestamp(song.value.addTime, "YYYY-MM-DD HH:mm");
+  } else {
+    // short 格式：MM-DD（自动去掉年份如果是今年）
+    return formatTimestamp(song.value.addTime, "MM-DD");
+  }
 });
 
 // 加载本地歌曲封面

@@ -231,6 +231,8 @@ export const useDataStore = defineStore("data", {
         } else if (!Array.isArray(historyList)) return;
         // 深拷贝
         song = cloneDeep(song);
+        // 为每次播放记录添加时间戳
+        song.addTime = Date.now();
         // 添加到首项并移除重复项
         const updatedList = [song, ...historyList.filter((item) => item.id !== song.id)];
         // 最多 500 首

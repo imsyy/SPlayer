@@ -28,7 +28,7 @@ export const formatSongsList = (data: any[], trackIdsMap?: Map<number, { at: num
   const trackIdMap: Map<number, { at: number }> | null = trackIdsMap instanceof Map ? trackIdsMap : null;
 
   return data.map((item) => {
-    // 特殊处理
+    const addTimeFromCloud = item.addTime;
     item = item?.simpleSong ? { ...item.simpleSong, pc: true } : item?.songInfo || item;
     // 歌手数据
     const artist = (): MetaData[] | string => {
@@ -45,8 +45,10 @@ export const formatSongsList = (data: any[], trackIdsMap?: Map<number, { at: num
       }));
     };
 
-    // 获取歌曲的加入时间（如果提供了 trackIds 映射）
-    const addTime = trackIdMap?.get(item.id)?.at;
+    // 获取歌曲的加入时间
+    // - 云盘歌曲：使用 addTimeFromCloud（API 直接返回）
+    // - 其他歌单：使用 trackIdMap（从 playlistDetail 的 trackIds 构建）
+    const addTime = addTimeFromCloud || trackIdMap?.get(item.id)?.at;
 
     return {
       id: item.id,
