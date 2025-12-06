@@ -52,6 +52,7 @@
                 :hiddenCover="hiddenCover"
                 :hiddenAlbum="hiddenAlbum"
                 :hiddenSize="hiddenSize"
+                :displayAddTime="showAddTimeColumn"
                 @dblclick.stop="
                   doubleClickAction === 'add'
                     ? player.addNextSong(item.data, true)
@@ -111,7 +112,7 @@
 <script setup lang="ts">
 import type { DropdownOption, VirtualListInst } from "naive-ui";
 import { SongType, SortType } from "@/types/main";
-import { useMusicStore, useStatusStore } from "@/stores";
+import { useMusicStore, useStatusStore, useSettingStore } from "@/stores";
 import { entries, isEmpty } from "lodash-es";
 import { sortOptions } from "@/utils/meta";
 import { renderIcon } from "@/utils/helper";
@@ -166,6 +167,7 @@ const emit = defineEmits<{
 const player = usePlayer();
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
+const settingStore = useSettingStore();
 
 // 列表状态
 const scrollTop = ref<number>(0);
@@ -256,6 +258,11 @@ const listKey = computed(() => {
 // 列表是否具有播放歌曲
 const hasPlaySong = computed(() => {
   return listData.value.findIndex((item) => item.id === musicStore.playSong.id);
+});
+
+// 是否显示加入时间列
+const showAddTimeColumn = computed(() => {
+  return settingStore.showSongAddTime && props.type === 'song' && listData.value.some((song) => song.addTime);
 });
 
 // 列表元素高度

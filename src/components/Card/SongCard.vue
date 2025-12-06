@@ -179,6 +179,8 @@ const props = defineProps<{
   hiddenCover?: boolean;
   hiddenAlbum?: boolean;
   hiddenSize?: boolean;
+  // 显示加入时间
+  displayAddTime?: boolean;
 }>();
 
 const router = useRouter();
