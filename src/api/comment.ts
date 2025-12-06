@@ -45,6 +45,25 @@ export const getHotComment = (
 };
 
 /**
+ * 获取歌单评论
+ * @param {number} id - 歌单 id
+ * @param {number} limit - 取出评论数量 , 默认为 20
+ * @param {number} offset - 偏移数量 , 用于分页 , 如 :( 评论页数 -1)*20, 其中 20 为 limit 的值
+ * @param {number} before - 分页参数,取上一页最后一项的 time 获取下一页数据(获取超过 5000 条评论的时候需要用到)
+ */
+export const getPlaylistComment = (
+  id: number,
+  limit: number = 20,
+  offset: number = 0,
+  before?: number,
+) => {
+  return request({
+    url: "/comment/playlist",
+    params: { id, limit, offset, before, timestamp: Date.now() },
+  });
+};
+
+/**
  * 评论点赞
  * @param {number} id - 对应资源的 id
  * @param {number} t - 操作, 1 为点赞, 其他为取消点赞

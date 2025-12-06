@@ -1,6 +1,11 @@
 <!-- 歌单列表 -->
 <template>
   <div :class="['playlist', { small: listScrolling }]">
+    <PlaylistComment
+      v-model:show="showComment"
+      :id="playlistId"
+      :data="playlistDetailData"
+    />
     <Transition name="fade" mode="out-in">
       <div v-if="playlistDetailData" class="detail">
         <div class="cover">
@@ -147,6 +152,18 @@
                 </template>
                 {{ isLikePlaylist ? "取消收藏" : "收藏歌单" }}
               </n-button>
+              <n-button
+                :focusable="false"
+                strong
+                secondary
+                round
+                @click="showComment = true"
+              >
+                <template #icon>
+                  <SvgIcon name="Message" />
+                </template>
+                评论
+              </n-button>
               <!-- 更多 -->
               <n-dropdown :options="moreOptions" trigger="click" placement="bottom-start">
                 <n-button :focusable="false" class="more" circle strong secondary>
@@ -227,6 +244,7 @@ import { useDataStore, useStatusStore } from "@/stores";
 import { openBatchList, openDescModal, openUpdatePlaylist } from "@/utils/modal";
 import { formatTimestamp } from "@/utils/time";
 import { usePlayer } from "@/utils/player";
+import PlaylistComment from "@/components/List/PlaylistComment.vue";
 
 const router = useRouter();
 const player = usePlayer();
@@ -240,6 +258,7 @@ const playlistDetailData = ref<CoverType | null>(null);
 // 模糊搜索数据
 const searchValue = ref<string>("");
 const searchData = ref<SongType[]>([]);
+const showComment = ref(false);
 
 // 歌单 ID
 const oldPlaylistId = ref<number>(0);
@@ -570,6 +589,7 @@ onMounted(() => getPlaylistDetail(playlistId.value));
 
 <style lang="scss" scoped>
 .playlist {
+  position: relative;
   display: flex;
   flex-direction: column;
   .detail {
