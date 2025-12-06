@@ -339,7 +339,7 @@ export const useSettingStore = defineStore("setting", {
     showSongPrivilegeTag: true,
     showSongOriginalTag: true,
     showSongMVTag: true,
-    showSongAddTime: true,
+    showSongAddTime: false,
     hideDiscover: false,
     hidePersonalFM: false,
     hideRadioHot: false,
