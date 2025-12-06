@@ -179,8 +179,6 @@ const props = defineProps<{
   hiddenCover?: boolean;
   hiddenAlbum?: boolean;
   hiddenSize?: boolean;
-  // 显示加入时间
-  displayAddTime?: boolean;
 }>();
 
 const router = useRouter();
@@ -210,11 +208,11 @@ const displayAddTime = computed(() => {
 const formattedAddTime = computed(() => {
   if (!song.value.addTime) return "";
   if (statusStore.addTimeFormat === "full") {
-    // full 格式：YYYY-MM-DD HH:mm
+    // full 格式：YYYY-MM-DD HH:mm（年份始终显示）
     return formatTimestamp(song.value.addTime, "YYYY-MM-DD HH:mm");
   } else {
-    // short 格式：MM-DD（自动去掉年份如果是今年）
-    return formatTimestamp(song.value.addTime, "MM-DD");
+    // short 格式：MM-DD（当年显示 MM-DD，非当年自动补充年份显示为 YYYY-MM-DD）
+    return formatTimestamp(song.value.addTime, "__SMART_YEAR__MM-DD");
   }
 });
 

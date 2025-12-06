@@ -3,6 +3,22 @@ import { msToTime } from "./time";
 import { flatMap, isArray, uniqBy } from "lodash-es";
 import { handleSongQuality } from "./helper";
 
+/**
+ * 从歌单详情构建 trackIds 映射表
+ * @param trackIds 歌单详情中的 trackIds 数组
+ * @returns 构建好的 Map，key 为歌曲 id，value 为 { at: 加入时间 }
+ */
+export const buildTrackIdsMap = (trackIds?: any[]): Map<number, { at: number }> => {
+  const map = new Map<number, { at: number }>();
+  if (!trackIds?.length) return map;
+  for (const trackInfo of trackIds) {
+    if (trackInfo?.id && trackInfo?.at) {
+      map.set(trackInfo.id, { at: trackInfo.at });
+    }
+  }
+  return map;
+};
+
 type CoverDataType = {
   cover: string;
   coverSize?: {
@@ -19,16 +35,14 @@ type CoverDataType = {
  * @param trackIdsMap 歌单中的 trackIds 映射表（可选），用于获取歌曲加入时间（应传入 Map 类型以获得最佳性能）
  * @returns 格式化后的歌曲列表
  */
-export const formatSongsList = (data: any[], trackIdsMap?: Map<number, { at: number }> | Record<number, { at: number }>): SongType[] => {
+export const formatSongsList = (data: any[], trackIdsMap?: Map<number, { at: number }>): SongType[] => {
   if (!data) return [];
   data = isArray(data) ? data : [data];
 
-  // 性能优化：直接使用 Map，避免重复转换
-  // 调用者应该预先构建 Map 类型的 trackIdsMap
-  const trackIdMap: Map<number, { at: number }> | null = trackIdsMap instanceof Map ? trackIdsMap : null;
-
   return data.map((item) => {
+    // 必须在处理 item 前获取，以保留原始的 addTime 数据
     const addTimeFromCloud = item.addTime;
+
     item = item?.simpleSong ? { ...item.simpleSong, pc: true } : item?.songInfo || item;
     // 歌手数据
     const artist = (): MetaData[] | string => {
@@ -47,10 +61,8 @@ export const formatSongsList = (data: any[], trackIdsMap?: Map<number, { at: num
 
     // 获取歌曲的加入时间
     // - 云盘歌曲：使用 addTimeFromCloud（API 直接返回）
-    // - 其他歌单：使用 trackIdMap（从 playlistDetail 的 trackIds 构建）
-    const addTime = addTimeFromCloud || trackIdMap?.get(item.id)?.at;
-
-    return {
+    // - 其他歌单：使用 trackIdsMap（从 playlistDetail 的 trackIds 构建）
+    const addTime = addTimeFromCloud || trackIdsMap?.get(item.id)?.at;    return {
       id: item.id,
       name: item.name,
       artists: artist(),

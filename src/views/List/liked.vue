@@ -168,7 +168,7 @@ import type { CoverType, SongType } from "@/types/main";
 import type { DropdownOption, MessageReactive } from "naive-ui";
 import { songDetail } from "@/api/song";
 import { playlistDetail, playlistAllSongs } from "@/api/playlist";
-import { formatCoverList, formatSongsList } from "@/utils/format";
+import { formatCoverList, formatSongsList, buildTrackIdsMap } from "@/utils/format";
 import { coverLoaded, formatNumber, fuzzySearch, renderIcon, copyData } from "@/utils/helper";
 import { renderToolbar } from "@/utils/meta";
 import { debounce, isObject, uniqBy } from "lodash-es";
@@ -313,17 +313,7 @@ const getPlaylistData = async (id: number, getList: boolean, refresh: boolean) =
   playlistDetailData.value = formatCoverList(detail.playlist)[0];
 
   // 构建 trackIds 映射表，用于获取歌曲加入时间
-  if (detail.playlist?.trackIds?.length) {
-    const newMap = new Map<number, { at: number }>();
-    for (const trackInfo of detail.playlist.trackIds) {
-      if (trackInfo?.id && trackInfo?.at) {
-        newMap.set(trackInfo.id, { at: trackInfo.at });
-      }
-    }
-    trackIdsMap.value = newMap;
-  } else {
-    trackIdsMap.value = new Map();
-  }
+  trackIdsMap.value = buildTrackIdsMap(detail.playlist?.trackIds);
 
   // 不需要获取列表或无歌曲
   if (!getList || playlistDetailData.value.count === 0) {

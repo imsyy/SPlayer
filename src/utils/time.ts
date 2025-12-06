@@ -31,6 +31,9 @@ export const msToS = (milliseconds: number, decimalPlaces: number = 2): number =
  * 格式化时间戳
  * @param {number|undefined} timestamp - 要格式化的时间戳（以毫秒为单位）。如果为 `null` 或 `0`，则返回空字符串。
  * @param {string} [format="YYYY-MM-DD"] - 可选的时间格式，默认格式为 "YYYY-MM-DD"。可传入任意 dayjs 支持的格式。
+ *   特殊格式支持：
+ *   - 含有 "__SMART_YEAR__" 标记的格式：如果是当年则自动移除年份部分，否则保留
+ *     示例：使用 "__SMART_YEAR__MM-DD" 当年显示 "MM-DD"，去年显示 "YYYY-MM-DD"
  * @returns {string} - 根据指定格式返回的日期字符串
  */
 export const formatTimestamp = (
@@ -41,14 +44,20 @@ export const formatTimestamp = (
   const date = dayjs(timestamp);
   const currentYear = dayjs().year();
   const year = date.year();
-  // 如果年份相同
-  if (year === currentYear) {
-    return date.format(format.replace("YYYY-", ""));
-  }
-  return date.format(format);
-};
 
-// 格式化评论时间戳
+  // 支持智能年份显示：__SMART_YEAR__MM-DD 格式
+  if (format.includes("__SMART_YEAR__")) {
+    if (year === currentYear) {
+      // 当年：移除年份部分
+      return date.format(format.replace("__SMART_YEAR__YYYY-", "").replace("__SMART_YEAR__", ""));
+    }
+    // 非当年：补充年份
+    return date.format(format.replace("__SMART_YEAR__", "YYYY-"));
+  }
+
+  // 普通格式：直接使用传入的格式
+  return date.format(format);
+};// 格式化评论时间戳
 export const formatCommentTime = (timestamp: number): string => {
   const now = dayjs();
   const diff = now.diff(dayjs(timestamp), "minute");

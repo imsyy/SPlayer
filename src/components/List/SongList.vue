@@ -52,7 +52,6 @@
                 :hiddenCover="hiddenCover"
                 :hiddenAlbum="hiddenAlbum"
                 :hiddenSize="hiddenSize"
-                :displayAddTime="showAddTimeColumn"
                 @dblclick.stop="
                   doubleClickAction === 'add'
                     ? player.addNextSong(item.data, true)

@@ -218,7 +218,7 @@ import {
   deletePlaylist,
   updatePlaylistPrivacy,
 } from "@/api/playlist";
-import { formatCoverList, formatSongsList } from "@/utils/format";
+import { formatCoverList, formatSongsList, buildTrackIdsMap } from "@/utils/format";
 import { coverLoaded, formatNumber, fuzzySearch, renderIcon, copyData } from "@/utils/helper";
 import { renderToolbar } from "@/utils/meta";
 import { isLogin, toLikePlaylist, updateUserLikePlaylist } from "@/utils/auth";
@@ -388,13 +388,7 @@ const handleOnlinePlaylist = async (id: number, getList: boolean, refresh: boole
 
   // 性能优化：使用 for 循环代替 map，避免中间数组创建
   if (detail.playlist?.trackIds?.length) {
-    const newMap = new Map<number, { at: number }>();
-    for (const trackInfo of detail.playlist.trackIds) {
-      if (trackInfo?.id && trackInfo?.at) {
-        newMap.set(trackInfo.id, { at: trackInfo.at });
-      }
-    }
-    trackIdsMap.value = newMap;
+    trackIdsMap.value = buildTrackIdsMap(detail.playlist.trackIds);
   } else {
     trackIdsMap.value = new Map();
   }
