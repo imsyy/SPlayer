@@ -349,30 +349,56 @@ const localCover = async (show: boolean) => {
         }
         .quality {
           font-size: 10px;
+          transition: all 0.3s;
+
           // Hi-Res 特殊样式 - 金色
           &.quality-hi-res {
-            border-color: rgba(255, 215, 0, 0.4) !important;
-            color: rgb(255, 215, 0) !important;
+            --n-tag-border-color: rgba(255, 215, 0, 0.4) !important;
+            --n-tag-text-color: rgb(255, 215, 0) !important;
+            --n-tag-color: rgba(255, 215, 0, 0.08) !important;
+
+            @media (prefers-color-scheme: light) {
+              --n-tag-color: rgba(255, 215, 0, 0.12) !important;
+              --n-tag-text-color: rgb(220, 170, 0) !important;
+            }
           }
 
           // SQ 无损样式 - 橙色
           &.quality-sq {
-            border-color: rgba(255, 127, 0, 0.4) !important;
-            color: rgb(255, 127, 0) !important;
+            --n-tag-border-color: rgba(255, 127, 0, 0.4) !important;
+            --n-tag-text-color: rgb(255, 127, 0) !important;
+            --n-tag-color: rgba(255, 127, 0, 0.08) !important;
+
+            @media (prefers-color-scheme: light) {
+              --n-tag-color: rgba(255, 127, 0, 0.12) !important;
+              --n-tag-text-color: rgb(220, 100, 0) !important;
+            }
           }
 
           // HQ、MQ、LQ 样式 - 灰色
           &.quality-hq,
           &.quality-mq,
           &.quality-lq {
-            border-color: rgba(128, 128, 128, 0.4) !important;
-            color: rgb(128, 128, 128) !important;
+            --n-tag-border-color: rgba(128, 128, 128, 0.4) !important;
+            --n-tag-text-color: rgb(128, 128, 128) !important;
+            --n-tag-color: rgba(128, 128, 128, 0.06) !important;
+
+            @media (prefers-color-scheme: light) {
+              --n-tag-color: rgba(128, 128, 128, 0.1) !important;
+              --n-tag-text-color: rgb(100, 100, 100) !important;
+            }
           }
 
           // Dolby 样式 - 蓝紫色
           &.quality-dolby {
-            border-color: rgba(100, 150, 255, 0.4) !important;
-            color: rgb(100, 150, 255) !important;
+            --n-tag-border-color: rgba(100, 150, 255, 0.4) !important;
+            --n-tag-text-color: rgb(100, 150, 255) !important;
+            --n-tag-color: rgba(100, 150, 255, 0.08) !important;
+
+            @media (prefers-color-scheme: light) {
+              --n-tag-color: rgba(100, 150, 255, 0.12) !important;
+              --n-tag-text-color: rgb(70, 120, 220) !important;
+            }
           }
         }
         .cloud {
