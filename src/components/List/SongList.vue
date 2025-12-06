@@ -259,10 +259,22 @@ const hasPlaySong = computed(() => {
   return listData.value.findIndex((item) => item.id === musicStore.playSong.id);
 });
 
-// 是否显示加入时间列
-const showAddTimeColumn = computed(() => {
-  return settingStore.showSongAddTime && props.type === 'song' && listData.value.some((song) => song.addTime);
-});
+// 是否显示加入时间列（使用 ref + watch 避免频繁遍历大列表）
+const showAddTimeColumn = ref<boolean>(false);
+
+// 监听列表数据和设置变化，更新是否显示加入时间列
+watch(
+  () => [settingStore.showSongAddTime, props.type, listData.value.length] as const,
+  ([showAddTime, type, listLength]) => {
+    if (!showAddTime || type !== 'song' || listLength === 0) {
+      showAddTimeColumn.value = false;
+      return;
+    }
+    // 只在必要时才遍历列表
+    showAddTimeColumn.value = listData.value.some((song) => song.addTime);
+  },
+  { immediate: true },
+);
 
 // 列表元素高度
 const { height: songListHeight, stop: stopCalcHeight } = useElementSize(songListRef);
