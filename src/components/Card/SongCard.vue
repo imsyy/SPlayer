@@ -43,13 +43,13 @@
             </n-ellipsis>
             <!-- 音质标签 -->
             <n-tag
-              v-if="displayQuality && settingStore.showSongQuality"
+              v-if="song?.quality && settingStore.showSongQuality"
               :bordered="false"
-              :type="displayQuality === QualityType.SQ ? 'warning' : qualityColor"
-              :class="['quality', displayQuality?.includes('Dolby') ? 'quality-dolby' : `quality-${displayQuality?.toLowerCase()}`]"
+              :type="song.quality === QualityType.SQ ? 'warning' : qualityColor"
+              :class="['quality', song.quality?.includes('Dolby') ? 'quality-dolby' : `quality-${song.quality?.toLowerCase()}`]"
               round
             >
-              {{ displayQuality }}
+              {{ song.quality }}
             </n-tag>
             <!-- 原唱翻唱 -->
             <template v-if="settingStore.showSongOriginalTag">
@@ -198,15 +198,6 @@ const qualityColor = computed(() => {
   if (song.value.quality === QualityType.SQ) return "warning";
   if (song.value.quality === QualityType.HQ) return "info";
   return "primary";
-});
-
-// 显处理音质信息
-const displayQuality = computed(() => {
-  if (!song.value.quality) return "";
-  if (Array.isArray(song.value.quality)) {
-    return song.value.quality[0];
-  }
-  return song.value.quality;
 });
 
 // 显示加入时间
