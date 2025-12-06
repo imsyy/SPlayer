@@ -473,38 +473,6 @@ onBeforeUnmount(() => {
       }
     }
   }
-  // 滚动条
-  .virt-list__client {
-    transition:
-      height 0.3s,
-      width 0.3s,
-      opacity 0.3s;
-    -webkit-overflow-scrolling: touch;
-    &::-webkit-scrollbar {
-      width: 6px;
-      background-color: transparent;
-    }
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    &::-webkit-scrollbar-thumb {
-      background-color: rgba(var(--primary), 0.28);
-      border-radius: 12px;
-    }
-  }
-  &.hidden-scrollbar {
-    .list-header {
-      padding: 8px 12px;
-    }
-    .song-card {
-      padding-right: 0;
-    }
-    .virt-list__client {
-      &::-webkit-scrollbar {
-        display: none;
-      }
-    }
-  }
   // 加载更多
   .load-more {
     display: flex;
