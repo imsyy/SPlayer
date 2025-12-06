@@ -41,14 +41,15 @@
             >
               {{ song?.name || "未知曲目" }}
             </n-ellipsis>
-            <!-- 音质 -->
+            <!-- 音质标签 -->
             <n-tag
-              v-if="song?.quality && settingStore.showSongQuality"
-              :type="qualityColor"
-              class="quality"
+              v-if="displayQuality && settingStore.showSongQuality"
+              :bordered="false"
+              :type="displayQuality === QualityType.SQ ? 'warning' : qualityColor"
+              :class="['quality', displayQuality?.includes('Dolby') ? 'quality-dolby' : `quality-${displayQuality?.toLowerCase()}`]"
               round
             >
-              {{ song.quality }}
+              {{ displayQuality }}
             </n-tag>
             <!-- 原唱翻唱 -->
             <template v-if="settingStore.showSongOriginalTag">
@@ -197,6 +198,15 @@ const qualityColor = computed(() => {
   if (song.value.quality === QualityType.SQ) return "warning";
   if (song.value.quality === QualityType.HQ) return "info";
   return "primary";
+});
+
+// 显处理音质信息
+const displayQuality = computed(() => {
+  if (!song.value.quality) return "";
+  if (Array.isArray(song.value.quality)) {
+    return song.value.quality[0];
+  }
+  return song.value.quality;
 });
 
 // 显示加入时间
@@ -348,6 +358,31 @@ const localCover = async (show: boolean) => {
         }
         .quality {
           font-size: 10px;
+          // Hi-Res 特殊样式 - 金色
+          &.quality-hi-res {
+            border-color: rgba(255, 215, 0, 0.4) !important;
+            color: rgb(255, 215, 0) !important;
+          }
+
+          // SQ 无损样式 - 橙色
+          &.quality-sq {
+            border-color: rgba(255, 127, 0, 0.4) !important;
+            color: rgb(255, 127, 0) !important;
+          }
+
+          // HQ、MQ、LQ 样式 - 灰色
+          &.quality-hq,
+          &.quality-mq,
+          &.quality-lq {
+            border-color: rgba(128, 128, 128, 0.4) !important;
+            color: rgb(128, 128, 128) !important;
+          }
+
+          // Dolby 样式 - 蓝紫色
+          &.quality-dolby {
+            border-color: rgba(100, 150, 255, 0.4) !important;
+            color: rgb(100, 150, 255) !important;
+          }
         }
         .cloud {
           padding: 0 10px;
