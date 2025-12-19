@@ -60,7 +60,7 @@ class VisualizerBridge {
 
   /** 计算音频峰值 */
   private calculatePeak(): number | null {
-    const dataArray = this.audioManager.getFrequencyData();
+    const dataArray = this.audioManager.getVisualizerFrequencyData();
     if (!dataArray || dataArray.length === 0) return null;
 
     const { BASS_END_RATIO, MID_END_RATIO, BASS_WEIGHT, MID_WEIGHT } = AUDIO_CONFIG;
@@ -84,11 +84,7 @@ class VisualizerBridge {
 
   /** 获取数组指定范围内的最大值 */
   private getMaxInRange(array: Uint8Array, start: number, end: number): number {
-    let max = 0;
-    for (let i = start; i < end; i++) {
-      if (array[i] > max) max = array[i];
-    }
-    return max;
+    return Math.max(...Array.from(array.slice(start, end)));
   }
 
   /** 更新峰值历史记录 */
@@ -115,7 +111,6 @@ class VisualizerBridge {
 
   /** 发送音频数据到拾音器窗口 */
   private sendAudioData(peak: number) {
-    // @ts-ignore
     window.electron?.ipcRenderer?.send("audio-data", peak);
   }
 }

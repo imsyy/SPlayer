@@ -11,6 +11,8 @@ class VisualizerWindow {
   private rightWin: BrowserWindow | null = null;
   private mainWin: BrowserWindow | null = null;
   private currentWidth: number = 40;
+  private leftReady: boolean = false;
+  private rightReady: boolean = false;
 
   /** 设置主窗口引用 */
   setMainWin(win: BrowserWindow | null) {
@@ -40,39 +42,39 @@ class VisualizerWindow {
 
   /** 创建拾音器窗口 */
   create(side: "left" | "right"): BrowserWindow | null {
+    const targetWin = side === "left" ? this.leftWin : this.rightWin;
+    
+    if (targetWin && !targetWin.isDestroyed()) {
+      targetWin.destroy();
+    }
+
     const mainWin = this.getMainWin();
-    const mainBounds = mainWin?.getBounds();
-    const height = mainBounds?.height || 600;
+    const height = mainWin?.getBounds().height || 600;
 
     const win = createWindow({
       width: this.currentWidth,
       height,
       transparent: true,
-      backgroundColor: "#00000000",
-      alwaysOnTop: false,
-      resizable: false,
-      movable: false,
-      show: false,
       frame: false,
       skipTaskbar: true,
       hasShadow: false,
+      show: true,
+      x: -10000,
+      y: -10000,
     });
 
     if (!win) return null;
 
-    // 设置初始位置
-    if (mainBounds) {
-      const x = side === "left" 
-        ? mainBounds.x - this.currentWidth 
-        : mainBounds.x + mainBounds.width;
-      win.setPosition(Math.round(x), mainBounds.y);
-    }
-
     win.loadURL(`${visualizerWinUrl}?side=${side}`);
-    win.once("ready-to-show", () => win.showInactive());
-
-    if (side === "left") this.leftWin = win;
-    else this.rightWin = win;
+    win.setIgnoreMouseEvents(true);
+    
+    if (side === "left") {
+      this.leftWin = win;
+      this.leftReady = false;
+    } else {
+      this.rightWin = win;
+      this.rightReady = false;
+    }
 
     return win;
   }
@@ -82,20 +84,33 @@ class VisualizerWindow {
     this.forEachWindow(w => w.close());
     this.leftWin = null;
     this.rightWin = null;
+    this.leftReady = false;
+    this.rightReady = false;
   }
 
   /** 设置窗口可见性 */
   setVisibility(visible: boolean) {
-    this.forEachWindow(w => visible ? w.showInactive() : w.hide());
+    if (visible) {
+      if (this.leftReady || this.rightReady) this.updatePosition();
+    } else {
+      this.forEachWindow(w => w.setPosition(-10000, -10000));
+    }
+  }
+
+  /** 显示指定侧的窗口 */
+  showWindow(side: "left" | "right") {
+    if (side === "left") this.leftReady = true;
+    else this.rightReady = true;
+
+    const mainWin = this.getMainWin();
+    if (mainWin && mainWin.isVisible()) {
+      this.updatePosition();
+    }
   }
 
   /** 将窗口提升到前台 */
   bringToFront() {
-    this.forEachWindow(w => {
-      if (w.isVisible()) {
-        w.moveTop();
-      }
-    });
+    this.forEachWindow(w => w.moveTop());
   }
 
   /** 向所有拾音器窗口广播消息 */
@@ -109,25 +124,28 @@ class VisualizerWindow {
     if (!mainWin) return;
 
     const bounds = mainWin.getBounds();
-    const { currentWidth } = this;
+    const windowBounds = {
+      y: bounds.y,
+      width: this.currentWidth,
+      height: bounds.height,
+    };
 
     this.withWindow(this.leftWin, w => {
-      w.setBounds({
-        x: Math.round(bounds.x - currentWidth),
-        y: bounds.y,
-        width: currentWidth,
-        height: bounds.height,
-      });
+      this.updateWindowBounds(w, { ...windowBounds, x: Math.round(bounds.x - this.currentWidth) });
     });
 
     this.withWindow(this.rightWin, w => {
-      w.setBounds({
-        x: Math.round(bounds.x + bounds.width),
-        y: bounds.y,
-        width: currentWidth,
-        height: bounds.height,
-      });
+      this.updateWindowBounds(w, { ...windowBounds, x: Math.round(bounds.x + bounds.width) });
     });
+  }
+
+  /** 更新单个窗口的位置和大小并强制重绘 */
+  private updateWindowBounds(win: BrowserWindow, bounds: { x: number; y: number; width: number; height: number }) {
+    win.setBounds(bounds);
+    win.showInactive();
+    const [width, height] = win.getSize();
+    win.setSize(width + 1, height);
+    win.setSize(width, height);
   }
 
   /** 更新拾音器宽度 */

@@ -1,6 +1,6 @@
 import { BrowserWindow, shell, app } from "electron";
 import { createWindow } from "./index";
-import { mainWinUrl } from "../utils/config";
+import { mainWinUrl, isLinux } from "../utils/config";
 import { useStore } from "../store";
 import visualizerWindow from "./visualizer-window";
 
@@ -78,12 +78,15 @@ class MainWindow {
       visualizerWindow.updatePosition();
     });
     // 实时监听窗口大小和位置变化（拖动过程中持续触发）
+    // Linux 无法使用 resized 和 moved，需要在这里保存窗口状态
     this.win?.on("resize", () => {
       if (this.win?.isFullScreen()) return;
+      if (isLinux) this.saveBounds();
       visualizerWindow.updatePosition();
       visualizerWindow.bringToFront();
     });
     this.win?.on("move", () => {
+      if (isLinux) this.saveBounds();
       visualizerWindow.updatePosition();
       visualizerWindow.bringToFront();
     });
@@ -102,7 +105,7 @@ class MainWindow {
     // 窗口关闭
     this.win?.on("close", (event) => {
       if (this.isQuitting) {
-        visualizerWindow.closeAll();
+        visualizerWindow.destroyAll();
         return;
       }
       event.preventDefault();

@@ -39,8 +39,10 @@ class AudioManager {
   private sourceNode: MediaElementAudioSourceNode | null = null;
   /** 增益节点 */
   private gainNode: GainNode | null = null;
-  /** 分析节点 */
+  /** 分析节点 (用于 PlayerSpectrum) */
   private analyserNode: AnalyserNode | null = null;
+  /** 拾音器分析节点 (用于 VisualizerBridge) */
+  private visualizerAnalyserNode: AnalyserNode | null = null;
   /** 均衡器节点数组 */
   private filters: BiquadFilterNode[] = [];
 
@@ -78,12 +80,16 @@ class AudioManager {
       this.sourceNode = this.audioCtx.createMediaElementSource(this.audioElement!);
       this.gainNode = this.audioCtx.createGain();
       this.analyserNode = this.audioCtx.createAnalyser();
+      this.visualizerAnalyserNode = this.audioCtx.createAnalyser();
 
-      // 配置分析器 - 扩大动态范围
-      this.analyserNode.fftSize = 128;
-      this.analyserNode.smoothingTimeConstant = 0.15;
-      this.analyserNode.minDecibels = -80; // 更大的动态范围
-      this.analyserNode.maxDecibels = -10;
+      // 配置分析器 (用于 PlayerSpectrum)
+      this.analyserNode.fftSize = 512;
+
+      // 配置拾音器分析器 (用于 VisualizerBridge) - 更敏感的配置
+      this.visualizerAnalyserNode.fftSize = 128;
+      this.visualizerAnalyserNode.smoothingTimeConstant = 0.15;
+      this.visualizerAnalyserNode.minDecibels = -80;
+      this.visualizerAnalyserNode.maxDecibels = -10;
 
       // 创建均衡器滤波器
       this.filters = this.eqFrequencies.map((freq) => {
@@ -106,6 +112,9 @@ class AudioManager {
       currentNode.connect(this.analyserNode);
       this.analyserNode.connect(this.gainNode);
       this.gainNode.connect(this.audioCtx.destination);
+
+      // 拾音器分析器并联连接（不影响音频输出）
+      this.gainNode.connect(this.visualizerAnalyserNode);
 
       // 同步音量
       this.gainNode.gain.value = this.volume;
@@ -337,13 +346,24 @@ class AudioManager {
   }
 
   /**
-   * 获取频谱数据 (用于可视化)
+   * 获取频谱数据 (用于 PlayerSpectrum)
    * @returns Uint8Array 频谱数据
    */
   public getFrequencyData(): Uint8Array {
     if (!this.analyserNode) return new Uint8Array(0);
     const dataArray = new Uint8Array(this.analyserNode.frequencyBinCount);
     this.analyserNode.getByteFrequencyData(dataArray);
+    return dataArray;
+  }
+
+  /**
+   * 获取拾音器频谱数据 (用于 VisualizerBridge)
+   * @returns Uint8Array 频谱数据
+   */
+  public getVisualizerFrequencyData(): Uint8Array {
+    if (!this.visualizerAnalyserNode) return new Uint8Array(0);
+    const dataArray = new Uint8Array(this.visualizerAnalyserNode.frequencyBinCount);
+    this.visualizerAnalyserNode.getByteFrequencyData(dataArray);
     return dataArray;
   }
 

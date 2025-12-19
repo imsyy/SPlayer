@@ -41,38 +41,35 @@
   </div>
 
   <script>
-    // ==================== 状态 ====================
     const state = {
-      color: '255, 255, 255',
-      opacity: 0.8,
-      shape: 'rounded',
-      gradient: true,
+      color: '239, 239, 239',
+      opacity: 1,
+      shape: 'rectangle',
+      gradient: false,
       currentHeight: 0,
     };
 
-    const bar = document.getElementById('bar');
+    const urlParams = new URLSearchParams(window.location.search);
+    const side = urlParams.get('side') || 'left';
 
-    // ==================== 样式计算 ====================
+    const bar = document.getElementById('bar');
+    
+    const RADIUS_MAP = { rectangle: '0', pill: '50px', rounded: '6px' };
+    
     function getRadius() {
-      const radiusMap = { rectangle: '0', pill: '50px', rounded: '6px' };
-      const radius = radiusMap[state.shape] || '6px';
-      if (state.gradient && radius !== '0') {
-        return `0 0 ${radius} ${radius}`;
-      }
-      return radius;
+      const radius = RADIUS_MAP[state.shape] || '6px';
+      return state.gradient && radius !== '0' ? `0 0 ${radius} ${radius}` : radius;
     }
 
     function getBackground() {
       const { color, opacity, gradient } = state;
-      if (gradient) {
-        return `linear-gradient(to top, rgba(${color}, ${opacity}) 0%, rgba(${color}, ${opacity}) 60%, rgba(${color}, 0) 100%)`;
-      }
-      return `rgba(${color}, ${opacity})`;
+      return gradient 
+        ? `linear-gradient(to top, rgba(${color}, ${opacity}) 0%, rgba(${color}, ${opacity}) 60%, rgba(${color}, 0) 100%)`
+        : `rgba(${color}, ${opacity})`;
     }
 
     function getBoxShadow() {
-      if (state.gradient) return 'none';
-      return `0 0 15px rgba(${state.color}, ${state.opacity * 0.5})`;
+      return state.gradient ? 'none' : `0 0 15px rgba(${state.color}, ${state.opacity * 0.5})`;
     }
 
     function updateStyle() {
@@ -81,62 +78,51 @@
       bar.style.borderRadius = getRadius();
     }
 
-    // ==================== 动画逻辑 ====================
     function lerp(start, end, factor) {
       return (1 - factor) * start + factor * end;
     }
 
+    const LERP_UP = 0.85;
+    const LERP_DOWN = 0.08;
+    const MIN_DIFF = 3;
+    
     function handleAudioData(data) {
       const targetHeight = Math.min(data * 100, 95);
       const diff = Math.abs(targetHeight - state.currentHeight);
 
-      // 小幅度变化忽略
-      if (diff < 3 && targetHeight > 0 && state.currentHeight > 0) return;
+      if (diff < MIN_DIFF && targetHeight > 0 && state.currentHeight > 0) return;
 
-      // 上升快，下降慢
-      const lerpFactor = targetHeight > state.currentHeight ? 0.85 : 0.08;
+      const lerpFactor = targetHeight > state.currentHeight ? LERP_UP : LERP_DOWN;
       state.currentHeight = lerp(state.currentHeight, targetHeight, lerpFactor);
       bar.style.height = `${state.currentHeight}%`;
     }
-
-    // ==================== IPC 监听 ====================
-    if (window.electron && window.electron.ipcRenderer) {
+    if (window.electron?.ipcRenderer) {
       const ipc = window.electron.ipcRenderer;
 
-      // 通知主进程同步设置
       ipc.send('visualizer-ready');
-
-      // 音频数据
       ipc.on('audio-data', (_, data) => handleAudioData(data));
 
-      // 主题颜色
       ipc.on('update-theme', (_, val) => {
         state.color = val;
         updateStyle();
+        requestAnimationFrame(() => ipc.send('visualizer-show', side));
       });
 
-      // 透明度
-      ipc.on('update-visualizer-opacity', (_, val) => {
-        state.opacity = val;
-        updateStyle();
-      });
+      const updateHandlers = {
+        'update-visualizer-opacity': 'opacity',
+        'update-visualizer-shape': 'shape',
+        'update-visualizer-gradient': 'gradient'
+      };
 
-      // 形状
-      ipc.on('update-visualizer-shape', (_, val) => {
-        state.shape = val;
-        updateStyle();
-      });
-
-      // 渐变
-      ipc.on('update-visualizer-gradient', (_, val) => {
-        state.gradient = val;
-        updateStyle();
+      Object.entries(updateHandlers).forEach(([channel, key]) => {
+        ipc.on(channel, (_, val) => {
+          state[key] = val;
+          updateStyle();
+        });
       });
     }
 
-    // 初始化样式
     updateStyle();
   </script>
 </body>
 </html>
-
