@@ -270,6 +270,10 @@ export interface SettingState {
   visualizerShape: "rounded" | "rectangle" | "pill";
   /** 拾音器顶部渐变 */
   visualizerGradient: boolean;
+  /** 拾音器边框 */
+  visualizerBorder: boolean;
+  /** 拾音器跳动方向 */
+  visualizerDirection: "up" | "center";
 }
 
 export const useSettingStore = defineStore("setting", {
@@ -406,6 +410,8 @@ export const useSettingStore = defineStore("setting", {
     visualizerWidth: 50,
     visualizerShape: "rectangle",
     visualizerGradient: false,
+    visualizerBorder: false,
+    visualizerDirection: "up",
   }),
   getters: {
     /**

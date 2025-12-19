@@ -25,16 +25,20 @@ export function useVisualizer() {
   const syncVisualizerAppearance = () => {
     if (!statusStore.showVisualizer) return;
 
-    const colorRgb =
-      settingStore.visualizerColor === "theme"
-        ? statusStore.mainColor
-        : hexToRgb(settingStore.visualizerColor);
+    let colorRgb: string;
+    if (settingStore.visualizerColor === "theme") {
+      colorRgb = statusStore.mainColor;
+    } else {
+      colorRgb = hexToRgb(settingStore.visualizerColor);
+    }
 
     window.electron.ipcRenderer.send("update-visualizer-theme", colorRgb);
     window.electron.ipcRenderer.send("update-visualizer-opacity", settingStore.visualizerOpacity);
     window.electron.ipcRenderer.send("update-visualizer-width", settingStore.visualizerWidth);
     window.electron.ipcRenderer.send("update-visualizer-shape", settingStore.visualizerShape);
     window.electron.ipcRenderer.send("update-visualizer-gradient", settingStore.visualizerGradient);
+    window.electron.ipcRenderer.send("update-visualizer-border", settingStore.visualizerBorder);
+    window.electron.ipcRenderer.send("update-visualizer-direction", settingStore.visualizerDirection);
   };
 
   watch(
@@ -45,6 +49,8 @@ export function useVisualizer() {
       () => settingStore.visualizerWidth,
       () => settingStore.visualizerShape,
       () => settingStore.visualizerGradient,
+      () => settingStore.visualizerBorder,
+      () => settingStore.visualizerDirection,
       () => statusStore.showVisualizer,
     ],
     syncVisualizerAppearance,

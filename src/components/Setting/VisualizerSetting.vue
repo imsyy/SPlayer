@@ -92,6 +92,30 @@
 
         <n-card class="set-item">
           <div class="label">
+            <n-text class="name">显示边框</n-text>
+            <n-text class="tip" :depth="3"> 为拾音器添加边框效果 </n-text>
+          </div>
+          <n-switch v-model:value="settingStore.visualizerBorder" :round="false" class="set" />
+        </n-card>
+
+        <n-card class="set-item">
+          <div class="label">
+            <n-text class="name">跳动方向</n-text>
+            <n-text class="tip" :depth="3"> 设置拾音器的跳动方向 </n-text>
+          </div>
+          <n-select
+            v-model:value="settingStore.visualizerDirection"
+            :options="[
+              { label: '单向向上', value: 'up' },
+              { label: '中心扩散', value: 'center' },
+            ]"
+            class="set"
+            style="width: 120px"
+          />
+        </n-card>
+
+        <n-card class="set-item">
+          <div class="label">
             <n-text class="name">恢复默认配置</n-text>
             <n-text class="tip" :depth="3">恢复拾音器的所有设置为默认值</n-text>
           </div>
@@ -133,6 +157,8 @@ const resetToDefault = () => {
       settingStore.visualizerWidth = 50;
       settingStore.visualizerShape = 'rectangle';
       settingStore.visualizerGradient = false;
+      settingStore.visualizerBorder = false;
+      settingStore.visualizerDirection = 'up';
       window.$message.success('已恢复默认设置');
     },
   });

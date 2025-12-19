@@ -12,6 +12,8 @@ const IPC_CHANNELS = {
   WIDTH: "update-visualizer-width",
   SHAPE: "update-visualizer-shape",
   GRADIENT: "update-visualizer-gradient",
+  BORDER: "update-visualizer-border",
+  DIRECTION: "update-visualizer-direction",
 } as const;
 
 const initVisualizerIpc = () => {
@@ -57,6 +59,14 @@ const initVisualizerIpc = () => {
 
   ipcMain.on(IPC_CHANNELS.GRADIENT, (_, gradient: boolean) => {
     visualizerWindow.broadcast("update-visualizer-gradient", gradient);
+  });
+
+  ipcMain.on(IPC_CHANNELS.BORDER, (_, border: boolean) => {
+    visualizerWindow.broadcast("update-visualizer-border", border);
+  });
+
+  ipcMain.on(IPC_CHANNELS.DIRECTION, (_, direction: string) => {
+    visualizerWindow.broadcast("update-visualizer-direction", direction);
   });
 };
 
