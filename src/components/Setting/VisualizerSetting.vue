@@ -31,6 +31,7 @@
               v-model:value="settingStore.visualizerColor"
               :show-alpha="false"
               :modes="['hex']"
+              placement="bottom-end"
               style="width: 80px"
             />
           </n-flex>
@@ -48,6 +49,55 @@
             :step="0.05"
             class="set"
           />
+        </n-card>
+
+        <n-card class="set-item">
+          <div class="label">
+            <n-text class="name">拾音器宽度</n-text>
+            <n-text class="tip" :depth="3"> 调整拾音器的显示宽度（像素） </n-text>
+          </div>
+          <n-slider
+            v-model:value="settingStore.visualizerWidth"
+            :min="20"
+            :max="100"
+            :step="5"
+            class="set"
+          />
+        </n-card>
+
+        <n-card class="set-item">
+          <div class="label">
+            <n-text class="name">拾音器形状</n-text>
+            <n-text class="tip" :depth="3"> 设置拾音器的显示形状 </n-text>
+          </div>
+          <n-select
+            v-model:value="settingStore.visualizerShape"
+            :options="[
+              { label: '圆角', value: 'rounded' },
+              { label: '矩形', value: 'rectangle' },
+              { label: '胶囊', value: 'pill' },
+            ]"
+            class="set"
+            style="width: 120px"
+          />
+        </n-card>
+
+        <n-card class="set-item">
+          <div class="label">
+            <n-text class="name">顶部渐变</n-text>
+            <n-text class="tip" :depth="3"> 拾音器顶部显示渐变淡出效果 </n-text>
+          </div>
+          <n-switch v-model:value="settingStore.visualizerGradient" :round="false" class="set" />
+        </n-card>
+
+        <n-card class="set-item">
+          <div class="label">
+            <n-text class="name">恢复默认配置</n-text>
+            <n-text class="tip" :depth="3">恢复拾音器的所有设置为默认值</n-text>
+          </div>
+          <n-button type="primary" @click="resetToDefault">
+            恢复默认
+          </n-button>
         </n-card>
       </n-collapse-transition>
     </div>
@@ -68,6 +118,24 @@ const handleSelectChange = (val: string) => {
     // 默认给一个自定义颜色
     settingStore.visualizerColor = '#fe7971';
   }
+};
+
+// 恢复默认设置
+const resetToDefault = () => {
+  window.$dialog.warning({
+    title: "恢复默认配置",
+    content: "确定将拾音器的所有设置恢复为默认值吗？",
+    positiveText: "确定",
+    negativeText: "取消",
+    onPositiveClick: () => {
+      settingStore.visualizerColor = 'theme';
+      settingStore.visualizerOpacity = 1;
+      settingStore.visualizerWidth = 50;
+      settingStore.visualizerShape = 'rectangle';
+      settingStore.visualizerGradient = false;
+      window.$message.success('已恢复默认设置');
+    },
+  });
 };
 </script>
 

@@ -264,6 +264,12 @@ export interface SettingState {
   visualizerColor: string;
   /** 拾音器透明度 */
   visualizerOpacity: number;
+  /** 拾音器宽度 */
+  visualizerWidth: number;
+  /** 拾音器形状 */
+  visualizerShape: "rounded" | "rectangle" | "pill";
+  /** 拾音器顶部渐变 */
+  visualizerGradient: boolean;
 }
 
 export const useSettingStore = defineStore("setting", {
@@ -396,7 +402,10 @@ export const useSettingStore = defineStore("setting", {
     playerFollowCoverColor: true,
     progressLyricShow: true,
     visualizerColor: "theme",
-    visualizerOpacity: 0.8,
+    visualizerOpacity: 1,
+    visualizerWidth: 50,
+    visualizerShape: "rectangle",
+    visualizerGradient: false,
   }),
   getters: {
     /**

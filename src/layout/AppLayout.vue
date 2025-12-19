@@ -124,6 +124,9 @@ const syncVisualizerAppearance = () => {
     
     window.electron.ipcRenderer.send("update-visualizer-theme", colorRgb);
     window.electron.ipcRenderer.send("update-visualizer-opacity", settingStore.visualizerOpacity);
+    window.electron.ipcRenderer.send("update-visualizer-width", settingStore.visualizerWidth);
+    window.electron.ipcRenderer.send("update-visualizer-shape", settingStore.visualizerShape);
+    window.electron.ipcRenderer.send("update-visualizer-gradient", settingStore.visualizerGradient);
   }
 };
 
@@ -133,6 +136,9 @@ watch(
     () => statusStore.mainColor,
     () => settingStore.visualizerColor,
     () => settingStore.visualizerOpacity,
+    () => settingStore.visualizerWidth,
+    () => settingStore.visualizerShape,
+    () => settingStore.visualizerGradient,
     () => statusStore.showVisualizer,
   ],
   () => {
@@ -149,10 +155,7 @@ watch(
       window.electron.ipcRenderer.send("toggle-visualizer", val);
       if (val) {
         visualizerBridge.start();
-        // 强制立即同步一次设置
-        setTimeout(() => {
-          syncVisualizerAppearance();
-        }, 100);
+        // 设置会在拾音器窗口准备就绪时通过 IPC 自动同步
       } else {
         visualizerBridge.stop();
       }
@@ -165,7 +168,7 @@ onMounted(() => {
   init();
   if (isElectron) {
     // 监听拾音器窗口准备就绪，立即同步一次外观
-    window.electron.ipcRenderer.on("visualizer-window-ready", () => {
+    window.electron.ipcRenderer.on("sync-visualizer-settings", () => {
       syncVisualizerAppearance();
     });
   }

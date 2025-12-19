@@ -57,13 +57,13 @@ export const lyricWinUrl =
     : `http://localhost:${port}/#/desktop-lyric`;
 
 /**
- * 拾音器窗口加载地址
+ * 拾音器窗口加载地址（使用轻量级 HTML 页面）
  * @returns string
  */
 export const visualizerWinUrl =
   isDev && process.env["ELECTRON_RENDERER_URL"]
-    ? `${process.env["ELECTRON_RENDERER_URL"]}/#/audio-visualizer`
-    : `http://localhost:${port}/#/audio-visualizer`;
+    ? `${process.env["ELECTRON_RENDERER_URL"]}/web/visualizer/index.html`
+    : `http://localhost:${port}/web/visualizer/index.html`;
 
 /**
  * 加载窗口地址

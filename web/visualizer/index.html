@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visualizer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent !important;
+    }
+
+    .visualizer-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      background: transparent;
+      overflow: hidden;
+    }
+
+    .visualizer-bar {
+      width: 100%;
+      height: 0;
+      transition: height 0.03s ease-out, border-radius 0.2s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="visualizer-container">
+    <div class="visualizer-bar" id="bar"></div>
+  </div>
+
+  <script>
+    // ==================== 状态 ====================
+    const state = {
+      color: '255, 255, 255',
+      opacity: 0.8,
+      shape: 'rounded',
+      gradient: true,
+      currentHeight: 0,
+    };
+
+    const bar = document.getElementById('bar');
+
+    // ==================== 样式计算 ====================
+    function getRadius() {
+      const radiusMap = { rectangle: '0', pill: '50px', rounded: '6px' };
+      const radius = radiusMap[state.shape] || '6px';
+      if (state.gradient && radius !== '0') {
+        return `0 0 ${radius} ${radius}`;
+      }
+      return radius;
+    }
+
+    function getBackground() {
+      const { color, opacity, gradient } = state;
+      if (gradient) {
+        return `linear-gradient(to top, rgba(${color}, ${opacity}) 0%, rgba(${color}, ${opacity}) 60%, rgba(${color}, 0) 100%)`;
+      }
+      return `rgba(${color}, ${opacity})`;
+    }
+
+    function getBoxShadow() {
+      if (state.gradient) return 'none';
+      return `0 0 15px rgba(${state.color}, ${state.opacity * 0.5})`;
+    }
+
+    function updateStyle() {
+      bar.style.background = getBackground();
+      bar.style.boxShadow = getBoxShadow();
+      bar.style.borderRadius = getRadius();
+    }
+
+    // ==================== 动画逻辑 ====================
+    function lerp(start, end, factor) {
+      return (1 - factor) * start + factor * end;
+    }
+
+    function handleAudioData(data) {
+      const targetHeight = Math.min(data * 100, 95);
+      const diff = Math.abs(targetHeight - state.currentHeight);
+
+      // 小幅度变化忽略
+      if (diff < 3 && targetHeight > 0 && state.currentHeight > 0) return;
+
+      // 上升快，下降慢
+      const lerpFactor = targetHeight > state.currentHeight ? 0.85 : 0.08;
+      state.currentHeight = lerp(state.currentHeight, targetHeight, lerpFactor);
+      bar.style.height = `${state.currentHeight}%`;
+    }
+
+    // ==================== IPC 监听 ====================
+    if (window.electron && window.electron.ipcRenderer) {
+      const ipc = window.electron.ipcRenderer;
+
+      // 通知主进程同步设置
+      ipc.send('visualizer-ready');
+
+      // 音频数据
+      ipc.on('audio-data', (_, data) => handleAudioData(data));
+
+      // 主题颜色
+      ipc.on('update-theme', (_, val) => {
+        state.color = val;
+        updateStyle();
+      });
+
+      // 透明度
+      ipc.on('update-visualizer-opacity', (_, val) => {
+        state.opacity = val;
+        updateStyle();
+      });
+
+      // 形状
+      ipc.on('update-visualizer-shape', (_, val) => {
+        state.shape = val;
+        updateStyle();
+      });
+
+      // 渐变
+      ipc.on('update-visualizer-gradient', (_, val) => {
+        state.gradient = val;
+        updateStyle();
+      });
+    }
+
+    // 初始化样式
+    updateStyle();
+  </script>
+</body>
+</html>
+

@@ -2,7 +2,6 @@ import { BrowserWindow, shell, app } from "electron";
 import { createWindow } from "./index";
 import { mainWinUrl } from "../utils/config";
 import { useStore } from "../store";
-import { isLinux } from "../utils/config";
 import visualizerWindow from "./visualizer-window";
 
 class MainWindow {
@@ -56,6 +55,7 @@ class MainWindow {
     // 窗口获得焦点时
     this.win?.on("focus", () => {
       this.saveBounds();
+      visualizerWindow.bringToFront();
     });
     // 窗口最小化
     this.win?.on("minimize", () => {
@@ -65,41 +65,40 @@ class MainWindow {
     this.win?.on("restore", () => {
       visualizerWindow.setVisibility(true);
     });
-    // 窗口大小改变时
+    // 窗口大小改变时（拖动结束后触发）
     this.win?.on("resized", () => {
       // 若处于全屏则不保存
       if (this.win?.isFullScreen()) return;
       this.saveBounds();
       visualizerWindow.updatePosition();
     });
-    // 窗口位置改变时
+    // 窗口位置改变时（拖动结束后触发）
     this.win?.on("moved", () => {
       this.saveBounds();
       visualizerWindow.updatePosition();
+    });
+    // 实时监听窗口大小和位置变化（拖动过程中持续触发）
+    this.win?.on("resize", () => {
+      if (this.win?.isFullScreen()) return;
+      visualizerWindow.updatePosition();
+      visualizerWindow.bringToFront();
+    });
+    this.win?.on("move", () => {
+      visualizerWindow.updatePosition();
+      visualizerWindow.bringToFront();
     });
     // 窗口最大化时
     this.win?.on("maximize", () => {
       this.saveBounds();
       this.win?.webContents.send("win-state-change", true);
+      visualizerWindow.updatePosition();
     });
     // 窗口取消最大化时
     this.win?.on("unmaximize", () => {
       this.saveBounds();
       this.win?.webContents.send("win-state-change", false);
+      visualizerWindow.updatePosition();
     });
-    // Linux 无法使用 resized 和 moved
-    if (isLinux) {
-      this.win?.on("resize", () => {
-        // 若处于全屏则不保存
-        if (this.win?.isFullScreen()) return;
-        this.saveBounds();
-        visualizerWindow.updatePosition();
-      });
-      this.win?.on("move", () => {
-        this.saveBounds();
-        visualizerWindow.updatePosition();
-      });
-    }
     // 窗口关闭
     this.win?.on("close", (event) => {
       if (this.isQuitting) {
@@ -128,6 +127,8 @@ class MainWindow {
       show: false,
     });
     if (!this.win) return null;
+    // 设置主窗口引用给拾音器
+    visualizerWindow.setMainWin(this.win);
     // 加载地址
     this.win.loadURL(this.winURL);
     // 窗口事件
