@@ -268,6 +268,11 @@ const appRoutes: Array<RouteRecordRaw> = [
         name: "local-albums",
         component: () => import("@/views/Local/albums.vue"),
       },
+      {
+        path: "folders",
+        name: "local-folders",
+        component: () => import("@/views/Local/folders.vue"),
+      },
     ],
   },
   // 最近播放

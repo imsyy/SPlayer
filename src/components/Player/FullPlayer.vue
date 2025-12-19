@@ -89,7 +89,7 @@ const statusStore = useStatusStore();
 const settingStore = useSettingStore();
 
 /** 封面主颜色 */
-const mainCoverColor = useCssVar("--main-cover-color", document.body);
+const mainCoverColor = useCssVar("--main-cover-color", document.documentElement);
 
 // 是否显示评论
 const isShowComment = computed<boolean>(

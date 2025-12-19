@@ -7,12 +7,18 @@ import { File, Picture, Id3v2Settings, TagTypes } from "node-taglib-sharp";
 import { ipcLog } from "../logger";
 import { download } from "electron-dl";
 import { Options as GlobOptions } from "fast-glob/out/settings";
+import { LocalMusicService } from "../services/LocalMusicService";
+import { useStore } from "../store";
 import FastGlob from "fast-glob";
+import pLimit from "p-limit";
 
 /**
  * 文件相关 IPC
  */
 const initFileIpc = (): void => {
+  /** 本地音乐服务 */
+  const localMusicService = new LocalMusicService();
+
   /**
    * 获取全局搜索配置
    * @param cwd 当前工作目录
@@ -22,6 +28,16 @@ const initFileIpc = (): void => {
     caseSensitiveMatch: false,
   });
 
+  // 检查文件是否存在
+  ipcMain.handle("file-exists", async (_, path: string) => {
+    try {
+      await access(path);
+      return true;
+    } catch {
+      return false;
+    }
+  });
+
   // 默认文件夹
   ipcMain.handle(
     "get-default-dir",
@@ -29,6 +45,53 @@ const initFileIpc = (): void => {
       return app.getPath(type);
     },
   );
+
+  // 本地音乐同步（批量流式传输）
+  ipcMain.handle("local-music-sync", async (event, dirs: string[]) => {
+    try {
+      // 获取封面目录路径
+      const store = useStore();
+      const localCachePath = join(store.get("cachePath"), "local-data");
+      const coverDir = join(localCachePath, "covers");
+
+      // 使用批量流式传输，减少 IPC 通信次数
+      await localMusicService.refreshLibrary(
+        dirs,
+        // 发送进度
+        (current, total) => {
+          event.sender.send("music-sync-progress", { current, total });
+        },
+        // 发送批量数据
+        (tracks) => {
+          const tracksWithFullCover = tracks.map((track) => {
+            let coverPath: string | undefined = undefined;
+            if (track.cover) {
+              const fullPath = join(coverDir, track.cover);
+              // 路径兼容
+              coverPath = `file://${fullPath.replace(/\\/g, "/")}`;
+            }
+            return {
+              ...track,
+              cover: coverPath,
+            };
+          });
+          event.sender.send("music-sync-tracks-batch", tracksWithFullCover);
+        },
+      );
+      // 发送完成信号
+      event.sender.send("music-sync-complete", { success: true });
+      return { success: true };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      // 如果正在扫描中
+      if (errorMessage === "SCAN_IN_PROGRESS") {
+        return { success: false, message: "扫描正在进行中，请稍候" };
+      }
+      // 错误信号
+      event.sender.send("music-sync-complete", { success: false, message: errorMessage });
+      return { success: false, message: errorMessage };
+    }
+  });
 
   // 遍历音乐文件
   ipcMain.handle("get-music-files", async (_, dirPath: string) => {
@@ -63,30 +126,38 @@ const initFileIpc = (): void => {
       ];
       // 查找指定目录下的所有音乐文件
       const musicFiles = await FastGlob(`**/*.{${musicExtensions.join(",")}}`, globOpt(filePath));
+
+      // 限制并发数
+      const limit = pLimit(10);
+
       // 解析元信息（使用 allSettled 防止单个文件失败影响整体）
-      const metadataPromises = musicFiles.map(async (file) => {
-        const fullPath = join(dirPath, file);
-        try {
-          // 处理元信息
-          const { common, format } = await parseFile(fullPath);
-          // 获取文件大小
-          const { size } = await stat(fullPath);
-          return {
-            id: getFileID(fullPath),
-            name: common.title || basename(fullPath),
-            artists: common.artists?.[0] || common.artist,
-            album: common.album || "",
-            alia: common.comment?.[0]?.text || "",
-            duration: (format?.duration ?? 0) * 1000,
-            size: (size / (1024 * 1024)).toFixed(2),
-            path: fullPath,
-            quality: format.bitrate ?? 0,
-          };
-        } catch (err) {
-          ipcLog.warn(`⚠️ Failed to parse file: ${fullPath}`, err);
-          return null;
-        }
-      });
+      const metadataPromises = musicFiles.map((file) =>
+        limit(async () => {
+          const fullPath = join(dirPath, file);
+          try {
+            // 处理元信息 (跳过封面解析以提升速度)
+            const { common, format } = await parseFile(fullPath, { skipCovers: true });
+            // 获取文件大小
+            const { size } = await stat(fullPath);
+            const ext = extname(fullPath);
+
+            return {
+              id: getFileID(fullPath),
+              name: common.title || basename(fullPath, ext),
+              artists: common.artists?.[0] || common.artist,
+              album: common.album || "",
+              alia: common.comment?.[0]?.text || "",
+              duration: (format?.duration ?? 0) * 1000,
+              size: (size / (1024 * 1024)).toFixed(2),
+              path: fullPath,
+              quality: format.bitrate ?? 0,
+            };
+          } catch (err) {
+            ipcLog.warn(`⚠️ Failed to parse file: ${fullPath}`, err);
+            return null;
+          }
+        }),
+      );
       const metadataResults = await Promise.all(metadataPromises);
       // 过滤掉解析失败的文件
       return metadataResults.filter((item) => item !== null);
@@ -358,10 +429,10 @@ const initFileIpc = (): void => {
   });
 
   // 路径选择窗口
-  ipcMain.handle("choose-path", async () => {
+  ipcMain.handle("choose-path", async (_, title: string) => {
     try {
       const { filePaths } = await dialog.showOpenDialog({
-        title: "选择文件夹",
+        title: title ?? "选择文件夹",
         defaultPath: app.getPath("downloads"),
         properties: ["openDirectory", "createDirectory"],
         buttonLabel: "选择文件夹",
@@ -392,10 +463,10 @@ const initFileIpc = (): void => {
         songData?: any;
         skipIfExist?: boolean;
       } = {
-          fileName: "未知文件名",
-          fileType: "mp3",
-          path: app.getPath("downloads"),
-        },
+        fileName: "未知文件名",
+        fileType: "mp3",
+        path: app.getPath("downloads"),
+      },
     ): Promise<{ status: "success" | "skipped" | "error"; message?: string }> => {
       try {
         // 获取窗口
@@ -493,6 +564,13 @@ const initFileIpc = (): void => {
       }
     },
   );
+
+  // 检查是否是相同的路径（规范化后比较）
+  ipcMain.handle("check-if-same-path", (_, localFilesPath: string[], selectedDir: string) => {
+    const resolvedSelectedDir = resolve(selectedDir);
+    const allPaths = localFilesPath.map((p) => resolve(p));
+    return allPaths.some((existingPath) => existingPath === resolvedSelectedDir);
+  });
 
   // 检查是否是子文件夹
   ipcMain.handle("check-if-subfolder", (_, localFilesPath: string[], selectedDir: string) => {

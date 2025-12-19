@@ -180,7 +180,6 @@ import { useMusicStore, useSettingStore, useStatusStore } from "@/stores";
 import { usePlayerController } from "@/core/player/PlayerController";
 import { getLyricLanguage } from "@/utils/format";
 import { isElectron } from "@/utils/env";
-import LyricMenu from "./LyricMenu.vue";
 
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();

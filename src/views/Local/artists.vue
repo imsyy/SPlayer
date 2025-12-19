@@ -8,7 +8,7 @@
         :class="['artist-item', { choose: chooseArtist === key }]"
         @click="chooseArtist = key"
       >
-        <n-text class="name">{{ key }}</n-text>
+        <n-text class="name">{{ key || "未知艺术家" }}</n-text>
         <n-text class="num" depth="3">
           <SvgIcon name="Music" :depth="3" />
           {{ item.length }} 首
@@ -18,8 +18,8 @@
     <Transition name="fade" mode="out-in">
       <SongList
         :key="chooseArtist"
-        :data="chooseArtist ? artistData[chooseArtist] : []"
-        :loading="true"
+        :data="artistSongs"
+        :loading="artistSongs?.length ? false : true"
         :hidden-cover="!settingStore.showLocalCover"
         @removeSong="handleRemoveSong"
       />
@@ -40,6 +40,9 @@ const settingStore = useSettingStore();
 // 歌手数据
 const chooseArtist = ref<string>("");
 const artistData = computed<Record<string, SongType[]>>(() => formatArtistsList(props.data));
+
+// 对应歌手歌曲
+const artistSongs = computed<SongType[]>(() => artistData.value?.[chooseArtist.value] || []);
 
 // 区分歌手数据
 const formatArtistsList = (

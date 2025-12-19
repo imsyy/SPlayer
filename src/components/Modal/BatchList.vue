@@ -41,7 +41,7 @@
       <n-flex class="menu">
         <!-- 批量下载 -->
         <n-button
-          :disabled="!checkCount"
+          :disabled="!checkCount || isLocal"
           type="primary"
           strong
           secondary

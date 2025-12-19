@@ -77,8 +77,6 @@ export interface SettingState {
   downloadPath: string;
   /** 是否启用缓存 */
   cacheEnabled: boolean;
-  /** 缓存大小上限（GB，0 表示不限制） */
-  cacheMaxSizeGB: number;
   /** 音乐命名格式 */
   fileNameFormat: "title" | "artist-title" | "title-artist";
   /** 文件智能分类 */
@@ -145,6 +143,8 @@ export interface SettingState {
   autoHidePlayerMeta: boolean;
   /** 记忆最后进度 */
   memoryLastSeek: boolean;
+  /** 显示进度条悬浮信息 */
+  progressTooltipShow: boolean;
   /** 进度调节吸附最近歌词 */
   progressAdjustLyric: boolean;
   /** 显示播放列表数量 */
@@ -317,6 +317,7 @@ export const useSettingStore = defineStore("setting", {
     playerBackgroundFlowSpeed: 4,
     autoHidePlayerMeta: true,
     memoryLastSeek: true,
+    progressTooltipShow: true,
     progressAdjustLyric: false,
     showPlaylistCount: true,
     showSpectrums: false,
@@ -353,7 +354,6 @@ export const useSettingStore = defineStore("setting", {
     showLocalCover: true,
     downloadPath: "",
     cacheEnabled: true,
-    cacheMaxSizeGB: 10,
     fileNameFormat: "title-artist",
     folderStrategy: "none",
     downloadMeta: true,

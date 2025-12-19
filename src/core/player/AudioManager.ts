@@ -125,6 +125,17 @@ class AudioManager {
     url?: string,
     options: { fadeIn?: boolean; fadeDuration?: number; autoPlay?: boolean } = {},
   ) {
+    // 自动播放控制
+    const shouldPlay = options.autoPlay ?? true;
+    // 不初始化 AudioContext
+    if (!shouldPlay) {
+      if (url && this.audioElement) {
+        this.audioElement.src = url;
+        this.audioElement.load();
+      }
+      return;
+    }
+    // 需要播放时才初始化 AudioContext
     if (!this.isInitialized) this.init();
 
     // 如果上下文被挂起，则恢复
@@ -137,11 +148,8 @@ class AudioManager {
       this.audioElement.load();
     }
 
-    // 自动播放控制
-    const shouldPlay = options.autoPlay ?? true;
-
     // 处理渐入
-    if (shouldPlay && options.fadeIn && this.gainNode && this.audioCtx) {
+    if (options.fadeIn && this.gainNode && this.audioCtx) {
       this.gainNode.gain.cancelScheduledValues(this.audioCtx.currentTime);
       this.gainNode.gain.setValueAtTime(0, this.audioCtx.currentTime);
       this.gainNode.gain.linearRampToValueAtTime(
@@ -153,13 +161,11 @@ class AudioManager {
       this.gainNode.gain.setValueAtTime(this.volume, this.audioCtx.currentTime);
     }
 
-    if (shouldPlay) {
-      try {
-        await this.audioElement?.play();
-      } catch (error) {
-        console.error("AudioManager: 播放失败", error);
-        throw error;
-      }
+    try {
+      await this.audioElement?.play();
+    } catch (error) {
+      console.error("AudioManager: 播放失败", error);
+      throw error;
     }
   }
 

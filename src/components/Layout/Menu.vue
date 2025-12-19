@@ -310,17 +310,18 @@ const checkMenuItem = () => {
     (router.currentRoute.value.matched?.[0]?.name as string) ||
     (router.currentRoute.value?.name as string);
   if (!routerName) return;
-  // 处理本地歌曲子路由
-  if (routerName.startsWith("local-")) {
-    routerName = "local";
-  }
-  // 处理收藏子路由
-  if (routerName.startsWith("like-") && routerName !== "like-songs") {
-    routerName = "like";
-  }
-  // 处理下载子路由
-  if (routerName.startsWith("download-")) {
-    routerName = "download";
+  // 处理路由名称
+  const prefixMap = [
+    { prefix: "discover-", name: "discover" },
+    { prefix: "local-", name: "local" },
+    { prefix: "like-", name: "like", exclude: "like-songs" },
+    { prefix: "download-", name: "download" },
+  ];
+  for (const item of prefixMap) {
+    if (routerName.startsWith(item.prefix) && (!item.exclude || routerName !== item.exclude)) {
+      routerName = item.name;
+      break;
+    }
   }
   // 显示菜单
   menuRef.value?.showOption(routerName);

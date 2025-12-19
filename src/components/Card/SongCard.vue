@@ -199,27 +199,32 @@ const qualityColor = computed(() => {
 
 // 加载本地歌曲封面
 const localCover = async (show: boolean) => {
-  if (!isElectron || !show || !song.value.path) return;
-  // 是否还在缓存中
+  if (!isElectron || !show) return;
+  // 本地路径
+  const path = song.value.path;
+  if (!path) return;
+  // 当前封面
   const currentCover = song.value.cover;
-  if (currentCover && currentCover.startsWith("blob:")) {
-    // 需要重新获取
-    if (!blobURLManager.hasBlobURL(song.value.path)) {
-      song.value.cover = "";
-    } else {
-      return;
-    }
-  }
-  // 如果已有非 blob URL 的封面，不需要重新获取
-  if (song.value.cover && song.value.cover !== "" && song.value.cover !== "/images/song.jpg?assest") {
+  // 直接复用
+  if (
+    currentCover &&
+    currentCover !== "/images/song.jpg?assest" &&
+    !currentCover.startsWith("blob:")
+  ) {
     return;
   }
+  // 缓存生效
+  if (blobURLManager.hasBlobURL(path)) return;
+  // 请求路径
+  const requestPath = path;
   // 获取封面
-  const coverData = await window.electron.ipcRenderer.invoke("get-music-cover", song.value.path);
-  if (!coverData) return;
+  const coverData = await window.electron.ipcRenderer.invoke("get-music-cover", requestPath);
+  if (song.value.path !== requestPath || !coverData) return;
   const { data, format } = coverData;
-  const blobURL = blobURLManager.createBlobURL(data, format, song.value.path);
-  if (blobURL) song.value.cover = blobURL;
+  const blobURL = blobURLManager.createBlobURL(data, format, requestPath);
+  if (blobURL && song.value.path === requestPath) {
+    song.value.cover = blobURL;
+  }
 };
 </script>
 

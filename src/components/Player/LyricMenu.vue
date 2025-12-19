@@ -1,5 +1,5 @@
 <template>
-  <n-flex class="menu" justify="center" vertical>
+  <n-flex :class="['menu', { show: statusStore.playerMetaShow }]" justify="center" vertical>
     <div class="menu-icon" @click="openCopyLyrics">
       <SvgIcon name="Copy" />
     </div>
@@ -127,7 +127,9 @@ const resetOffset = () => {
 .lyric-am {
   &:hover {
     .menu {
-      opacity: 0.6;
+      &.show {
+        opacity: 0.6;
+      }
     }
   }
 }

@@ -9,16 +9,14 @@
         @click="chooseAlbum = key"
       >
         <Transition name="fade" mode="out-in">
-          <n-image
+          <s-image
             :key="item?.[0]?.cover"
             :src="item?.[0]?.cover || '/images/album.jpg?assest'"
-            preview-disabled
             class="cover"
-            v-visible.once="(show: boolean) => loadAlbumCover(show, key)"
           />
         </Transition>
         <div class="data">
-          <n-text class="name">{{ key }}</n-text>
+          <n-text class="name">{{ key || "未知专辑" }}</n-text>
           <n-text class="num" depth="3">
             <SvgIcon name="Music" :depth="3" />
             {{ item.length }} 首
@@ -29,8 +27,8 @@
     <Transition name="fade" mode="out-in">
       <SongList
         :key="chooseAlbum"
-        :data="chooseAlbum ? albumData[chooseAlbum] : []"
-        :loading="true"
+        :data="albumSongs"
+        :loading="albumSongs?.length ? false : true"
         @removeSong="handleRemoveSong"
         hidden-cover
       />
@@ -42,16 +40,17 @@
 import type { SongType } from "@/types/main";
 import { useLocalStore } from "@/stores";
 import { some } from "lodash-es";
-import { useBlobURLManager } from "@/core/resource/BlobURLManager";
 
 const props = defineProps<{ data: SongType[] }>();
 
 const localStore = useLocalStore();
-const blobURLManager = useBlobURLManager();
 
 // 专辑数据
 const chooseAlbum = ref<string>("");
 const albumData = computed<Record<string, SongType[]>>(() => formatArtistsList(props.data));
+
+// 对应专辑歌曲
+const albumSongs = computed<SongType[]>(() => albumData.value?.[chooseAlbum.value] || []);
 
 // 区分专辑数据
 const formatArtistsList = (data: SongType[]): Record<string, SongType[]> => {
@@ -77,18 +76,6 @@ const formatArtistsList = (data: SongType[]): Record<string, SongType[]> => {
   // 默认选中
   chooseAlbum.value = sortedAlbums[0];
   return sortedAllAlbums;
-};
-
-// 加载专辑封面
-const loadAlbumCover = async (show: boolean, key: string) => {
-  if (!show) return;
-  const path = albumData.value?.[key]?.[0]?.path;
-  if (!path) return;
-  const coverData = await window.electron.ipcRenderer.invoke("get-music-cover", path);
-  if (!coverData) return;
-  const { data, format } = coverData;
-  const blobURL = blobURLManager.createBlobURL(data, format, path);
-  if (blobURL) albumData.value[key][0].cover = blobURL;
 };
 
 // 处理删除歌曲

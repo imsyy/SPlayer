@@ -6,7 +6,7 @@
     :max="statusStore.duration"
     :keyboard="false"
     :format-tooltip="formatTooltip"
-    :tooltip="showTooltip"
+    :tooltip="settingStore.progressTooltipShow && showTooltip"
     :class="['player-slider', { drag: isDragging }]"
     @dragstart="startDrag"
     @dragend="endDrag"
