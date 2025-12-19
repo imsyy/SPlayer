@@ -3,6 +3,7 @@ import { createWindow } from "./index";
 import { mainWinUrl } from "../utils/config";
 import { useStore } from "../store";
 import { isLinux } from "../utils/config";
+import visualizerWindow from "./visualizer-window";
 
 class MainWindow {
   private win: BrowserWindow | null = null;
@@ -50,20 +51,31 @@ class MainWindow {
     // 窗口显示时
     this.win?.on("show", () => {
       this.win?.webContents.send("lyricsScroll");
+      visualizerWindow.setVisibility(true);
     });
     // 窗口获得焦点时
     this.win?.on("focus", () => {
       this.saveBounds();
+    });
+    // 窗口最小化
+    this.win?.on("minimize", () => {
+      visualizerWindow.setVisibility(false);
+    });
+    // 窗口从最小化恢复
+    this.win?.on("restore", () => {
+      visualizerWindow.setVisibility(true);
     });
     // 窗口大小改变时
     this.win?.on("resized", () => {
       // 若处于全屏则不保存
       if (this.win?.isFullScreen()) return;
       this.saveBounds();
+      visualizerWindow.updatePosition();
     });
     // 窗口位置改变时
     this.win?.on("moved", () => {
       this.saveBounds();
+      visualizerWindow.updatePosition();
     });
     // 窗口最大化时
     this.win?.on("maximize", () => {
@@ -81,18 +93,22 @@ class MainWindow {
         // 若处于全屏则不保存
         if (this.win?.isFullScreen()) return;
         this.saveBounds();
+        visualizerWindow.updatePosition();
       });
       this.win?.on("move", () => {
         this.saveBounds();
+        visualizerWindow.updatePosition();
       });
     }
     // 窗口关闭
     this.win?.on("close", (event) => {
       if (this.isQuitting) {
+        visualizerWindow.closeAll();
         return;
       }
       event.preventDefault();
       this.win?.hide();
+      visualizerWindow.setVisibility(false);
     });
   }
   /**

@@ -79,8 +79,11 @@ class AudioManager {
       this.gainNode = this.audioCtx.createGain();
       this.analyserNode = this.audioCtx.createAnalyser();
 
-      // 配置分析器
-      this.analyserNode.fftSize = 512;
+      // 配置分析器 - 扩大动态范围
+      this.analyserNode.fftSize = 128;
+      this.analyserNode.smoothingTimeConstant = 0.15;
+      this.analyserNode.minDecibels = -80; // 更大的动态范围
+      this.analyserNode.maxDecibels = -10;
 
       // 创建均衡器滤波器
       this.filters = this.eqFrequencies.map((freq) => {

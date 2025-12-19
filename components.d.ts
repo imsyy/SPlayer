@@ -14,6 +14,7 @@ declare module 'vue' {
     AboutSetting: typeof import('./src/components/Setting/AboutSetting.vue')['default']
     AMLLServer: typeof import('./src/components/Modal/Setting/AMLLServer.vue')['default']
     ArtistList: typeof import('./src/components/List/ArtistList.vue')['default']
+    AudioVisualizer: typeof import('./src/components/Special/AudioVisualizer.vue')['default']
     AutoClose: typeof import('./src/components/Modal/AutoClose.vue')['default']
     BackgroundRender: typeof import('./src/components/Special/BackgroundRender.vue')['default']
     BatchList: typeof import('./src/components/Modal/BatchList.vue')['default']
@@ -161,5 +162,6 @@ declare module 'vue' {
     UpdatePlaylist: typeof import('./src/components/Modal/UpdatePlaylist.vue')['default']
     User: typeof import('./src/components/Layout/User.vue')['default']
     UserAgreement: typeof import('./src/components/Modal/UserAgreement.vue')['default']
+    VisualizerSetting: typeof import('./src/components/Setting/VisualizerSetting.vue')['default']
   }
 }

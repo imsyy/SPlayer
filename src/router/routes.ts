@@ -311,6 +311,12 @@ const routes: Array<RouteRecordRaw> = [
     name: "desktop-lyric",
     component: () => import("@/views/DesktopLyric/index.vue"),
   },
+  // 拾音器可视化
+  {
+    path: "/audio-visualizer",
+    name: "audio-visualizer",
+    component: () => import("@/views/Visualizer/index.vue"),
+  },
   // 404
   {
     path: "/:pathMatch(.*)*",

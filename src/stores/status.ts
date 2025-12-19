@@ -68,6 +68,8 @@ interface StatusState {
   listSort: SortType;
   /** 桌面歌词 */
   showDesktopLyric: boolean;
+  /** 拾音器可视化 */
+  showVisualizer: boolean;
   /** 播放器评论 */
   showPlayerComment: boolean;
   /** 私人FM模式 */
@@ -125,6 +127,7 @@ export const useStatusStore = defineStore("status", {
     mainContentHeight: 0,
     listSort: "default",
     showDesktopLyric: false,
+    showVisualizer: false,
     showPlayerComment: false,
     updateCheck: false,
     eqEnabled: false,
@@ -283,6 +286,7 @@ export const useStatusStore = defineStore("status", {
       "songCoverTheme",
       "listSort",
       "showDesktopLyric",
+      "showVisualizer",
       "playHeartbeatMode",
       "personalFmMode",
       "autoClose",

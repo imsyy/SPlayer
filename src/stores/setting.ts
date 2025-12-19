@@ -260,6 +260,10 @@ export interface SettingState {
   playerFollowCoverColor: boolean;
   /** 进度条悬浮时显示歌词 */
   progressLyricShow: boolean;
+  /** 拾音器颜色 */
+  visualizerColor: string;
+  /** 拾音器透明度 */
+  visualizerOpacity: number;
 }
 
 export const useSettingStore = defineStore("setting", {
@@ -391,6 +395,8 @@ export const useSettingStore = defineStore("setting", {
     },
     playerFollowCoverColor: true,
     progressLyricShow: true,
+    visualizerColor: "theme",
+    visualizerOpacity: 0.8,
   }),
   getters: {
     /**

@@ -53,6 +53,8 @@ const init = async () => {
     window.electron.ipcRenderer.send("win-loaded");
     // 显示桌面歌词
     window.electron.ipcRenderer.send("toggle-desktop-lyric", statusStore.showDesktopLyric);
+    // 显示拾音器
+    window.electron.ipcRenderer.send("toggle-visualizer", statusStore.showVisualizer);
     // 检查更新
     if (settingStore.checkUpdateOnStart) window.electron.ipcRenderer.send("check-update");
   }
