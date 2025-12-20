@@ -127,14 +127,17 @@ onBeforeUnmount(() => {
   overflow: hidden;
   filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.2));
   mask: linear-gradient(
-    180deg,
-    hsla(0, 0%, 100%, 0) 0,
-    hsla(0, 0%, 100%, 0.6) 5%,
-    #fff 10%,
-    #fff 75%,
-    hsla(0, 0%, 100%, 0.6) 85%,
-    hsla(0, 0%, 100%, 0)
+      180deg,
+      hsla(0, 0%, 100%, 0) 0,
+      hsla(0, 0%, 100%, 0.6) 5%,
+      #fff 10%,
+      #fff 75%,
+      hsla(0, 0%, 100%, 0.6) 85%,
+      hsla(0, 0%, 100%, 0)
   );
+
+  /* 限定混合模式只作用于歌词区域（避免影响页面其它元素） */
+  isolation: isolate;
 
   :deep(.am-lyric) {
     width: 100%;
@@ -160,6 +163,47 @@ onBeforeUnmount(() => {
       }
     }
   }
+
+  /* 对常见的“当前高亮行”类名应用加法混合模式，使其高亮更亮 */
+  :deep(.am-lyric .current),
+  :deep(.am-lyric .is-current),
+  :deep(.am-lyric .active),
+  :deep(.am-lyric .is-active),
+  :deep(.am-lyric .lyric-line.current),
+  :deep(.am-lyric .lyric-line.is-current) {
+    /* 使用加法混合，叠加会更亮 */
+    mix-blend-mode: plus-lighter;
+    /* 视觉平滑过渡 */
+    transition: color 0.22s ease, transform 0.22s ease, opacity 0.22s ease;
+    /* 更亮的文字颜色（半透明白），便于加法叠加效果 */
+    color: rgba(255, 255, 255, 0.95);
+    /* 轻微发光，配合混合模式效果更自然 */
+    text-shadow: 0 2px 12px rgba(255, 255, 255, 0.06);
+    /* 告诉浏览器该元素可能会变化，优化渲染 */
+    will-change: transform, opacity, color;
+  }
+
+  /* 如果希望只对主歌词文本（非翻译/音译）启用混合，
+     可以匹配带有 lang 属性的主元素（processLyricLanguage 已设置 lang） */
+  :deep(.am-lyric [lang]) {
+    /* 默认保持正常，但在高亮时会被上面的规则覆盖 */
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* 若浏览器不支持 plus-lighter，可使用 supports 提供降级样式 */
+  @supports not (mix-blend-mode: plus-lighter) {
+    :deep(.am-lyric .current),
+    :deep(.am-lyric .is-current),
+    :deep(.am-lyric .active),
+    :deep(.am-lyric .is-active),
+    :deep(.am-lyric .lyric-line.current),
+    :deep(.am-lyric .lyric-line.is-current) {
+      /* 降级为更明显的颜色与阴影（非混合） */
+      color: #ffffff;
+      text-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+    }
+  }
+
   :lang(ja) {
     font-family: var(--ja-font-family);
   }
