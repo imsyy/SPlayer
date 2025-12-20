@@ -174,7 +174,7 @@ onBeforeUnmount(() => {
     /* 使用加法混合，叠加会更亮 */
     mix-blend-mode: plus-lighter;
     /* 视觉平滑过渡 */
-    transition: color 0.22s ease, transform 0.22s ease, opacity 0.22s ease;
+    /* transition: color 0.22s ease, transform 0.22s ease, opacity 0.22s ease; */
     /* 更亮的文字颜色（半透明白），便于加法叠加效果 */
     color: rgba(255, 255, 255, 0.95);
     /* 轻微发光，配合混合模式效果更自然 */
