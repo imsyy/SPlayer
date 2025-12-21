@@ -30,6 +30,20 @@
       position: relative;
     }
 
+    /* 背景层：在柱子下面 */
+    .visualizer-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      box-sizing: border-box;
+      background: #000000;
+      z-index: 1;
+    }
+
+    /* 边框层：在柱子上面 */
     .visualizer-border {
       position: absolute;
       top: 0;
@@ -38,24 +52,56 @@
       height: 100%;
       pointer-events: none;
       box-sizing: border-box;
+      /* 实物风格边框：外银内黑 */
+      border: 4px solid #C0C0C0;
+      box-shadow: 
+        inset 0 0 0 4px #333333,
+        0 0 8px rgba(192, 192, 192, 0.3);
+      background: transparent;
+      z-index: 3;
     }
 
     .visualizer-bar {
+      position: relative;
       width: 100%;
       height: 0;
       transition: height 0.03s ease-out, border-radius 0.2s ease;
+      z-index: 2;
     }
   </style>
 </head>
 <body>
   <div class="visualizer-container">
+    <div class="visualizer-bg" id="bg"></div>
     <div class="visualizer-border" id="border"></div>
     <div class="visualizer-bar" id="bar"></div>
   </div>
 
   <script>
+    /**
+     * 渐变色预设配置
+     * 添加新渐变色只需在这里添加配置即可
+     * - colors: 渐变色数组（从下到上），每个颜色是 RGB 字符串
+     * - glowColor: 光晕颜色（RGB 字符串）
+     */
+    const GRADIENT_PRESETS = {
+      'blue-purple': {
+        colors: ['59, 130, 246', '168, 85, 247'],  // 蓝 → 紫
+        glowColor: '168, 85, 247'
+      },
+      'rainbow': {
+        colors: ['198, 255, 221', '251, 215, 134', '247, 121, 125'],  // 绿 → 黄 → 红
+        glowColor: '251, 215, 134'
+      },
+      'sunset': {
+        colors: ['255, 154, 158', '250, 208, 196'],  // 粉红 → 橙粉
+        glowColor: '255, 154, 158'
+      }
+    };
+
     const state = {
       color: '239, 239, 239',
+      colorGradient: null, // 渐变类型：null 表示单色，否则是 GRADIENT_PRESETS 的 key
       opacity: 1,
       shape: 'rectangle',
       gradient: false,
@@ -69,6 +115,7 @@
 
     const bar = document.getElementById('bar');
     const border = document.getElementById('border');
+    const bg = document.getElementById('bg');
     
     const RADIUS_MAP = { rectangle: '0', pill: '50px', rounded: '6px' };
     
@@ -84,9 +131,74 @@
       return state.gradient && radius !== '0' ? `0 0 ${radius} ${radius}` : radius;
     }
 
-    function getBackground() {
-      const { color, opacity, gradient, direction } = state;
+    /**
+     * 生成多色渐变背景
+     * @param {string[]} colors - 颜色数组（RGB 字符串）
+     * @param {number} opacity - 透明度
+     * @param {boolean} fadeOut - 是否启用顶部渐变淡出
+     * @param {string} direction - 方向：'up' 或 'center'
+     */
+    function buildGradientBackground(colors, opacity, fadeOut, direction) {
+      const count = colors.length;
       
+      if (!fadeOut) {
+        // 不启用顶部渐变：均匀分布颜色
+        const stops = colors.map((c, i) => 
+          `rgba(${c}, ${opacity}) ${(i / (count - 1)) * 100}%`
+        ).join(', ');
+        return `linear-gradient(to top, ${stops})`;
+      }
+      
+      if (direction === 'center') {
+        // 中心扩散模式：两端淡出
+        const stops = [];
+        const first = colors[0];
+        const last = colors[count - 1];
+        
+        // 底部淡入
+        stops.push(`rgba(${first}, 0) 0%`);
+        stops.push(`rgba(${first}, ${opacity * 0.5}) 15%`);
+        
+        // 中间颜色均匀分布（25% - 75%）
+        colors.forEach((c, i) => {
+          const pos = 25 + (i / (count - 1)) * 50;
+          stops.push(`rgba(${c}, ${opacity}) ${pos}%`);
+        });
+        
+        // 顶部淡出
+        stops.push(`rgba(${last}, ${opacity * 0.5}) 85%`);
+        stops.push(`rgba(${last}, 0) 100%`);
+        
+        return `linear-gradient(to top, ${stops.join(', ')})`;
+      }
+      
+      // 单向向上模式：顶部淡出
+      const stops = [];
+      const last = colors[count - 1];
+      
+      // 颜色分布（0% - 75%）
+      colors.forEach((c, i) => {
+        const pos = (i / (count - 1)) * 75;
+        stops.push(`rgba(${c}, ${opacity}) ${pos}%`);
+      });
+      
+      // 顶部渐变淡出
+      stops.push(`rgba(${last}, ${opacity * 0.5}) 90%`);
+      stops.push(`rgba(${last}, 0) 100%`);
+      
+      return `linear-gradient(to top, ${stops.join(', ')})`;
+    }
+
+    function getBackground() {
+      const { color, colorGradient, opacity, gradient, direction } = state;
+      
+      // 渐变色模式
+      if (colorGradient && GRADIENT_PRESETS[colorGradient]) {
+        const preset = GRADIENT_PRESETS[colorGradient];
+        return buildGradientBackground(preset.colors, opacity, gradient, direction);
+      }
+      
+      // 单色模式
       if (!gradient) {
         return `rgba(${color}, ${opacity})`;
       }
@@ -129,7 +241,15 @@
     }
 
     function getBoxShadow() {
-      return state.gradient ? 'none' : `0 0 15px rgba(${state.color}, ${state.opacity * 0.5})`;
+      if (state.gradient) return 'none';
+      
+      // 渐变色模式使用预设的光晕颜色
+      if (state.colorGradient && GRADIENT_PRESETS[state.colorGradient]) {
+        const glowColor = GRADIENT_PRESETS[state.colorGradient].glowColor;
+        return `0 0 15px rgba(${glowColor}, ${state.opacity * 0.5})`;
+      }
+      
+      return `0 0 15px rgba(${state.color}, ${state.opacity * 0.5})`;
     }
 
     function updateStyle() {
@@ -139,12 +259,19 @@
       bar.style.boxShadow = getBoxShadow();
       bar.style.borderRadius = radius;
       
-      // 更新边框容器
+      // 更新边框容器（实物风格：外银内黑，不跟随主题）
       if (state.border) {
-        border.style.border = `3px solid rgba(${state.color}, ${state.opacity})`;
-        border.style.borderRadius = RADIUS_MAP[state.shape] || '6px';
+        const borderRadius = RADIUS_MAP[state.shape] || '6px';
+        // 背景层
+        bg.style.borderRadius = borderRadius;
+        bg.style.display = 'block';
+        // 边框层
+        border.style.border = '4px solid #C0C0C0';
+        border.style.boxShadow = 'inset 0 0 0 4px #333333, 0 0 8px rgba(192, 192, 192, 0.3)';
+        border.style.borderRadius = borderRadius;
         border.style.display = 'block';
       } else {
+        bg.style.display = 'none';
         border.style.display = 'none';
       }
     }
@@ -153,9 +280,11 @@
       return (1 - factor) * start + factor * end;
     }
 
-    const LERP_UP = 0.85;
-    const LERP_DOWN = 0.08;
-    const MIN_DIFF = 3;
+    // 动画配置（会被 VisualizerBridge.ts 中的 VISUALIZER_CONFIG 覆盖）
+    // ⚠️ 不要在这里修改配置！请到 src/core/player/VisualizerBridge.ts 修改
+    let LERP_UP = 0.95;
+    let LERP_DOWN = 0.12;
+    let MIN_DIFF = 2;
     
     function updateBarPosition() {
       if (state.direction === 'center') {
@@ -172,10 +301,12 @@
     function handleAudioData(data) {
       const targetHeight = Math.min(data * 100, 95);
       const diff = Math.abs(targetHeight - state.currentHeight);
+      const isRising = targetHeight > state.currentHeight;
 
-      if (diff < MIN_DIFF && targetHeight > 0 && state.currentHeight > 0) return;
+      // MIN_DIFF 只限制上升时的小变化，下降时总是更新
+      if (isRising && diff < MIN_DIFF && targetHeight > 0 && state.currentHeight > 0) return;
 
-      const lerpFactor = targetHeight > state.currentHeight ? LERP_UP : LERP_DOWN;
+      const lerpFactor = isRising ? LERP_UP : LERP_DOWN;
       state.currentHeight = lerp(state.currentHeight, targetHeight, lerpFactor);
       bar.style.height = `${state.currentHeight}%`;
     }
@@ -185,8 +316,28 @@
       ipc.send('visualizer-ready');
       ipc.on('audio-data', (_, data) => handleAudioData(data));
 
+      // 接收配置更新
+      ipc.on('visualizer-config', (_, config) => {
+        if (config.lerpUp !== undefined) LERP_UP = config.lerpUp;
+        if (config.lerpDown !== undefined) LERP_DOWN = config.lerpDown;
+        if (config.minDiff !== undefined) MIN_DIFF = config.minDiff;
+      });
+
       ipc.on('update-theme', (_, val) => {
-        state.color = val;
+        // 检测是否是渐变色模式（格式：gradient-xxx）
+        if (val.startsWith('gradient-')) {
+          const gradientKey = val.replace('gradient-', '');
+          if (GRADIENT_PRESETS[gradientKey]) {
+            state.colorGradient = gradientKey;
+            state.color = GRADIENT_PRESETS[gradientKey].glowColor; // 使用光晕色作为备用
+          } else {
+            state.colorGradient = null;
+            state.color = val;
+          }
+        } else {
+          state.colorGradient = null;
+          state.color = val;
+        }
         updateStyle();
         requestAnimationFrame(() => ipc.send('visualizer-show', side));
       });

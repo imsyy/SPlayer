@@ -21,13 +21,16 @@
               v-model:value="settingStore.visualizerColor"
               :options="[
                 { label: '跟随主题', value: 'theme' },
+                { label: '蓝紫渐变', value: 'gradient-blue-purple' },
+                { label: '彩虹渐变', value: 'gradient-rainbow' },
+                { label: '日落渐变', value: 'gradient-sunset' },
                 { label: '自定义颜色', value: 'custom' },
               ]"
               style="width: 120px"
               @update:value="handleSelectChange"
             />
             <n-color-picker
-              v-if="settingStore.visualizerColor !== 'theme'"
+              v-if="settingStore.visualizerColor !== 'theme' && !settingStore.visualizerColor.startsWith('gradient-')"
               v-model:value="settingStore.visualizerColor"
               :show-alpha="false"
               :modes="['hex']"
@@ -138,6 +141,10 @@ const statusStore = useStatusStore();
 const handleSelectChange = (val: string) => {
   if (val === 'theme') {
     settingStore.visualizerColor = 'theme';
+  } else if (val === 'gradient-blue-purple') {
+    settingStore.visualizerColor = 'gradient-blue-purple';
+  } else if (val === 'gradient-rainbow') {
+    settingStore.visualizerColor = 'gradient-rainbow';
   } else if (val === 'custom') {
     // 默认给一个自定义颜色
     settingStore.visualizerColor = '#fe7971';
@@ -152,12 +159,12 @@ const resetToDefault = () => {
     positiveText: "确定",
     negativeText: "取消",
     onPositiveClick: () => {
-      settingStore.visualizerColor = 'theme';
+      settingStore.visualizerColor = 'gradient-blue-purple';
       settingStore.visualizerOpacity = 1;
-      settingStore.visualizerWidth = 50;
+      settingStore.visualizerWidth = 60;
       settingStore.visualizerShape = 'rectangle';
-      settingStore.visualizerGradient = false;
-      settingStore.visualizerBorder = false;
+      settingStore.visualizerGradient = true;
+      settingStore.visualizerBorder = true;
       settingStore.visualizerDirection = 'up';
       window.$message.success('已恢复默认设置');
     },

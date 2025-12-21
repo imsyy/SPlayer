@@ -7,6 +7,7 @@ const IPC_CHANNELS = {
   READY: "visualizer-ready",
   SHOW: "visualizer-show",
   AUDIO_DATA: "audio-data",
+  CONFIG: "visualizer-config",
   THEME: "update-visualizer-theme",
   OPACITY: "update-visualizer-opacity",
   WIDTH: "update-visualizer-width",
@@ -39,6 +40,10 @@ const initVisualizerIpc = () => {
 
   ipcMain.on(IPC_CHANNELS.AUDIO_DATA, (_, data: number) => {
     visualizerWindow.broadcast("audio-data", data);
+  });
+
+  ipcMain.on(IPC_CHANNELS.CONFIG, (_, config: { lerpUp: number; lerpDown: number; minDiff: number }) => {
+    visualizerWindow.broadcast("visualizer-config", config);
   });
 
   ipcMain.on(IPC_CHANNELS.THEME, (_, color: string) => {

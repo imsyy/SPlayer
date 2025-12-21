@@ -85,11 +85,13 @@ class AudioManager {
       // 配置分析器 (用于 PlayerSpectrum)
       this.analyserNode.fftSize = 512;
 
-      // 配置拾音器分析器 (用于 VisualizerBridge) - 更敏感的配置
-      this.visualizerAnalyserNode.fftSize = 128;
-      this.visualizerAnalyserNode.smoothingTimeConstant = 0.15;
-      this.visualizerAnalyserNode.minDecibels = -80;
-      this.visualizerAnalyserNode.maxDecibels = -10;
+      // 配置拾音器分析器 (用于 VisualizerBridge)
+      // 注意：实际配置由 VisualizerBridge.ts 中的 VISUALIZER_CONFIG 统一管理
+      // 这里只是初始化默认值，会在 VisualizerBridge.start() 时被覆盖
+      this.visualizerAnalyserNode.fftSize = 64;
+      this.visualizerAnalyserNode.smoothingTimeConstant = 0.0;
+      this.visualizerAnalyserNode.minDecibels = -65;
+      this.visualizerAnalyserNode.maxDecibels = -15;
 
       // 创建均衡器滤波器
       this.filters = this.eqFrequencies.map((freq) => {
@@ -365,6 +367,32 @@ class AudioManager {
     const dataArray = new Uint8Array(this.visualizerAnalyserNode.frequencyBinCount);
     this.visualizerAnalyserNode.getByteFrequencyData(dataArray);
     return dataArray;
+  }
+
+  /**
+   * 设置拾音器分析器配置
+   * @param config 配置对象
+   */
+  public setVisualizerConfig(config: {
+    fftSize?: number;
+    smoothingTimeConstant?: number;
+    minDecibels?: number;
+    maxDecibels?: number;
+  }) {
+    if (!this.visualizerAnalyserNode) return;
+    
+    if (config.fftSize !== undefined) {
+      this.visualizerAnalyserNode.fftSize = config.fftSize;
+    }
+    if (config.smoothingTimeConstant !== undefined) {
+      this.visualizerAnalyserNode.smoothingTimeConstant = config.smoothingTimeConstant;
+    }
+    if (config.minDecibels !== undefined) {
+      this.visualizerAnalyserNode.minDecibels = config.minDecibels;
+    }
+    if (config.maxDecibels !== undefined) {
+      this.visualizerAnalyserNode.maxDecibels = config.maxDecibels;
+    }
   }
 
   /**

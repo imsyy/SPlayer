@@ -25,20 +25,26 @@ export function useVisualizer() {
   const syncVisualizerAppearance = () => {
     if (!statusStore.showVisualizer) return;
 
-    let colorRgb: string;
+    let colorValue: string;
     if (settingStore.visualizerColor === "theme") {
-      colorRgb = statusStore.mainColor;
+      colorValue = statusStore.mainColor;
+    } else if (settingStore.visualizerColor.startsWith("gradient-")) {
+      // 渐变色，传递特殊标识
+      colorValue = settingStore.visualizerColor;
     } else {
-      colorRgb = hexToRgb(settingStore.visualizerColor);
+      colorValue = hexToRgb(settingStore.visualizerColor);
     }
 
-    window.electron.ipcRenderer.send("update-visualizer-theme", colorRgb);
+    window.electron.ipcRenderer.send("update-visualizer-theme", colorValue);
     window.electron.ipcRenderer.send("update-visualizer-opacity", settingStore.visualizerOpacity);
     window.electron.ipcRenderer.send("update-visualizer-width", settingStore.visualizerWidth);
     window.electron.ipcRenderer.send("update-visualizer-shape", settingStore.visualizerShape);
     window.electron.ipcRenderer.send("update-visualizer-gradient", settingStore.visualizerGradient);
     window.electron.ipcRenderer.send("update-visualizer-border", settingStore.visualizerBorder);
     window.electron.ipcRenderer.send("update-visualizer-direction", settingStore.visualizerDirection);
+    
+    // 同步拾音器配置（来自 VisualizerBridge）
+    visualizerBridge.syncConfig();
   };
 
   watch(
