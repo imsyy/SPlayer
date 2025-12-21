@@ -16,7 +16,7 @@
         :alignPosition="settingStore.lyricsScrollPosition === 'center' ? 0.5 : 0.2"
         :enableBlur="settingStore.lyricsBlur"
         :style="{
-          '--amll-lyric-view-color': 'rgb(var(--main-cover-color))',
+          '--amll-lyric-view-color': 'rgb(239, 239, 239)',
           '--amll-lyric-player-font-size': settingStore.lyricFontSize + 'px',
           '--ja-font-family':
             settingStore.japaneseLyricFont !== 'follow' ? settingStore.japaneseLyricFont : '',
