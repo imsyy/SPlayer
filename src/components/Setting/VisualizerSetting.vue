@@ -162,7 +162,7 @@ const resetToDefault = () => {
       settingStore.visualizerColor = 'gradient-blue-purple';
       settingStore.visualizerOpacity = 1;
       settingStore.visualizerWidth = 60;
-      settingStore.visualizerShape = 'rectangle';
+      settingStore.visualizerShape = 'rounded';
       settingStore.visualizerGradient = true;
       settingStore.visualizerBorder = true;
       settingStore.visualizerDirection = 'up';

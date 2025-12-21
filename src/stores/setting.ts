@@ -408,7 +408,7 @@ export const useSettingStore = defineStore("setting", {
     visualizerColor: "gradient-blue-purple",
     visualizerOpacity: 1,
     visualizerWidth: 60,
-    visualizerShape: "rectangle",
+    visualizerShape: "rounded",
     visualizerGradient: true,
     visualizerBorder: true,
     visualizerDirection: "up",
