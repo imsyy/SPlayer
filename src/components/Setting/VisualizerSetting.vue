@@ -24,6 +24,7 @@
                 { label: '蓝紫渐变', value: 'gradient-blue-purple' },
                 { label: '彩虹渐变', value: 'gradient-rainbow' },
                 { label: '日落渐变', value: 'gradient-sunset' },
+                { label: '霓虹渐变', value: 'gradient-flame' },
                 { label: '自定义颜色', value: 'custom' },
               ]"
               style="width: 120px"
@@ -139,15 +140,11 @@ const statusStore = useStatusStore();
 
 // 当从自定义颜色切回到跟随主题时，需要重置 store 值为 'theme'
 const handleSelectChange = (val: string) => {
-  if (val === 'theme') {
-    settingStore.visualizerColor = 'theme';
-  } else if (val === 'gradient-blue-purple') {
-    settingStore.visualizerColor = 'gradient-blue-purple';
-  } else if (val === 'gradient-rainbow') {
-    settingStore.visualizerColor = 'gradient-rainbow';
-  } else if (val === 'custom') {
+  if (val === 'custom') {
     // 默认给一个自定义颜色
     settingStore.visualizerColor = '#fe7971';
+  } else {
+    settingStore.visualizerColor = val;
   }
 };
 

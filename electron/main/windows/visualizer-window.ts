@@ -103,7 +103,7 @@ class VisualizerWindow {
     else this.rightReady = true;
 
     const mainWin = this.getMainWin();
-    if (mainWin && mainWin.isVisible()) {
+    if (mainWin && mainWin.isVisible() && !mainWin.isMinimized()) {
       this.updatePosition();
     }
   }
@@ -121,7 +121,7 @@ class VisualizerWindow {
   /** 更新窗口位置和大小 */
   updatePosition() {
     const mainWin = this.getMainWin();
-    if (!mainWin) return;
+    if (!mainWin || mainWin.isMinimized()) return;
 
     const bounds = mainWin.getBounds();
     const windowBounds = {
