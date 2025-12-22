@@ -16,14 +16,16 @@
       </template>
       <Transition name="fade" mode="out-in">
         <!-- 播放列表 -->
-        <n-virtual-list
+        <VirtualScroll
           v-if="dataStore.playList.length"
           ref="playListRef"
-          :item-size="80"
+          :item-height="80"
+          :item-fixed="true"
           :items="playListData"
           :default-scroll-index="statusStore.playIndex"
           class="playlist-list"
           style="max-height: calc(100vh - 142px)"
+          :height="`calc(100vh - 142px)`"
         >
           <template #default="{ item: songData, index }">
             <div
@@ -68,7 +70,7 @@
               </div>
             </div>
           </template>
-        </n-virtual-list>
+        </VirtualScroll>
         <n-empty
           v-else
           description="播放列表暂无歌曲，快去添加吧"
@@ -109,14 +111,14 @@
 
 <script setup lang="ts">
 import { useStatusStore, useDataStore } from "@/stores";
-import type { VirtualListInst } from "naive-ui";
+import VirtualScroll from "@/components/UI/VirtualScroll.vue";
 import { usePlayerController } from "@/core/player/PlayerController";
 
 const dataStore = useDataStore();
 const statusStore = useStatusStore();
 const player = usePlayerController();
 
-const playListRef = ref<VirtualListInst | null>(null);
+const playListRef = ref<InstanceType<typeof VirtualScroll> | null>(null);
 
 // 播放列表数据
 const playListData = computed(() => {
@@ -130,7 +132,7 @@ const playListData = computed(() => {
 
 // 滚动至指定元素
 const scrollToItem = (index: number) => {
-  playListRef.value?.scrollTo({ index });
+  playListRef.value?.scrollToIndex(index);
 };
 
 // 清空播放列表
@@ -260,6 +262,11 @@ const cleanPlayList = () => {
   .n-scrollbar-content {
     padding: 0;
     height: 100%;
+  }
+  .custom-virtual-list {
+    .n-scrollbar-content {
+      height: auto;
+    }
   }
   .n-drawer-footer {
     height: 72px;

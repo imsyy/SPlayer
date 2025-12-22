@@ -1,11 +1,12 @@
 // 日志输出
-import { existsSync, mkdirSync } from "fs";
+import { existsSync, mkdirSync, readdirSync, statSync, unlinkSync } from "fs";
 import { join } from "path";
 import { app } from "electron";
+import { isDev } from "../utils/config";
 import log from "electron-log";
 
 // 日志文件路径
-const logDir = join(app.getPath("logs"));
+const logDir = isDev ? join(app.getPath("logs"), "dev") : join(app.getPath("logs"));
 
 // 是否存在日志目录
 if (!existsSync(logDir)) mkdirSync(logDir);
@@ -20,8 +21,29 @@ log.transports.file.level = "info"; // 仅记录 info 及以上级别
 log.transports.file.resolvePathFn = (): string => logFilePath; // 日志文件路径
 log.transports.file.maxSize = 2 * 1024 * 1024; // 文件最大 2MB
 
-// 日志格式化
-// log.transports.file.format = "[{y}-{m}-{d} {h}:{i}:{s}] [{level}] [{scope}] {text}";
+// 自动清理
+const autoCleanLog = (daysToKeep: number = 30) => {
+  try {
+    const files = readdirSync(logDir);
+    const now = Date.now();
+    const msToKeep = daysToKeep * 24 * 60 * 60 * 1000;
+
+    files.forEach((file) => {
+      const filePath = join(logDir, file);
+      const stats = statSync(filePath);
+
+      // 如果文件修改时间早于 (当前时间 - 需要保留的天数)，则删除
+      if (now - stats.mtimeMs > msToKeep) {
+        unlinkSync(filePath);
+        console.log(`已清理旧日志: ${file}`);
+      }
+    });
+  } catch (err) {
+    console.error("清理日志失败:", err);
+  }
+};
+
+autoCleanLog();
 
 // 绑定默认事件
 const defaultLog = log.scope("default");

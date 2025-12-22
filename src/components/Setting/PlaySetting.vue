@@ -111,7 +111,7 @@
         />
       </n-card>
     </div>
-    <div v-if="isElectron" class="set-list">
+    <div v-if="isElectron&& statusStore.isDeveloperMode" class="set-list">
       <n-h3 prefix="bar">
         音乐解锁
         <n-tag type="warning" size="small" round>Beta</n-tag>
@@ -299,7 +299,7 @@
 
 <script setup lang="ts">
 import type { SelectOption } from "naive-ui";
-import { useSettingStore } from "@/stores";
+import { useSettingStore, useStatusStore } from "@/stores";
 import { isLogin } from "@/utils/auth";
 import { renderOption } from "@/utils/helper";
 import { isElectron } from "@/utils/env";
@@ -308,8 +308,8 @@ import { usePlayerController } from "@/core/player/PlayerController";
 import { openSongUnlockManager } from "@/utils/modal";
 
 const player = usePlayerController();
+const statusStore = useStatusStore();
 const settingStore = useSettingStore();
-
 // 输出设备数据
 const outputDevices = ref<SelectOption[]>([]);
 

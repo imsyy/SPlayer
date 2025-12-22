@@ -1,6 +1,6 @@
 import { join, resolve, dirname } from "path";
 import { existsSync } from "fs";
-import { readdir, readFile, rm, stat, writeFile, mkdir } from "fs/promises";
+import { readdir, readFile, rm, stat, writeFile, mkdir, utimes } from "fs/promises";
 import { useStore } from "../store";
 import { cacheLog } from "../logger";
 
@@ -21,6 +21,8 @@ export interface CacheListItem {
   key: string;
   /** 文件大小（字节） */
   size: number;
+  /** 最后访问时间（毫秒时间戳） */
+  atime: number;
   /** 最后修改时间（毫秒时间戳） */
   mtime: number;
 }
@@ -231,6 +233,15 @@ export class CacheService {
     await this.init();
     const { target } = this.resolveSafePath(type, key);
     if (!existsSync(target)) return null;
+
+    // 手动更新 atime (最后访问时间)，实现 LRU 逻辑
+    try {
+      const now = new Date();
+      await utimes(target, now, now);
+    } catch (e) {
+      // 忽略 utimes 失败
+    }
+
     return await readFile(target);
   }
 
@@ -282,6 +293,7 @@ export class CacheService {
       items.push({
         key: file.name,
         size: info.size,
+        atime: info.atimeMs,
         mtime: info.mtimeMs,
       });
     }
@@ -290,7 +302,7 @@ export class CacheService {
   }
 
   /**
-   * 清理旧缓存（LRU：删除最早修改的文件）
+   * 清理旧缓存
    * @param type 缓存类型
    * @param targetFreeSize 需要腾出的空间大小
    */
@@ -299,8 +311,8 @@ export class CacheService {
     let freedSize = 0;
     const items = await this.list(type);
 
-    // 按 mtime 升序排序 (旧的在前)
-    items.sort((a, b) => a.mtime - b.mtime);
+    // 按 atime 升序排序 (最久未访问的在前)
+    items.sort((a, b) => a.atime - b.atime);
 
     for (const item of items) {
       if (freedSize >= targetFreeSize) break;

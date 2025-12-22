@@ -46,8 +46,8 @@ import { type LyricLine } from "@applemusic-like-lyrics/core";
 import { useMusicStore, useSettingStore, useStatusStore } from "@/stores";
 import { getLyricLanguage } from "@/utils/format";
 import { usePlayerController } from "@/core/player/PlayerController";
-import "@applemusic-like-lyrics/core/style.css";
 import { cloneDeep } from "lodash-es";
+import "@applemusic-like-lyrics/core/style.css";
 
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
@@ -153,8 +153,6 @@ onBeforeUnmount(() => {
     top: 0;
     padding-left: 10px;
     padding-right: 80px;
-    --amll-lyric-view-color: rgb(239, 239, 239);
-    // margin-left: -2rem;
   }
 
   &.pure {

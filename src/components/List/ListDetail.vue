@@ -303,7 +303,7 @@ const handleTabChange = (value: "songs" | "comments") => {
     display: flex;
     height: 240px;
     width: 100%;
-    padding: 12px 0 30px 0;
+    padding: 12px 0 24px 0;
     will-change: height, opacity;
     z-index: 1;
     transition:

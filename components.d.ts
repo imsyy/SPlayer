@@ -124,6 +124,7 @@ declare module 'vue' {
     NTag: typeof import('naive-ui')['NTag']
     NText: typeof import('naive-ui')['NText']
     NThing: typeof import('naive-ui')['NThing']
+    NTree: typeof import('naive-ui')['NTree']
     NVirtualList: typeof import('naive-ui')['NVirtualList']
     OtherSetting: typeof import('./src/components/Setting/OtherSetting.vue')['default']
     PersonalFM: typeof import('./src/components/Player/PersonalFM.vue')['default']
@@ -162,5 +163,6 @@ declare module 'vue' {
     UpdatePlaylist: typeof import('./src/components/Modal/UpdatePlaylist.vue')['default']
     User: typeof import('./src/components/Layout/User.vue')['default']
     UserAgreement: typeof import('./src/components/Modal/UserAgreement.vue')['default']
+    VirtualScroll: typeof import('./src/components/UI/VirtualScroll.vue')['default']
   }
 }

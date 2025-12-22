@@ -18,7 +18,7 @@
 ![main](/screenshots/SPlayer.jpg)
 
 ## 说明
-
+![提示](/screenshots/gitcodes.png)
 > [!IMPORTANT]
 >
 > ### 严肃警告

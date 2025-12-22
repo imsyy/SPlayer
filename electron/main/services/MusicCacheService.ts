@@ -75,7 +75,7 @@ export class MusicCacheService {
    */
   public async cacheMusic(id: number | string, url: string, quality: string): Promise<string> {
     const store = useStore();
-    const limitSizeGB = store.get("cacheLimit") || 10;
+    const limitSizeGB = store.get("cacheLimit") ?? 10;
     const limitSizeBytes = limitSizeGB * 1024 * 1024 * 1024;
 
     // 如果设置为 0，则不限制

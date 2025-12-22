@@ -700,19 +700,23 @@ class PlayerController {
     if (statusStore.personalFmMode) statusStore.personalFmMode = false;
     // 确定播放索引
     if (song && song.id) {
-      if (musicStore.playSong.id === song.id && options.play) {
-        await this.play();
+      const newIndex = processedData.findIndex((s) => s.id === song.id);
+      if (musicStore.playSong.id === song.id) {
+        // 如果是同一首歌，仅更新索引
+        if (newIndex !== -1) statusStore.playIndex = newIndex;
+        // 如果需要播放
+        if (options.play) await this.play();
       } else {
         // 在开始请求之前就设置加载状态
         statusStore.playLoading = true;
-        statusStore.playIndex = processedData.findIndex((s) => s.id === song.id);
-        await this.playSong();
+        statusStore.playIndex = newIndex;
+        await this.playSong({ autoPlay: options.play });
       }
     } else {
       // 默认播放第一首
       statusStore.playLoading = true;
       statusStore.playIndex = 0;
-      await this.playSong();
+      await this.playSong({ autoPlay: options.play });
     }
     musicStore.playPlaylistId = pid ?? 0;
     if (options.showTip) window.$message.success("已开始播放");

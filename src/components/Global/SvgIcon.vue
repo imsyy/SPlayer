@@ -79,7 +79,7 @@ onMounted(() => {
     :deep(svg) {
       width: 1em;
       height: 1em;
-      fill: currentColor; // 允许通过 n-icon 的 color 属性控制颜色
+      fill: currentColor;
     }
   }
 }

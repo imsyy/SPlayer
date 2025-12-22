@@ -21,7 +21,11 @@
             <SvgIcon name="AddList" />
           </div>
           <!-- 下载 -->
-          <div class="menu-icon" @click.stop="openDownloadSong(musicStore.playSong)">
+          <div
+            class="menu-icon"
+            v-if="!musicStore.playSong.path"
+            @click.stop="openDownloadSong(musicStore.playSong)"
+          >
             <SvgIcon name="Download" />
           </div>
           <!-- 显示评论 -->

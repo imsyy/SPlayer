@@ -28,7 +28,7 @@
           @update:show="localCover"
         />
         <!-- 信息 -->
-        <div class="info">
+        <n-flex size="small" class="info" vertical >
           <!-- 名称 -->
           <div class="name">
             <n-ellipsis
@@ -40,7 +40,10 @@
               class="name-text"
             >
               {{ song?.name || "未知曲目" }}
+              <n-text v-if="song.alia?.length" class="alia" depth="3"> ({{ song.alia }}) </n-text>
             </n-ellipsis>
+          </div>
+          <n-flex :size="4" :wrap="false" class="desc" align="center">
             <!-- 音质 -->
             <n-tag
               v-if="song?.quality && settingStore.showSongQuality"
@@ -86,27 +89,25 @@
             >
               MV
             </n-tag>
-          </div>
-          <!-- 歌手 -->
-          <div v-if="Array.isArray(song.artists)" class="artists text-hidden">
-            <n-text
-              v-for="ar in song.artists"
-              :key="ar.id"
-              class="ar"
-              @click="openJumpArtist(song.artists)"
-            >
-              {{ ar.name }}
-            </n-text>
-          </div>
-          <div v-else-if="song.type === 'radio'" class="artists">
-            <n-text class="ar"> 电台节目 </n-text>
-          </div>
-          <div v-else class="artists text-hidden" @click="openJumpArtist(song.artists)">
-            <n-text class="ar"> {{ song.artists || "未知艺术家" }} </n-text>
-          </div>
-          <!-- 别名 -->
-          <n-text v-if="song.alia" class="alia text-hidden" depth="3">{{ song.alia }}</n-text>
-        </div>
+            <!-- 歌手 -->
+            <div v-if="Array.isArray(song.artists)" class="artists text-hidden">
+              <n-text
+                v-for="ar in song.artists"
+                :key="ar.id"
+                class="ar"
+                @click="openJumpArtist(song.artists)"
+              >
+                {{ ar.name }}
+              </n-text>
+            </div>
+            <div v-else-if="song.type === 'radio'" class="artists">
+              <n-text class="ar"> 电台节目 </n-text>
+            </div>
+            <div v-else class="artists text-hidden" @click="openJumpArtist(song.artists)">
+              <n-text class="ar"> {{ song.artists || "未知艺术家" }} </n-text>
+            </div>
+          </n-flex>
+        </n-flex>
       </div>
       <!-- 专辑 -->
       <div v-if="song.type !== 'radio' && !hiddenAlbum" class="album text-hidden">
@@ -230,7 +231,7 @@ const localCover = async (show: boolean) => {
 
 <style lang="scss" scoped>
 .song-card {
-  height: 100%;
+  height: 90px;
   cursor: pointer;
   .song-content {
     display: flex;
@@ -242,10 +243,10 @@ const localCover = async (show: boolean) => {
     border-radius: 12px;
     border: 2px solid rgba(var(--primary), 0.12);
     background-color: var(--surface-container-hex);
-    // transition:
-    //   transform 0.1s,
-    //   background-color 0.3s var(--n-bezier),
-    //   border-color 0.3s var(--n-bezier);
+    transition:
+      transform 0.1s,
+      background-color 0.3s var(--n-bezier),
+      border-color 0.3s var(--n-bezier);
     &.play {
       border-color: rgba(var(--primary), 0.58);
       background-color: rgba(var(--primary), 0.28);
@@ -325,21 +326,20 @@ const localCover = async (show: boolean) => {
       overflow: hidden;
     }
     .info {
-      display: flex;
-      flex-direction: column;
       .name {
         display: flex;
         flex-direction: row;
         align-items: center;
+        line-height: normal;
         font-size: 16px;
-        :deep(.name-text) {
-          margin-right: 6px;
-        }
+      }
+      .desc {
+        margin-top: 2px;
+        font-size: 13px;
         .n-tag {
-          --n-height: 20px;
-          font-size: 12px;
+          --n-height: 18px;
+          font-size: 10px;
           cursor: pointer;
-          margin-right: 6px;
           pointer-events: none;
           &:last-child {
             margin-right: 0;
@@ -366,8 +366,6 @@ const localCover = async (show: boolean) => {
         }
       }
       .artists {
-        margin-top: 2px;
-        font-size: 13px;
         .ar {
           display: inline-flex;
           transition: opacity 0.3s;
@@ -386,11 +384,6 @@ const localCover = async (show: boolean) => {
             opacity: 0.8;
           }
         }
-      }
-      .alia {
-        margin-top: 2px;
-        font-size: 12px;
-        opacity: 0.8;
       }
     }
     .sort {
