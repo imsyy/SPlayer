@@ -35,7 +35,7 @@
   "dependencies": {
     "@applemusic-like-lyrics/core": "^0.2.0",
     "@applemusic-like-lyrics/lyric": "^0.3.0",
-    "@applemusic-like-lyrics/vue": "^0.1.5",
+    "@applemusic-like-lyrics/vue": "^0.2.0",
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "@imsyy/color-utils": "^1.0.2",
@@ -48,6 +48,7 @@
     "@pixi/filter-bulge-pinch": "^5.1.1",
     "@pixi/filter-color-matrix": "^7.4.3",
     "@pixi/sprite": "^7.4.3",
+    "@tanstack/vue-virtual": "^3.13.13",
     "@vueuse/core": "^13.9.0",
     "@vueuse/integrations": "^14.1.0",
     "axios": "^1.13.2",
@@ -75,8 +76,7 @@
     "pinia": "^3.0.4",
     "pinia-plugin-persistedstate": "^4.7.1",
     "plyr": "^3.8.3",
-    "sortablejs": "^1.15.6",
-    "vue-virtual-scroller": "2.0.0-beta.8"
+    "sortablejs": "^1.15.6"
   },
   "devDependencies": {
     "@electron-toolkit/preload": "^3.0.1",

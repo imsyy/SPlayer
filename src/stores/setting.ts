@@ -165,6 +165,10 @@ export interface SettingState {
   useAMLyrics: boolean;
   /** 是否使用 AM 歌词弹簧效果 */
   useAMSpring: boolean;
+  /** 隐藏已播放歌词 */
+  hidePassedLines: boolean;
+  /** 文字动画的渐变宽度 */
+  wordFadeWidth: number;
   /** 是否启用在线 TTML 歌词 */
   enableTTMLLyric: boolean;
   /** AMLL DB 服务地址 */
@@ -327,6 +331,8 @@ export const useSettingStore = defineStore("setting", {
     lyricFontBold: true,
     useAMLyrics: false,
     useAMSpring: false,
+    hidePassedLines: false,
+    wordFadeWidth: 0.5,
     enableTTMLLyric: false,
     amllDbServer: defaultAMLLDbServer,
     showYrc: true,

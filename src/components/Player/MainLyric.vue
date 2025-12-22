@@ -1,5 +1,6 @@
 <template>
   <div
+    :key="`lyric-${musicStore.playSong.id}`"
     :style="{
       '--lrc-size': settingStore.lyricFontSize + 'px',
       '--lrc-tran-size': settingStore.lyricTranFontSize + 'px',
