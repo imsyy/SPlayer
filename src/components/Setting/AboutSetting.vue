@@ -6,8 +6,8 @@
         <n-flex align="center" class="about">
           <SvgIcon name="SPlayer" size="26" />
           <n-text class="logo-name">SPlayer</n-text>
-          <n-tag v-if="isDevBuild" size="small" type="warning" round> DEV </n-tag>
-          <n-tag :bordered="false" size="small" type="primary" round>
+          <n-tag v-if="statusStore.isDeveloperMode" size="small" type="warning" round> DEV </n-tag>
+          <n-tag :bordered="false" size="small" type="primary" round @click="openDeveloperMode">
             {{ packageJson.version }}
           </n-tag>
         </n-flex>
@@ -102,10 +102,13 @@ import type { UpdateLogType } from "@/types/main";
 import { getUpdateLog, openLink } from "@/utils/helper";
 import { debounce } from "lodash-es";
 import { useStatusStore } from "@/stores";
+import { isElectron } from "@/utils/env";
 import packageJson from "@/../package.json";
-import { isDevBuild, isElectron } from "@/utils/env";
 
 const statusStore = useStatusStore();
+
+// 开发者模式点击次数
+const developerModeClickCount = ref(0);
 
 // 特别鸣谢
 const contributors = [
@@ -194,6 +197,23 @@ const jumpLink = (e: MouseEvent) => {
 
 // 获取更新日志
 const getUpdateData = async () => (updateData.value = await getUpdateLog());
+
+// 打开开发者模式
+const openDeveloperMode = useThrottleFn(() => {
+  developerModeClickCount.value++;
+  if (developerModeClickCount.value >= 5 && developerModeClickCount.value < 8) {
+    if (statusStore.developerMode) {
+      window.$message.info("已处于开发者模式！");
+      developerModeClickCount.value = 0;
+      return;
+    }
+    window.$message.info(`再点击${8 - developerModeClickCount.value}次以开启开发者模式`);
+  } else if (developerModeClickCount.value >= 8) {
+    developerModeClickCount.value = 0;
+    statusStore.developerMode = true;
+    window.$message.warning("开发者模式已开启，请谨慎使用！");
+  }
+}, 100);
 
 onMounted(getUpdateData);
 </script>

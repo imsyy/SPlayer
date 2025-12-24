@@ -37,11 +37,9 @@ import {
   useMessage,
   useNotification,
   GlobalThemeOverrides,
-  NButton,
 } from "naive-ui";
 import { useSettingStore, useStatusStore } from "@/stores";
 import { setColorSchemes } from "@/utils/color";
-import { openLink } from "@/utils/helper";
 // import { rgbToHex } from "@imsyy/color-utils";
 import themeColor from "@/assets/data/themeColor.json";
 
@@ -279,43 +277,5 @@ watchDebounced(
 
 onMounted(() => {
   changeGlobalTheme();
-  
-  // 增加启动次数
-  settingStore.appLaunchCount++;
-
-  // 检查是否需要弹出 Star 提示（第 100 次启动且未隐藏）
-  if (settingStore.appLaunchCount === 100 && !settingStore.hideStarPopup) {
-    const dialog = window.$dialog.create({
-      title: "🎉 感谢",
-      content: "SPlayer已经被打开了100次，喜欢此项目请考虑在 Github 仓库给作者一个 Star 哦",
-      type: "success",
-      closable: false,
-      maskClosable: false,
-      action: () => h("div", { style: "display: flex; justify-content: flex-end; gap: 12px;" }, [
-        h(NButton, {
-          size: "small",
-          onClick: () => {
-            settingStore.hideStarPopup = true;
-            window.$message.success("已永久关闭此类弹窗");
-            dialog.destroy();
-          }
-        }, { default: () => "永久关闭此类弹窗" }),
-        h(NButton, {
-          size: "small",
-          onClick: () => {
-            dialog.destroy();
-          }
-        }, { default: () => "我知道了" }),
-        h(NButton, {
-          type: "primary",
-          size: "small",
-          onClick: () => {
-            openLink("https://github.com/imsyy/SPlayer");
-            dialog.destroy();
-          }
-        }, { default: () => "去 Github 支持" })
-      ])
-    });
-  }
 });
 </script>

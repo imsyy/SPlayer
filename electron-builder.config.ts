@@ -84,7 +84,7 @@ const config: Configuration = {
     // 可执行文件名
     executableName: "SPlayer",
     // 应用程序的图标文件路径
-    icon: "public/icons/favicon-512x512.png",
+    icon: "public/icons/icon.icns",
     // 权限继承的文件路径
     entitlementsInherit: "build/entitlements.mac.plist",
     // macOS 平台全局文件名模板

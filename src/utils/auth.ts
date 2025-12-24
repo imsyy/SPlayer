@@ -194,24 +194,24 @@ export const updateUserLikeMvs = async () => {
 // 喜欢歌曲
 export const toLikeSong = debounce(
   async (song: SongType, like: boolean) => {
-    if (!isLogin()) {
-      window.$message.warning("请登录后使用");
-      return;
-    }
-    if (isLogin() === 2) {
-      window.$message.warning("该登录模式暂不支持该操作");
-      return;
-    }
-    const dataStore = useDataStore();
-    const { id, path } = song;
-    if (path) {
-      window.$message.warning("本地歌曲暂不支持该操作");
-      return;
-    }
-    const likeList = dataStore.userLikeData.songs;
-    const exists = likeList.includes(id);
-    const { code } = await likeSong(id, like);
-    if (code === 200) {
+    try {
+      if (!isLogin()) {
+        window.$message.warning("请登录后使用");
+        return;
+      }
+      if (isLogin() === 2) {
+        window.$message.warning("该登录模式暂不支持该操作");
+        return;
+      }
+      const dataStore = useDataStore();
+      const { id, path } = song;
+      if (path) {
+        window.$message.warning("本地歌曲暂不支持该操作");
+        return;
+      }
+      const likeList = dataStore.userLikeData.songs;
+      const exists = likeList.includes(id);
+      await likeSong(id, like);
       if (like && !exists) {
         likeList.push(id);
         window.$message.success("已添加到我喜欢的音乐");
@@ -225,9 +225,9 @@ export const toLikeSong = debounce(
       dataStore.setUserLikeData("songs", likeList);
       // ipc
       if (isElectron) window.electron.ipcRenderer.send("like-status-change", like);
-    } else {
+    } catch (error) {
       window.$message.error(`${like ? "喜欢" : "取消"}音乐时发生错误`);
-      return;
+      console.error("❌ 更新喜欢歌曲时失败:", error);
     }
   },
   300,

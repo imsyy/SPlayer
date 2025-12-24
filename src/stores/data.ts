@@ -106,7 +106,7 @@ export const useDataStore = defineStore("data", {
       detail: {
         id: 0,
         name: "我喜欢的音乐",
-        cover: "/images/album.jpg?assest",
+        cover: "/images/album.jpg?asset",
       },
       data: [],
     },

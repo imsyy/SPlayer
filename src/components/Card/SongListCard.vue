@@ -11,7 +11,7 @@
         <n-image v-if="cover" :src="cover" preview-disabled lazy @load="coverLoaded">
           <template #placeholder>
             <div class="cover-loading">
-              <img src="/images/song.jpg?assest" class="loading-img" alt="loading-img" />
+              <img src="/images/song.jpg?asset" class="loading-img" alt="loading-img" />
             </div>
           </template>
         </n-image>
@@ -26,7 +26,7 @@
           >
             <template #placeholder>
               <div class="cover-loading">
-                <img src="/images/song.jpg?assest" class="loading-img" alt="loading-img" />
+                <img src="/images/song.jpg?asset" class="loading-img" alt="loading-img" />
               </div>
             </template>
           </n-image>

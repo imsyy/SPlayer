@@ -27,11 +27,6 @@ export const setGlobalColor = (name: string, colorValue: string): void => {
     throw new Error("Variable name must start with '--'");
   }
   const root = document.body;
-  // const root = document.documentElement;
-  // 检查变量是否已经存在
-  const existingValue = getComputedStyle(root).getPropertyValue(name).trim();
-  if (existingValue === colorValue) return;
-  // 设置变量
   root.style.setProperty(name, colorValue);
 };
 

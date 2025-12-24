@@ -24,7 +24,7 @@ const defaultMusicData: SongType = {
   name: "未播放歌曲",
   artists: "未知歌手",
   album: "未知专辑",
-  cover: "/images/song.jpg?assest",
+  cover: "/images/song.jpg?asset",
   duration: 0,
   free: 0,
   mv: null,

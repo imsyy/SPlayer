@@ -41,6 +41,7 @@
       <n-flex class="menu">
         <!-- 批量下载 -->
         <n-button
+          v-if="statusStore.isDeveloperMode"
           :disabled="!checkCount || isLocal"
           type="primary"
           strong
@@ -110,10 +111,11 @@ import { isArray, isObject } from "lodash-es";
 import { openPlaylistAdd } from "@/utils/modal";
 import { deleteSongs } from "@/utils/auth";
 import { NInput, NInputNumber, NButton, NText, NFlex } from "naive-ui";
-import { useLocalStore } from "@/stores";
+import { useLocalStore, useStatusStore } from "@/stores";
 import { openDownloadSongs } from "@/utils/modal";
 
 const localStore = useLocalStore();
+const statusStore = useStatusStore();
 
 interface DataType {
   key?: number;

@@ -14,7 +14,7 @@ import { openUserLogin } from "@/utils/modal";
 export enum SongUnlockServer {
   NETEASE = "netease",
   BODIAN = "bodian",
-  // KUWO = "kuwo",
+  KUWO = "kuwo",
   GEQUBAO = "gequbao",
 }
 

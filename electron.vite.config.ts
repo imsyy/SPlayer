@@ -1,6 +1,6 @@
 import { resolve } from "path";
 import { MainEnv } from "./env";
-import { defineConfig, externalizeDepsPlugin, loadEnv } from "electron-vite";
+import { defineConfig, loadEnv } from "electron-vite";
 import { NaiveUiResolver } from "unplugin-vue-components/resolvers";
 import vue from "@vitejs/plugin-vue";
 import AutoImport from "unplugin-auto-import/vite";
@@ -9,12 +9,11 @@ import viteCompression from "vite-plugin-compression";
 // import VueDevTools from "vite-plugin-vue-devtools";
 import wasm from "vite-plugin-wasm";
 
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(({ mode }) => {
   // 读取环境变量
   const getEnv = (name: keyof MainEnv): string => {
     return loadEnv(mode, process.cwd())[name];
   };
-  console.log(command);
   // 获取端口
   const webPort: number = Number(getEnv("VITE_WEB_PORT") || 14558);
   const servePort: number = Number(getEnv("VITE_SERVER_PORT") || 25884);
@@ -22,7 +21,6 @@ export default defineConfig(({ command, mode }) => {
   return {
     // 主进程
     main: {
-      plugins: [externalizeDepsPlugin()],
       build: {
         publicDir: resolve(__dirname, "public"),
         rollupOptions: {
@@ -34,7 +32,6 @@ export default defineConfig(({ command, mode }) => {
     },
     // 预加载
     preload: {
-      plugins: [externalizeDepsPlugin()],
       build: {
         rollupOptions: {
           input: {

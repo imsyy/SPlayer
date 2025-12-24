@@ -16,7 +16,7 @@
             >
               <template #placeholder>
                 <div class="cover-loading">
-                  <img src="/images/avatar.jpg?assest" class="loading-img" alt="loading-img" />
+                  <img src="/images/avatar.jpg?asset" class="loading-img" alt="loading-img" />
                 </div>
               </template>
             </n-image>
@@ -25,7 +25,7 @@
               v-if="item.user.isAnnualCount"
               class="annual"
               alt="annual"
-              src="/images/annual.png?assest"
+              src="/images/annual.png?asset"
               title="网易音乐人"
             />
           </div>
@@ -220,6 +220,7 @@ const likeComment = debounce(async (data: CommentType) => {
         }
         .text {
           white-space: pre-wrap;
+          user-select: text;
         }
       }
       .reply {
@@ -231,6 +232,7 @@ const likeComment = debounce(async (data: CommentType) => {
         background-color: rgba(var(--primary), 0.12);
         .text {
           white-space: pre-wrap;
+          user-select: text;
         }
       }
       .meta {

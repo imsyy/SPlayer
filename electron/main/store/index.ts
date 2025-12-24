@@ -9,29 +9,47 @@ import Store from "electron-store";
 storeLog.info("🌱 Store init");
 
 export interface StoreType {
+  /** 窗口 */
   window: {
+    /** 窗口宽度 */
     width: number;
+    /** 窗口高度 */
     height: number;
+    /** 窗口位置 x */
     x?: number;
+    /** 窗口位置 y */
     y?: number;
+    /** 是否最大化 */
     maximized?: boolean;
   };
+  /** 歌词 */
   lyric: {
-    // 窗口位置
+    /** 窗口位置 x */
     x?: number;
+    /** 窗口位置 y */
     y?: number;
+    /** 窗口宽度 */
     width?: number;
+    /** 窗口高度 */
     height?: number;
-    // 配置
+    /** 配置 */
     config?: LyricConfig;
   };
+  /** 代理 */
   proxy: string;
-  // amll-db-server
+  /** amll-db-server */
   amllDbServer: string;
-  // 缓存地址
+  /** 缓存地址 */
   cachePath: string;
-  // 缓存大小限制 (GB)
+  /** 缓存大小限制 (GB) */
   cacheLimit: number;
+  /** websocket */
+  websocket: {
+    /** 是否启用 */
+    enabled: boolean;
+    /** 端口 */
+    port: number;
+  };
 }
 
 /**
@@ -58,6 +76,11 @@ export const useStore = () => {
       amllDbServer: defaultAMLLDbServer,
       cachePath: join(app.getPath("userData"), "DataCache"),
       cacheLimit: 10, // 默认 10GB
+      // websocket
+      websocket: {
+        enabled: false,
+        port: 25885,
+      },
     },
   });
 };

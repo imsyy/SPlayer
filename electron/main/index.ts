@@ -7,11 +7,12 @@ import { initTray, MainTray } from "./tray";
 import { processLog } from "./logger";
 import { existsSync, mkdirSync } from "fs";
 import { join } from "path";
+import { trySendCustomProtocol } from "./utils/protocol";
+import { SocketService } from "./services/SocketService";
 import initAppServer from "../server";
 import loadWindow from "./windows/load-window";
 import mainWindow from "./windows/main-window";
 import initIpc from "./ipc";
-import { trySendCustomProtocol } from "./utils/protocol";
 
 // 屏蔽报错
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = "true";
@@ -57,6 +58,8 @@ class MainProcess {
       this.mainTray = initTray(this.mainWindow!);
       // 注册 IPC 通信
       initIpc();
+      // 自动启动 WebSocket
+      SocketService.tryAutoStart();
     });
   }
   // 应用程序事件

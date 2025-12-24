@@ -22,6 +22,8 @@ export type CoverSize = {
 
 /** 音质 */
 export enum QualityType {
+  /** 杜比 */
+  Dolby = "Dolby", // db
   /** Hi-Res */
   HiRes = "Hi-Res", // hr
   /** 无损 */

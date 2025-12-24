@@ -18,7 +18,7 @@
 ![main](/screenshots/SPlayer.jpg)
 
 ## 说明
-
+![提示](/screenshots/gitcodes.png)
 > [!IMPORTANT]
 >
 > ### 严肃警告
@@ -75,6 +75,7 @@
 - ⏭️ 音乐渐入渐出
 - 🔄 支持 PWA
 - 💬 支持评论区
+- 🎵 支持 Last.fm Scrobble（播放记录上报）
 - ~~📱 移动端基础适配~~
 
 ## 🖼️ screenshots

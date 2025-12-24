@@ -27,7 +27,7 @@
           >
             <template #placeholder>
               <div class="cover-loading">
-                <img src="/images/song.jpg?assest" class="loading-img" alt="loading-img" />
+                <img src="/images/song.jpg?asset" class="loading-img" alt="loading-img" />
               </div>
             </template>
           </n-image>
@@ -289,7 +289,7 @@ const songMoreOptions = computed<DropdownOption[]>(() => {
     {
       key: "download",
       label: "下载歌曲",
-      show: !isLocal && isSong,
+      show: statusStore.isDeveloperMode && !isLocal && isSong,
       props: { onClick: () => openDownloadSong(musicStore.playSong) },
       icon: renderIcon("Download"),
     },

@@ -1,6 +1,6 @@
 <template>
   <div class="login">
-    <img src="/icons/favicon.png?assest" alt="logo" class="logo" />
+    <img src="/icons/favicon.png?asset" alt="logo" class="logo" />
     <!-- 登录方式 -->
     <n-tabs class="login-tabs" default-value="login-qr" type="segment" animated>
       <n-tab-pane name="login-qr" tab="扫码登录">

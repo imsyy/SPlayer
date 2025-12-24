@@ -14,7 +14,7 @@
           >
             <template #placeholder>
               <div class="cover-loading">
-                <img src="/images/artist.jpg?assest" class="loading-img" alt="loading-img" />
+                <img src="/images/artist.jpg?asset" class="loading-img" alt="loading-img" />
               </div>
             </template>
           </n-image>

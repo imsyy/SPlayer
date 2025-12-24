@@ -2,25 +2,18 @@
   <div class="local-folders">
     <!-- 左侧文件夹列表 -->
     <n-scrollbar class="folder-list">
-      <n-card
-        v-for="(songs, folderPath, index) in folderData"
-        :key="index"
-        :id="folderPath"
-        :class="['folder-item', { choose: chooseFolder === folderPath }]"
-        @click="chooseFolder = folderPath"
-      >
-        <n-text class="name">
-          <SvgIcon name="Folder" :depth="2" />
-          {{ getFolderName(folderPath) || "未知文件夹" }}
-        </n-text>
-        <n-text class="path" depth="3">
-          {{ folderPath }}
-        </n-text>
-        <n-text class="num" depth="3">
-          <SvgIcon name="Music" :depth="3" />
-          {{ songs.length }} 首
-        </n-text>
-      </n-card>
+      <n-tree
+        block-line
+        expand-on-click
+        virtual-scroll
+        :data="treeData"
+        :selected-keys="[chooseFolder]"
+        :expanded-keys="expandedKeys"
+        :render-prefix="renderPrefix"
+        :render-label="renderLabel"
+        @update:selected-keys="handleTreeSelect"
+        @update:expanded-keys="(keys: string[]) => (expandedKeys = keys)"
+      />
     </n-scrollbar>
 
     <!-- 右侧歌曲列表 -->
@@ -39,9 +32,12 @@
 
 <script setup lang="ts">
 import type { SongType } from "@/types/main";
+import type { TreeOption } from "naive-ui";
 import { useLocalStore, useSettingStore } from "@/stores";
 import SongList from "@/components/List/SongList.vue";
-import { some } from "lodash-es";
+import SvgIcon from "@/components/Global/SvgIcon.vue";
+import { some, uniqBy } from "lodash-es";
+import { h } from "vue";
 
 const props = defineProps<{
   data: SongType[];
@@ -78,38 +74,190 @@ const folderData = computed<Record<string, SongType[]>>(() => {
     sortedMap[key] = map[key];
   });
 
-  // 默认选中第一个文件夹
-  if (!chooseFolder.value && sortedKeys.length > 0) {
-    chooseFolder.value = sortedKeys[0];
-  }
-
   return sortedMap;
 });
 
-// 当前选中文件夹的歌曲
-const folderSongs = computed<SongType[]>(() => folderData.value?.[chooseFolder.value] || []);
+// 树状结构数据
+const treeData = computed<TreeOption[]>(() => {
+  const allPaths = Object.keys(folderData.value);
+  if (allPaths.length === 0) return [];
 
-// 从完整路径中提取最后一级目录作为显示名
-const getFolderName = (folderPath: string): string => {
-  if (!folderPath) return "";
-  const parts = folderPath.split(/[/\\]/).filter(Boolean);
-  return parts[parts.length - 1] || folderPath;
+  // 构建原始树结构
+  interface RawNode {
+    label: string;
+    key: string;
+    children: RawNode[];
+    isDirectFolder: boolean; // 是否直接包含歌曲
+    songCount: number; // 直接包含的歌曲数量
+  }
+
+  const rootNodes: RawNode[] = [];
+  const nodeMap = new Map<string, RawNode>();
+
+  const sortedPaths = allPaths.sort();
+
+  sortedPaths.forEach((fullPath) => {
+    const isWindows = fullPath.includes("\\");
+    const sep = isWindows ? "\\" : "/";
+    const segments = fullPath.split(/[/\\]/).filter(Boolean);
+
+    let currentPath = "";
+    if (fullPath.startsWith(sep)) currentPath = sep;
+
+    segments.forEach((segment, index) => {
+      const prevPath = currentPath;
+      if (index === 0 && !fullPath.startsWith(sep)) {
+        currentPath = segment;
+      } else {
+        currentPath = currentPath.endsWith(sep)
+          ? currentPath + segment
+          : currentPath + sep + segment;
+      }
+
+      if (!nodeMap.has(currentPath)) {
+        const isLast = index === segments.length - 1;
+        const node: RawNode = {
+          label: segment,
+          key: currentPath,
+          children: [],
+          isDirectFolder: isLast,
+          songCount: isLast ? folderData.value[currentPath]?.length || 0 : 0,
+        };
+        nodeMap.set(currentPath, node);
+
+        if (index === 0) {
+          rootNodes.push(node);
+        } else {
+          const parentNode = nodeMap.get(prevPath);
+          if (parentNode) {
+            parentNode.children.push(node);
+          } else {
+            rootNodes.push(node);
+          }
+        }
+      } else if (index === segments.length - 1) {
+        const node = nodeMap.get(currentPath)!;
+        node.isDirectFolder = true;
+        node.songCount = folderData.value[currentPath]?.length || 0;
+      }
+    });
+  });
+
+  // 计算节点及其所有子节点的总歌曲数
+  const nodeTotalCounts = new Map<string, number>();
+  const calcTotalCount = (node: RawNode): number => {
+    let total = node.songCount;
+    node.children.forEach((child) => {
+      total += calcTotalCount(child);
+    });
+    nodeTotalCounts.set(node.key, total);
+    return total;
+  };
+  rootNodes.forEach((root) => calcTotalCount(root));
+
+  // 合并只有一个子节点的节点，并转换为 TreeOption
+  const mergeAndConvert = (nodes: RawNode[]): TreeOption[] => {
+    return nodes.map((node) => {
+      let currentLabel = node.label;
+      let currentKey = node.key;
+      let currentChildren = node.children;
+      let currentDirectFolder = node.isDirectFolder;
+
+      const isWindows = currentKey.includes("\\");
+      const sep = isWindows ? "\\" : "/";
+
+      // 如果只有一个子节点，且当前节点本身没有歌曲，则合并
+      while (currentChildren.length === 1 && !currentDirectFolder) {
+        const child = currentChildren[0];
+        currentLabel += sep + child.label;
+        currentKey = child.key;
+        currentChildren = child.children;
+        currentDirectFolder = child.isDirectFolder;
+      }
+
+      const totalSongs = nodeTotalCounts.get(node.key) || 0;
+
+      return {
+        label: `${currentLabel} (${totalSongs})`,
+        key: currentKey,
+        children: currentChildren.length > 0 ? mergeAndConvert(currentChildren) : undefined,
+      };
+    });
+  };
+
+  const finalTree = mergeAndConvert(rootNodes);
+
+  // 默认选中第一个节点
+  if (!chooseFolder.value && finalTree.length > 0) {
+    chooseFolder.value = finalTree[0].key as string;
+  }
+
+  return finalTree;
+});
+
+// 当前选中文件夹的歌曲（包含子目录）
+const folderSongs = computed<SongType[]>(() => {
+  if (!chooseFolder.value) return [];
+
+  const songs: SongType[] = [];
+  const path = chooseFolder.value;
+
+  // 查找当前目录及所有子目录下的歌曲
+  Object.keys(folderData.value).forEach((k) => {
+    const isWindows = k.includes("\\");
+    const sep = isWindows ? "\\" : "/";
+    if (k === path || k.startsWith(path + sep)) {
+      songs.push(...folderData.value[k]);
+    }
+  });
+
+  return uniqBy(songs, "id");
+});
+
+// 树节点选中回调
+const handleTreeSelect = (keys: string[]) => {
+  if (keys.length > 0) {
+    chooseFolder.value = keys[0];
+  }
 };
 
+// 自定义渲染前缀（图标）
+const renderPrefix = () => {
+  return h(SvgIcon, { name: "Folder", depth: 2 });
+};
+
+// 自定义渲染标签（显示数量）
+const renderLabel = ({ option }: { option: TreeOption }) => {
+  const label = option.label as string;
+  const match = label.match(/(.*) \((\d+)\)$/);
+  if (match) {
+    return h("div", { class: "tree-label" }, [
+      h("span", { class: "name" }, match[1]),
+      h("span", { class: "count" }, ` (${match[2]})`),
+    ]);
+  }
+  return label;
+};
+
+// 从完整路径中提取最后一级目录作为显示名
 // 删除歌曲时，同步更新本地歌曲列表
 const handleRemoveSong = (ids: number[]) => {
   const updatedSongs = localStore.localSongs.filter((song) => !ids.includes(song.id));
   localStore.updateLocalSong(updatedSongs);
 };
 
-// 切换选中文件夹时，让左侧列表自动滚动居中
+// 展开的节点
+const expandedKeys = ref<string[]>([]);
+
+// 初始化时展开第一层
 watch(
-  () => chooseFolder.value,
+  () => treeData.value,
   (val) => {
-    if (!val) return;
-    const folderDom = document.getElementById(val);
-    if (folderDom) folderDom.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (val.length > 0 && expandedKeys.value.length === 0) {
+      expandedKeys.value = val.map((node) => node.key as string);
+    }
   },
+  { immediate: true },
 );
 </script>
 
@@ -119,63 +267,15 @@ watch(
   height: calc((var(--layout-height) - 80) * 1px);
 
   :deep(.folder-list) {
-    width: 260px;
-    .n-scrollbar-content {
-      padding: 0 5px 0 0 !important;
-    }
-  }
-
-  .folder-item {
-    margin-bottom: 8px;
-    border-radius: 8px;
-    border: 2px solid rgba(var(--primary), 0.12);
-    cursor: pointer;
-
-    :deep(.n-card__content) {
-      display: flex;
-      flex-direction: column;
-      padding: 10px 14px;
-    }
-
-    &:last-child {
-      margin-bottom: 24px;
-    }
-
-    .name {
-      display: flex;
-      align-items: center;
-      font-weight: bold;
-      font-size: 15px;
-
-      .n-icon {
-        margin-right: 6px;
+    width: 280px;
+    height: 100%;
+    background-color: var(--surface-container-hex);
+    border-radius: 12px;
+    padding: 10px;
+    .n-tree {
+      .n-tree-node-wrapper {
+        --n-node-border-radius: 6px;
       }
-    }
-
-    .path {
-      font-size: 12px;
-      margin-top: 2px;
-      word-break: break-all;
-    }
-
-    .num {
-      margin-top: 4px;
-      display: flex;
-      align-items: center;
-
-      .n-icon {
-        margin-right: 2px;
-        margin-top: -2px;
-      }
-    }
-
-    &:hover {
-      border-color: rgba(var(--primary), 0.58);
-    }
-
-    &.choose {
-      border-color: rgba(var(--primary), 0.58);
-      background-color: rgba(var(--primary), 0.28);
     }
   }
 

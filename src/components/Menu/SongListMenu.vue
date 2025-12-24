@@ -250,14 +250,14 @@ const openDropdown = (
         {
           key: "download",
           label: "下载歌曲",
-          show: !isLocal && type === "song" && !isDownloading,
+          show: statusStore.isDeveloperMode && !isLocal && type === "song" && !isDownloading,
           props: { onClick: () => openDownloadSong(song) },
           icon: renderIcon("Download"),
         },
         {
           key: "retry-download",
           label: "重试下载",
-          show: isDownloading,
+          show: statusStore.isDeveloperMode && isDownloading,
           props: { onClick: () => downloadManager.retryDownload(song.id) },
           icon: renderIcon("Refresh"),
         },

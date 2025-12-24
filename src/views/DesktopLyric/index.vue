@@ -35,7 +35,7 @@
           >
             <SvgIcon :name="lyricConfig.isLock ? 'LockOpen' : 'Lock'" />
           </div>
-          <div class="menu-btn" @click.stop="sendToMain('closeDesktopLyric')">
+          <div class="menu-btn" @click.stop="sendToMain('close-desktop-lyric')">
             <SvgIcon name="Close" />
           </div>
         </n-flex>
@@ -619,12 +619,12 @@ const sendToMain = (eventName: string, ...args: any[]) => {
 
 // 发送至主窗口
 const sendToMainWin = (eventName: string, ...args: any[]) => {
-  window.electron.ipcRenderer.send("send-to-mainWin", eventName, ...args);
+  window.electron.ipcRenderer.send("send-to-main-win", eventName, ...args);
 };
 
 // 切换桌面歌词锁定状态
 const toggleLyricLock = () => {
-  sendToMain("toogleDesktopLyricLock", !lyricConfig.isLock);
+  sendToMain("toggle-desktop-lyric-lock", !lyricConfig.isLock);
   lyricConfig.isLock = !lyricConfig.isLock;
 };
 
@@ -635,7 +635,7 @@ const toggleLyricLock = () => {
 const tempToggleLyricLock = (isLock: boolean) => {
   // 是否已经解锁
   if (!lyricConfig.isLock) return;
-  window.electron.ipcRenderer.send("toogleDesktopLyricLock", isLock, true);
+  window.electron.ipcRenderer.send("toggle-desktop-lyric-lock", isLock, true);
 };
 
 onMounted(() => {
@@ -666,7 +666,7 @@ onMounted(() => {
     const height = fontSizeToHeight(config.fontSize);
     if (height) pushWindowHeight(height);
     // 是否锁定
-    sendToMain("toogleDesktopLyricLock", config.isLock);
+    sendToMain("toggle-desktop-lyric-lock", config.isLock);
   });
   // 请求歌词数据及配置
   window.electron.ipcRenderer.send("request-desktop-lyric-data");

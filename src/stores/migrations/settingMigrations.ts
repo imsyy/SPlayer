@@ -1,10 +1,11 @@
+import { SongUnlockServer } from "@/core/player/SongManager";
 import type { SettingState } from "../setting";
 import { defaultAMLLDbServer } from "@/utils/meta";
 
 /**
  * 当前设置 Schema 版本号
  */
-export const CURRENT_SETTING_SCHEMA_VERSION = 3;
+export const CURRENT_SETTING_SCHEMA_VERSION = 4;
 
 /**
  * 迁移函数类型
@@ -23,6 +24,16 @@ export const settingMigrations: Record<number, MigrationFunction> = {
       // ttml 同步
       enableTTMLLyric: false,
       amllDbServer: defaultAMLLDbServer,
+    };
+  },
+  4: () => {
+    return {
+      songUnlockServer: [
+        { key: SongUnlockServer.BODIAN, enabled: true },
+        { key: SongUnlockServer.GEQUBAO, enabled: true },
+        { key: SongUnlockServer.NETEASE, enabled: true },
+        { key: SongUnlockServer.KUWO, enabled: false },
+      ],
     };
   },
 };
