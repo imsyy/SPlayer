@@ -103,7 +103,7 @@ import { getUpdateLog, openLink } from "@/utils/helper";
 import { debounce } from "lodash-es";
 import { useStatusStore } from "@/stores";
 import packageJson from "@/../package.json";
-import { isDevBuild, isElectron } from "@/utils/env";
+import { isDevBuild } from "@/utils/env";
 
 const statusStore = useStatusStore();
 
@@ -171,12 +171,15 @@ const oldVersion = computed<UpdateLogType[]>(() => {
 // 检查更新
 const checkUpdate = debounce(
   () => {
-    if (!isElectron) {
-      window.open(packageJson.github + "/releases", "_blank");
-      return;
-    }
-    statusStore.updateCheck = true;
-    window.electron.ipcRenderer.send("check-update", true);
+    // 关闭在线更新，直接跳转到 GitHub releases 页面
+    window.open("https://github.com/imsyy/SPlayer/releases", "_blank");
+    // 原在线更新逻辑（已禁用）
+    // if (!isElectron) {
+    //   window.open(packageJson.github + "/releases", "_blank");
+    //   return;
+    // }
+    // statusStore.updateCheck = true;
+    // window.electron.ipcRenderer.send("check-update", true);
   },
   300,
   { leading: true, trailing: false },

@@ -53,30 +53,36 @@ const handleMarkdownClick = (event: MouseEvent) => {
 
 // 开始更新
 const startDownload = async () => {
-  downloadStatus.value = true;
-  window.electron.ipcRenderer.send("start-download-update");
-  // 监听状态
-  window.electron.ipcRenderer.on("download-progress", (_, progress) => {
-    downloadProgress.value = Number((progress?.percent || 0).toFixed(2));
-  });
-  // 更新错误
-  window.electron.ipcRenderer.on("update-error", (_, error) => {
-    downloadStatus.value = false;
-    console.error("Error updating:", error);
-    window.$message.error("更新过程出现错误");
-  });
-  // 更新完成
-  window.electron.ipcRenderer.on("update-downloaded", () => {
-    emit("close");
-    downloadStatus.value = false;
-    window.$message.success("更新下载完成");
-  });
+  // 关闭在线更新，直接跳转到 GitHub releases 页面
+  emit("close");
+  window.open("https://github.com/imsyy/SPlayer/releases", "_blank");
+  // 原在线更新逻辑（已禁用）
+  // downloadStatus.value = true;
+  // window.electron.ipcRenderer.send("start-download-update");
+  // // 监听状态
+  // window.electron.ipcRenderer.on("download-progress", (_, progress) => {
+  //   downloadProgress.value = Number((progress?.percent || 0).toFixed(2));
+  // });
+  // // 更新错误
+  // window.electron.ipcRenderer.on("update-error", (_, error) => {
+  //   downloadStatus.value = false;
+  //   console.error("Error updating:", error);
+  //   window.$message.error("更新过程出现错误");
+  // });
+  // // 更新完成
+  // window.electron.ipcRenderer.on("update-downloaded", () => {
+  //   emit("close");
+  //   downloadStatus.value = false;
+  //   window.$message.success("更新下载完成");
+  // });
 };
 
 // 前往下载
 const goDownload = () => {
   emit("close");
-  window.open(packageJson.github + "/releases", "_blank");
+  window.open("https://github.com/imsyy/SPlayer/releases", "_blank");
+  // 原逻辑（已禁用）
+  // window.open(packageJson.github + "/releases", "_blank");
 };
 </script>
 
