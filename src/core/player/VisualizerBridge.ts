@@ -15,6 +15,8 @@ export interface AmbientLightConfig {
   lerpDown: number;
   /** 上升插值系数 (0.0-1.0)，越大上升越快 */
   lerpUp: number;
+  /** 最小变化差值 (0-100)，发送到前端的最小变化量，越大越节省性能 */
+  minDiff: number;
 
   // ===== 平滑度 =====
   /** 小变化平滑阈值 (0.0-1.0) */
@@ -61,6 +63,7 @@ export interface AnalyserConfig {
 export interface AnimationConfig {
   lerpUp: number;
   lerpDown: number;
+  minDiff: number;
 }
 
 /** 频谱数据提供者接口 */
@@ -89,6 +92,7 @@ export const DEFAULT_CONFIG: AmbientLightConfig = {
   curveExponent: 1.2,
   lerpDown: 0.05,
   lerpUp: 0.95,
+  minDiff: 15,
 
   // 平滑度
   smallChangeThreshold: 0.1,
@@ -148,6 +152,7 @@ export class AmbientLightCore {
     return {
       lerpUp: this.config.lerpUp,
       lerpDown: this.config.lerpDown,
+      minDiff: this.config.minDiff,
     };
   }
 

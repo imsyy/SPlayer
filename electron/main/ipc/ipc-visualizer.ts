@@ -47,7 +47,7 @@ const initVisualizerIpc = () => {
     visualizerWindow.broadcast("audio-data", data);
   });
 
-  ipcMain.on(IPC_CHANNELS.CONFIG, (_, config: { lerpUp: number; lerpDown: number }) => {
+  ipcMain.on(IPC_CHANNELS.CONFIG, (_, config: { lerpUp: number; lerpDown: number; minDiff: number }) => {
     visualizerWindow.broadcast("visualizer-config", config);
   });
 
