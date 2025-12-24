@@ -1,159 +1,375 @@
-import { useAudioManager } from "./AudioManager";
-import { isElectron } from "@/utils/env";
+/** 氛围灯配置选项 */
+export interface AmbientLightConfig {
+  // ===== 核心灵敏度 =====
+  /** 最小分贝 (-100到0)，过滤弱音，越大过滤越多 */
+  minDecibels: number;
+  /** 最大分贝 (-100到0) */
+  maxDecibels: number;
+  /** 最小阈值 (0.0-1.0)，低于此值归零 */
+  minThreshold: number;
 
-/**
- * 拾音器配置
- * 
- * 🎯 参数说明：
- * - MIN_DECIBELS: 过滤弱音，越大过滤越多（-80 敏感，-60 迟钝）
- * - MIN_THRESHOLD: 最小显示阈值，低于此值归零（0.15 敏感，0.3 迟钝）
- * - CURVE_EXPONENT: 强弱对比度（1.0 平缓，2.0 极端）
- * - SMALL_CHANGE_THRESHOLD: 小变化平滑阈值（0.05 灵敏，0.2 平稳）
- * - LERP_DOWN: 下降速度（0.05 缓慢，0.5 快速）
- * - MIN_DIFF: 最小变化差值，发送到前端的最小变化量（5 灵敏，30 节能）
- */
-const VISUALIZER_CONFIG = {
-  // ===== 核心灵敏度配置 =====
-  /** 最小分贝 (-100到0) - 控制灵敏度，越大过滤越多弱音 */
-  MIN_DECIBELS: -65,
-  /** 最小阈值 (0.0-1.0) - 低于此值归零，过滤小幅度跳动 */
-  MIN_THRESHOLD: 0.1,
-  
-  // ===== 视觉效果配置 =====
-  /** 曲线指数 (1.0-3.0) - 强弱对比度，越大对比越明显 */
-  CURVE_EXPONENT: 1.2,
-  /** 下降速度 (0.0-1.0) - 柱子下降速度，越大越快 */
-  LERP_DOWN: 0.05,
-  
-  // ===== 平滑度配置 =====
-  /** 小变化平滑阈值 (0.0-1.0) - 小于此值的变化会被平滑 */
-  SMALL_CHANGE_THRESHOLD: 0.1,
-  /** 最小变化差值 (0-100) - 发送到前端的最小变化量，越大越节省性能 */
-  MIN_DIFF: 10,
-  
-  // ===== 内部固定参数（通常不需要调整） =====
-  FFT_SIZE: 32,
-  SMOOTHING_TIME_CONSTANT: 0.0,
-  MAX_DECIBELS: -15,
-  BASS_END_RATIO: 0.15,
-  MID_END_RATIO: 0.4,
-  BASS_WEIGHT: 0.7,
-  MID_WEIGHT: 0.3,
-  PEAKS_HISTORY_LENGTH: 30,
-  MIN_REFERENCE_PEAK: 0.35,
-  SMALL_CHANGE_SMOOTHING: 0.25,
-  LERP_UP: 0.95,
+  // ===== 视觉效果 =====
+  /** 曲线指数 (1.0-3.0)，强弱对比度 */
+  curveExponent: number;
+  /** 下降插值系数 (0.0-1.0)，越大下降越快 */
+  lerpDown: number;
+  /** 上升插值系数 (0.0-1.0)，越大上升越快 */
+  lerpUp: number;
+
+  // ===== 平滑度 =====
+  /** 小变化平滑阈值 (0.0-1.0) */
+  smallChangeThreshold: number;
+  /** 小变化平滑系数 (0.0-1.0) */
+  smallChangeSmoothing: number;
+
+  // ===== 峰值检测 =====
+  /** RMS 权重，越高越平滑 */
+  rmsWeight: number;
+  /** Peak 权重，越高对瞬态响应越好 */
+  peakWeight: number;
+
+  // ===== 频谱分析 =====
+  /** FFT 大小 (32, 64, 128...) */
+  fftSize: number;
+  /** 频谱平滑常数 (0.0-1.0) */
+  smoothingTimeConstant: number;
+  /** 低频区域比例 (0.0-1.0) */
+  bassEndRatio: number;
+  /** 中频区域比例 (0.0-1.0) */
+  midEndRatio: number;
+  /** 低频权重 */
+  bassWeight: number;
+  /** 中频权重 */
+  midWeight: number;
+
+  // ===== 归一化 =====
+  /** 峰值历史长度 */
+  peaksHistoryLength: number;
+  /** 最小参考峰值 */
+  minReferencePeak: number;
+}
+
+/** 分析器配置（传递给 AnalyserNode） */
+export interface AnalyserConfig {
+  fftSize: number;
+  smoothingTimeConstant: number;
+  minDecibels: number;
+  maxDecibels: number;
+}
+
+/** 前端动画配置 */
+export interface AnimationConfig {
+  lerpUp: number;
+  lerpDown: number;
+}
+
+/** 频谱数据提供者接口 */
+export interface FrequencyDataProvider {
+  getFrequencyData(): Uint8Array | null;
+  setAnalyserConfig?(config: AnalyserConfig): void;
+}
+
+/** 数据输出回调 */
+export type DataOutputCallback = (value: number) => void;
+
+/** 配置输出回调 */
+export type ConfigOutputCallback = (config: AnimationConfig) => void;
+
+// ============================================================================
+// 默认配置
+// ============================================================================
+
+export const DEFAULT_CONFIG: AmbientLightConfig = {
+  // 核心灵敏度
+  minDecibels: -65,
+  maxDecibels: -15,
+  minThreshold: 0.1,
+
+  // 视觉效果
+  curveExponent: 1.2,
+  lerpDown: 0.05,
+  lerpUp: 0.95,
+
+  // 平滑度
+  smallChangeThreshold: 0.1,
+  smallChangeSmoothing: 0.25,
+
+  // 峰值检测
+  rmsWeight: 0.5,
+  peakWeight: 0.5,
+
+  // 频谱分析
+  fftSize: 32,
+  smoothingTimeConstant: 0.2,
+  bassEndRatio: 0.15,
+  midEndRatio: 0.4,
+  bassWeight: 0.7,
+  midWeight: 0.3,
+
+  // 归一化
+  peaksHistoryLength: 30,
+  minReferencePeak: 0.35,
 };
 
 /**
- * 拾音器桥接类
- * 负责从 AudioManager 获取频谱数据并发送到拾音器窗口
+ * 氛围灯核心算法
  */
-class VisualizerBridge {
-  private animationId: number | null = null;
-  private audioManager = useAudioManager();
+export class AmbientLightCore {
+  private config: AmbientLightConfig;
   private recentPeaks: number[] = [];
-  private lastSentValue = 0;
+  private lastValue = 0;
 
-  /** 开始音频分析 */
-  start() {
-    if (this.animationId || !isElectron) return;
+  constructor(config: Partial<AmbientLightConfig> = {}) {
+    this.config = { ...DEFAULT_CONFIG, ...config };
+  }
+
+  /** 更新配置 */
+  updateConfig(config: Partial<AmbientLightConfig>): void {
+    this.config = { ...this.config, ...config };
+  }
+
+  /** 获取当前配置 */
+  getConfig(): Readonly<AmbientLightConfig> {
+    return this.config;
+  }
+
+  /** 获取分析器配置 */
+  getAnalyserConfig(): AnalyserConfig {
+    return {
+      fftSize: this.config.fftSize,
+      smoothingTimeConstant: this.config.smoothingTimeConstant,
+      minDecibels: this.config.minDecibels,
+      maxDecibels: this.config.maxDecibels,
+    };
+  }
+
+  /** 获取动画配置 */
+  getAnimationConfig(): AnimationConfig {
+    return {
+      lerpUp: this.config.lerpUp,
+      lerpDown: this.config.lerpDown,
+    };
+  }
+
+  /** 重置状态 */
+  reset(): void {
     this.recentPeaks = [];
-    this.lastSentValue = 0;
-    
-    // 应用配置到 AudioManager
-    this.audioManager.setVisualizerConfig({
-      fftSize: VISUALIZER_CONFIG.FFT_SIZE,
-      smoothingTimeConstant: VISUALIZER_CONFIG.SMOOTHING_TIME_CONSTANT,
-      minDecibels: VISUALIZER_CONFIG.MIN_DECIBELS,
-      maxDecibels: VISUALIZER_CONFIG.MAX_DECIBELS,
-    });
-    
-    // 发送前端动画配置
-    this.sendFrontendConfig();
+    this.lastValue = 0;
+  }
+
+  /**
+   * 处理频谱数据，返回 0-1 的输出值
+   * @param frequencyData 频谱数据 (Uint8Array)
+   * @returns 处理后的值 (0-1)，null 表示无效数据
+   */
+  process(frequencyData: Uint8Array | null): number | null {
+    if (!frequencyData?.length) return null;
+
+    const { bassEndRatio, midEndRatio, bassWeight, midWeight, rmsWeight, peakWeight, peaksHistoryLength, minReferencePeak } = this.config;
+
+    const bassEnd = Math.floor(frequencyData.length * bassEndRatio);
+    const midEnd = Math.floor(frequencyData.length * midEndRatio);
+
+    // 提取频段数据
+    const bassData = Array.from(frequencyData.slice(0, bassEnd));
+    const midData = Array.from(frequencyData.slice(bassEnd, midEnd));
+
+    // 计算 RMS 和 Peak
+    const bassRMS = this.calculateRMS(bassData) / 255;
+    const midRMS = this.calculateRMS(midData) / 255;
+    const bassPeak = Math.max(0, ...bassData) / 255;
+    const midPeak = Math.max(0, ...midData) / 255;
+
+    // 混合算法
+    const bassValue = bassRMS * rmsWeight + bassPeak * peakWeight;
+    const midValue = midRMS * rmsWeight + midPeak * peakWeight;
+    const rawValue = bassValue * bassWeight + midValue * midWeight;
+
+    // 动态归一化
+    this.recentPeaks.push(rawValue);
+    if (this.recentPeaks.length > peaksHistoryLength) {
+      this.recentPeaks.shift();
+    }
+    const maxPeak = Math.max(...this.recentPeaks, minReferencePeak);
+    const normalized = rawValue / maxPeak;
+
+    // 后处理
+    return this.postProcess(normalized);
+  }
+
+  /** 计算 RMS（均方根） */
+  private calculateRMS(data: number[]): number {
+    if (data.length === 0) return 0;
+    const sumOfSquares = data.reduce((sum, val) => sum + val * val, 0);
+    return Math.sqrt(sumOfSquares / data.length);
+  }
+
+  /** 后处理：曲线、阈值、平滑 */
+  private postProcess(normalized: number): number {
+    const { curveExponent, minThreshold, smallChangeThreshold, smallChangeSmoothing } = this.config;
+
+    // 应用曲线
+    const amplified = Math.pow(normalized, curveExponent);
+    const clamped = Math.min(amplified, 0.95);
+
+    // 应用阈值
+    const thresholded = clamped < minThreshold ? 0 : clamped;
+
+    // 平滑小变化
+    const changeMagnitude = Math.abs(thresholded - this.lastValue);
+    if (changeMagnitude > 0 && changeMagnitude < smallChangeThreshold && thresholded > 0 && this.lastValue > 0) {
+      this.lastValue = this.lastValue * (1 - smallChangeSmoothing) + thresholded * smallChangeSmoothing;
+    } else {
+      this.lastValue = thresholded;
+    }
+
+    return this.lastValue;
+  }
+}
+
+// ============================================================================
+// 桥接类（连接数据源和输出）
+// ============================================================================
+
+/**
+ * 氛围灯桥接器
+ * 负责调度：获取数据 → 处理 → 输出
+ */
+export class AmbientLightBridge {
+  private core: AmbientLightCore;
+  private dataProvider: FrequencyDataProvider;
+  private onData: DataOutputCallback;
+  private onConfig?: ConfigOutputCallback;
+  private animationId: number | null = null;
+  private isRunning = false;
+
+  constructor(options: {
+    dataProvider: FrequencyDataProvider;
+    onData: DataOutputCallback;
+    onConfig?: ConfigOutputCallback;
+    config?: Partial<AmbientLightConfig>;
+  }) {
+    this.core = new AmbientLightCore(options.config);
+    this.dataProvider = options.dataProvider;
+    this.onData = options.onData;
+    this.onConfig = options.onConfig;
+  }
+
+  /** 获取核心实例（用于配置调整） */
+  getCore(): AmbientLightCore {
+    return this.core;
+  }
+
+  /** 是否正在运行 */
+  get running(): boolean {
+    return this.isRunning;
+  }
+
+  /** 启动 */
+  start(): void {
+    if (this.isRunning) return;
+    this.isRunning = true;
+
+    // 重置状态
+    this.core.reset();
+
+    // 配置分析器
+    this.dataProvider.setAnalyserConfig?.(this.core.getAnalyserConfig());
+
+    // 发送动画配置
+    this.onConfig?.(this.core.getAnimationConfig());
+
+    // 启动更新循环
     this.update();
   }
 
-  /** 发送前端配置 */
-  private sendFrontendConfig() {
-    window.electron?.ipcRenderer?.send("visualizer-config", {
-      lerpUp: VISUALIZER_CONFIG.LERP_UP,
-      lerpDown: VISUALIZER_CONFIG.LERP_DOWN,
-      minDiff: VISUALIZER_CONFIG.MIN_DIFF,
-    });
-  }
-
-  /** 同步配置（供外部调用） */
-  syncConfig() {
-    // 延迟发送，确保拾音器窗口已经准备好
-    setTimeout(() => this.sendFrontendConfig(), 100);
-  }
-
-  /** 停止音频分析 */
-  stop() {
-    if (this.animationId) {
+  /** 停止 */
+  stop(): void {
+    this.isRunning = false;
+    if (this.animationId !== null) {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
     }
   }
 
-  /** 更新循环 */
-  private update = () => {
-    const peak = this.calculatePeak();
-    if (peak !== null) {
-      window.electron?.ipcRenderer?.send("audio-data", peak);
-    }
-    this.animationId = requestAnimationFrame(this.update);
-  };
-
-  /** 计算音频峰值 */
-  private calculatePeak(): number | null {
-    const dataArray = this.audioManager.getVisualizerFrequencyData();
-    if (!dataArray?.length) return null;
-
-    const { BASS_END_RATIO, MID_END_RATIO, BASS_WEIGHT, MID_WEIGHT, PEAKS_HISTORY_LENGTH, MIN_REFERENCE_PEAK } = VISUALIZER_CONFIG;
-    const bassEnd = Math.floor(dataArray.length * BASS_END_RATIO);
-    const midEnd = Math.floor(dataArray.length * MID_END_RATIO);
-
-    // 计算低频和中频峰值
-    const bassPeak = Math.max(...Array.from(dataArray.slice(0, bassEnd)));
-    const midPeak = Math.max(...Array.from(dataArray.slice(bassEnd, midEnd)));
-    const rawValue = (bassPeak * BASS_WEIGHT + midPeak * MID_WEIGHT) / 255;
-
-    // 更新峰值历史并归一化
-    this.recentPeaks.push(rawValue);
-    if (this.recentPeaks.length > PEAKS_HISTORY_LENGTH) this.recentPeaks.shift();
-    const normalized = rawValue / Math.max(...this.recentPeaks, MIN_REFERENCE_PEAK);
-
-    // 应用曲线和阈值
-    return this.applyProcessing(normalized);
+  /** 同步配置到输出端 */
+  syncConfig(): void {
+    this.onConfig?.(this.core.getAnimationConfig());
   }
 
-  /** 应用曲线和阈值处理 */
-  private applyProcessing(normalized: number): number {
-    const { CURVE_EXPONENT, MIN_THRESHOLD, SMALL_CHANGE_THRESHOLD, SMALL_CHANGE_SMOOTHING } = VISUALIZER_CONFIG;
-    const amplified = Math.pow(normalized, CURVE_EXPONENT);
-    const clamped = Math.min(amplified, 0.95);
-    const thresholded = clamped < MIN_THRESHOLD ? 0 : clamped;
-    
-    const changeMagnitude = Math.abs(thresholded - this.lastSentValue);
-    
-    // 小变化平滑处理，大变化或归零时直接使用新值
-    if (changeMagnitude > 0 && changeMagnitude < SMALL_CHANGE_THRESHOLD && thresholded > 0 && this.lastSentValue > 0) {
-      this.lastSentValue = this.lastSentValue * (1 - SMALL_CHANGE_SMOOTHING) + thresholded * SMALL_CHANGE_SMOOTHING;
-    } else {
-      this.lastSentValue = thresholded;
+  /** 更新循环 */
+  private update = (): void => {
+    if (!this.isRunning) return;
+
+    const data = this.dataProvider.getFrequencyData();
+    const value = this.core.process(data);
+
+    if (value !== null) {
+      this.onData(value);
     }
-    
-    return this.lastSentValue;
+
+    this.animationId = requestAnimationFrame(this.update);
+  };
+}
+
+// ============================================================================
+// 项目适配层（SPlayer 专用）
+// ============================================================================
+
+import { useAudioManager } from "./AudioManager";
+import { isElectron } from "@/utils/env";
+
+/** SPlayer 适配的数据提供者 */
+class SPlayerDataProvider implements FrequencyDataProvider {
+  private audioManager = useAudioManager();
+
+  getFrequencyData(): Uint8Array | null {
+    return this.audioManager.getVisualizerFrequencyData();
+  }
+
+  setAnalyserConfig(config: AnalyserConfig): void {
+    this.audioManager.setVisualizerConfig(config);
   }
 }
 
-/** 单例工厂 */
+/** SPlayer 适配的桥接器 */
+class SPlayerVisualizerBridge {
+  private bridge: AmbientLightBridge | null = null;
+
+  start(): void {
+    if (!isElectron || this.bridge?.running) return;
+
+    this.bridge = new AmbientLightBridge({
+      dataProvider: new SPlayerDataProvider(),
+      onData: (value) => {
+        window.electron?.ipcRenderer?.send("audio-data", value);
+      },
+      onConfig: (config) => {
+        window.electron?.ipcRenderer?.send("visualizer-config", config);
+      },
+    });
+
+    this.bridge.start();
+  }
+
+  stop(): void {
+    this.bridge?.stop();
+  }
+
+  syncConfig(): void {
+    setTimeout(() => this.bridge?.syncConfig(), 100);
+  }
+
+  getCore(): AmbientLightCore | undefined {
+    return this.bridge?.getCore();
+  }
+}
+
+/** 单例工厂（兼容原有 API） */
 export const useVisualizerBridge = (() => {
-  let instance: VisualizerBridge | null = null;
-  return () => (instance ??= new VisualizerBridge());
+  let instance: SPlayerVisualizerBridge | null = null;
+  return () => (instance ??= new SPlayerVisualizerBridge());
 })();
 
-/** 导出配置供外部查看 */
-export { VISUALIZER_CONFIG };
+/** 导出配置（兼容原有 API） */
+export const VISUALIZER_CONFIG = DEFAULT_CONFIG;

@@ -1,10 +1,10 @@
 <template>
   <div class="setting-type">
     <div class="set-list">
-      <n-h3 prefix="bar"> 拾音器设置 </n-h3>
+      <n-h3 prefix="bar"> 氛围灯设置 </n-h3>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">开启拾音器</n-text>
+          <n-text class="name">开启氛围灯</n-text>
           <n-text class="tip" :depth="3"> 在主界面左右两侧显示跳动的实体能量条 </n-text>
         </div>
         <n-switch v-model:value="statusStore.showVisualizer" :round="false" class="set" />
@@ -13,8 +13,8 @@
       <n-collapse-transition :show="statusStore.showVisualizer">
         <n-card class="set-item">
           <div class="label">
-            <n-text class="name">拾音器颜色</n-text>
-            <n-text class="tip" :depth="3"> 设置拾音器的显示颜色，选择“跟随主题”将自动适配界面色调 </n-text>
+            <n-text class="name">氛围灯颜色</n-text>
+            <n-text class="tip" :depth="3"> 设置氛围灯的显示颜色，选择“跟随主题”将自动适配界面色调 </n-text>
           </div>
           <n-flex align="center" class="set">
             <n-select
@@ -44,7 +44,7 @@
         <n-card class="set-item">
           <div class="label">
             <n-text class="name">透明度</n-text>
-            <n-text class="tip" :depth="3"> 调整拾音器的不透明程度 </n-text>
+            <n-text class="tip" :depth="3"> 调整氛围灯的不透明程度 </n-text>
           </div>
           <n-slider
             v-model:value="settingStore.visualizerOpacity"
@@ -57,8 +57,8 @@
 
         <n-card class="set-item">
           <div class="label">
-            <n-text class="name">拾音器宽度</n-text>
-            <n-text class="tip" :depth="3"> 调整拾音器的显示宽度（像素） </n-text>
+            <n-text class="name">氛围灯宽度</n-text>
+            <n-text class="tip" :depth="3"> 调整氛围灯的显示宽度（像素） </n-text>
           </div>
           <n-slider
             v-model:value="settingStore.visualizerWidth"
@@ -71,8 +71,8 @@
 
         <n-card class="set-item">
           <div class="label">
-            <n-text class="name">拾音器形状</n-text>
-            <n-text class="tip" :depth="3"> 设置拾音器的显示形状 </n-text>
+            <n-text class="name">氛围灯形状</n-text>
+            <n-text class="tip" :depth="3"> 设置氛围灯的显示形状 </n-text>
           </div>
           <n-select
             v-model:value="settingStore.visualizerShape"
@@ -89,7 +89,7 @@
         <n-card class="set-item">
           <div class="label">
             <n-text class="name">顶部渐变</n-text>
-            <n-text class="tip" :depth="3"> 拾音器顶部显示渐变淡出效果 </n-text>
+            <n-text class="tip" :depth="3"> 氛围灯顶部显示渐变淡出效果 </n-text>
           </div>
           <n-switch v-model:value="settingStore.visualizerGradient" :round="false" class="set" />
         </n-card>
@@ -97,7 +97,7 @@
         <n-card class="set-item">
           <div class="label">
             <n-text class="name">显示边框</n-text>
-            <n-text class="tip" :depth="3"> 为拾音器添加边框效果 </n-text>
+            <n-text class="tip" :depth="3"> 为氛围灯添加边框效果 </n-text>
           </div>
           <n-switch v-model:value="settingStore.visualizerBorder" :round="false" class="set" />
         </n-card>
@@ -105,7 +105,7 @@
         <n-card class="set-item">
           <div class="label">
             <n-text class="name">跳动方向</n-text>
-            <n-text class="tip" :depth="3"> 设置拾音器的跳动方向 </n-text>
+            <n-text class="tip" :depth="3"> 设置氛围灯的跳动方向 </n-text>
           </div>
           <n-select
             v-model:value="settingStore.visualizerDirection"
@@ -121,7 +121,7 @@
         <n-card class="set-item">
           <div class="label">
             <n-text class="name">恢复默认配置</n-text>
-            <n-text class="tip" :depth="3">恢复拾音器的所有设置为默认值</n-text>
+            <n-text class="tip" :depth="3">恢复氛围灯的所有设置为默认值</n-text>
           </div>
           <n-button type="primary" @click="resetToDefault">
             恢复默认
@@ -152,7 +152,7 @@ const handleSelectChange = (val: string) => {
 const resetToDefault = () => {
   window.$dialog.warning({
     title: "恢复默认配置",
-    content: "确定将拾音器的所有设置恢复为默认值吗？",
+    content: "确定将氛围灯的所有设置恢复为默认值吗？",
     positiveText: "确定",
     negativeText: "取消",
     onPositiveClick: () => {

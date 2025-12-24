@@ -260,19 +260,19 @@ export interface SettingState {
   playerFollowCoverColor: boolean;
   /** 进度条悬浮时显示歌词 */
   progressLyricShow: boolean;
-  /** 拾音器颜色 */
+  /** 氛围灯颜色 */
   visualizerColor: string;
-  /** 拾音器透明度 */
+  /** 氛围灯透明度 */
   visualizerOpacity: number;
-  /** 拾音器宽度 */
+  /** 氛围灯宽度 */
   visualizerWidth: number;
-  /** 拾音器形状 */
+  /** 氛围灯形状 */
   visualizerShape: "rounded" | "rectangle" | "pill";
-  /** 拾音器顶部渐变 */
+  /** 氛围灯顶部渐变 */
   visualizerGradient: boolean;
-  /** 拾音器边框 */
+  /** 氛围灯边框 */
   visualizerBorder: boolean;
-  /** 拾音器跳动方向 */
+  /** 氛围灯跳动方向 */
   visualizerDirection: "up" | "center";
 }
 

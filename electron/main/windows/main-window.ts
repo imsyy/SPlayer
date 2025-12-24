@@ -130,7 +130,7 @@ class MainWindow {
       show: false,
     });
     if (!this.win) return null;
-    // 设置主窗口引用给拾音器
+    // 设置主窗口引用给氛围灯
     visualizerWindow.setMainWin(this.win);
     // 加载地址
     this.win.loadURL(this.winURL);

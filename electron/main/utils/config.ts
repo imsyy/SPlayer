@@ -57,7 +57,7 @@ export const lyricWinUrl =
     : `http://localhost:${port}/#/desktop-lyric`;
 
 /**
- * 拾音器窗口加载地址（使用轻量级 HTML 页面）
+ * 氛围灯窗口加载地址（使用轻量级 HTML 页面）
  * @returns string
  */
 export const visualizerWinUrl =

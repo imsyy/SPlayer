@@ -41,7 +41,7 @@ class AudioManager {
   private gainNode: GainNode | null = null;
   /** 分析节点 (用于 PlayerSpectrum) */
   private analyserNode: AnalyserNode | null = null;
-  /** 拾音器分析节点 (用于 VisualizerBridge) */
+  /** 氛围灯分析节点 (用于 VisualizerBridge) */
   private visualizerAnalyserNode: AnalyserNode | null = null;
   /** 均衡器节点数组 */
   private filters: BiquadFilterNode[] = [];
@@ -85,7 +85,7 @@ class AudioManager {
       // 配置分析器 (用于 PlayerSpectrum)
       this.analyserNode.fftSize = 512;
 
-      // 配置拾音器分析器 (用于 VisualizerBridge)
+      // 配置氛围灯分析器 (用于 VisualizerBridge)
       // 注意：实际配置由 VisualizerBridge.ts 中的 VISUALIZER_CONFIG 统一管理
       // 这里只是初始化默认值，会在 VisualizerBridge.start() 时被覆盖
       this.visualizerAnalyserNode.fftSize = 64;
@@ -115,7 +115,7 @@ class AudioManager {
       this.analyserNode.connect(this.gainNode);
       this.gainNode.connect(this.audioCtx.destination);
 
-      // 拾音器分析器并联连接（不影响音频输出）
+      // 氛围灯分析器并联连接（不影响音频输出）
       this.gainNode.connect(this.visualizerAnalyserNode);
 
       // 同步音量
@@ -359,7 +359,7 @@ class AudioManager {
   }
 
   /**
-   * 获取拾音器频谱数据 (用于 VisualizerBridge)
+   * 获取氛围灯频谱数据 (用于 VisualizerBridge)
    * @returns Uint8Array 频谱数据
    */
   public getVisualizerFrequencyData(): Uint8Array {
@@ -370,7 +370,7 @@ class AudioManager {
   }
 
   /**
-   * 设置拾音器分析器配置
+   * 设置氛围灯分析器配置
    * @param config 配置对象
    */
   public setVisualizerConfig(config: {

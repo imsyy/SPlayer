@@ -3,8 +3,8 @@ import { createWindow } from "./index";
 import { visualizerWinUrl } from "../utils/config";
 
 /**
- * 拾音器窗口管理类
- * 负责创建、管理左右两侧的拾音器窗口
+ * 氛围灯窗口管理类
+ * 负责创建、管理左右两侧的氛围灯窗口
  */
 class VisualizerWindow {
   private leftWin: BrowserWindow | null = null;
@@ -40,7 +40,7 @@ class VisualizerWindow {
     this.withWindow(this.rightWin, action);
   }
 
-  /** 创建拾音器窗口 */
+  /** 创建氛围灯窗口 */
   create(side: "left" | "right"): BrowserWindow | null {
     const targetWin = side === "left" ? this.leftWin : this.rightWin;
     
@@ -79,7 +79,7 @@ class VisualizerWindow {
     return win;
   }
 
-  /** 关闭所有拾音器窗口 */
+  /** 关闭所有氛围灯窗口 */
   closeAll() {
     this.forEachWindow(w => w.close());
     this.leftWin = null;
@@ -114,7 +114,7 @@ class VisualizerWindow {
     this.forEachWindow(w => w.moveTop());
   }
 
-  /** 向所有拾音器窗口广播消息 */
+  /** 向所有氛围灯窗口广播消息 */
   broadcast(channel: string, data: unknown) {
     this.forEachWindow(w => w.webContents.send(channel, data));
   }
@@ -150,7 +150,7 @@ class VisualizerWindow {
     win.setSize(width, height);
   }
 
-  /** 更新拾音器宽度 */
+  /** 更新氛围灯宽度 */
   updateWidth(width: number) {
     this.currentWidth = width;
     this.updatePosition();

@@ -4,8 +4,8 @@ import { useVisualizerBridge } from "@/core/player/VisualizerBridge";
 import { isElectron } from "@/utils/env";
 
 /**
- * 拾音器 Composable
- * 管理拾音器的外观同步、生命周期和 IPC 通信
+ * 氛围灯 Composable
+ * 管理氛围灯的外观同步、生命周期和 IPC 通信
  */
 export function useVisualizer() {
   if (!isElectron) return;
@@ -43,7 +43,7 @@ export function useVisualizer() {
     window.electron.ipcRenderer.send("update-visualizer-border", settingStore.visualizerBorder);
     window.electron.ipcRenderer.send("update-visualizer-direction", settingStore.visualizerDirection);
     
-    // 同步拾音器配置（来自 VisualizerBridge）
+    // 同步氛围灯配置（来自 VisualizerBridge）
     visualizerBridge.syncConfig();
   };
 

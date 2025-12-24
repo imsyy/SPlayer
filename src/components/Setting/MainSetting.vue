@@ -37,7 +37,7 @@
         <PlaySetting v-else-if="activeKey === 'play'" />
         <!-- 歌词 -->
         <LyricsSetting v-else-if="activeKey === 'lyrics'" :scroll-to="props.scrollTo" />
-        <!-- 拾音器 -->
+        <!-- 氛围灯 -->
         <VisualizerSetting v-else-if="activeKey === 'visualizer'" />
         <!-- 快捷键 -->
         <KeyboardSetting v-else-if="activeKey === 'keyboard'" />
@@ -88,7 +88,7 @@ const menuOptions: MenuOption[] = [
   },
   {
     key: "visualizer",
-    label: "拾音器设置",
+    label: "氛围灯设置",
     show: isElectron,
     icon: renderIcon("Eq"),
   },

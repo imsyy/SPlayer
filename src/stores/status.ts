@@ -68,7 +68,7 @@ interface StatusState {
   listSort: SortType;
   /** 桌面歌词 */
   showDesktopLyric: boolean;
-  /** 拾音器可视化 */
+  /** 氛围灯可视化 */
   showVisualizer: boolean;
   /** 播放器评论 */
   showPlayerComment: boolean;
