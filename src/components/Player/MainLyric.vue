@@ -1,5 +1,6 @@
 <template>
   <div
+    :key="`lyric-${musicStore.playSong.id}`"
     :style="{
       '--lrc-size': settingStore.lyricFontSize + 'px',
       '--lrc-tran-size': settingStore.lyricTranFontSize + 'px',
@@ -18,7 +19,7 @@
       'lyric',
       settingStore.playerType,
       settingStore.lyricsPosition,
-      { pure: statusStore.pureLyricMode },
+      { pure: statusStore.pureLyricMode, 'yrc-anim': settingStore.showYrcAnimation },
     ]"
     @mouseenter="lrcMouseStatus = settingStore.lrcMousePause ? true : false"
     @mouseleave="lrcAllLeave"
@@ -53,9 +54,7 @@
                   {
                     // on: statusStore.lyricIndex === index,
                     // 当播放时间大于等于当前歌词的开始时间
-                    on:
-                      (playSeek >= item.startTime && playSeek < item.endTime) ||
-                      statusStore.lyricIndex === index,
+                    on: isYrcLineOn(item, index),
                     'is-bg': item.isBG,
                     'is-duet': item.isDuet,
                   },
@@ -77,21 +76,11 @@
                     :key="textIndex"
                     :class="{
                       'content-text': true,
-                      'content-long':
-                        settingStore.showYrcLongEffect &&
-                        text.endTime - text.startTime >= 1500 &&
-                        playSeek <= text.endTime,
                       'end-with-space': text.word.endsWith(' ') || text.startTime === 0,
                     }"
+                    :style="getYrcVars(text, index)"
                   >
-                    <span class="word" :lang="getLyricLanguage(text.word)">
-                      {{ text.word }}
-                    </span>
-                    <span
-                      class="filler"
-                      :style="getYrcStyle(text, index)"
-                      :lang="getLyricLanguage(text.word)"
-                    >
+                    <span class="yrc-word" :lang="getLyricLanguage(text.word)">
                       {{ text.word }}
                     </span>
                   </div>
@@ -222,71 +211,96 @@ const lyricsScroll = (index: number) => {
 };
 
 /**
- * 不活跃的普通歌词动画样式
+ * CSS 变量类型（避免随意使用 any）
  */
-const INACTIVE_NO_ANIMATION_STYLE = { opacity: 0 } as const;
+type CssVars = Record<`--${string}`, string>;
+
+const YRC_DIM_ALPHA = 0.3;
+const YRC_LINE_FADE_MS = 250;
+
+/** 逐字歌词行数据类型 */
+type YrcLineLike = { startTime: number; endTime: number };
+
+/** 逐字歌词行淡出索引 */
+const yrcFadingLineIndex = ref<number | null>(null);
+/** 逐字歌词行淡出时间 */
+const yrcFadingUntilAt = ref<number>(0);
+
+/**
+ * 获取逐字歌词行淡出因子
+ * @param index 歌词行索引
+ * @returns 淡出因子
+ */
+const getYrcFadeFactor = (index: number): number => {
+  if (yrcFadingLineIndex.value !== index) return 1;
+  const now = Date.now();
+  if (now >= yrcFadingUntilAt.value) return 1;
+  const remain = yrcFadingUntilAt.value - now;
+  return Math.min(Math.max(remain / YRC_LINE_FADE_MS, 0), 1);
+};
 
 /**
  * 逐字歌词样式计算
  * @param wordData 逐字歌词数据
- * @param lyricIndex 歌词索引
+ * @param lyricIndex 歌词行索引
  * @returns 逐字歌词动画样式
  */
-const getYrcStyle = (wordData: LyricWord, lyricIndex: number) => {
-  // 获取当前歌词行数据
-  const currentLine = musicStore.songLyric.yrcData[lyricIndex];
+const getYrcVars = (wordData: LyricWord, lyricIndex: number): CssVars => {
   // 缓存 playSeek 值，避免多次访问响应式变量
   const currentSeek = playSeek.value;
+  const fadeFactor = getYrcFadeFactor(lyricIndex);
 
-  // 判断当前行是否处于激活状态
-  const isLineActive =
-    (currentSeek >= currentLine.startTime && currentSeek < currentLine.endTime) ||
-    statusStore.lyricIndex === lyricIndex;
+  // 只对激活行计算逐字变量：非激活行走纯 CSS（避免无谓计算）
+  const currentLine = musicStore.songLyric.yrcData[lyricIndex];
+  if (!isYrcLineOn(currentLine, lyricIndex)) return {};
 
-  // 如果当前歌词行不是激活状态，返回固定样式，避免不必要的计算
-  if (!isLineActive) {
-    if (settingStore.showYrcAnimation) {
-      // 判断单词是否已经唱过：已唱过保持填充状态(0%)，未唱到保持未填充状态(100%)
-      const hasPlayed = currentSeek >= wordData.endTime;
-      return {
-        WebkitMaskPositionX: hasPlayed ? "0%" : "100%",
-      };
-    } else {
-      return INACTIVE_NO_ANIMATION_STYLE;
-    }
+  // 无动画模式：未唱到的词保持暗色，唱到后整词高亮
+  if (!settingStore.showYrcAnimation) {
+    const wordOpacity =
+      statusStore.playLoading === false && wordData.startTime > currentSeek ? YRC_DIM_ALPHA : 1;
+    return { "--yrc-opacity": `${wordOpacity}` };
   }
 
-  // 激活状态的样式计算
-  if (settingStore.showYrcAnimation) {
-    // 如果播放状态不是加载中，且当前单词的时间加上持续时间减去播放进度大于 0
-    if (statusStore.playLoading === false && wordData.endTime - currentSeek > 0) {
-      return {
-        transitionDuration: `0s, 0s, 0.35s`,
-        transitionDelay: `0ms`,
-        WebkitMaskPositionX: `${
-          100 -
-          Math.max(
-            ((currentSeek - wordData.startTime) / (wordData.endTime - wordData.startTime)) * 100,
-            0,
-          )
-        }%`,
-      };
-    }
-    // 预计算时间差，避免重复计算
-    const timeDiff = wordData.startTime - currentSeek;
-    return {
-      transitionDuration: `${wordData.endTime - wordData.startTime}ms, ${(wordData.endTime - wordData.startTime) * 0.8}ms, 0.35s`,
-      transitionDelay: `${timeDiff}ms, ${timeDiff + (wordData.endTime - wordData.startTime) * 0.5}ms, 0ms`,
-    };
-  } else {
-    // 无动画模式：根据单词时间判断透明度
-    return statusStore.playLoading === false && wordData.startTime >= currentSeek
-      ? { opacity: 0 }
-      : { opacity: 1 };
-  }
+  const duration = wordData.endTime - wordData.startTime;
+  const safeDuration = Math.max(duration, 1);
+  const rawProgress = (currentSeek - wordData.startTime) / safeDuration;
+  const progress = Math.min(Math.max(rawProgress, 0), 1);
+  const maskX = `${(1 - progress) * 100}%`;
+
+  // 未唱到的词：保持统一暗色，避免出现半亮半暗的“虚影边”
+  const hasStarted = currentSeek >= wordData.startTime;
+  // 注意：激活行会启用 mask，mask alpha 会与元素 opacity 相乘；
+  // 为避免未开始词在激活行变得“更淡”（0.3 * 0.3 = 0.09），动画模式下元素 opacity 固定为 1，
+  // 明暗仅由 mask alpha 控制。
+  const brightAlpha = hasStarted ? YRC_DIM_ALPHA + (1 - YRC_DIM_ALPHA) * fadeFactor : YRC_DIM_ALPHA;
+  const darkAlpha = YRC_DIM_ALPHA;
+
+  return {
+    "--yrc-mask-x": maskX,
+    "--yrc-opacity": "1",
+    "--yrc-bright-alpha": `${brightAlpha}`,
+    "--yrc-dark-alpha": `${darkAlpha}`,
+  };
 };
 
-// 进度跳转
+/**
+ * 判断逐字歌词行是否激活
+ * @param line 逐字歌词行数据
+ * @param index 歌词行索引
+ * @returns 是否激活
+ */
+const isYrcLineOn = (line: YrcLineLike, index: number): boolean => {
+  const currentSeek = playSeek.value;
+  const isInRange = currentSeek >= line.startTime && currentSeek < line.endTime;
+  const isCurrent = statusStore.lyricIndex === index;
+  const isFading = yrcFadingLineIndex.value === index && Date.now() < yrcFadingUntilAt.value;
+  return isInRange || isCurrent || isFading;
+};
+
+/**
+ * 进度跳转
+ * @param time 时间
+ */
 const jumpSeek = (time: number) => {
   if (!time) return;
   lrcMouseStatus.value = false;
@@ -298,7 +312,14 @@ const jumpSeek = (time: number) => {
 // 监听歌词滚动
 watch(
   () => statusStore.lyricIndex,
-  (val) => lyricsScroll(val),
+  (val, oldVal) => {
+    lyricsScroll(val);
+    // 行切换时，让上一行做一次短暂淡出（高亮不会瞬间消失）
+    if (typeof oldVal === "number" && oldVal >= 0 && oldVal !== val) {
+      yrcFadingLineIndex.value = oldVal;
+      yrcFadingUntilAt.value = Date.now() + YRC_LINE_FADE_MS;
+    }
+  },
 );
 
 onMounted(() => {
@@ -397,53 +418,32 @@ onBeforeUnmount(() => {
       .content-text {
         position: relative;
         display: inline-block;
+        overflow: visible; /* 允许字形下伸部（j/g/y 等）正常绘制 */
         overflow-wrap: anywhere; /* 新增：逐字歌词单词支持换行 */
         word-break: break-word; /* 新增：单词内换行 */
         white-space: normal; /* 新增：确保逐字歌词换行 */
-        .word {
-          opacity: 0.3;
+        .yrc-word {
           display: inline-block;
+          box-sizing: border-box;
+          /* 给字形上下留一点空间，避免下伸部在某些渲染条件下被裁 */
+          padding-block: 0.2em;
+          margin-block: -0.2em;
+          /* 非激活行/未唱到 */
+          opacity: var(--yrc-opacity, 0.3);
         }
-        .filler {
-          opacity: 0;
-          position: absolute;
-          left: 0;
-          top: 0;
-          transform: none;
-          will-change: -webkit-mask-position-x, transform, opacity;
-          // padding: 0.3em 0;
-          // margin: -0.3em 0;
-          mask-image: linear-gradient(
-            to right,
-            rgb(0, 0, 0) 45.4545454545%,
-            rgba(0, 0, 0, 0) 54.5454545455%
-          );
-          mask-size: 220% 100%;
-          mask-repeat: no-repeat;
-          -webkit-mask-image: linear-gradient(
-            to right,
-            rgb(0, 0, 0) 45.4545454545%,
-            rgba(0, 0, 0, 0) 54.5454545455%
-          );
-          -webkit-mask-size: 220% 100%;
-          -webkit-mask-repeat: no-repeat;
-          transition:
-            opacity 0.3s,
-            filter 0.3s,
-            margin 0.3s,
-            padding 0.3s !important;
+        .yrc-word:lang(ja) {
+          font-family: var(--ja-font-family);
+        }
+        .yrc-word:lang(en) {
+          font-family: var(--en-font-family);
+        }
+        .yrc-word:lang(ko) {
+          font-family: var(--ko-font-family);
         }
         &.end-with-space {
           margin-right: 12px;
           &:last-child {
             margin-right: 0;
-          }
-        }
-        &.content-long {
-          .filler {
-            margin: -40px;
-            padding: 40px;
-            filter: drop-shadow(0px 0px 14px rgba(255, 255, 255, 0.6));
           }
         }
       }
@@ -521,14 +521,6 @@ onBeforeUnmount(() => {
     &.on {
       opacity: 1 !important;
       transform: scale(1);
-      .content-text {
-        .filler {
-          opacity: 1;
-          -webkit-mask-position-x: 0%;
-          transition-property: -webkit-mask-position-x, transform, opacity;
-          transition-timing-function: linear, ease, ease;
-        }
-      }
       .tran,
       .roma {
         opacity: 0.6;
@@ -630,6 +622,34 @@ onBeforeUnmount(() => {
   &:hover {
     .lrc-line {
       filter: blur(0) !important;
+    }
+  }
+
+  /* 逐字歌词：动画模式仅对激活行启用 mask */
+  &.yrc-anim {
+    .lrc-line.is-yrc.on {
+      .content-text {
+        .yrc-word {
+          /* 亮/暗由 mask alpha 控制；opacity 用于行尾渐隐到暗态 */
+          will-change: -webkit-mask-position-x;
+          mask-image: linear-gradient(
+            to right,
+            rgba(0, 0, 0, var(--yrc-bright-alpha, 1)) 45.4545454545%,
+            rgba(0, 0, 0, var(--yrc-dark-alpha, 0.3)) 54.5454545455%
+          );
+          mask-size: 220% 100%;
+          mask-repeat: no-repeat;
+          -webkit-mask-image: linear-gradient(
+            to right,
+            rgba(0, 0, 0, var(--yrc-bright-alpha, 1)) 45.4545454545%,
+            rgba(0, 0, 0, var(--yrc-dark-alpha, 0.3)) 54.5454545455%
+          );
+          -webkit-mask-size: 220% 100%;
+          -webkit-mask-repeat: no-repeat;
+          -webkit-mask-position-x: var(--yrc-mask-x, 0%);
+          transition: none;
+        }
+      }
     }
   }
 }

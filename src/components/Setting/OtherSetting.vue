@@ -102,8 +102,8 @@
       </n-collapse-transition>
     </div>
     <div v-if="isElectron" class="set-list">
-      <n-h3 prefix="bar"> 
-        备份与恢复 
+      <n-h3 prefix="bar">
+        备份与恢复
         <n-tag type="warning" size="small" round>Beta</n-tag>
       </n-h3>
       <n-card class="set-item">
@@ -192,7 +192,7 @@ const exportSettings = async () => {
       "setting-store": localStorage.getItem("setting-store"),
       "shortcut-store": localStorage.getItem("shortcut-store"),
     };
-    
+
     const result = await window.api.store.export(rendererData);
     console.log("[Frontend] Export result:", result);
     if (result) {
@@ -222,14 +222,14 @@ const importSettings = async () => {
       try {
         const data = await window.api.store.import();
         console.log("[Frontend] Import data:", data);
-        
+
         if (data) {
           // 恢复渲染进程数据
           if (data.renderer) {
             if (data.renderer["setting-store"]) localStorage.setItem("setting-store", data.renderer["setting-store"]);
             if (data.renderer["shortcut-store"]) localStorage.setItem("shortcut-store", data.renderer["shortcut-store"]);
           }
-          
+
           window.$message.success("设置导入成功，即将重启");
           setTimeout(() => {
             window.location.reload();

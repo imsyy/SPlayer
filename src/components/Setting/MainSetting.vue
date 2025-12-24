@@ -19,7 +19,7 @@
           {{ packageJson.author }}
         </n-text>
         <n-text class="name">SPlayer</n-text>
-        <n-tag v-if="isDevBuild" class="version" size="small" type="warning" round>
+        <n-tag v-if="statusStore.isDeveloperMode" class="version" size="small" type="warning" round>
           DEV · v{{ packageJson.version }}
         </n-tag>
         <n-text v-else class="version" depth="3">v{{ packageJson.version }}</n-text>
@@ -43,6 +43,8 @@
         <KeyboardSetting v-else-if="activeKey === 'keyboard'" />
         <!-- 本地 -->
         <LocalSetting v-else-if="activeKey === 'local'" />
+        <!-- 第三方 -->
+        <ThirdSetting v-else-if="activeKey === 'third'" />
         <!-- 其他 -->
         <OtherSetting v-else-if="activeKey === 'other'" />
         <!-- 关于 -->
@@ -58,10 +60,13 @@
 import type { MenuOption, NScrollbar } from "naive-ui";
 import type { SettingType } from "@/types/main";
 import { renderIcon } from "@/utils/helper";
-import { isDevBuild, isElectron } from "@/utils/env";
+import { isElectron } from "@/utils/env";
+import { useStatusStore } from "@/stores";
 import packageJson from "@/../package.json";
 
 const props = defineProps<{ type: SettingType; scrollTo?: string }>();
+
+const statusStore = useStatusStore();
 
 // 设置内容
 const setScrollbar = ref<InstanceType<typeof NScrollbar> | null>(null);
@@ -100,9 +105,14 @@ const menuOptions: MenuOption[] = [
   },
   {
     key: "local",
-    label: "本地与下载",
+    label: "本地与缓存",
     show: isElectron,
     icon: renderIcon("Storage"),
+  },
+  {
+    key: "third",
+    label: "连接与集成",
+    icon: renderIcon("Extension"),
   },
   {
     key: "other",

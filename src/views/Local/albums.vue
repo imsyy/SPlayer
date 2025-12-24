@@ -11,7 +11,7 @@
         <Transition name="fade" mode="out-in">
           <s-image
             :key="item?.[0]?.cover"
-            :src="item?.[0]?.cover || '/images/album.jpg?assest'"
+            :src="item?.[0]?.cover || '/images/album.jpg?asset'"
             class="cover"
           />
         </Transition>

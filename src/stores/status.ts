@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { QualityType, type SortType } from "@/types/main";
 import type { PlayModeType, RGB, ColorScheme } from "@/types/main";
+import { isDevBuild } from "@/utils/env";
 
 interface StatusState {
   /** 菜单折叠状态 */
@@ -93,6 +94,8 @@ interface StatusState {
     /** 等待歌曲结束 */
     waitSongEnd: boolean;
   };
+  /** 开发者模式（假） */
+  developerMode: boolean;
 }
 
 export const useStatusStore = defineStore("status", {
@@ -139,6 +142,7 @@ export const useStatusStore = defineStore("status", {
       remainTime: 0,
       waitSongEnd: true,
     },
+    developerMode: false,
   }),
   getters: {
     // 播放音量图标
@@ -172,6 +176,10 @@ export const useStatusStore = defineStore("status", {
       const mainColor = state.songCoverTheme?.main;
       if (!mainColor) return "239, 239, 239";
       return `${mainColor.r}, ${mainColor.g}, ${mainColor.b}`;
+    },
+    /** 是否为开发者模式 */
+    isDeveloperMode(state) {
+      return state.developerMode || isDevBuild;
     },
   },
   actions: {

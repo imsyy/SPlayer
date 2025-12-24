@@ -1,4 +1,4 @@
-# SPlayer API 接口文档
+# API 接口文档
 
 ## 概述
 
@@ -29,11 +29,11 @@
 
 ---
 
-## 一、播放控制接口 (Control API)
+## 播放控制接口 (Control API)
 
 **基础路径**: `/api/control`
 
-### 1. 播放
+### 播放
 
 **接口**: `GET /api/control/play`
 
@@ -51,7 +51,7 @@
 
 ---
 
-### 2. 暂停
+### 暂停
 
 **接口**: `GET /api/control/pause`
 
@@ -69,7 +69,7 @@
 
 ---
 
-### 3. 播放/暂停切换
+### 播放/暂停切换
 
 **接口**: `GET /api/control/toggle`
 
@@ -87,7 +87,7 @@
 
 ---
 
-### 4. 下一曲
+### 下一曲
 
 **接口**: `GET /api/control/next`
 
@@ -105,7 +105,7 @@
 
 ---
 
-### 5. 上一曲
+### 上一曲
 
 **接口**: `GET /api/control/prev`
 
@@ -123,7 +123,7 @@
 
 ---
 
-### 6. 获取状态
+### 获取状态
 
 **接口**: `GET /api/control/status`
 
@@ -169,13 +169,13 @@
 
 ---
 
-## 二、网易云音乐 API (Netease API)
+## 云音乐 API (Netease API)
 
 **基础路径**: `/api/netease`
 
 ### 使用说明
 
-网易云音乐 API 支持所有 NeteaseCloudMusicApi Enhanced 的接口。接口路径会自动转换为 kebab-case 格式。
+云音乐 API 支持所有 NeteaseCloudMusicApi Enhanced 的接口。接口路径会自动转换为 kebab-case 格式。
 
 **示例**:
 
@@ -187,11 +187,11 @@
 
 ---
 
-## 三、解锁接口 (Unblock API)
+## 解锁 API (Unblock API)
 
 **基础路径**: `/api/unblock`
 
-### 1. 网易云解锁
+### 云音乐解锁
 
 **接口**: `GET /api/unblock/netease?id={songId}`
 
@@ -212,7 +212,7 @@
 
 ---
 
-### 2. 酷我解锁
+### 酷我解锁
 
 **接口**: `GET /api/unblock/kuwo?keyword={keyword}`
 
@@ -233,7 +233,7 @@
 
 ---
 
-### 3. 波点解锁
+### 波点解锁
 
 **接口**: `GET /api/unblock/bodian?keyword={keyword}`
 
@@ -254,7 +254,7 @@
 
 ---
 
-### 4. 歌曲宝解锁
+### 歌曲宝解锁
 
 **接口**: `GET /api/unblock/gequbao?keyword={keyword}`
 
@@ -275,7 +275,7 @@
 
 ---
 
-## 四、API 列表
+## 全部 API 列表
 
 **接口**: `GET /api`
 
@@ -323,9 +323,9 @@
 
 ---
 
-## 使用示例
+### 使用示例
 
-### cURL 示例
+#### cURL 示例
 
 ```bash
 # 播放
@@ -341,7 +341,7 @@ curl http://localhost:25884/api/control/next
 curl http://localhost:25884/api/control/status
 ```
 
-### JavaScript 示例
+#### JavaScript 示例
 
 ```javascript
 // 播放
@@ -355,7 +355,7 @@ fetch("http://localhost:25884/api/control/status")
   .then((data) => console.log(data));
 ```
 
-### Python 示例
+#### Python 示例
 
 ```python
 import requests
@@ -371,12 +371,185 @@ print(response.json())
 
 ---
 
+## WebSocket API
+
+**基础路径**: `ws://localhost:25885` (默认端口，可在设置中修改)
+
+### 概述
+
+WebSocket API 提供了实时双向通信能力，可以控制播放器并接收播放状态更新。
+
+### 连接
+
+```javascript
+const ws = new WebSocket("ws://localhost:25885");
+```
+
+### 消息格式
+
+所有消息都遵循以下 JSON 格式：
+
+```json
+{
+  "type": "消息类型",
+  "data": {}
+}
+```
+
+### 控制播放器
+
+**消息类型**: `control`
+
+**请求格式**:
+
+```json
+{
+  "type": "control",
+  "data": {
+    "command": "toggle|play|pause|next|prev"
+  }
+}
+```
+
+**命令说明**:
+
+- `toggle` - 播放/暂停切换
+- `play` - 播放
+- `pause` - 暂停
+- `next` - 下一曲
+- `prev` - 上一曲
+
+**响应格式**:
+
+成功响应：
+
+```json
+{
+  "type": "control-response",
+  "data": {
+    "success": true,
+    "command": "toggle",
+    "message": "播放/暂停切换命令已执行"
+  }
+}
+```
+
+错误响应：
+
+```json
+{
+  "type": "error",
+  "data": {
+    "message": "错误信息"
+  }
+}
+```
+
+**使用示例**:
+
+```javascript
+// 连接 WebSocket
+const ws = new WebSocket("ws://localhost:25885");
+
+// 连接成功后发送控制命令
+ws.onopen = () => {
+  // 播放/暂停切换
+  ws.send(
+    JSON.stringify({
+      type: "control",
+      data: {
+        command: "toggle",
+      },
+    }),
+  );
+
+  // 下一曲
+  ws.send(
+    JSON.stringify({
+      type: "control",
+      data: {
+        command: "next",
+      },
+    }),
+  );
+};
+
+// 接收消息
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  console.log("收到消息:", message);
+};
+```
+
+### 欢迎消息
+
+连接成功后，服务器会自动发送欢迎消息：
+
+```json
+{
+  "type": "welcome",
+  "data": {
+    "message": "欢迎连接到 SPlayer WebSocket 服务",
+    "timestamp": 1234567890123
+  }
+}
+```
+
+### 状态更新（广播）
+
+当播放状态发生变化时，服务器会向所有连接的客户端广播消息：
+
+```json
+{
+  "type": "status-change",
+  "data": {
+    "status": true,
+    "timestamp": 1234567890123
+  }
+}
+```
+
+### 心跳消息
+
+客户端可以发送 `PING` 消息进行心跳检测，服务器会自动回复 `PONG`：
+
+```javascript
+// 发送心跳
+ws.send("PING");
+
+// 服务器自动回复 PONG
+```
+
+### 错误处理
+
+当发生错误时，服务器会发送错误消息：
+
+```json
+{
+  "type": "error",
+  "data": {
+    "message": "错误描述信息"
+  }
+}
+```
+
+常见错误：
+
+- `应用程序未找到或已销毁` - 应用程序主窗口未初始化
+- `缺少 command 参数` - 控制命令缺少必需参数
+- `未知的控制命令` - 不支持的控制命令
+- `消息格式错误` - 消息不是有效的 JSON 格式
+
+---
+
 ## 注意事项
 
 1. 所有接口仅在应用程序运行时可用
-2. 默认端口为 `25884`，可在环境变量 `VITE_SERVER_PORT` 中配置
-3. 解锁接口仅供学习使用，请勿用于商业用途
-4. 网易云音乐 API 需要登录后才能使用部分功能
-5. 接口响应时间取决于网络状况和服务器负载
+2. HTTP API 默认端口为 `25884`，可在环境变量 `VITE_SERVER_PORT` 中配置
+3. WebSocket API 默认端口为 `25885`，可在应用程序设置中修改
+4. 解锁接口仅供学习使用，请勿用于商业用途
+5. 网易云音乐 API 需要登录后才能使用部分功能
+6. 接口响应时间取决于网络状况和服务器负载
+7. WebSocket 连接支持心跳检测（PING/PONG），建议客户端定期发送心跳以保持连接
 
 ---

@@ -167,15 +167,15 @@ const initLyricIpc = (): void => {
   });
 
   // 关闭桌面歌词
-  ipcMain.on("closeDesktopLyric", () => {
+  ipcMain.on("close-desktop-lyric", () => {
     const mainWin = mainWindow.getWin();
     if (!isWinAlive(lyricWin) || !isWinAlive(mainWin)) return;
     lyricWin.hide();
-    mainWin?.webContents.send("closeDesktopLyric");
+    mainWin?.webContents.send("close-desktop-lyric");
   });
 
   // 锁定/解锁桌面歌词
-  ipcMain.on("toogleDesktopLyricLock", (_, isLock: boolean, isTemp: boolean = false) => {
+  ipcMain.on("toggle-desktop-lyric-lock", (_, isLock: boolean, isTemp: boolean = false) => {
     const mainWin = mainWindow.getWin();
     if (!isWinAlive(lyricWin) || !isWinAlive(mainWin)) return;
     // 是否穿透

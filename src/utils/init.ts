@@ -121,7 +121,7 @@ const keyDownEvent = debounce((event: KeyboardEvent) => {
         case "volumeDown":
           player.setVolume("down");
           break;
-        case "toogleDesktopLyric":
+        case "toggle-desktop-lyric":
           player.toggleDesktopLyric();
           break;
         case "openPlayer":

@@ -13,7 +13,7 @@
           hoverable
           @click="jumpArtist(item.id)"
         >
-          <n-avatar :src="item.cover || '/images/artist.jpg?assest'" class="cover" round />
+          <n-avatar :src="item.cover || '/images/artist.jpg?asset'" class="cover" round />
           <n-text class="name">{{ item.name }}</n-text>
         </n-card>
       </div>

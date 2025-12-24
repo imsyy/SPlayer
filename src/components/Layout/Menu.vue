@@ -105,7 +105,7 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
               h(NText, null, () => "我喜欢的音乐"),
               !settingStore.hideHeartbeatMode
                 ? h(NButton, {
-                    type: "tertiary",
+                    type: statusStore.playHeartbeatMode ? "primary" : "default",
                     round: true,
                     strong: true,
                     secondary: true,
@@ -145,7 +145,7 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
               },
               () => "下载管理",
             ),
-          show: isElectron && !settingStore.hideDownload,
+          show: statusStore.isDeveloperMode && isElectron && !settingStore.hideDownload,
           icon: renderIcon("Download"),
         },
         {
@@ -223,7 +223,7 @@ const renderPlaylist = (playlist: CoverType[], showCover: boolean) => {
         ? h("div", { class: "pl-cover" }, [
             h(NAvatar, {
               src: playlist.coverSize?.s || playlist.cover,
-              fallbackSrc: "/images/album.jpg?assest",
+              fallbackSrc: "/images/album.jpg?asset",
               lazy: true,
             }),
             h(NEllipsis, null, () => playlist.name),

@@ -10,7 +10,7 @@
           <n-avatar
             v-if="dataStore.userLoginStatus"
             :src="dataStore.userData?.avatarUrl"
-            fallback-src="/images/avatar.jpg?assest"
+            fallback-src="/images/avatar.jpg?asset"
             round
           />
           <n-avatar v-else round>
@@ -25,7 +25,7 @@
           <img
             v-if="dataStore.userLoginStatus && dataStore.userData.vipType !== 0"
             class="vip"
-            src="/images/vip.png?assest"
+            src="/images/vip.png?asset"
           />
           <SvgIcon :class="['down', { open: userMenuShow }]" name="DropDown" :depth="3" />
         </div>

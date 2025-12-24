@@ -18,7 +18,8 @@ const initTrayIpc = (): void => {
   });
 
   // 音乐名称更改
-  ipcMain.on("play-song-change", (_, title) => {
+  ipcMain.on("play-song-change", (_, options) => {
+    let { title } = options;
     if (!title) title = appName;
     // 更改标题
     tray?.setTitle(title);
@@ -41,7 +42,7 @@ const initTrayIpc = (): void => {
   });
 
   // 锁定/解锁桌面歌词
-  ipcMain.on("toogleDesktopLyricLock", (_, isLock: boolean) => {
+  ipcMain.on("toggle-desktop-lyric-lock", (_, isLock: boolean) => {
     tray?.setDesktopLyricLock(isLock);
   });
 };

@@ -1,3 +1,4 @@
+import { nativeImage } from "electron";
 import { join, basename } from "path";
 import { readFile, mkdir } from "fs/promises";
 import { CacheService } from "./CacheService";
@@ -7,7 +8,6 @@ import { useStore } from "../store";
 import { type IAudioMetadata, parseFile } from "music-metadata";
 import FastGlob, { type Entry } from "fast-glob";
 import pLimit from "p-limit";
-import sharp from "sharp";
 
 /** 当前本地音乐库 DB 版本，用于控制缓存结构升级 */
 const CURRENT_DB_VERSION = 2;
@@ -138,18 +138,34 @@ export class LocalMusicService {
     const { coverDir } = this.paths;
     const picture = metadata.common.picture?.[0];
     if (!picture) return undefined;
-    const fileName = `${fileId}.webp`;
+
+    // 使用 jpg 格式，兼容性更好且无需外部依赖
+    const fileName = `${fileId}.jpg`;
     const savePath = join(coverDir, fileName);
+
     // 已存在
     if (existsSync(savePath)) return fileName;
-    // 压缩封面处理
-    const cacheService = CacheService.getInstance();
-    const buffer = await sharp(picture.data)
-      .resize(256, 256, { fit: "cover", position: "centre" })
-      .webp({ quality: 80 })
-      .toBuffer();
-    await cacheService.put("local-data", `covers/${fileName}`, buffer);
-    return fileName;
+
+    try {
+      const img = nativeImage.createFromBuffer(Buffer.from(picture.data));
+      if (img.isEmpty()) return undefined;
+
+      // 调整大小并压缩
+      const buffer = img
+        .resize({
+          width: 256,
+          height: 256,
+          quality: "better",
+        })
+        .toJPEG(80);
+
+      const cacheService = CacheService.getInstance();
+      await cacheService.put("local-data", `covers/${fileName}`, buffer);
+      return fileName;
+    } catch (e) {
+      console.error("Failed to extract cover using nativeImage:", e);
+      return undefined;
+    }
   }
 
   /**

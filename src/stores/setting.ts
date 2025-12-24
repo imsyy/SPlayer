@@ -63,8 +63,6 @@ export interface SettingState {
   showYrc: boolean;
   /** 显示逐字歌词动画 */
   showYrcAnimation: boolean;
-  /** 显示逐字歌词长音发光效果 */
-  showYrcLongEffect: boolean;
   /** 显示歌词翻译 */
   showTran: boolean;
   /** 显示歌词音译 */
@@ -165,6 +163,10 @@ export interface SettingState {
   useAMLyrics: boolean;
   /** 是否使用 AM 歌词弹簧效果 */
   useAMSpring: boolean;
+  /** 隐藏已播放歌词 */
+  hidePassedLines: boolean;
+  /** 文字动画的渐变宽度 */
+  wordFadeWidth: number;
   /** 是否启用在线 TTML 歌词 */
   enableTTMLLyric: boolean;
   /** AMLL DB 服务地址 */
@@ -239,10 +241,6 @@ export interface SettingState {
   hideHeartbeatMode: boolean;
   /** 启用搜索关键词获取 */
   enableSearchKeyword: boolean;
-  /** 应用启动次数 */
-  appLaunchCount: number;
-  /** 隐藏 Star 弹窗 */
-  hideStarPopup: boolean;
   /** 首页栏目顺序和显示配置 */
   homePageSections: Array<{
     key: "playlist" | "radar" | "artist" | "video" | "radio" | "album";
@@ -255,6 +253,16 @@ export interface SettingState {
   /** 自定义协议注册 **/
   registryProtocol: {
     orpheus: boolean;
+  };
+  /** Last.fm 集成 */
+  lastfm: {
+    enabled: boolean;
+    apiKey: string;
+    apiSecret: string;
+    sessionKey: string;
+    username: string;
+    scrobbleEnabled: boolean;
+    nowPlayingEnabled: boolean;
   };
   /** 播放器跟随封面主色 */
   playerFollowCoverColor: boolean;
@@ -312,6 +320,7 @@ export const useSettingStore = defineStore("setting", {
       { key: SongUnlockServer.BODIAN, enabled: true },
       { key: SongUnlockServer.GEQUBAO, enabled: true },
       { key: SongUnlockServer.NETEASE, enabled: true },
+      { key: SongUnlockServer.KUWO, enabled: false },
     ],
     countDownShow: true,
     barLyricShow: true,
@@ -335,11 +344,12 @@ export const useSettingStore = defineStore("setting", {
     lyricFontBold: true,
     useAMLyrics: false,
     useAMSpring: false,
+    hidePassedLines: false,
+    wordFadeWidth: 0.5,
     enableTTMLLyric: false,
     amllDbServer: defaultAMLLDbServer,
     showYrc: true,
     showYrcAnimation: true,
-    showYrcLongEffect: true,
     showTran: true,
     showRoma: true,
     lyricsPosition: "flex-start",
@@ -389,8 +399,6 @@ export const useSettingStore = defineStore("setting", {
     hideLikedPlaylists: false,
     hideHeartbeatMode: false,
     enableSearchKeyword: true,
-    appLaunchCount: 0,
-    hideStarPopup: true,
     homePageSections: [
       { key: "playlist", name: "专属歌单", visible: true, order: 0 },
       { key: "radar", name: "雷达歌单", visible: true, order: 1 },
@@ -402,6 +410,15 @@ export const useSettingStore = defineStore("setting", {
     userAgreementVersion: "",
     registryProtocol: {
       orpheus: false,
+    },
+    lastfm: {
+      enabled: false,
+      apiKey: "",
+      apiSecret: "",
+      sessionKey: "",
+      username: "",
+      scrobbleEnabled: true,
+      nowPlayingEnabled: true,
     },
     playerFollowCoverColor: true,
     progressLyricShow: true,
@@ -420,6 +437,13 @@ export const useSettingStore = defineStore("setting", {
      */
     getFadeTime(state): number {
       return state.songVolumeFade ? state.songVolumeFadeTime : 0;
+    },
+    /**
+     * 检查 Last.fm 配置是否有效
+     */
+    isLastfmConfigured(state): boolean {
+      const { lastfm } = state;
+      return Boolean(lastfm.apiKey && lastfm.apiSecret);
     },
   },
   actions: {

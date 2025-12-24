@@ -37,7 +37,7 @@ const props = withDefaults(
     nativeLazy?: boolean;
   }>(),
   {
-    defaultSrc: "/images/song.jpg?assest",
+    defaultSrc: "/images/song.jpg?asset",
     observeVisibility: true,
     releaseOnHide: false,
     decodeAsync: true,

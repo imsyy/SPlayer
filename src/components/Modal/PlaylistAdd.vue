@@ -21,7 +21,7 @@
             >
               <template #prefix>
                 <n-image
-                  :src="item?.coverSize?.s || '/images/album.jpg?assest'"
+                  :src="item?.coverSize?.s || '/images/album.jpg?asset'"
                   class="cover"
                   preview-disabled
                   lazy
@@ -29,7 +29,7 @@
                 >
                   <template #placeholder>
                     <div class="cover-loading">
-                      <img class="loading-img" src="/images/album.jpg?assest" alt="loading-img" />
+                      <img class="loading-img" src="/images/album.jpg?asset" alt="loading-img" />
                     </div>
                   </template>
                 </n-image>

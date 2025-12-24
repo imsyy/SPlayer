@@ -17,13 +17,13 @@
             <div class="cover">
               <s-image
                 :src="item.coverSize?.m || item.cover"
-                default-src="/images/artist.jpg?assest"
+                default-src="/images/artist.jpg?asset"
                 class="cover-img"
               />
               <!-- 封面背板 -->
               <s-image
                 :src="item.coverSize?.m || item.cover"
-                default-src="/images/artist.jpg?assest"
+                default-src="/images/artist.jpg?asset"
                 class="cover-shadow"
               />
               <!-- 图标 -->

@@ -1,5 +1,5 @@
 import { existsSync, createWriteStream } from "fs";
-import { unlink } from "fs/promises";
+import { unlink, rename } from "fs/promises";
 import { pipeline } from "stream/promises";
 import { CacheService } from "./CacheService";
 import { useStore } from "../store";
@@ -52,9 +52,11 @@ export class MusicCacheService {
     // 模糊查找 (API请求失败时，只要有缓存就用)
     try {
       const items = await this.cacheService.list("music");
-      // 查找以 id_ 开头的文件
+      // 查找以 id_ 开头且以 .sc 结尾的文件（排除 .tmp 文件）
       const prefix = `${id}_`;
-      const match = items.find((item) => item.key.startsWith(prefix));
+      const match = items.find(
+        (item) => item.key.startsWith(prefix) && item.key.endsWith(".sc"),
+      );
       if (match) {
         return this.cacheService.getFilePath("music", match.key);
       }
@@ -73,7 +75,7 @@ export class MusicCacheService {
    */
   public async cacheMusic(id: number | string, url: string, quality: string): Promise<string> {
     const store = useStore();
-    const limitSizeGB = store.get("cacheLimit") || 10;
+    const limitSizeGB = store.get("cacheLimit") ?? 10;
     const limitSizeBytes = limitSizeGB * 1024 * 1024 * 1024;
 
     // 如果设置为 0，则不限制
@@ -91,6 +93,7 @@ export class MusicCacheService {
 
     const key = this.getCacheKey(id, quality);
     const filePath = this.cacheService.getFilePath("music", key);
+    const tempPath = `${filePath}.tmp`;
 
     // 确保目录存在
     await this.cacheService.init();
@@ -98,18 +101,21 @@ export class MusicCacheService {
     // 下载并写入
     try {
       const downloadStream = got.stream(url);
-      const fileStream = createWriteStream(filePath);
+      const fileStream = createWriteStream(tempPath);
 
       await pipeline(downloadStream, fileStream);
+
+      // 下载成功后，将临时文件重命名为正式缓存文件
+      await rename(tempPath, filePath);
 
       // 更新 CacheService 的大小记录
       await this.cacheService.notifyFileChange("music", key);
 
       return filePath;
     } catch (error) {
-      // 下载失败，清理残余
-      if (existsSync(filePath)) {
-        await unlink(filePath);
+      // 下载失败，清理残余的临时文件
+      if (existsSync(tempPath)) {
+        await unlink(tempPath).catch(() => {});
       }
       cacheLog.error("Music download failed:", error);
       throw error;

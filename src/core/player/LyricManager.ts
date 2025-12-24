@@ -351,6 +351,42 @@ class LyricManager {
   }
 
   /**
+   * 比较歌词数据是否相同
+   * @param oldData 旧歌词数据
+   * @param newData 新歌词数据
+   * @returns 是否相同
+   */
+  private isLyricDataEqual(oldData: SongLyric, newData: SongLyric): boolean {
+    // 比较数组长度
+    if (
+      oldData.lrcData?.length !== newData.lrcData?.length ||
+      oldData.yrcData?.length !== newData.yrcData?.length
+    ) {
+      return false;
+    }
+    // 比较 lrcData 内容（比较每行的 startTime 和文本内容）
+    const compareLines = (oldLines: LyricLine[], newLines: LyricLine[]): boolean => {
+      if (oldLines.length !== newLines.length) return false;
+      for (let i = 0; i < oldLines.length; i++) {
+        const oldLine = oldLines[i];
+        const newLine = newLines[i];
+        const oldText = oldLine.words?.map((w) => w.word).join("") || "";
+        const newText = newLine.words?.map((w) => w.word).join("") || "";
+        if (oldLine.startTime !== newLine.startTime || oldText !== newText) {
+          return false;
+        }
+        // ttml 特有属性
+        if (newLine.isBG !== oldLine.isBG) return false;
+      }
+      return true;
+    };
+    return (
+      compareLines(oldData.lrcData || [], newData.lrcData || []) &&
+      compareLines(oldData.yrcData || [], newData.yrcData || [])
+    );
+  }
+
+  /**
    * 设置最终歌词
    * @param lyricData 歌词数据
    * @param req 当前歌词请求
@@ -374,6 +410,12 @@ class LyricManager {
           },
         ],
       }));
+    }
+    // 比较新旧歌词数据，如果相同则跳过设置，避免重复重载
+    if (this.isLyricDataEqual(musicStore.songLyric, lyricData)) {
+      // 仅更新加载状态，不更新歌词数据
+      statusStore.lyricLoading = false;
+      return;
     }
     // 设置歌词
     musicStore.setSongLyric(lyricData, true);

@@ -73,10 +73,10 @@ const createTrayMenu = (win: BrowserWindow): MenuItemConstructorOptions[] => {
       type: "separator",
     },
     {
-      id: "toogleLikeSong",
+      id: "toggle-like-song",
       label: likeSong ? "从我喜欢中移除" : "添加到我喜欢",
       icon: showIcon(likeSong ? "like" : "unlike"),
-      click: () => win.webContents.send("toogleLikeSong"),
+      click: () => win.webContents.send("toggle-like-song"),
     },
     {
       id: "changeMode",
@@ -135,13 +135,13 @@ const createTrayMenu = (win: BrowserWindow): MenuItemConstructorOptions[] => {
       type: "separator",
     },
     {
-      id: "toogleDesktopLyric",
+      id: "toggle-desktop-lyric",
       label: `${desktopLyricShow ? "关闭" : "开启"}桌面歌词`,
       icon: showIcon("lyric"),
-      click: () => win.webContents.send("toogleDesktopLyric"),
+      click: () => win.webContents.send("toggle-desktop-lyric"),
     },
     {
-      id: "toogleDesktopLyricLock",
+      id: "toggle-desktop-lyric-lock",
       label: `${desktopLyricLock ? "解锁" : "锁定"}桌面歌词`,
       icon: showIcon(desktopLyricLock ? "lock" : "unlock"),
       visible: desktopLyricShow,

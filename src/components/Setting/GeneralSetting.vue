@@ -29,8 +29,8 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">全局主题色</n-text>
-          <n-text class="tip" :depth="3">更改全局主题色</n-text>
+          <n-text class="name">主题配置</n-text>
+          <n-text class="tip" :depth="3">更改主题色或自定义图片</n-text>
         </div>
         <n-select
           v-model:value="settingStore.themeColorType"
@@ -49,9 +49,9 @@
           </div>
           <n-color-picker
             v-model:value="settingStore.themeCustomColor"
-            class="set"
             :show-alpha="false"
             :modes="['hex']"
+            class="set"
           />
         </n-card>
       </n-collapse-transition>
@@ -70,7 +70,7 @@
       <n-card class="set-item">
         <div class="label">
           <n-text class="name">全局动态取色</n-text>
-          <n-text class="tip" :depth="3">主题色是否跟随封面，目前感觉不好看</n-text>
+          <n-text class="tip" :depth="3">主题色是否跟随封面，开启后自定义主题色将失效</n-text>
         </div>
         <n-switch
           v-model:value="settingStore.themeFollowCover"

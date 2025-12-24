@@ -251,7 +251,7 @@ const getCoverUrl = (item: any): CoverDataType => {
  */
 const getCoverSizeUrl = (url: string, size: number | null = null) => {
   try {
-    if (!url) return "/images/song.jpg?assest";
+    if (!url) return "/images/song.jpg?asset";
     const sizeUrl = size
       ? typeof size === "number"
         ? `?param=${size}y${size}`
@@ -268,7 +268,7 @@ const getCoverSizeUrl = (url: string, size: number | null = null) => {
     return imageUrl;
   } catch (error) {
     console.error("图片链接处理出错：", error);
-    return "/images/song.jpg?assest";
+    return "/images/song.jpg?asset";
   }
 };
 

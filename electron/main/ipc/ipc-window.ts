@@ -112,7 +112,7 @@ const initWindowsIpc = (): void => {
   });
 
   // 向主窗口发送事件
-  ipcMain.on("send-to-mainWin", (_, eventName, ...args) => {
+  ipcMain.on("send-to-main-win", (_, eventName, ...args) => {
     const mainWin = mainWindow.getWin();
     if (!mainWin || mainWin.isDestroyed() || mainWin.webContents.isDestroyed()) return;
     mainWin.webContents.send(eventName, ...args);

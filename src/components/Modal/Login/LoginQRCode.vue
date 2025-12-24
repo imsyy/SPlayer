@@ -9,7 +9,7 @@
           :value="qrImg"
           :size="160"
           :icon-size="30"
-          icon-src="/icons/favicon.png?assest"
+          icon-src="/icons/favicon.png?asset"
           error-correction-level="H"
         />
         <!-- 待确认 -->
@@ -23,7 +23,7 @@
             >
               <template #placeholder>
                 <div class="cover-loading">
-                  <img src="/images/avatar.jpg?assest" class="loading-img" alt="loading-img" />
+                  <img src="/images/avatar.jpg?asset" class="loading-img" alt="loading-img" />
                 </div>
               </template>
             </n-image>

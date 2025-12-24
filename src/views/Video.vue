@@ -46,7 +46,7 @@
             })
           "
         >
-          <n-avatar :src="artistData?.cover || '/images/artist.jpg?assest'" class="cover" round />
+          <n-avatar :src="artistData?.cover || '/images/artist.jpg?asset'" class="cover" round />
           <n-text class="name">{{ artistData?.name || "未知歌手" }}</n-text>
         </div>
         <n-flex class="control">

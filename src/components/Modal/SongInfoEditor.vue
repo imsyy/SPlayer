@@ -180,7 +180,7 @@ const infoFormData = ref<InfoFormType>({ name: "", fileName: "", artist: "", alb
 const infoFormRules: FormRules = { name: textRule, artist: textRule, album: textRule };
 
 // 封面数据
-const coverData = ref<string>("/images/song.jpg?assest");
+const coverData = ref<string>("/images/song.jpg?asset");
 
 // 获取音乐元信息
 const getSongInfo = async () => {
@@ -300,7 +300,7 @@ const saveSongInfo = debounce(async (song: SongType) => {
     const metadata = {
       ...infoFormData.value,
       cover:
-        coverData.value.startsWith("blob:") || coverData.value === "/images/song.jpg?assest"
+        coverData.value.startsWith("blob:") || coverData.value === "/images/song.jpg?asset"
           ? null
           : coverData.value.startsWith("file://")
             ? coverData.value.replace(/^file:\/\//, "")

@@ -28,3 +28,7 @@ out
 *.sw?
 .env.development
 .env.production
+
+# Docs
+docs/.vitepress/cache
+docs/.vitepress/dist
