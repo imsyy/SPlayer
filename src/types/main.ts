@@ -274,6 +274,7 @@ export type SettingType =
   | "visualizer"
   | "keyboard"
   | "local"
+  | "third"
   | "other"
   | "about";
 

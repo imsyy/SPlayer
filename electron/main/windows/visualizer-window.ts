@@ -103,7 +103,8 @@ class VisualizerWindow {
     else this.rightReady = true;
 
     const mainWin = this.getMainWin();
-    if (mainWin && mainWin.isVisible()) {
+    // 只有当主窗口可见且未最小化时才更新位置
+    if (mainWin && mainWin.isVisible() && !mainWin.isMinimized()) {
       this.updatePosition();
     }
   }
@@ -121,7 +122,8 @@ class VisualizerWindow {
   /** 更新窗口位置和大小 */
   updatePosition() {
     const mainWin = this.getMainWin();
-    if (!mainWin) return;
+    // 如果主窗口不存在、不可见或已最小化，则不更新位置
+    if (!mainWin || !mainWin.isVisible() || mainWin.isMinimized()) return;
 
     const bounds = mainWin.getBounds();
     const windowBounds = {

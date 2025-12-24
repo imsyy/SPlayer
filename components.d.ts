@@ -158,10 +158,12 @@ declare module 'vue' {
     SongUnlockManager: typeof import('./src/components/Modal/Setting/SongUnlockManager.vue')['default']
     SvgIcon: typeof import('./src/components/Global/SvgIcon.vue')['default']
     TextContainer: typeof import('./src/components/Global/TextContainer.vue')['default']
+    ThirdSetting: typeof import('./src/components/Setting/ThirdSetting.vue')['default']
     UpdateApp: typeof import('./src/components/Modal/UpdateApp.vue')['default']
     UpdatePlaylist: typeof import('./src/components/Modal/UpdatePlaylist.vue')['default']
     User: typeof import('./src/components/Layout/User.vue')['default']
     UserAgreement: typeof import('./src/components/Modal/UserAgreement.vue')['default']
+    VirtualScroll: typeof import('./src/components/UI/VirtualScroll.vue')['default']
     VisualizerSetting: typeof import('./src/components/Setting/VisualizerSetting.vue')['default']
   }
 }
