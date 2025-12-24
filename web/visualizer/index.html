@@ -289,6 +289,9 @@
     let LERP_UP = 0.95;
     let LERP_DOWN = 0.12;
     let MIN_DIFF = 2;
+
+    // 能量条最大高度百分比，为顶部渐变淡出效果留出空间
+    const MAX_BAR_HEIGHT_PERCENT = 95;
     
     function updateBarPosition() {
       if (state.direction === 'center') {
@@ -303,7 +306,7 @@
     }
 
     function handleAudioData(data) {
-      const targetHeight = Math.min(data * 100, 95);
+      const targetHeight = Math.min(data * 100, MAX_BAR_HEIGHT_PERCENT);
       const diff = Math.abs(targetHeight - state.currentHeight);
       const isRising = targetHeight > state.currentHeight;
 
@@ -327,41 +330,38 @@
         if (config.minDiff !== undefined) MIN_DIFF = config.minDiff;
       });
 
-      ipc.on('update-theme', (_, val) => {
-        // 检测是否是渐变色模式（格式：gradient-xxx）
-        if (val.startsWith('gradient-')) {
-          const gradientKey = val.replace('gradient-', '');
-          if (GRADIENT_PRESETS[gradientKey]) {
-            state.colorGradient = gradientKey;
-            state.color = GRADIENT_PRESETS[gradientKey].glowColor; // 使用光晕色作为备用
+      // 统一的外观设置更新
+      ipc.on('update-visualizer-appearance', (_, appearance) => {
+        // 处理颜色
+        if (appearance.color !== undefined) {
+          const val = appearance.color;
+          if (val.startsWith('gradient-')) {
+            const gradientKey = val.replace('gradient-', '');
+            if (GRADIENT_PRESETS[gradientKey]) {
+              state.colorGradient = gradientKey;
+              state.color = GRADIENT_PRESETS[gradientKey].glowColor;
+            } else {
+              state.colorGradient = null;
+              state.color = val;
+            }
           } else {
             state.colorGradient = null;
             state.color = val;
           }
-        } else {
-          state.colorGradient = null;
-          state.color = val;
         }
+
+        // 处理其他外观属性
+        if (appearance.opacity !== undefined) state.opacity = appearance.opacity;
+        if (appearance.shape !== undefined) state.shape = appearance.shape;
+        if (appearance.gradient !== undefined) state.gradient = appearance.gradient;
+        if (appearance.border !== undefined) state.border = appearance.border;
+        if (appearance.direction !== undefined) {
+          state.direction = appearance.direction;
+          updateBarPosition();
+        }
+
         updateStyle();
         requestAnimationFrame(() => ipc.send('visualizer-show', side));
-      });
-
-      const updateHandlers = {
-        'update-visualizer-opacity': 'opacity',
-        'update-visualizer-shape': 'shape',
-        'update-visualizer-gradient': 'gradient',
-        'update-visualizer-border': 'border',
-        'update-visualizer-direction': 'direction'
-      };
-
-      Object.entries(updateHandlers).forEach(([channel, key]) => {
-        ipc.on(channel, (_, val) => {
-          state[key] = val;
-          if (key === 'direction') {
-            updateBarPosition();
-          }
-          updateStyle();
-        });
       });
     }
 

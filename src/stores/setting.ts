@@ -480,6 +480,16 @@ export const useSettingStore = defineStore("setting", {
         },
       );
     },
+    // 重置氛围灯设置
+    resetVisualizerSettings() {
+      this.visualizerColor = "gradient-blue-purple";
+      this.visualizerOpacity = 1;
+      this.visualizerWidth = 60;
+      this.visualizerShape = "rounded";
+      this.visualizerGradient = true;
+      this.visualizerBorder = true;
+      this.visualizerDirection = "up";
+    },
   },
   // 持久化
   persist: {

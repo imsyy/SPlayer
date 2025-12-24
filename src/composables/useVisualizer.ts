@@ -22,27 +22,34 @@ export function useVisualizer() {
     return "255, 255, 255";
   };
 
+  /** 获取处理后的颜色值 */
+  const getColorValue = (): string => {
+    if (settingStore.visualizerColor === "theme") {
+      return statusStore.mainColor;
+    }
+    if (settingStore.visualizerColor.startsWith("gradient-")) {
+      return settingStore.visualizerColor;
+    }
+    return hexToRgb(settingStore.visualizerColor);
+  };
+
+  /** 同步外观设置 */
   const syncVisualizerAppearance = () => {
     if (!statusStore.showVisualizer) return;
 
-    let colorValue: string;
-    if (settingStore.visualizerColor === "theme") {
-      colorValue = statusStore.mainColor;
-    } else if (settingStore.visualizerColor.startsWith("gradient-")) {
-      // 渐变色，传递特殊标识
-      colorValue = settingStore.visualizerColor;
-    } else {
-      colorValue = hexToRgb(settingStore.visualizerColor);
-    }
+    // 打包所有外观设置
+    const appearance = {
+      color: getColorValue(),
+      opacity: settingStore.visualizerOpacity,
+      shape: settingStore.visualizerShape,
+      gradient: settingStore.visualizerGradient,
+      border: settingStore.visualizerBorder,
+      direction: settingStore.visualizerDirection,
+    };
 
-    window.electron.ipcRenderer.send("update-visualizer-theme", colorValue);
-    window.electron.ipcRenderer.send("update-visualizer-opacity", settingStore.visualizerOpacity);
+    window.electron.ipcRenderer.send("update-visualizer-appearance", appearance);
     window.electron.ipcRenderer.send("update-visualizer-width", settingStore.visualizerWidth);
-    window.electron.ipcRenderer.send("update-visualizer-shape", settingStore.visualizerShape);
-    window.electron.ipcRenderer.send("update-visualizer-gradient", settingStore.visualizerGradient);
-    window.electron.ipcRenderer.send("update-visualizer-border", settingStore.visualizerBorder);
-    window.electron.ipcRenderer.send("update-visualizer-direction", settingStore.visualizerDirection);
-    
+
     // 同步氛围灯配置（来自 VisualizerBridge）
     visualizerBridge.syncConfig();
   };
@@ -60,7 +67,7 @@ export function useVisualizer() {
       () => statusStore.showVisualizer,
     ],
     syncVisualizerAppearance,
-    { immediate: true, deep: true },
+    { immediate: true },
   );
 
   watch(

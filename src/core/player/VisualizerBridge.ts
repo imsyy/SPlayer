@@ -357,7 +357,9 @@ class SPlayerVisualizerBridge {
   }
 
   syncConfig(): void {
-    setTimeout(() => this.bridge?.syncConfig(), 100);
+    // 直接同步配置，无需延迟
+    // 外观设置和配置通过同一 IPC 通道按顺序发送，由 visualizer-ready 事件触发
+    this.bridge?.syncConfig();
   }
 
   getCore(): AmbientLightCore | undefined {

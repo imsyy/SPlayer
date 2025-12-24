@@ -2,19 +2,24 @@ import { ipcMain } from "electron";
 import visualizerWindow from "../windows/visualizer-window";
 import mainWindow from "../windows/main-window";
 
+/** 氛围灯外观设置 */
+interface VisualizerAppearance {
+  color?: string;
+  opacity?: number;
+  shape?: string;
+  gradient?: boolean;
+  border?: boolean;
+  direction?: string;
+}
+
 const IPC_CHANNELS = {
   TOGGLE: "toggle-visualizer",
   READY: "visualizer-ready",
   SHOW: "visualizer-show",
   AUDIO_DATA: "audio-data",
   CONFIG: "visualizer-config",
-  THEME: "update-visualizer-theme",
-  OPACITY: "update-visualizer-opacity",
+  APPEARANCE: "update-visualizer-appearance",
   WIDTH: "update-visualizer-width",
-  SHAPE: "update-visualizer-shape",
-  GRADIENT: "update-visualizer-gradient",
-  BORDER: "update-visualizer-border",
-  DIRECTION: "update-visualizer-direction",
 } as const;
 
 const initVisualizerIpc = () => {
@@ -42,36 +47,18 @@ const initVisualizerIpc = () => {
     visualizerWindow.broadcast("audio-data", data);
   });
 
-  ipcMain.on(IPC_CHANNELS.CONFIG, (_, config: { lerpUp: number; lerpDown: number; minDiff: number }) => {
+  ipcMain.on(IPC_CHANNELS.CONFIG, (_, config: { lerpUp: number; lerpDown: number }) => {
     visualizerWindow.broadcast("visualizer-config", config);
   });
 
-  ipcMain.on(IPC_CHANNELS.THEME, (_, color: string) => {
-    visualizerWindow.broadcast("update-theme", color);
+  // 统一的外观设置通道
+  ipcMain.on(IPC_CHANNELS.APPEARANCE, (_, appearance: VisualizerAppearance) => {
+    visualizerWindow.broadcast("update-visualizer-appearance", appearance);
   });
 
-  ipcMain.on(IPC_CHANNELS.OPACITY, (_, opacity: number) => {
-    visualizerWindow.broadcast("update-visualizer-opacity", opacity);
-  });
-
+  // 宽度单独处理（需要更新窗口尺寸）
   ipcMain.on(IPC_CHANNELS.WIDTH, (_, width: number) => {
     visualizerWindow.updateWidth(width);
-  });
-
-  ipcMain.on(IPC_CHANNELS.SHAPE, (_, shape: string) => {
-    visualizerWindow.broadcast("update-visualizer-shape", shape);
-  });
-
-  ipcMain.on(IPC_CHANNELS.GRADIENT, (_, gradient: boolean) => {
-    visualizerWindow.broadcast("update-visualizer-gradient", gradient);
-  });
-
-  ipcMain.on(IPC_CHANNELS.BORDER, (_, border: boolean) => {
-    visualizerWindow.broadcast("update-visualizer-border", border);
-  });
-
-  ipcMain.on(IPC_CHANNELS.DIRECTION, (_, direction: string) => {
-    visualizerWindow.broadcast("update-visualizer-direction", direction);
   });
 };
 

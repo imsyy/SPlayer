@@ -156,13 +156,7 @@ const resetToDefault = () => {
     positiveText: "确定",
     negativeText: "取消",
     onPositiveClick: () => {
-      settingStore.visualizerColor = 'gradient-blue-purple';
-      settingStore.visualizerOpacity = 1;
-      settingStore.visualizerWidth = 60;
-      settingStore.visualizerShape = 'rounded';
-      settingStore.visualizerGradient = true;
-      settingStore.visualizerBorder = true;
-      settingStore.visualizerDirection = 'up';
+      settingStore.resetVisualizerSettings();
       window.$message.success('已恢复默认设置');
     },
   });
