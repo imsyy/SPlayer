@@ -120,6 +120,20 @@
 
         <n-card class="set-item">
           <div class="label">
+            <n-text class="name">灵敏度</n-text>
+            <n-text class="tip" :depth="3"> 调整氛围灯对音频变化的响应灵敏度，数值越小越灵敏 </n-text>
+          </div>
+          <n-slider
+            v-model:value="settingStore.visualizerSensitivity"
+            :min="1"
+            :max="30"
+            :step="1"
+            class="set"
+          />
+        </n-card>
+
+        <n-card class="set-item">
+          <div class="label">
             <n-text class="name">恢复默认配置</n-text>
             <n-text class="tip" :depth="3">恢复氛围灯的所有设置为默认值</n-text>
           </div>

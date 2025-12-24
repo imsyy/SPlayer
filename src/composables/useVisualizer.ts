@@ -70,6 +70,15 @@ export function useVisualizer() {
     { immediate: true },
   );
 
+  // 监听灵敏度变化
+  watch(
+    () => settingStore.visualizerSensitivity,
+    (sensitivity) => {
+      visualizerBridge.updateConfig({ minDiff: sensitivity });
+    },
+    { immediate: true },
+  );
+
   watch(
     () => statusStore.showVisualizer,
     (enabled) => {

@@ -282,6 +282,8 @@ export interface SettingState {
   visualizerBorder: boolean;
   /** 氛围灯跳动方向 */
   visualizerDirection: "up" | "center";
+  /** 氛围灯灵敏度 (1-30)，越小越灵敏 */
+  visualizerSensitivity: number;
 }
 
 export const useSettingStore = defineStore("setting", {
@@ -429,6 +431,7 @@ export const useSettingStore = defineStore("setting", {
     visualizerGradient: true,
     visualizerBorder: true,
     visualizerDirection: "up",
+    visualizerSensitivity: 10,
   }),
   getters: {
     /**
@@ -513,6 +516,7 @@ export const useSettingStore = defineStore("setting", {
       this.visualizerGradient = true;
       this.visualizerBorder = true;
       this.visualizerDirection = "up";
+      this.visualizerSensitivity = 10;
     },
   },
   // 持久化

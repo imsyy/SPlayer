@@ -92,7 +92,7 @@ export const DEFAULT_CONFIG: AmbientLightConfig = {
   curveExponent: 1.2,
   lerpDown: 0.05,
   lerpUp: 0.95,
-  minDiff: 15,
+  minDiff: 10,
 
   // 平滑度
   smallChangeThreshold: 0.1,
@@ -302,6 +302,11 @@ export class AmbientLightBridge {
     this.onConfig?.(this.core.getAnimationConfig());
   }
 
+  /** 更新配置 */
+  updateConfig(config: Partial<AmbientLightConfig>): void {
+    this.core.updateConfig(config);
+  }
+
   /** 更新循环 */
   private update = (): void => {
     if (!this.isRunning) return;
@@ -365,6 +370,12 @@ class SPlayerVisualizerBridge {
     // 直接同步配置，无需延迟
     // 外观设置和配置通过同一 IPC 通道按顺序发送，由 visualizer-ready 事件触发
     this.bridge?.syncConfig();
+  }
+
+  /** 更新配置并同步到前端 */
+  updateConfig(config: Partial<AmbientLightConfig>): void {
+    this.bridge?.updateConfig(config);
+    this.syncConfig();
   }
 
   getCore(): AmbientLightCore | undefined {
