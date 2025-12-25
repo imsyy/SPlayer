@@ -29,6 +29,8 @@ export interface SettingState {
   themeGlobalColor: boolean;
   /** 主题跟随封面 */
   themeFollowCover: boolean;
+  /** 自定义字体 是否直接输入 font-family **/
+  inputCustomFont: boolean;
   /** 全局字体 */
   globalFont: "default" | string;
   /** 歌词区域字体 */
@@ -280,6 +282,7 @@ export const useSettingStore = defineStore("setting", {
     themeCustomColor: "#fe7971",
     themeFollowCover: false,
     themeGlobalColor: false,
+    inputCustomFont: false,
     globalFont: "default",
     LyricFont: "follow",
     japaneseLyricFont: "follow",

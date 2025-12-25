@@ -150,6 +150,7 @@ declare module 'vue' {
     SidebarHideManager: typeof import('./src/components/Modal/Setting/SidebarHideManager.vue')['default']
     Sider: typeof import('./src/components/Layout/Sider.vue')['default']
     SImage: typeof import('./src/components/UI/s-image.vue')['default']
+    SInput: typeof import('./src/components/UI/s-input.vue')['default']
     SongCard: typeof import('./src/components/Card/SongCard.vue')['default']
     SongDataCard: typeof import('./src/components/Card/SongDataCard.vue')['default']
     SongInfoEditor: typeof import('./src/components/Modal/SongInfoEditor.vue')['default']

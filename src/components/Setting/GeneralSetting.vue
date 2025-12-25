@@ -79,6 +79,50 @@
           :round="false"
         />
       </n-card>
+      <n-card class="set-item">
+        <div class="label">
+          <n-text class="name">自定义字体使用 CSS</n-text>
+          <n-text class="tip" :depth="3">
+            直接输入 CSS 的 font-family 自定义字体，而不是选择
+          </n-text>
+          <n-text class="tip" :depth="3"> 该选项同时影响所有字体设置项 </n-text>
+        </div>
+        <n-flex>
+          <n-switch v-model:value="settingStore.inputCustomFont" class="set" :round="false" />
+        </n-flex>
+      </n-card>
+      <n-card class="set-item">
+        <div class="label">
+          <n-text class="name">自定义字体</n-text>
+          <n-text class="tip" :depth="3"> 更改软件内全局字体 </n-text>
+        </div>
+        <n-flex>
+          <Transition name="fade" mode="out-in">
+            <n-button
+              v-if="settingStore.globalFont !== 'default'"
+              type="primary"
+              strong
+              secondary
+              @click="settingStore.globalFont = 'default'"
+            >
+              恢复默认
+            </n-button>
+          </Transition>
+          <n-select
+            v-if="!settingStore.inputCustomFont"
+            v-model:value="settingStore.globalFont"
+            :options="allFontsData"
+            class="set"
+            filterable
+          />
+          <s-input
+            v-else
+            v-model:value="settingStore.globalFont"
+            :update-value-on-input="false"
+            class="set"
+          />
+        </n-flex>
+      </n-card>
     </div>
     <div class="set-list">
       <n-h3 prefix="bar"> 杂项设置 </n-h3>
@@ -190,31 +234,6 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">自定义字体</n-text>
-          <n-text class="tip" :depth="3"> 更改软件内全局字体 </n-text>
-        </div>
-        <n-flex>
-          <Transition name="fade" mode="out-in">
-            <n-button
-              v-if="settingStore.globalFont !== 'default'"
-              type="primary"
-              strong
-              secondary
-              @click="settingStore.globalFont = 'default'"
-            >
-              恢复默认
-            </n-button>
-          </Transition>
-          <n-select
-            v-model:value="settingStore.globalFont"
-            :options="allFontsData"
-            class="set"
-            filterable
-          />
-        </n-flex>
-      </n-card>
-      <n-card class="set-item">
-        <div class="label">
           <n-text class="name">关闭软件时</n-text>
           <n-text class="tip" :depth="3">选择关闭软件的方式</n-text>
         </div>
@@ -323,19 +342,21 @@ const closeTaskbarProgress = (val: boolean) => {
 };
 
 // 获取全部系统字体
-const getAllSystemFonts = async () => {
-  const allFonts = await window.electron.ipcRenderer.invoke("get-all-fonts");
-  allFonts.map((v: string) => {
-    // 去除前后的引号
-    v = v.replace(/^['"]+|['"]+$/g, "");
-    allFontsData.value.push({
-      label: v,
-      value: v,
-      style: {
-        fontFamily: v,
-      },
+const getFontData = async () => {
+  if (isElectron) {
+    const allFonts = await window.electron.ipcRenderer.invoke("get-all-fonts");
+    allFonts.map((v: string) => {
+      // 去除前后的引号
+      v = v.replace(/^['"]+|['"]+$/g, "");
+      allFontsData.value.push({
+        label: v,
+        value: v,
+        style: {
+          fontFamily: v,
+        },
+      });
     });
-  });
+  }
   // 添加默认选项
   allFontsData.value.unshift({
     label: "系统默认",
@@ -406,8 +427,6 @@ const orpheusChange = async (isRegistry: boolean) => {
 };
 
 onMounted(() => {
-  if (isElectron) {
-    getAllSystemFonts();
-  }
+  getFontData();
 });
 </script>

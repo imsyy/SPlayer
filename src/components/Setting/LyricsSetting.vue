@@ -137,6 +137,7 @@
             </n-button>
           </Transition>
           <n-select
+            v-if="!settingStore.inputCustomFont"
             v-model:value="settingStore.LyricFont"
             :options="[
               { label: '跟随全局', value: 'follow' },
@@ -144,6 +145,12 @@
             ]"
             class="set"
             filterable
+          />
+          <s-input
+            v-else
+            v-model:value="settingStore.LyricFont"
+            :update-value-on-input="false"
+            class="set"
           />
         </n-flex>
       </n-card>
@@ -166,6 +173,7 @@
               </n-button>
             </Transition>
             <n-select
+              v-if="!settingStore.inputCustomFont"
               v-model:value="settingStore[item.key]"
               :options="[
                 { label: '跟随全局', value: 'follow' },
@@ -173,6 +181,12 @@
               ]"
               class="set"
               filterable
+            />
+            <s-input
+              v-else
+              v-model:value="settingStore[item.key]"
+              :update-value-on-input="false"
+              class="set"
             />
           </n-flex>
         </n-card>
@@ -536,10 +550,18 @@
             </n-button>
           </Transition>
           <n-select
+            v-if="!settingStore.inputCustomFont"
             v-model:value="desktopLyricConfig.fontFamily"
             :options="allFontsData"
             class="set"
             filterable
+            @update:value="saveDesktopLyricConfig"
+          />
+          <s-input
+            v-else
+            v-model:value="desktopLyricConfig.fontFamily"
+            :update-value-on-input="false"
+            class="set"
             @update:value="saveDesktopLyricConfig"
           />
         </n-flex>
