@@ -294,6 +294,8 @@
       "taskbarProgressTip": "是否在任务栏显示歌曲播放进度",
       "preventSleep": "阻止系统息屏",
       "preventSleepTip": "是否在播放界面阻止系统息屏",
+      "borderlessWindow": "无边框窗口模式",
+      "borderlessWindowTip": "是否开启无边框窗口模式，关闭后将使用系统原生边框（需重启）",
       "orpheus": "通过 Orpheus 协议唤起本应用",
       "orpheusTip": "该协议通常用于官方网页端唤起官方客户端，启用后可能导致官方客户端无法被唤起",
       "checkUpdate": "自动检查更新",

@@ -294,6 +294,8 @@
       "taskbarProgressTip": "タスクバーのアイコンに再生進行状況を表示する",
       "preventSleep": "スリープ防止",
       "preventSleepTip": "再生中はスリープしないようにする",
+      "borderlessWindow": "ボーダーレスウィンドウモード",
+      "borderlessWindowTip": "ボーダーレスウィンドウモードを有効にする。無効にするとシステムのネイティブボーダーを使用します（再起動が必要）",
       "orpheus": "Orpheusプロトコル",
       "orpheusTip": "Orpheusプロトコルによるアプリの起動を許可する",
       "checkUpdate": "自動アップデート確認",

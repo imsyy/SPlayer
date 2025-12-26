@@ -255,7 +255,6 @@
         <div class="label">
           <n-text class="name">{{ t("settings.general.closeAppRemind") }}</n-text>
         </div>
-
         <n-switch v-model:value="settingStore.showCloseAppTip" class="set" :round="false" />
       </n-card>
       <n-card class="set-item">
@@ -263,7 +262,6 @@
           <n-text class="name">{{ t("settings.general.taskbarProgress") }}</n-text>
           <n-text class="tip" :depth="3"> {{ t("settings.general.taskbarProgressTip") }} </n-text>
         </div>
-
         <n-switch
           v-model:value="settingStore.showTaskbarProgress"
           class="set"
@@ -276,14 +274,13 @@
           <n-text class="name">{{ t("settings.general.preventSleep") }}</n-text>
           <n-text class="tip" :depth="3">{{ t("settings.general.preventSleepTip") }}</n-text>
         </div>
-
         <n-switch v-model:value="settingStore.preventSleep" class="set" :round="false" />
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">无边框窗口模式</n-text>
+          <n-text class="name">{{ t("settings.general.borderlessWindow") }}</n-text>
           <n-text class="tip" :depth="3">
-            是否开启无边框窗口模式，关闭后将使用系统原生边框（需重启）
+            {{ t("settings.general.borderlessWindowTip") }}
           </n-text>
         </div>
         <n-switch
@@ -295,12 +292,11 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">通过 Orpheus 协议唤起本应用</n-text>
+          <n-text class="name">{{ t("settings.general.orpheus") }}</n-text>
           <n-text class="tip" :depth="3">
             {{ t("settings.general.orpheusTip") }}
           </n-text>
         </div>
-
         <n-switch
           v-model:value="settingStore.registryProtocol.orpheus"
           class="set"

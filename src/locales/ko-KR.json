@@ -294,6 +294,8 @@
       "taskbarProgressTip": "작업 표시줄 아이콘에 재생 진행률 표시",
       "preventSleep": "절전 모드 방지",
       "preventSleepTip": "재생 중 절전 모드 진입 방지",
+      "borderlessWindow": "테두리 없는 창 모드",
+      "borderlessWindowTip": "테두리 없는 창 모드를 활성화합니다. 비활성화하면 시스템 기본 테두리를 사용합니다（재시작 필요）",
       "orpheus": "Orpheus 프로토콜",
       "orpheusTip": "Orpheus 프로토콜을 통한 앱 실행 허용",
       "checkUpdate": "자동 업데이트 확인",

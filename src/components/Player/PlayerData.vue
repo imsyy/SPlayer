@@ -43,7 +43,9 @@
         <n-popselect
           :value="currentPlayingLevel"
           :options="qualityOptions"
-          :disabled="!!musicStore.playSong.path || statusStore.playUblock || !!musicStore.playSong.pc"
+          :disabled="
+            !!musicStore.playSong.path || statusStore.playUblock || !!musicStore.playSong.pc
+          "
           class="player"
           trigger="click"
           placement="top"
@@ -182,7 +184,6 @@ const qualityOptions = computed<DropdownOption[]>(() => {
           },
           [
             h("span", item.name),
-
             h(
               "span",
               { style: { opacity: 0.6, fontSize: "12px", marginLeft: "6px" } },

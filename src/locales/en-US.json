@@ -294,6 +294,8 @@
       "taskbarProgressTip": "Show playback progress in taskbar",
       "preventSleep": "Prevent Sleep",
       "preventSleepTip": "Prevent system sleep when playing",
+      "borderlessWindow": "Borderless Window Mode",
+      "borderlessWindowTip": "Enable borderless window mode. Disabling will use system native borders (requires restart)",
       "orpheus": "Wake up via Orpheus Protocol",
       "orpheusTip": "Usually used for official web wake-up, enabling may break official client wake-up",
       "checkUpdate": "Auto Check Update",
