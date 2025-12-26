@@ -7,6 +7,7 @@
         '--amll-lp-color': 'rgb(var(--main-cover-color, 239 239 239))',
         '--amll-lp-hover-bg-color': 'rgba(var(--main-cover-color), 0.08)',
       }"
+      @wheel.capture="handleWheel"
     >
       <div v-if="statusStore.lyricLoading" class="lyric-loading">歌词正在加载中...</div>
       <LyricPlayer
@@ -54,6 +55,21 @@ const musicStore = useMusicStore();
 const statusStore = useStatusStore();
 const settingStore = useSettingStore();
 const player = usePlayerController();
+
+// 滚轮缩放歌词大小
+const handleWheel = (e: WheelEvent) => {
+  if (e.ctrlKey) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.deltaY < 0) {
+      if (settingStore.lyricFontSize >= 100) return;
+      settingStore.lyricFontSize += 1;
+    } else {
+      if (settingStore.lyricFontSize <= 20) return;
+      settingStore.lyricFontSize -= 1;
+    }
+  }
+};
 
 const lyricPlayerRef = ref<any | null>(null);
 

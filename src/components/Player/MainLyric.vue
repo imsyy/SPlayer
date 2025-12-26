@@ -23,6 +23,7 @@
     ]"
     @mouseenter="lrcMouseStatus = settingStore.lrcMousePause ? true : false"
     @mouseleave="lrcAllLeave"
+    @wheel.capture="handleWheel"
   >
     <div
       class="lyric-content"
@@ -206,6 +207,21 @@ const lyricsScroll = (index: number) => {
       lrcItemDom?.scrollIntoView({ behavior: "smooth", block: "center" });
     } else {
       lyricScroll.value?.scrollTo({ top: scrollDistance, behavior: "smooth" });
+    }
+  }
+};
+
+// 滚轮缩放歌词大小
+const handleWheel = (e: WheelEvent) => {
+  if (e.ctrlKey) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.deltaY < 0) {
+      if (settingStore.lyricFontSize >= 100) return;
+      settingStore.lyricFontSize += 1;
+    } else {
+      if (settingStore.lyricFontSize <= 20) return;
+      settingStore.lyricFontSize -= 1;
     }
   }
 };
