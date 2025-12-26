@@ -12,7 +12,12 @@
       />
       <n-empty
         v-else
-        :description="`很抱歉，未能找到与 ${keyword} 相关的任何歌曲`"
+        :description="
+          t('searchView.noResult', {
+            keyword: keyword,
+            type: t('searchView.tabs.songs'),
+          })
+        "
         style="margin-top: 60px"
         size="large"
       >
@@ -20,6 +25,7 @@
           <SvgIcon name="SearchOff" />
         </template>
       </n-empty>
+
     </Transition>
   </div>
 </template>
@@ -28,6 +34,10 @@
 import type { SongType } from "@/types/main";
 import { searchResult } from "@/api/search";
 import { formatSongsList } from "@/utils/format";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
+
 
 const props = defineProps<{
   keyword: string;

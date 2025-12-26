@@ -128,13 +128,12 @@ export const coverLoaded = (e: Event) => {
  * @returns 格式化后的数字字符串
  */
 export const formatNumber = (num: number): string => {
-  if (num < 10000) {
-    return num.toString();
-  } else if (num < 100000000) {
-    return `${(num / 10000).toFixed(1)}万`;
-  } else {
-    return `${(num / 100000000).toFixed(1)}亿`;
-  }
+  const settingStore = useSettingStore();
+  const locale = settingStore.language === "zh-CN" ? "zh-CN" : "en-US";
+  return new Intl.NumberFormat(locale, {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(num);
 };
 
 /**

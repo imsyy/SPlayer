@@ -2,9 +2,10 @@
   <div class="setting">
     <div class="set-left">
       <n-flex class="title" :size="0" vertical>
-        <n-h1>设置</n-h1>
-        <n-text :depth="3">个性化与全局设置</n-text>
+        <n-h1>{{ t("settings.title") }}</n-h1>
+        <n-text :depth="3">{{ t("settings.subtitle") }}</n-text>
       </n-flex>
+
       <!-- 设置菜单 -->
       <n-menu
         v-model:value="activeKey"
@@ -48,7 +49,8 @@
         <!-- 关于 -->
         <AboutSetting v-else-if="activeKey === 'about'" />
         <!-- 空白 -->
-        <n-text v-else class="error">暂无该设置项</n-text>
+        <n-text v-else class="error">{{ t("settings.notFound") }}</n-text>
+
       </Transition>
     </n-scrollbar>
   </div>
@@ -56,13 +58,16 @@
 
 <script setup lang="ts">
 import type { MenuOption, NScrollbar } from "naive-ui";
+import { computed, ref } from "vue";
 import type { SettingType } from "@/types/main";
 import { renderIcon } from "@/utils/helper";
 import { isElectron } from "@/utils/env";
 import { useStatusStore } from "@/stores";
 import packageJson from "@/../package.json";
+import { useI18n } from "vue-i18n";
 
 const props = defineProps<{ type: SettingType; scrollTo?: string }>();
+const { t } = useI18n();
 
 const statusStore = useStatusStore();
 
@@ -73,50 +78,54 @@ const setScrollbar = ref<InstanceType<typeof NScrollbar> | null>(null);
 const activeKey = ref<SettingType>(props.type);
 
 // 菜单内容
-const menuOptions: MenuOption[] = [
-  {
-    key: "general",
-    label: "常规设置",
-    icon: renderIcon("SettingsLine"),
-  },
-  {
-    key: "play",
-    label: "播放设置",
-    icon: renderIcon("Music"),
-  },
-  {
-    key: "lyrics",
-    label: "歌词设置",
-    icon: renderIcon("Lyrics"),
-  },
-  {
-    key: "keyboard",
-    label: "快捷键设置",
-    show: isElectron,
-    icon: renderIcon("Keyboard"),
-  },
-  {
-    key: "local",
-    label: "本地与缓存",
-    show: isElectron,
-    icon: renderIcon("Storage"),
-  },
-  {
-    key: "third",
-    label: "连接与集成",
-    icon: renderIcon("Extension"),
-  },
-  {
-    key: "other",
-    label: "其他设置",
-    icon: renderIcon("SettingsOther"),
-  },
-  {
-    key: "about",
-    label: "关于",
-    icon: renderIcon("Info"),
-  },
-];
+const menuOptions = computed(() => {
+  const options: MenuOption[] = [
+    {
+      key: "general",
+      label: t("settings.menu.general"),
+      icon: renderIcon("SettingsLine"),
+    },
+    {
+      key: "play",
+      label: t("settings.menu.play"),
+      icon: renderIcon("Music"),
+    },
+    {
+      key: "lyrics",
+      label: t("settings.menu.lyrics"),
+      icon: renderIcon("Lyrics"),
+    },
+    {
+      key: "keyboard",
+      label: t("settings.menu.keyboard"),
+      show: isElectron,
+      icon: renderIcon("Keyboard"),
+    },
+    {
+      key: "local",
+      label: t("settings.menu.local"),
+      show: isElectron,
+      icon: renderIcon("Storage"),
+    },
+    {
+      key: "third",
+      label: t("settings.menu.third"),
+      icon: renderIcon("Extension"),
+    },
+    {
+      key: "other",
+      label: t("settings.menu.other"),
+      icon: renderIcon("SettingsOther"),
+    },
+    {
+      key: "about",
+      label: t("settings.menu.about"),
+      icon: renderIcon("Info"),
+    },
+  ];
+  return options;
+});
+
 
 // 跳转
 const toGithub = () => {

@@ -15,7 +15,7 @@
             <SvgIcon name="Right" />
           </n-icon>
         </template>
-        {{ catName }}
+        {{ catName === "全部歌单" ? t("discover.playlist.all") : catName }}
       </n-button>
       <!-- 精品 -->
       <Transition name="fade" mode="out-in">
@@ -28,8 +28,8 @@
             (name: string) => changeCatName(catName, name === 'normal' ? 'false' : 'true')
           "
         >
-          <n-tab name="normal"> 推荐 </n-tab>
-          <n-tab name="hq"> 精品 </n-tab>
+          <n-tab name="normal"> {{ t("discover.playlist.recommend") }} </n-tab>
+          <n-tab name="hq"> {{ t("discover.playlist.hq") }} </n-tab>
         </n-tabs>
       </Transition>
     </n-flex>
@@ -50,24 +50,26 @@
     >
       <template #header>
         <n-flex align="center" class="cat-header">
-          <n-text>歌单分类</n-text>
+          <n-text>{{ t("discover.playlist.categories") }}</n-text>
           <n-tag
             :type="catName == '全部歌单' ? 'primary' : 'default'"
             :bordered="false"
             round
             @click="changeCatName('全部歌单')"
           >
-            全部歌单
+            {{ t("discover.playlist.all") }}
           </n-tag>
         </n-flex>
       </template>
+
       <n-tabs type="segment" animated>
         <n-tab-pane
-          v-for="(item, key, index) in dataStore.catData.type"
+          v-for="(_, key, index) in dataStore.catData.type"
           :key="index"
           :name="key"
-          :tab="item"
+          :tab="t(`discover.playlist.cat.${key}`)"
         >
+
           <n-flex class="cat-list">
             <n-tag
               v-for="(cat, catIndex) in dataStore.catData.cats.filter(
@@ -97,6 +99,10 @@ import type { CoverType } from "@/types/main";
 import { useDataStore } from "@/stores";
 import { allCatlistPlaylist } from "@/api/playlist";
 import { formatCoverList } from "@/utils/format";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
+
 
 const router = useRouter();
 const dataStore = useDataStore();
@@ -186,7 +192,8 @@ onMounted(() => {
     }
     .n-tabs {
       height: 40px;
-      width: 140px;
+      width: fit-content;
+      min-width: 240px;
       --n-tab-border-radius: 25px !important;
       :deep(.n-tabs-rail) {
         outline: 1px solid var(--n-tab-color-segment);

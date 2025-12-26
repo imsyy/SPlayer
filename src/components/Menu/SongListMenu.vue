@@ -33,9 +33,11 @@ import { songUrl } from "@/api/song";
 import { dailyRecommendDislike } from "@/api/rec";
 import { formatSongsList } from "@/utils/format";
 import { usePlayerController } from "@/core/player/PlayerController";
+import { useI18n } from "vue-i18n";
 
 const emit = defineEmits<{ removeSong: [index: number[]] }>();
 
+const { t } = useI18n();
 const router = useRouter();
 const dataStore = useDataStore();
 const musicStore = useMusicStore();
@@ -83,7 +85,7 @@ const openDropdown = (
       dropdownOptions.value = [
         {
           key: "play",
-          label: "立即播放",
+          label: t("player.playNow"),
           props: {
             onClick: () => player.addNextSong(song, true),
           },
@@ -91,7 +93,7 @@ const openDropdown = (
         },
         {
           key: "play-next",
-          label: "下一首播放",
+          label: t("player.playNext"),
           show: !isCurrent && !statusStore.personalFmMode,
           props: {
             onClick: () => player.addNextSong(song, false),
@@ -100,7 +102,7 @@ const openDropdown = (
         },
         {
           key: "playlist-add",
-          label: "添加到歌单",
+          label: t("player.addToPlaylist"),
           props: {
             onClick: () => openPlaylistAdd([song], isLocal),
           },
@@ -108,7 +110,7 @@ const openDropdown = (
         },
         {
           key: "mv",
-          label: "观看 MV",
+          label: t("player.watchMV"),
           show: type === "song" && isHasMv,
           props: {
             onClick: () => router.push({ name: "video", query: { id: song.mv, type: "mv" } }),
@@ -121,7 +123,7 @@ const openDropdown = (
         },
         {
           key: "dislike",
-          label: "不感兴趣",
+          label: t("player.notInterested"),
           show: isDailyRecommend && isLoginNormal,
           props: {
             onClick: () => dislikeSong(song, index),
@@ -130,12 +132,12 @@ const openDropdown = (
         },
         {
           key: "more",
-          label: "更多操作",
+          label: t("player.moreOptions"),
           icon: renderIcon("Menu", { size: 18 }),
           children: [
             {
               key: "code-name",
-              label: `复制${type === "song" ? "歌曲" : "节目"}名称`,
+              label: `${t("player.copyName")} (${type === "song" ? t("player.song") : t("player.program")})`,
               props: {
                 onClick: () => copyData(song.name),
               },
@@ -143,7 +145,7 @@ const openDropdown = (
             },
             {
               key: "code-id",
-              label: `复制${type === "song" ? "歌曲" : "节目"} ID`,
+              label: `${t("player.copyId")} (${type === "song" ? t("player.song") : t("player.program")})`,
               show: !isLocal,
               props: {
                 onClick: () => copyData(song.id),
@@ -152,13 +154,13 @@ const openDropdown = (
             },
             {
               key: "share",
-              label: `分享${type === "song" ? "歌曲" : "节目"}链接`,
+              label: `${t("player.shareLink")} (${type === "song" ? t("player.song") : t("player.program")})`,
               show: !isLocal,
               props: {
                 onClick: () =>
                   copyData(
                     `https://music.163.com/#/${type}?id=${song.id}`,
-                    "已复制分享链接到剪切板",
+                    t("general.copyShareLinkSuccess"),
                   ),
               },
               icon: renderIcon("Share", { size: 18 }),
@@ -170,7 +172,7 @@ const openDropdown = (
             },
             {
               key: "meta-edit",
-              label: "音乐标签编辑",
+              label: t("player.metaEdit"),
               show: isLocal,
               props: {
                 onClick: () => {
@@ -187,7 +189,7 @@ const openDropdown = (
         },
         {
           key: "cloud-import",
-          label: "导入至云盘",
+          label: t("player.importToCloud"),
           show: !isCloud && isLoginNormal && type === "song" && !isLocal,
           props: {
             onClick: () => importSongToCloud(song),
@@ -196,7 +198,7 @@ const openDropdown = (
         },
         {
           key: "delete",
-          label: "从歌单中删除",
+          label: t("player.deleteFromPlaylist"),
           show: isUserPlaylist && isLoginNormal && !isCloud,
           props: {
             onClick: () => deleteSongs(playListId!, [song.id], () => emit("removeSong", [song.id])),
@@ -205,7 +207,7 @@ const openDropdown = (
         },
         {
           key: "cloud-delete",
-          label: "从云盘中删除",
+          label: t("player.deleteFromCloud"),
           show: isCloud,
           props: {
             onClick: () => deleteCloudSongData(song, index),
@@ -214,7 +216,7 @@ const openDropdown = (
         },
         {
           key: "delete",
-          label: "从本地磁盘中删除",
+          label: t("player.deleteFromLocal"),
           show: isLocal && !isCurrent,
           props: {
             onClick: () => deleteLocalSong(song),
@@ -223,7 +225,7 @@ const openDropdown = (
         },
         {
           key: "open-folder",
-          label: "打开歌曲所在目录",
+          label: t("player.openFolder"),
           show: isLocal,
           props: {
             onClick: () => window.electron.ipcRenderer.send("open-folder", song.path),
@@ -232,7 +234,7 @@ const openDropdown = (
         },
         {
           key: "cloud-match",
-          label: "云盘歌曲纠正",
+          label: t("player.cloudMatch"),
           show: isCloud,
           props: {
             onClick: () => openCloudMatch(song?.id, index),
@@ -241,7 +243,7 @@ const openDropdown = (
         },
         {
           key: "search",
-          label: "同名搜索",
+          label: t("player.searchSameName"),
           props: {
             onClick: () => router.push({ name: "search", query: { keyword: song.name } }),
           },
@@ -249,14 +251,14 @@ const openDropdown = (
         },
         {
           key: "download",
-          label: "下载歌曲",
+          label: t("player.download"),
           show: statusStore.isDeveloperMode && !isLocal && type === "song" && !isDownloading,
           props: { onClick: () => openDownloadSong(song) },
           icon: renderIcon("Download"),
         },
         {
           key: "retry-download",
-          label: "重试下载",
+          label: t("player.retryDownload"),
           show: statusStore.isDeveloperMode && isDownloading,
           props: { onClick: () => downloadManager.retryDownload(song.id) },
           icon: renderIcon("Refresh"),
@@ -268,8 +270,8 @@ const openDropdown = (
       dropdownShow.value = true;
     });
   } catch (error) {
-    console.error("右键菜单出现异常：", error);
-    window.$message.error("右键菜单出现异常");
+    console.error(t("player.menuError"), error);
+    window.$message.error(t("player.menuError"));
   }
 };
 
@@ -277,18 +279,18 @@ const openDropdown = (
 const deleteLocalSong = (song: SongType) => {
   if (!song.path) return;
   window.$dialog.warning({
-    title: "确认删除",
+    title: t("player.confirmDelete"),
     content: () =>
       h("div", { style: { marginTop: "20px" } }, [
         h(NAlert, { showIcon: false }, { default: () => song.path }),
         h("div", { style: { marginTop: "20px" } }, [
-          `确认从本地磁盘中删除 `,
+          `${t("player.confirmDelete")} `,
           h("strong", null, song.name),
-          `？该操作无法撤销！`,
+          ` ${t("player.localDisk")}?`,
         ]),
       ]),
-    positiveText: "删除",
-    negativeText: "取消",
+    positiveText: t("player.delete"),
+    negativeText: t("general.dialog.cancel"),
     onPositiveClick: async () => {
       const result = await window.electron.ipcRenderer.invoke("delete-file", song.path);
       if (result) {
@@ -300,9 +302,9 @@ const deleteLocalSong = (song: SongType) => {
         if (songToRemoveIndex !== -1) {
           player.removeSongIndex(songToRemoveIndex);
         }
-        window.$message.success(`${song.name} 删除成功`);
+        window.$message.success(`${song.name} ${t("player.deleteSuccess")}`);
       } else {
-        window.$message.error(`${song.name} 删除失败，请重试`);
+        window.$message.error(`${song.name} ${t("player.deleteFail")}`);
       }
     },
   });
@@ -311,10 +313,10 @@ const deleteLocalSong = (song: SongType) => {
 // 删除云盘歌曲
 const deleteCloudSongData = (song: SongType, index: number) => {
   window.$dialog.warning({
-    title: "确认删除",
-    content: `确认从云盘中删除 ${song.name}？该操作无法撤销！`,
-    positiveText: "删除",
-    negativeText: "取消",
+    title: t("player.confirmDelete"),
+    content: `${t("player.confirmDelete")} ${song.name} ${t("player.cloudDisk")}?`,
+    positiveText: t("player.delete"),
+    negativeText: t("general.dialog.cancel"),
     onPositiveClick: async () => {
       const result = await deleteCloudSong(song.id);
       if (result.code == 200) {
@@ -326,9 +328,9 @@ const deleteCloudSongData = (song: SongType, index: number) => {
         if (songToRemoveIndex !== -1) {
           player.removeSongIndex(songToRemoveIndex);
         }
-        window.$message.success("删除成功");
+        window.$message.success(t("player.deleteSuccess"));
       } else {
-        window.$message.error("删除失败，请重试");
+        window.$message.error(t("player.deleteFail"));
       }
     },
   });
@@ -346,19 +348,19 @@ const importSongToCloud = async (song: SongType) => {
   if (result.code === 200) {
     const failed = result?.data?.failed?.[0];
     if (failed?.code !== -200) {
-      window.$message.success("导入成功");
+      window.$message.success(t("player.importSuccess"));
     } else {
-      window.$message.error(failed?.msg || "导入失败，请重试");
+      window.$message.error(failed?.msg || t("player.importFail"));
     }
   } else {
-    window.$message.error("导入失败，请重试");
+    window.$message.error(t("player.importFail"));
   }
 };
 
 // 每日推荐 - 不感兴趣
 const dislikeSong = async (song: SongType, index: number) => {
   if (!song?.id) return;
-  const loadingMessage = window.$message.loading("正在不感兴趣...", { duration: 0 });
+  const loadingMessage = window.$message.loading(t("player.markingNotInterested"), { duration: 0 });
   try {
     const result = await dailyRecommendDislike(song.id);
     // 关闭 loading
@@ -378,15 +380,15 @@ const dislikeSong = async (song: SongType, index: number) => {
         list: currentList,
         timestamp: Date.now(),
       };
-      window.$message.success("已标记为不感兴趣");
+      window.$message.success(t("player.markedNotInterested"));
     } else {
-      window.$message.error("操作失败，请重试");
+      window.$message.error(t("player.operationFailed"));
     }
   } catch (error) {
     // 关闭 loading
     loadingMessage.destroy();
-    window.$message.error("操作失败，请重试");
-    console.error("不感兴趣操作失败：", error);
+    window.$message.error(t("player.operationFailed"));
+    console.error(t("player.operationFailed"), error);
   }
 };
 

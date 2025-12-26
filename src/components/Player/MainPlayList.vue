@@ -10,8 +10,8 @@
     <n-drawer-content :native-scrollbar="false" closable>
       <template #header>
         <div class="playlist-header">
-          <n-text class="name">播放队列</n-text>
-          <n-text class="count" depth="3"> {{ dataStore.playList.length }} 首歌曲 </n-text>
+          <n-text class="name">{{ t("player.queue") }}</n-text>
+          <n-text class="count" depth="3"> {{ dataStore.playList.length }} {{ t("general.list.songUnit") }} </n-text>
         </div>
       </template>
       <Transition name="fade" mode="out-in">
@@ -51,17 +51,17 @@
               </div>
               <!-- 信息 -->
               <div class="data">
-                <n-text class="name text-hidden">{{ songData.name || "未知曲目" }}</n-text>
+                <n-text class="name text-hidden">{{ songData.name || t("player.unknownTrack") }}</n-text>
                 <div v-if="Array.isArray(songData?.artists)" class="artists">
                   <n-text v-for="ar in songData.artists" :key="ar.id" depth="3" class="ar">
                     {{ ar.name }}
                   </n-text>
                 </div>
                 <div v-else-if="songData.type === 'radio'" class="artists">
-                  <n-text class="ar" depth="3"> 播客电台 </n-text>
+                  <n-text class="ar" depth="3"> {{ t("menu.podcast") }} </n-text>
                 </div>
                 <div v-else class="artists">
-                  <n-text class="ar" depth="3"> {{ songData?.artists || "未知艺术家" }} </n-text>
+                  <n-text class="ar" depth="3"> {{ songData?.artists || t("general.unknownArtist") }} </n-text>
                 </div>
               </div>
               <!-- 移除 -->
@@ -73,7 +73,7 @@
         </VirtualScroll>
         <n-empty
           v-else
-          description="播放列表暂无歌曲，快去添加吧"
+          :description="t('player.emptyQueue')"
           class="tip"
           size="large"
           style="margin-top: 60px"
@@ -86,7 +86,7 @@
               <template #icon>
                 <SvgIcon name="DeleteSweep" />
               </template>
-              清空列表
+              {{ t("player.clearQueue") }}
             </n-button>
           </n-gi>
           <n-gi>
@@ -100,7 +100,7 @@
               <template #icon>
                 <SvgIcon name="Location" />
               </template>
-              当前播放
+              {{ t("player.currentPlaying") }}
             </n-button>
           </n-gi>
         </n-grid>
@@ -113,7 +113,9 @@
 import { useStatusStore, useDataStore } from "@/stores";
 import VirtualScroll from "@/components/UI/VirtualScroll.vue";
 import { usePlayerController } from "@/core/player/PlayerController";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const dataStore = useDataStore();
 const statusStore = useStatusStore();
 const player = usePlayerController();
@@ -138,13 +140,13 @@ const scrollToItem = (index: number) => {
 // 清空播放列表
 const cleanPlayList = () => {
   window.$dialog.warning({
-    title: "清空播放列表",
-    content: "确认清空全部播放列表吗？",
-    positiveText: "确认",
-    negativeText: "取消",
+    title: t("player.clearQueue"),
+    content: t("player.clearQueueConfirm"),
+    positiveText: t("general.dialog.confirm"),
+    negativeText: t("general.dialog.cancel"),
     onPositiveClick: () => {
       player.cleanPlayList();
-      window.$message.success("播放列表已清空");
+      window.$message.success(t("player.queueCleared"));
     },
   });
 };

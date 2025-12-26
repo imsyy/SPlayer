@@ -5,17 +5,17 @@
         <template #icon>
           <SvgIcon name="NavigateBefore" />
         </template>
-        返回全部
+        {{ t("discover.radio.back") }}
       </n-button>
       <n-h1 class="title">{{ radioName }}</n-h1>
     </div>
     <!-- 分类 -->
     <n-tabs class="tabs" type="segment" animated>
       <!-- 类别热门 -->
-      <n-tab-pane name="type-hot" tab="热门">
+      <n-tab-pane name="type-hot" :tab="t('discover.radio.hot')">
         <CoverList :data="radioHotData" :loading="true" type="radio" />
       </n-tab-pane>
-      <n-tab-pane name="type-rec" tab="推荐">
+      <n-tab-pane name="type-rec" :tab="t('discover.radio.recommend')">
         <CoverList :data="radioRecData" :loading="true" type="radio" />
       </n-tab-pane>
     </n-tabs>
@@ -26,7 +26,9 @@
 import { radioCatHot, radioCatRecommend } from "@/api/radio";
 import type { CoverType } from "@/types/main";
 import { formatCoverList } from "@/utils/format";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const router = useRouter();
 
 // 播客数据
@@ -51,9 +53,10 @@ const getRadioTypeData = async () => {
     radioRecData.value = formatCoverList(recRec.djRadios);
   } catch (error) {
     console.error("Error getting rec radio:", error);
-    window.$message.error("获取电台分类出现错误");
+    window.$message.error(t("discover.radio.error.type"));
   }
 };
+
 
 onBeforeRouteUpdate((to) => {
   if (to.name !== "radio-type") return;

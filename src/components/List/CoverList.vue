@@ -107,12 +107,13 @@
       </n-grid>
     </div>
     <!-- 空列表 -->
-    <n-empty v-else description="空空如也，怎么什么都没有啊" size="large" />
+    <n-empty v-else :description="$t('general.list.emptyDesc')" size="large" />
   </Transition>
 </template>
 
 <script setup lang="ts">
 import type { CoverType, SongType } from "@/types/main";
+import { NEmpty } from "naive-ui";
 import { albumDetail } from "@/api/album";
 import { formatNumber } from "@/utils/helper";
 import { useMusicStore, useStatusStore } from "@/stores";

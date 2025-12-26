@@ -6,7 +6,8 @@
       <div v-if="videoData" class="info">
         <n-h2 class="name">
           <n-ellipsis :line-clamp="1" :tooltip="{ placement: 'bottom' }">
-            {{ videoData.name || "未知视频" }}
+            {{ videoData.name || t("video.unknownVideo") }}
+
           </n-ellipsis>
         </n-h2>
         <n-flex class="meta" align="center">
@@ -47,7 +48,10 @@
           "
         >
           <n-avatar :src="artistData?.cover || '/images/artist.jpg?asset'" class="cover" round />
-          <n-text class="name">{{ artistData?.name || "未知歌手" }}</n-text>
+          <div class="name-container">
+            <n-text class="name">{{ artistData?.name || t("video.unknownArtist") }}</n-text>
+            <n-text class="tip" depth="3">{{ t("video.viewDetails") }}</n-text>
+          </div>
         </div>
         <n-flex class="control">
           <!-- 点赞 -->
@@ -81,7 +85,7 @@
       <div v-if="videoData" class="desc">
         <n-divider />
         <n-ellipsis :line-clamp="3" :tooltip="{ placement: 'bottom', width: 'trigger' }">
-          {{ videoData?.description || "该视频暂无简介" }}
+          {{ videoData?.description || t("video.noDesc") }}
         </n-ellipsis>
         <n-flex v-if="videoData?.tags" class="tags">
           <n-tag v-for="(item, index) in videoData.tags" :key="index" :bordered="false" round>
@@ -98,7 +102,7 @@
     <div class="comment">
       <n-flex class="title" justify="space-between">
         <n-h3 prefix="bar">
-          评论
+          {{ t("video.comments") }}
           <n-text class="num" depth="3">{{ videoData?.commentCount || 0 }}</n-text>
         </n-h3>
         <n-flex class="tag">
@@ -133,11 +137,15 @@ import { isArray, isEmpty } from "lodash-es";
 import { formatNumber } from "@/utils/helper";
 import { getComment } from "@/api/comment";
 import { usePlayerController } from "@/core/player/PlayerController";
-// Plyr
+// @ts-ignore
+
 import Plyr from "plyr";
+
 import "plyr/dist/plyr.css";
 import { formatTimestamp } from "@/utils/time";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const router = useRouter();
 const player = usePlayerController();
 const statusStore = useStatusStore();
@@ -162,7 +170,9 @@ const commentData = ref<CommentType[]>([]);
 const commentType = ref<"hot" | "new">("hot");
 const commentPage = ref<number>(1);
 const commentHasMore = ref<boolean>(true);
-const commentText = { hot: "最热", new: "最新" };
+
+const commentText = computed(() => ({ hot: t("video.sort.hot"), new: t("video.sort.new") }));
+
 
 // 歌手数据
 const artistData = computed(
@@ -170,7 +180,7 @@ const artistData = computed(
 );
 
 // 播放器配置
-const playerOptions: Plyr.Options = {
+const playerOptions = computed<Plyr.Options>(() => ({
   controls: [
     "play-large",
     "play",
@@ -193,34 +203,38 @@ const playerOptions: Plyr.Options = {
     options: [1080, 720, 480, 240],
   },
   i18n: {
-    play: "播放",
-    pause: "暂停",
-    speed: "速度",
-    settings: "设置",
-    normal: "正常",
-    quality: "画质",
-    pip: "画中画",
-    enterFullscreen: "开启全屏",
-    exitFullscreen: "退出全屏",
-    mute: "音量",
-    unmute: "静音",
+    play: t("video.player.play"),
+    pause: t("video.player.pause"),
+    speed: t("video.player.speed"),
+    settings: t("video.player.settings"),
+    normal: t("video.player.normal"),
+    quality: t("video.player.quality"),
+    pip: t("video.player.pip"),
+    enterFullscreen: t("video.player.enterFullscreen"),
+    exitFullscreen: t("video.player.exitFullscreen"),
+    mute: t("video.player.mute"),
+    unmute: t("video.player.unmute"),
   },
   tooltips: {
     controls: true,
   },
-};
+}));
+
 
 // 初始化播放器
 const initPlayer = () => {
   videoData.value = null;
+
   videoPlayer.value?.destroy();
-  if (videoRef.value) videoPlayer.value = new Plyr(videoRef.value, playerOptions);
+  if (videoRef.value) videoPlayer.value = new Plyr(videoRef.value, playerOptions.value);
   // 播放器事件
+
   videoPlayer.value?.on("playing", () => {
     player.pause();
   });
 };
 
+// 获取视频数据
 // 获取视频数据
 const getVideoData = async (id: number, type: "mv" | "video") => {
   try {
@@ -233,9 +247,10 @@ const getVideoData = async (id: number, type: "mv" | "video") => {
     // 获取视频地址
     const brs = detail.data?.brs;
     if (isEmpty(brs)) {
-      window.$message.error("播放地址获取失败");
+      window.$message.error(t("video.error.url"));
       return;
     }
+
     const requests = brs.map(async (v: any) => {
       try {
         const result = await videoUrl(id, type, v.br);
@@ -249,6 +264,7 @@ const getVideoData = async (id: number, type: "mv" | "video") => {
         return null;
       }
     });
+
     const sources = (await Promise.all(requests)).filter((source) => source !== null);
     // 更改播放地址
     videoPlayer.value.source = {
@@ -261,9 +277,10 @@ const getVideoData = async (id: number, type: "mv" | "video") => {
     getCommentData(id);
   } catch (error) {
     console.error("Error getting video data:", error);
-    window.$message.error("获取视频数据失败");
+    window.$message.error(t("video.error.data"));
   }
 };
+
 
 // 获取评论数据
 const getCommentData = async (id: number, clean: boolean = true) => {
@@ -298,8 +315,10 @@ const getCommentData = async (id: number, clean: boolean = true) => {
     commentLoading.value = false;
   } catch (error) {
     console.error("Error getting comment data:", error);
-    window.$message.error("获取评论数据失败");
+    window.$message.error(t("video.error.comment"));
   }
+
+
 };
 
 // 加载更多评论
@@ -419,15 +438,15 @@ onUnmounted(() => {
         width: 40px;
         height: 40px;
       }
-      .name {
+      .name-container {
         display: inline-flex;
         flex-direction: column;
-        font-size: 16px;
-        font-weight: bold;
-        &::after {
-          content: "查看详情";
+        .name {
+          font-size: 16px;
+          font-weight: bold;
+        }
+        .tip {
           font-size: 12px;
-          font-weight: normal;
           opacity: 0.6;
         }
       }
@@ -436,6 +455,7 @@ onUnmounted(() => {
       border-radius: 8px;
     }
   }
+
   .desc {
     padding: 0 6px;
     margin-bottom: 20px;

@@ -1,11 +1,15 @@
 <template>
-  <n-result status="500" title="服务器错误" description="服务器寄了，等会再试吧">
+  <n-result status="500" :title="t('general.status.500.title')" :description="t('general.status.500.desc')">
     <template #footer>
-      <n-button type="primary" @click="router.go(0)"> 重新载入 </n-button>
+      <n-button type="primary" @click="router.go(0)"> {{ t("general.status.reload") }} </n-button>
     </template>
   </n-result>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 const router = useRouter();
 </script>
+

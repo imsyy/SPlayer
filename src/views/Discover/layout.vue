@@ -1,7 +1,7 @@
 <template>
   <div class="discover">
     <div class="title">
-      <n-text class="keyword">发现音乐</n-text>
+      <n-text class="keyword">{{ t("discover.title") }}</n-text>
     </div>
     <!-- 标签页 -->
     <n-tabs
@@ -10,10 +10,10 @@
       type="segment"
       @update:value="(name: string) => router.push({ name })"
     >
-      <n-tab name="discover-playlists"> 歌单广场 </n-tab>
-      <n-tab name="discover-toplists"> 排行榜 </n-tab>
-      <n-tab name="discover-artists"> 歌手 </n-tab>
-      <n-tab name="discover-new"> 最新音乐 </n-tab>
+      <n-tab name="discover-playlists"> {{ t("discover.playlists") }} </n-tab>
+      <n-tab name="discover-toplists"> {{ t("discover.toplists") }} </n-tab>
+      <n-tab name="discover-artists"> {{ t("discover.artists") }} </n-tab>
+      <n-tab name="discover-new"> {{ t("discover.new") }} </n-tab>
     </n-tabs>
     <!-- 路由 -->
     <RouterView v-slot="{ Component }">
@@ -29,7 +29,9 @@
 
 <script setup lang="ts">
 import { useSettingStore } from "@/stores";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const router = useRouter();
 const settingStore = useSettingStore();
 
@@ -38,6 +40,7 @@ const discoverType = ref<string>(
   (router.currentRoute.value?.name as string) || "discover-playlists",
 );
 </script>
+
 
 <style lang="scss" scoped>
 .discover {

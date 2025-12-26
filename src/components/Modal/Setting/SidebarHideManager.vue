@@ -28,22 +28,26 @@
 <script setup lang="ts">
 import { NScrollbar } from "naive-ui";
 import { useSettingStore } from "@/stores";
+import { useI18n } from "vue-i18n";
+import { computed } from "vue";
+
+const { t } = useI18n();
 
 const settingStore = useSettingStore();
 
-const sidebarItems = [
-  { label: "发现音乐", key: "hideDiscover" },
-  { label: "私人漫游", key: "hidePersonalFM" },
-  { label: "播客电台", key: "hideRadioHot" },
-  { label: "我的收藏", key: "hideLike" },
-  { label: "我的云盘", key: "hideCloud" },
-  { label: "下载管理", key: "hideDownload" },
-  { label: "本地歌曲", key: "hideLocal" },
-  { label: "最近播放", key: "hideHistory" },
-  { label: "创建的歌单", key: "hideUserPlaylists" },
-  { label: "收藏的歌单", key: "hideLikedPlaylists" },
-  { label: "心动模式", key: "hideHeartbeatMode" },
-] as const;
+const sidebarItems = computed(() => [
+  { label: t("menu.discover"), key: "hideDiscover" as keyof typeof settingStore },
+  { label: t("menu.roaming"), key: "hidePersonalFM" as keyof typeof settingStore },
+  { label: t("menu.podcast"), key: "hideRadioHot" as keyof typeof settingStore },
+  { label: t("menu.myCollection"), key: "hideLike" as keyof typeof settingStore },
+  { label: t("menu.myCloud"), key: "hideCloud" as keyof typeof settingStore },
+  { label: t("menu.download"), key: "hideDownload" as keyof typeof settingStore },
+  { label: t("menu.local"), key: "hideLocal" as keyof typeof settingStore },
+  { label: t("menu.recent"), key: "hideHistory" as keyof typeof settingStore },
+  { label: t("menu.createdList"), key: "hideUserPlaylists" as keyof typeof settingStore },
+  { label: t("menu.collectedList"), key: "hideLikedPlaylists" as keyof typeof settingStore },
+  { label: t("menu.heartbeatMode"), key: "hideHeartbeatMode" as keyof typeof settingStore },
+]);
 
 const updateSetting = (key: keyof typeof settingStore, val: boolean) => {
   // @ts-ignore

@@ -44,6 +44,9 @@ import { songDetail } from "@/api/song";
 import { formatSongsList } from "@/utils/format";
 import SearchInpMenu from "@/components/Menu/SearchInpMenu.vue";
 
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 const router = useRouter();
 const dataStore = useDataStore();
 const statusStore = useStatusStore();
@@ -56,8 +59,9 @@ const searchInpMenuRef = ref<InstanceType<typeof SearchInpMenu> | null>(null);
 // 搜索框数据
 const searchInputRef = ref<HTMLInputElement | null>(null);
 const searchPlaceholder = ref<string>(
-  settingStore.useOnlineService ? "搜索音乐 / 视频" : "搜索本地音乐",
+  settingStore.useOnlineService ? t("nav.search.placeholder") : t("nav.search.local"),
 );
+
 const searchRealkeyword = ref<string>("");
 
 // 搜索框输入限制
@@ -87,18 +91,18 @@ const setSearchHistory = (keyword: string) => {
 // 更换搜索框关键词
 const updatePlaceholder = async () => {
   if (!settingStore.enableSearchKeyword) {
-    searchPlaceholder.value = "搜索音乐 / 视频";
+    searchPlaceholder.value = t("nav.search.placeholder");
     return;
   }
   try {
     const result = await searchDefault();
-    searchPlaceholder.value = result.data.showKeyword;
-    searchRealkeyword.value = result.data.realkeyword;
+    searchPlaceholder.value = t("nav.search.placeholder");
   } catch (error) {
     console.error("搜索关键词获取失败：", error);
-    searchPlaceholder.value = "搜索音乐 / 视频";
+    searchPlaceholder.value = t("nav.search.placeholder");
   }
 };
+
 
 // 前往搜索
 const toSearch = async (key: any, type: string = "keyword") => {
@@ -106,10 +110,11 @@ const toSearch = async (key: any, type: string = "keyword") => {
   statusStore.searchFocus = false;
   searchInputRef.value?.blur();
   // 未输入内容且不存在推荐
-  if (!key && searchPlaceholder.value === "搜索音乐 / 视频") return;
-  if (!key && searchPlaceholder.value !== "搜索音乐 / 视频" && searchRealkeyword.value) {
+  if (!key && searchPlaceholder.value === t("nav.search.placeholder")) return;
+  if (!key && searchPlaceholder.value !== t("nav.search.placeholder") && searchRealkeyword.value) {
     key = searchRealkeyword.value?.trim();
   }
+
   // 本地搜索
   if (!settingStore.useOnlineService) {
     // 跳转本地搜索页面

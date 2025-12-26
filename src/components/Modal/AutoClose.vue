@@ -5,7 +5,7 @@
         <n-flex size="small" align="center">
           <SvgIcon name="TimeAuto" size="22" />
           <Transition name="fade" mode="out-in">
-            <n-text v-if="!statusStore.autoClose.enable"> 未开启 </n-text>
+            <n-text v-if="!statusStore.autoClose.enable"> {{ t("player.notEnabled") }} </n-text>
             <n-text v-else strong>
               {{ convertSecondsToTime(statusStore.autoClose.remainTime) }}
             </n-text>
@@ -43,22 +43,24 @@
         @positive-click="player.startAutoCloseTimer(customTime, customTime * 60)"
       >
         <template #trigger>
-          <n-tag :bordered="false" type="primary" size="large" round> 自定义时长 </n-tag>
+          <n-tag :bordered="false" type="primary" size="large" round>
+            {{ t("player.customDuration") }}
+          </n-tag>
         </template>
         <n-flex vertical>
-          <n-text>自定义时长（分钟）</n-text>
+          <n-text>{{ t("player.customDuration") }} ({{ t("general.minute") }})</n-text>
           <n-input-number
             v-model:value="customTime"
             :min="1"
             :max="120"
-            placeholder="请输入自定义时长"
+            :placeholder="t('player.customDuration')"
           />
         </n-flex>
       </n-popconfirm>
     </n-flex>
     <!-- 是否播放完 -->
     <n-checkbox v-model:checked="statusStore.autoClose.waitSongEnd">
-      等待整首歌曲播放完成再停止播放
+      {{ t("player.waitForSongEnd") }}
     </n-checkbox>
   </n-flex>
 </template>
@@ -67,7 +69,9 @@
 import { useStatusStore } from "@/stores";
 import { convertSecondsToTime } from "@/utils/time";
 import { usePlayerController } from "@/core/player/PlayerController";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const player = usePlayerController();
 const statusStore = useStatusStore();
 

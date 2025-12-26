@@ -12,6 +12,9 @@ import initIpc from "@/utils/initIpc";
 // use-store
 import { useSettingStore } from "@/stores";
 import { sendRegisterProtocol } from "@/utils/protocol";
+// i18n
+import i18n from "@/i18n";
+
 // 全局样式
 import "@/style/main.scss";
 import "@/style/animate.scss";
@@ -26,6 +29,9 @@ pinia.use(piniaPluginPersistedstate);
 app.use(pinia);
 // router
 app.use(router);
+// i18n
+app.use(i18n);
+
 // 自定义指令
 app.directive("debounce", debounceDirective);
 app.directive("throttle", throttleDirective);

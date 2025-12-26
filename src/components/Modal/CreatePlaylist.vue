@@ -1,24 +1,24 @@
 <template>
   <div class="create-playlist">
     <n-tabs v-model:value="playlistType" type="segment" animated>
-      <n-tab-pane :disabled="isLogin() !== 1" name="online" tab="在线歌单">
+      <n-tab-pane :disabled="isLogin() !== 1" name="online" :tab="t('menu.onlinePlaylist')">
         <n-form ref="onlineFormRef" :model="onlineFormData" :rules="onlineFormRules">
-          <n-form-item label="歌单名称" path="name">
-            <n-input v-model:value="onlineFormData.name" placeholder="请输入歌单名称" />
+          <n-form-item :label="t('menu.playlistName')" path="name">
+            <n-input v-model:value="onlineFormData.name" :placeholder="t('menu.playlistNamePlaceholder')" />
           </n-form-item>
-          <n-form-item label="歌单类型" path="type">
+          <n-form-item :label="t('menu.playlistType')" path="type">
             <n-select v-model:value="onlineFormData.type" :options="onlinePlaylistType" />
           </n-form-item>
-          <n-form-item label="设为隐私歌单" path="privacy" label-placement="left">
+          <n-form-item :label="t('menu.setPrivate')" path="privacy" label-placement="left">
             <n-switch v-model:value="onlineFormData.privacy" />
           </n-form-item>
         </n-form>
       </n-tab-pane>
-      <n-tab-pane name="local" tab="本地歌单">
-        <n-empty description="暂未实现" />
+      <n-tab-pane name="local" :tab="t('menu.localPlaylist')">
+        <n-empty :description="t('menu.notImplemented')" />
       </n-tab-pane>
     </n-tabs>
-    <n-button class="create" type="primary" @click="toCreatePlaylist"> 新建 </n-button>
+    <n-button class="create" type="primary" @click="toCreatePlaylist"> {{ t("modal.create") }} </n-button>
   </div>
 </template>
 
@@ -29,6 +29,9 @@ import { textRule } from "@/utils/rules";
 import { debounce } from "lodash-es";
 import { createPlaylist } from "@/api/playlist";
 import { isLogin, updateUserLikePlaylist } from "@/utils/auth";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const emit = defineEmits<{ close: [] }>();
 
@@ -50,22 +53,22 @@ const onlineFormData = ref<OnlineFormType>({ name: "", type: "NORMAL", privacy: 
 const onlineFormRules: FormRules = { name: textRule };
 
 // 在线歌单类型
-const onlinePlaylistType: SelectOption[] = [
+const onlinePlaylistType = computed<SelectOption[]>(() => [
   {
-    label: "普通歌单",
+    label: t("menu.typeNormal"),
     value: "NORMAL",
   },
   {
-    label: "视频歌单",
+    label: t("menu.typeVideo"),
     disabled: true,
     value: "VIDEO",
   },
   {
-    label: "共享歌单",
+    label: t("menu.typeShared"),
     disabled: true,
     value: "SHARED",
   },
-];
+]);
 
 // 新建歌单
 const toCreatePlaylist = debounce(
@@ -82,13 +85,13 @@ const toCreatePlaylist = debounce(
       );
       if (result.code === 200) {
         emit("close");
-        window.$message.success("新建歌单成功");
+        window.$message.success(t("menu.createSuccess"));
         if (dataStore.userData.createdPlaylistCount) {
           dataStore.userData.createdPlaylistCount++;
         }
         await updateUserLikePlaylist();
       } else {
-        window.$message.error(result.message || "新建歌单失败，请重试");
+        window.$message.error(result.message || t("menu.createFailed"));
       }
     }
   },

@@ -1,7 +1,7 @@
 <template>
   <div class="like">
     <div class="title">
-      <n-text class="keyword">我的收藏</n-text>
+      <n-text class="keyword">{{ t("menu.myCollection") }}</n-text>
       <n-flex v-if="dataStore.loginType !== 'uid'" class="status">
         <div
           v-for="(item, index) in likeData"
@@ -22,11 +22,11 @@
       type="segment"
       @update:value="(name: string) => router.push({ name })"
     >
-      <n-tab name="like-playlists"> 歌单 </n-tab>
-      <n-tab name="like-albums"> 专辑 </n-tab>
-      <n-tab name="like-artists"> 歌手 </n-tab>
-      <n-tab name="like-videos"> 视频 </n-tab>
-      <n-tab name="like-radios"> 播客 </n-tab>
+      <n-tab name="like-playlists"> {{ t("auth.playlist") }} </n-tab>
+      <n-tab name="like-albums"> {{ t("auth.album") }} </n-tab>
+      <n-tab name="like-artists"> {{ t("auth.artist") }} </n-tab>
+      <n-tab name="like-videos"> {{ t("menu.discoverVideo") }} </n-tab>
+      <n-tab name="like-radios"> {{ t("auth.radio") }} </n-tab>
     </n-tabs>
     <!-- 路由 -->
     <RouterView v-slot="{ Component }">
@@ -42,6 +42,9 @@
 
 <script setup lang="ts">
 import { useDataStore, useSettingStore } from "@/stores";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const router = useRouter();
 const dataStore = useDataStore();

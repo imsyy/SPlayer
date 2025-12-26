@@ -1,19 +1,19 @@
 <template>
   <div class="download">
     <div class="title">
-      <n-text class="keyword">下载管理</n-text>
+      <n-text class="keyword">{{ t("menu.download") }}</n-text>
       <n-flex class="status">
         <n-text class="item">
           <SvgIcon name="Music" :depth="3" />
-          <n-number-animation :from="0" :to="currentCount" /> 首歌曲
+          <n-number-animation :from="0" :to="currentCount" /> {{ t("general.list.songUnit") }}
         </n-text>
         <n-text v-if="currentTab === 'download-downloaded'" class="item" depth="3">
           <SvgIcon name="Download" :depth="3" />
-          <n-number-animation :from="0" :to="dataStore.downloadingSongs.length" /> 下载中
+          <n-number-animation :from="0" :to="dataStore.downloadingSongs.length" /> {{ t("download.downloading") }}
         </n-text>
         <n-text v-else class="item" depth="3">
           <SvgIcon name="DownloadDone" :depth="3" />
-          <n-number-animation :from="0" :to="listData.length" /> 已完成
+          <n-number-animation :from="0" :to="listData.length" /> {{ t("download.completed") }}
         </n-text>
       </n-flex>
     </div>
@@ -31,7 +31,7 @@
           <template #icon>
             <SvgIcon name="Play" />
           </template>
-          播放全部
+          {{ t("video.player.play") }}
         </n-button>
         <n-button
           :focusable="false"
@@ -61,8 +61,8 @@
           type="segment"
           @update:value="handleTabChange"
         >
-          <n-tab name="download-downloaded"> 下载完成 </n-tab>
-          <n-tab name="download-downloading"> 下载中 </n-tab>
+          <n-tab name="download-downloaded"> {{ t("download.completedTab") }} </n-tab>
+          <n-tab name="download-downloading"> {{ t("download.downloadingTab") }} </n-tab>
         </n-tabs>
       </n-flex>
     </n-flex>
@@ -82,7 +82,9 @@ import { formatSongsList } from "@/utils/format";
 import { usePlayerController } from "@/core/player/PlayerController";
 import type { MessageReactive } from "naive-ui";
 import { useDownloadManager } from "@/core/resource/DownloadManager";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const dataStore = useDataStore();
@@ -137,12 +139,12 @@ const getDownloadMusic = async (showTip: boolean = false) => {
   try {
     const path = settingStore.downloadPath;
     if (!path) {
-      if (showTip) window.$message.warning("未设置下载路径");
+      if (showTip) window.$message.warning(t("download.noPathSet"));
       return;
     }
 
     if (showTip) {
-      loadingMsg.value = window.$message.loading("正在获取下载歌曲", {
+      loadingMsg.value = window.$message.loading(t("download.gettingDownloads"), {
         duration: 0,
       });
     }
@@ -152,13 +154,13 @@ const getDownloadMusic = async (showTip: boolean = false) => {
 
     if (result) {
       listData.value = formatSongsList(result);
-      if (showTip) window.$message.success(`已发现 ${listData.value.length} 首`);
+      if (showTip) window.$message.success(`${t("download.found")} ${listData.value.length} ${t("general.list.songUnit")}`);
     } else {
       listData.value = [];
     }
   } catch (error) {
-    console.error("获取下载音乐失败:", error);
-    window.$message.error("获取下载音乐失败");
+    console.error(t("download.getFailed"), error);
+    window.$message.error(t("download.getFailed"));
   } finally {
     loading.value = false;
     loadingMsg.value?.destroy();

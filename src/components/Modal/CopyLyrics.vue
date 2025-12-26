@@ -23,15 +23,15 @@
       <n-flex align="center">
         <n-checkbox-group v-model:value="selectedFilters">
           <n-flex align="center">
-            <n-checkbox value="translation" label="翻译" />
-            <n-checkbox value="romaji" label="音译" />
+            <n-checkbox value="translation" :label="t('lyrics.translation')" />
+            <n-checkbox value="romaji" :label="t('lyrics.transliteration')" />
           </n-flex>
         </n-checkbox-group>
       </n-flex>
       <n-flex align="center">
-        <n-button @click="selectAll">全选</n-button>
+        <n-button @click="selectAll">{{ t("lyrics.selectAll") }}</n-button>
         <n-button type="primary" :disabled="selectedLines.length === 0" @click="handleCopy">
-          复制 ({{ selectedLines.length }})
+          {{ t("lyrics.copy") }} ({{ selectedLines.length }})
         </n-button>
       </n-flex>
     </n-flex>
@@ -41,7 +41,9 @@
 <script setup lang="ts">
 import { useMusicStore } from "@/stores";
 import { copyData } from "@/utils/helper";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const props = defineProps<{ onClose: () => void }>();
 
 const musicStore = useMusicStore();
@@ -100,7 +102,7 @@ const handleCopy = async () => {
     await copyData(linesToCopy);
     props.onClose();
   } else {
-    window.$message.warning("没有可复制的内容");
+    window.$message.warning(t("lyrics.nothingToCopy"));
   }
 };
 </script>

@@ -75,6 +75,9 @@ import { openAutoClose, openChangeRate, openEqualizer } from "@/utils/modal";
 import { isElectron } from "@/utils/env";
 import { renderIcon } from "@/utils/helper";
 import { usePlayerController } from "@/core/player/PlayerController";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const dataStore = useDataStore();
 const musicStore = useMusicStore();
@@ -83,28 +86,28 @@ const settingStore = useSettingStore();
 const player = usePlayerController();
 
 // 播放模式数据
-const playModeOptions: DropdownOption[] = [
+const playModeOptions = computed<DropdownOption[]>(() => [
   {
-    label: "列表循环",
+    label: t("player.repeatList"),
     key: "repeat",
     icon: renderIcon("Repeat"),
   },
   {
-    label: "单曲循环",
+    label: t("player.repeatSong"),
     key: "repeat-once",
     icon: renderIcon("RepeatSong"),
   },
   {
-    label: "随机播放",
+    label: t("player.shuffle"),
     key: "shuffle",
     icon: renderIcon("Shuffle"),
   },
-];
+]);
 
 // 其他控制：播放速度下拉菜单
 const controlsOptions = computed<DropdownOption[]>(() => [
   {
-    label: "均衡器",
+    label: t("player.equalizer"),
     key: "equalizer",
     icon: renderIcon("Eq"),
     props: {
@@ -112,7 +115,7 @@ const controlsOptions = computed<DropdownOption[]>(() => [
     },
   },
   {
-    label: "自动关闭",
+    label: t("player.autoClose"),
     key: "autoClose",
     icon: renderIcon("TimeAuto"),
     props: {
@@ -120,7 +123,7 @@ const controlsOptions = computed<DropdownOption[]>(() => [
     },
   },
   {
-    label: "播放速度",
+    label: t("player.playRate"),
     key: "rate",
     icon: renderIcon("PlayRate"),
     props: {

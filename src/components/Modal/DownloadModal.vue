@@ -2,16 +2,16 @@
   <div class="download-modal">
     <!-- 加载状态 -->
     <n-collapse-transition :show="loading">
-      <n-text class="loading"> 正在加载歌曲信息... </n-text>
+      <n-text class="loading"> {{ t("general.loading") }} </n-text>
     </n-collapse-transition>
     <!-- 内容 -->
     <n-collapse-transition :show="!loading && songs.length > 0">
       <n-flex :size="20" vertical>
-        <n-alert title="请知悉" type="info">
+        <n-alert :title="t('download.disclaimer')" type="info">
           {{
             isCloudSong && !isBatch
-              ? "当前为云盘歌曲，下载的文件均为上传时的源文件"
-              : "本软件仅支持从官方途径合法合规的下载歌曲，并用于学习研究用途。本功能将严格按照相应账户的权限来提供基础的下载功能"
+              ? t("download.cloudSongNote")
+              : t("download.disclaimerContent")
           }}
         </n-alert>
         <!-- 歌曲信息卡片（单个下载时显示） -->
@@ -22,7 +22,7 @@
         arrow-placement="right"
         style="margin-top: 20px"
       >
-        <n-collapse-item title="音质选择" name="level">
+        <n-collapse-item :title="t('download.qualitySelect')" name="level">
           <n-radio-group v-model:value="selectedQuality" name="quality">
             <n-flex>
               <n-radio v-for="(item, index) in qualityOptions" :key="index" :value="item.value">
@@ -34,12 +34,12 @@
             </n-flex>
           </n-radio-group>
           <n-text depth="3" style="font-size: 12px; margin-top: 10px; display: block">
-            注意：如果歌曲没有对应的音质，将自动下载最高可用音质
+            {{ t("download.qualityNote") }}
           </n-text>
         </n-collapse-item>
-        <n-collapse-item v-if="isElectron" title="下载路径" name="path">
+        <n-collapse-item v-if="isElectron" :title="t('download.downloadPath')" name="path">
           <n-input-group>
-            <n-input :value="downloadPath || '未配置下载目录'" disabled>
+            <n-input :value="downloadPath || t('download.noPathSet')" disabled>
               <template #prefix>
                 <SvgIcon name="Folder" />
               </template>
@@ -48,21 +48,21 @@
               <template #icon>
                 <SvgIcon name="Settings" />
               </template>
-              下载设置
+              {{ t("download.downloadSettings") }}
             </n-button>
           </n-input-group>
         </n-collapse-item>
       </n-collapse>
       <template v-if="isBatch">
         <n-text depth="3" style="font-size: 12px; margin-top: 12px; display: block">
-          已选择 {{ songs.length }} 首歌曲，将添加到下载队列
+          {{ t("download.batchSelected", { count: songs.length }) }}
         </n-text>
       </template>
       <!-- 按钮 -->
       <n-flex class="menu" justify="end" style="margin-top: 20px">
-        <n-button strong secondary @click="cancel"> 取消 </n-button>
+        <n-button strong secondary @click="cancel"> {{ t("general.dialog.cancel") }} </n-button>
         <n-button type="primary" :disabled="!canDownload" @click="handleConfirm">
-          添加下载
+          {{ t("download.addDownload") }}
         </n-button>
       </n-flex>
     </n-collapse-transition>
@@ -81,6 +81,9 @@ import { formatSongsList } from "@/utils/format";
 import { pick } from "lodash-es";
 import { useDownloadManager } from "@/core/resource/DownloadManager";
 import SongDataCard from "@/components/Card/SongDataCard.vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const props = defineProps<{
   songs?: SongType[];
@@ -127,8 +130,8 @@ const getSongDetail = async () => {
     const result = await songDetail(props.songId);
     songs.value = formatSongsList(result.songs);
   } catch (error) {
-    console.error("获取歌曲详情失败:", error);
-    window.$message.error("获取歌曲详情失败");
+    console.error(t("download.getDetailsFailed"), error);
+    window.$message.error(t("download.getDetailsFailed"));
   } finally {
     loading.value = false;
   }
@@ -137,12 +140,12 @@ const getSongDetail = async () => {
 // 确认下载
 const handleConfirm = () => {
   if (!canDownload.value) {
-    window.$message.warning("请先配置下载目录");
+    window.$message.warning(t("download.configPathFirst"));
     return;
   }
 
   if (songs.value.length === 0) {
-    window.$message.warning("没有可下载的歌曲");
+    window.$message.warning(t("download.noSongsToDownload"));
     return;
   }
 
@@ -153,7 +156,7 @@ const handleConfirm = () => {
 
   emit("close");
   window.$message.success(
-    isBatch.value ? `已添加 ${songs.value.length} 首歌曲到下载队列` : "已添加到下载队列",
+    isBatch.value ? t("download.batchAdded", { count: songs.value.length }) : t("download.addedToQueue"),
   );
 };
 

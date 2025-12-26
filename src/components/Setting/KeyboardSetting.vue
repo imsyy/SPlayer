@@ -3,12 +3,13 @@
 <template>
   <div class="setting-type">
     <div class="set-list">
-      <n-h3 prefix="bar"> 全局快捷键 </n-h3>
+      <n-h3 prefix="bar"> {{ t("settings.shortcut.title") }} </n-h3>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">开启全局快捷键</n-text>
-          <n-text class="tip" :depth="3">可能会导致与其他软件相互冲突，请谨慎开启</n-text>
+          <n-text class="name">{{ t("settings.shortcut.enable") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.shortcut.enableTip") }}</n-text>
         </div>
+
         <n-switch
           class="set"
           v-model:value="shortcutStore.globalOpen"
@@ -18,8 +19,9 @@
       </n-card>
     </div>
     <div class="set-list">
-      <n-h3 prefix="bar"> 全局快捷键更改 </n-h3>
+      <n-h3 prefix="bar"> {{ t("settings.shortcut.editTitle") }} </n-h3>
       <n-card id="shortcut-list" class="set-item">
+
         <n-list
           v-for="(item, key, index) in globalShortcutList"
           :key="index"
@@ -28,14 +30,15 @@
         >
           <n-list-item>
             <template #prefix>
-              <n-text class="name">{{ item.name }}</n-text>
+              <n-text class="name">{{ t(`settings.shortcut.${key}`) }}</n-text>
             </template>
             <n-thing>
               <n-flex>
                 <n-input
                   :value="item.shortcut"
-                  placeholder="快捷键为空"
+                  :placeholder="t('settings.shortcut.placeholder')"
                   readonly
+
                   @focus="inputFocus(key)"
                   @blur="inputBlur"
                   @keydown.stop="inputKeyDown"
@@ -45,16 +48,18 @@
                   :value="item.globalShortcut"
                   :disabled="!shortcutStore.globalOpen"
                   :status="item.globalShortcut && item?.isRegistered ? 'error' : undefined"
-                  placeholder="快捷键为空"
+                  :placeholder="t('settings.shortcut.placeholder')"
                   readonly
+
                   @focus="inputFocus(key, true)"
                   @blur="inputBlur"
                   @keydown.stop="inputKeyDown"
                   @keyup="keyHandled = ''"
                 >
                   <template #prefix>
-                    <n-text :depth="3">全局</n-text>
+                    <n-text :depth="3">{{ t("settings.shortcut.globalPrefix") }}</n-text>
                   </template>
+
                 </n-input>
               </n-flex>
             </n-thing>
@@ -63,14 +68,16 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">恢复全局默认</n-text>
+          <n-text class="name">{{ t("settings.shortcut.restoreDefault") }}</n-text>
         </div>
-        <n-button type="primary" strong secondary @click="resetShortcut"> 恢复默认 </n-button>
+        <n-button type="primary" strong secondary @click="resetShortcut"> {{ t("settings.shortcut.restore") }} </n-button>
       </n-card>
+
     </div>
     <div class="set-list">
-      <n-h3 prefix="bar"> 页面内快捷键 </n-h3>
+      <n-h3 prefix="bar"> {{ t("settings.shortcut.pageKeyTitle") }} </n-h3>
       <n-card id="page-shortcut-list" class="set-item">
+
         <n-list
           v-for="(item, key, index) in pageShortcutList"
           :key="index"
@@ -79,13 +86,14 @@
         >
           <n-list-item>
             <template #prefix>
-              <n-text class="name">{{ item.name }}</n-text>
+              <n-text class="name">{{ t(`settings.shortcut.${key}`) }}</n-text>
             </template>
             <n-thing>
               <n-input
                 :value="item.shortcut"
-                placeholder="快捷键为空"
+                :placeholder="t('settings.shortcut.placeholder')"
                 readonly
+
                 @focus="inputFocus(key)"
                 @blur="inputBlur"
                 @keydown.stop="inputKeyDown"
@@ -103,8 +111,10 @@
 import { useShortcutStore } from "@/stores";
 import { formatForGlobalShortcut } from "@/utils/helper";
 import { cloneDeep, debounce, includes, some } from "lodash-es";
+import { useI18n } from "vue-i18n";
 
 const shortcutStore = useShortcutStore();
+const { t } = useI18n();
 
 // 选中快捷键
 const selectShortcut = ref<string | null>(null);
@@ -255,8 +265,9 @@ const inputKeyDown = async (e: KeyboardEvent) => {
   console.log(keyCode, e, [isCtrl && "CmdOrCtrl", isShift && "Shift", isAlt && "Alt", keyCode]);
   // 更改快捷键
   if (isRepeat(shortcut)) {
-    window.$message.warning("快捷键设置冲突");
+    window.$message.warning(t("settings.shortcut.conflict"));
   } else {
+
     // 全局快捷键
     if (selectGlobal.value) {
       // 若为单个按键
@@ -268,17 +279,19 @@ const inputKeyDown = async (e: KeyboardEvent) => {
       // 是否被占用
       const isRegistered = await checkRegistered(globalShortcut);
       if (isRegistered) {
-        window.$message.warning("快捷键已被占用");
+        window.$message.warning(t("settings.shortcut.registered"));
       } else {
-        window.$message.success("快捷键设置成功");
+        window.$message.success(t("settings.shortcut.success"));
       }
+
       changeShortcut(globalShortcut);
     } else {
       // 页面内快捷键或全局快捷键的页面内部分
       changeShortcut(shortcut);
-      window.$message.success("快捷键设置成功");
+      window.$message.success(t("settings.shortcut.success"));
     }
   }
+
 };
 
 // 更改快捷键
@@ -313,8 +326,9 @@ const checkRegistered = debounce(async (shortcut: string, shortcutKey?: string) 
     return isRegistered;
   } catch (error) {
     console.error("Error checking shortcut registration:", error);
-    window.$message.error("快捷键检查出现错误");
+    window.$message.error(t("settings.shortcut.error"));
     if (selectShortcut.value) {
+
       changeShortcut("");
     }
     return false;
@@ -350,16 +364,17 @@ const updateGlobalOpen = async (val: boolean) => {
 // 重置快捷键
 const resetShortcut = () => {
   window.$dialog.warning({
-    title: "重置快捷键",
-    content: "确定重置当前快捷键配置？",
-    positiveText: "重置",
-    negativeText: "取消",
+    title: t("settings.shortcut.resetTitle"),
+    content: t("settings.shortcut.resetContent"),
+    positiveText: t("settings.shortcut.resetTitle"), // "重置"
+    negativeText: t("general.dialog.cancel"), // "取消"
     onPositiveClick: () => {
       shortcutStore.$reset();
       shortcutList.value = cloneDeep(shortcutStore.shortcutList);
-      window.$message.success("快捷键重置成功");
+      window.$message.success(t("settings.shortcut.resetSuccess"));
     },
   });
+
 };
 
 onMounted(async () => {

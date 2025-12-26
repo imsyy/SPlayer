@@ -11,7 +11,12 @@
       />
       <n-empty
         v-else
-        :description="`很抱歉，未能找到与 ${keyword} 相关的任何播客`"
+        :description="
+          t('searchView.noResult', {
+            keyword: keyword,
+            type: t('searchView.tabs.radios'),
+          })
+        "
         style="margin-top: 60px"
         size="large"
       >
@@ -19,6 +24,7 @@
           <SvgIcon name="SearchOff" />
         </template>
       </n-empty>
+
     </Transition>
   </div>
 </template>
@@ -27,6 +33,10 @@
 import type { CoverType } from "@/types/main";
 import { searchResult } from "@/api/search";
 import { formatCoverList } from "@/utils/format";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
+
 
 const props = defineProps<{
   keyword: string;

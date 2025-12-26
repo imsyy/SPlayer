@@ -1,6 +1,6 @@
 <template>
   <div class="like-type">
-    <CoverList :data="dataStore.userLikeData.djs" :loading="true" type="radio" />
+    <CoverList :data="dataStore.userLikeData.djs" :loading="!dataStore.userLikeData.djs" type="radio" />
   </div>
 </template>
 

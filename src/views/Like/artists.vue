@@ -1,6 +1,6 @@
 <template>
   <div class="like-type">
-    <ArtistList :data="dataStore.userLikeData.artists" :loading="true" />
+    <ArtistList :data="dataStore.userLikeData.artists" :loading="!dataStore.userLikeData.artists" />
   </div>
 </template>
 

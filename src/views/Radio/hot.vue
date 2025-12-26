@@ -24,7 +24,7 @@
           <n-gi class="suffix" suffix #="{ overflow }">
             <n-card class="cat" hoverable @click="gridCollapsed = !gridCollapsed">
               <SvgIcon :name="overflow ? 'Down' : 'Up'" />
-              <n-text>{{ overflow ? "查看全部" : "收起标签" }}</n-text>
+              <n-text>{{ overflow ? t("discover.radio.all") : t("discover.radio.collapse") }}</n-text>
             </n-card>
           </n-gi>
         </n-grid>
@@ -43,7 +43,7 @@
     <div class="rec">
       <!-- 热门推荐 -->
       <n-h3 class="title" prefix="bar">
-        <n-text class="name">热门推荐</n-text>
+        <n-text class="name">{{ t("discover.radio.hotRecommend") }}</n-text>
       </n-h3>
       <CoverList :data="radioHotData" :loading="true" type="radio" />
       <!-- 分类推荐 -->
@@ -63,14 +63,16 @@ import type { CoverType } from "@/types/main";
 import { radioCatList, radioToplist, radioTypes } from "@/api/radio";
 import { getCacheData } from "@/utils/cache";
 import { formatCoverList } from "@/utils/format";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
+const router = useRouter();
 
 interface RadioType {
   id: number;
   name: string;
   radio?: CoverType[];
 }
-
-const router = useRouter();
 
 // 栅格折叠
 const gridCollapsed = ref<boolean>(true);
@@ -88,10 +90,13 @@ const getRadioType = async () => {
       time: 0,
       storage: "localStorage",
     });
-    radioTypeData.value = result.categories.map(({ name, id }) => ({ name, id }));
+    radioTypeData.value = result.categories.map(({ name, id }: { name: string; id: number }) => ({
+      name,
+      id,
+    }));
   } catch (error) {
     console.error("Error getting radio cat list:", error);
-    window.$message.error("分类获取失败，请重试");
+    window.$message.error(t("discover.radio.error.cat"));
   }
 };
 
@@ -107,9 +112,10 @@ const getRecRadioData = async () => {
     }));
   } catch (error) {
     console.error("Error getting rec radio:", error);
-    window.$message.error("获取推荐电台出现错误");
+    window.$message.error(t("discover.radio.error.rec"));
   }
 };
+
 
 onMounted(() => {
   getRadioType();

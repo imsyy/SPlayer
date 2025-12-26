@@ -9,7 +9,7 @@
             :data="musicStore.dailySongsData.list"
             :title="dailySongsTitle"
             :height="90"
-            description="根据你的音乐口味 · 每日更新"
+            :description="t('home.recommend.dailyDesc')"
             size="small"
             @click="router.push({ name: 'daily-songs' })"
           />
@@ -17,9 +17,10 @@
           <SongListCard
             :data="dataStore.likeSongsList.data"
             :height="90"
-            title="我喜欢的音乐"
-            description="发现你独特的音乐品味"
+            :title="t('home.recommend.private')"
+            :description="t('home.recommend.privateDesc')"
             size="small"
+
             @click="router.push({ name: 'like-songs' })"
           />
         </n-flex>
@@ -61,6 +62,9 @@ import { formatArtistsList, formatCoverList } from "@/utils/format";
 import { sleep } from "@/utils/helper";
 import { isLogin } from "@/utils/auth";
 import SvgIcon from "@/components/Global/SvgIcon.vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 interface RecItemType {
   name: string;
@@ -92,60 +96,118 @@ const dailySongsTitle = computed(() => {
       h(SvgIcon, { name: "Calendar-Empty", size: 30, depth: 2 }),
       h(NText, null, () => day),
     ]),
-    h(NText, { class: "name" }, () => ["每日推荐"]),
+    h(NText, { class: "name" }, () => [t("home.recommend.daily")]),
   ]);
 });
 
 // 推荐数据
-const recData = ref<RecDataType>({
+const recData = computed<RecDataType>(() => ({
   playlist: {
-    name: isLogin() ? "专属歌单" : "推荐歌单",
+    name: isLogin() ? t("home.recommend.myPlaylist") : t("home.recommend.playlist"),
     list: [] as CoverType[],
     type: "playlist",
     path: "/discover/playlists",
   },
   radar: {
-    name: "雷达歌单",
+    name: t("home.recommend.radar"),
     list: [] as CoverType[],
     type: "playlist",
   },
   artist: {
-    name: "歌手推荐",
+    name: t("home.recommend.artist"),
     list: [] as ArtistType[],
     type: "artist",
     path: "/discover/artists",
   },
   video: {
-    name: "推荐 MV",
+    name: t("home.recommend.video"),
     list: [] as CoverType[],
     type: "video",
     cols: "2 600:2 800:3 900:4 1200:5 1400:6",
   },
   radio: {
-    name: "推荐播客",
+    name: t("home.recommend.radio"),
     list: [] as CoverType[],
     type: "radio",
   },
   album: {
-    name: "新碟上架",
+    name: t("home.recommend.album"),
     list: [] as CoverType[],
     type: "album",
     path: "/discover/new",
   },
+}));
+
+// 推荐数据 Ref (to hold the list data)
+// We need to separate the dynamic lists from the translated static data
+// OR we can make the whole thing computed, but lists need to be mutable or ref.
+// Better approach: Keep recData as ref but update names in a watcher or computed that returns the structure.
+// However, recData strucutre is used for both v-for and data storage.
+// Let's keep recData as ref but initialize names with t(). The issue is if language changes, names won't update.
+// To support dynamic language change, the names in v-for should be reactive.
+// Let's make `recData` a reactive object where `name` is a computed property? No, that's hard in a plain object.
+// We can use a computed for the `sortedRecData` mapping and apply `t()` there?
+// But `recData` is the source of truth for lists.
+// Let's refactor `sortedRecData` to be the primary place where structure is assembled.
+
+const recLists = reactive({
+  playlist: [] as CoverType[],
+  radar: [] as CoverType[],
+  artist: [] as ArtistType[],
+  video: [] as CoverType[],
+  radio: [] as CoverType[],
+  album: [] as CoverType[],
 });
 
 // 根据设置过滤和排序推荐数据
 const sortedRecData = computed(() => {
-  const sections = settingStore.homePageSections
+  const allData: RecDataType = {
+    playlist: {
+      name: isLogin() ? t("home.recommend.myPlaylist") : t("home.recommend.playlist"),
+      list: recLists.playlist,
+      type: "playlist",
+      path: "/discover/playlists",
+    },
+    radar: {
+      name: t("home.recommend.radar"),
+      list: recLists.radar,
+      type: "playlist",
+    },
+    artist: {
+      name: t("home.recommend.artist"),
+      list: recLists.artist,
+      type: "artist",
+      path: "/discover/artists",
+    },
+    video: {
+      name: t("home.recommend.video"),
+      list: recLists.video,
+      type: "video",
+      cols: "2 600:2 800:3 900:4 1200:5 1400:6",
+    },
+    radio: {
+      name: t("home.recommend.radio"),
+      list: recLists.radio,
+      type: "radio",
+    },
+    album: {
+      name: t("home.recommend.album"),
+      list: recLists.album,
+      type: "album",
+      path: "/discover/new",
+    },
+  };
+
+  return settingStore.homePageSections
     .filter((section) => section.visible)
     .sort((a, b) => a.order - b.order)
     .map((section) => {
       const key = section.key as keyof RecDataType;
-      return recData.value[key];
+      return allData[key];
     })
     .filter((item) => item);
-  return sections;
 });
+
 
 // 获取全部推荐
 const getAllRecData = async () => {
@@ -161,7 +223,7 @@ const getAllRecData = async () => {
         "playlist",
         isLogin() ? 21 : 20,
       );
-      recData.value.playlist.list = formatCoverList(
+      recLists.playlist = formatCoverList(
         playlistRes.result?.filter((pl: any) => !pl.name.includes("私人雷达")),
       );
     } catch (error) {
@@ -171,7 +233,7 @@ const getAllRecData = async () => {
     // 雷达
     try {
       const radarRes = await getCacheData(radarPlaylist, { key: "radarRec", time: 30 });
-      recData.value.radar.list = formatCoverList(radarRes);
+      recLists.radar = formatCoverList(radarRes);
     } catch (error) {
       console.error("Error getting radar:", error);
     }
@@ -179,7 +241,7 @@ const getAllRecData = async () => {
     // 歌手
     try {
       const artistRes = await getCacheData(topArtists, { key: "artistRec", time: 10 }, 6);
-      recData.value.artist.list = formatArtistsList(artistRes.artists);
+      recLists.artist = formatArtistsList(artistRes.artists);
     } catch (error) {
       console.error("Error getting artist:", error);
     }
@@ -187,7 +249,7 @@ const getAllRecData = async () => {
     // MV
     try {
       const videoRes = await getCacheData(allMv, { key: "videoRec", time: 10 });
-      recData.value.video.list = formatCoverList(videoRes.data);
+      recLists.video = formatCoverList(videoRes.data);
     } catch (error) {
       console.error("Error getting video:", error);
     }
@@ -195,7 +257,7 @@ const getAllRecData = async () => {
     // 播客
     try {
       const radioRes = await getCacheData(radioRecommend, { key: "radioRec", time: 10 });
-      recData.value.radio.list = formatCoverList(radioRes.djRadios);
+      recLists.radio = formatCoverList(radioRes.djRadios);
     } catch (error) {
       console.error("Error getting radio:", error);
     }
@@ -203,15 +265,16 @@ const getAllRecData = async () => {
     // 新碟
     try {
       const albumRes = await getCacheData(newAlbumsAll, { key: "albumRec", time: 10 });
-      recData.value.album.list = formatCoverList(albumRes.albums);
+      recLists.album = formatCoverList(albumRes.albums);
     } catch (error) {
       console.error("Error getting album:", error);
     }
   } catch (error) {
-    window.$message.error("个性化推荐获取出错");
+    window.$message.error(t("home.recommend.error"));
     console.error("Error getting personalized data:", error);
   }
 };
+
 
 onActivated(getAllRecData);
 

@@ -1,7 +1,7 @@
 <template>
   <div class="song-unlock-manager">
-    <n-alert title="免责声明" type="info">
-      本功能仅作为测试使用，资源来自网络，若侵犯到您的权益，请及时联系我们删除
+    <n-alert :title="t('settings.unlock.disclaimer')" type="info">
+      {{ t("settings.unlock.disclaimerContent") }}
     </n-alert>
     <div ref="sortableRef" class="sortable-list">
       <n-card
@@ -26,6 +26,9 @@
 <script setup lang="ts">
 import { useSettingStore } from "@/stores";
 import { useSortable } from "@vueuse/integrations/useSortable";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const settingStore = useSettingStore();
 

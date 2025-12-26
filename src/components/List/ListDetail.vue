@@ -49,7 +49,7 @@
                 <template #trigger>
                   <SvgIcon :depth="3" name="EyeLock" size="22" />
                 </template>
-                <n-text>隐私歌单</n-text>
+                <n-text>{{ t("menu.privatePlaylist") }}</n-text>
               </n-popover>
             </template>
           </n-h2>
@@ -73,7 +73,7 @@
                   @click="handleArtistClick(detailData.artists)"
                 >
                   <n-text v-for="(ar, arIndex) in detailData.artists" :key="arIndex" class="ar">
-                    {{ ar.name || "未知艺术家" }}
+                    {{ ar.name || t("general.unknownArtist") }}
                   </n-text>
                 </div>
                 <div
@@ -81,10 +81,10 @@
                   class="artists text-hidden"
                   @click="handleArtistClick(detailData.artists || '')"
                 >
-                  <n-text class="ar"> {{ detailData.artists || "未知艺术家" }} </n-text>
+                  <n-text class="ar"> {{ detailData.artists || t("general.unknownArtist") }} </n-text>
                 </div>
                 <n-text v-else-if="config.showCreator">
-                  {{ detailData.creator?.name || "未知用户名" }}
+                  {{ detailData.creator?.name || t("user.unknownName") }}
                 </n-text>
               </div>
               <!-- 歌曲数量 -->
@@ -160,7 +160,7 @@
                 :value="searchValue"
                 :input-props="{ autocomplete: 'off' }"
                 class="search"
-                placeholder="模糊搜索"
+                :placeholder="t('general.searchKeywordTip')"
                 clearable
                 round
                 @update:value="handleSearch"
@@ -177,8 +177,8 @@
                 type="segment"
                 @update:value="handleTabChange"
               >
-                <n-tab name="songs"> 歌曲 </n-tab>
-                <n-tab name="comments"> 评论 </n-tab>
+                <n-tab name="songs"> {{ t("player.songs") }} </n-tab>
+                <n-tab name="comments"> {{ t("player.comments") }} </n-tab>
               </n-tabs>
             </n-flex>
           </n-flex>
@@ -201,6 +201,9 @@ import { coverLoaded, formatNumber } from "@/utils/helper";
 import { renderToolbar } from "@/utils/meta";
 import { formatTimestamp } from "@/utils/time";
 import { openDescModal, openJumpArtist } from "@/utils/modal";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 interface ListDetailConfig {
   // 标题类型
@@ -233,7 +236,7 @@ const props = withDefaults(defineProps<Props>(), {
   showSearch: true,
   showCommentTab: false,
   titleText: "",
-  playButtonText: "播放",
+  playButtonText: "",
   moreOptions: () => [],
 });
 
@@ -251,7 +254,7 @@ const currentTab = ref<"songs" | "comments">("songs");
 // 标题文本
 const titleText = computed(() => {
   if (props.titleText) return props.titleText;
-  return props.detailData?.name || "未知";
+  return props.detailData?.name || t("general.unknown");
 });
 
 // 处理播放全部

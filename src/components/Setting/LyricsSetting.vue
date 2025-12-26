@@ -1,7 +1,7 @@
 <template>
   <div class="setting-type">
     <div class="set-list">
-      <n-h3 prefix="bar"> 歌词设置 </n-h3>
+      <n-h3 prefix="bar"> {{ t("settings.lyrics.basic") }} </n-h3>
       <n-card
         id="lyrics-show"
         :content-style="{
@@ -21,16 +21,17 @@
         class="set-item"
       >
         <div v-for="item in 2" :key="item" :class="['lrc-item', { on: item === 2 }]">
-          <n-text>我是一句歌词</n-text>
+          <n-text>{{ t("settings.lyrics.sample") }}</n-text>
           <n-text v-if="settingStore.showTran">I'm the lyric</n-text>
           <n-text v-if="settingStore.showRoma">wo shi yi ju ge ci</n-text>
         </div>
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">歌词字体大小</n-text>
-          <n-text class="tip" :depth="3">单位 px，最小 12，最大 60</n-text>
+          <n-text class="name">{{ t("settings.lyrics.fontSize") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.fontSizeTip") }}</n-text>
         </div>
+
         <n-flex>
           <Transition name="fade" mode="out-in">
             <n-button
@@ -40,16 +41,18 @@
               secondary
               @click="settingStore.lyricFontSize = 46"
             >
-              恢复默认
+              {{ t("settings.lyrics.restoreDefault") }}
             </n-button>
+
           </Transition>
           <n-input-number
             v-model:value="settingStore.lyricFontSize"
             :min="12"
             :max="60"
             class="set"
-            placeholder="请输入歌词字体大小"
+            :placeholder="t('settings.lyrics.fontSizePlaceholder')"
             @blur="settingStore.lyricFontSize === null ? (settingStore.lyricFontSize = 30) : null"
+
           >
             <template #suffix> px </template>
           </n-input-number>
@@ -57,9 +60,10 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">翻译歌词大小</n-text>
-          <n-text class="tip" :depth="3">单位 px，最小 5，最大 40</n-text>
+          <n-text class="name">{{ t("settings.lyrics.tranFontSize") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.tranFontSizeTip") }}</n-text>
         </div>
+
         <n-flex>
           <Transition name="fade" mode="out-in">
             <n-button
@@ -69,8 +73,9 @@
               secondary
               @click="settingStore.lyricTranFontSize = 22"
             >
-              恢复默认
+              {{ t("settings.lyrics.restoreDefault") }}
             </n-button>
+
           </Transition>
           <n-input-number
             v-model:value="settingStore.lyricTranFontSize"
@@ -78,8 +83,9 @@
             :max="40"
             :disabled="settingStore.useAMLyrics"
             class="set"
-            placeholder="请输入翻译歌词字体大小"
+            :placeholder="t('settings.lyrics.tranFontSizePlaceholder')"
             @blur="
+
               settingStore.lyricTranFontSize === null ? (settingStore.lyricTranFontSize = 22) : null
             "
           >
@@ -89,9 +95,10 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">音译歌词大小</n-text>
-          <n-text class="tip" :depth="3">单位 px，最小 5，最大 40</n-text>
+          <n-text class="name">{{ t("settings.lyrics.romaFontSize") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.tranFontSizeTip") }}</n-text>
         </div>
+
         <n-flex>
           <Transition name="fade" mode="out-in">
             <n-button
@@ -101,8 +108,9 @@
               secondary
               @click="settingStore.lyricRomaFontSize = 18"
             >
-              恢复默认
+              {{ t("settings.lyrics.restoreDefault") }}
             </n-button>
+
           </Transition>
           <n-input-number
             v-model:value="settingStore.lyricRomaFontSize"
@@ -110,8 +118,9 @@
             :max="40"
             :disabled="settingStore.useAMLyrics"
             class="set"
-            placeholder="请输入歌词字体大小"
+            :placeholder="t('settings.lyrics.fontSizePlaceholder')"
             @blur="
+
               settingStore.lyricRomaFontSize === null ? (settingStore.lyricRomaFontSize = 18) : null
             "
           >
@@ -121,68 +130,75 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">歌词字体设置</n-text>
-          <n-text class="tip" :depth="3"> 统一配置各语种歌词区域的字体 </n-text>
+          <n-text class="name">{{ t("settings.lyrics.fontSettings") }}</n-text>
+          <n-text class="tip" :depth="3"> {{ t("settings.lyrics.fontSettingsTip") }} </n-text>
         </div>
-        <n-button type="primary" strong secondary @click="openFontManager"> 配置 </n-button>
+        <n-button type="primary" strong secondary @click="openFontManager"> {{ t("settings.general.configure") }} </n-button>
       </n-card>
+
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">歌词字体加粗</n-text>
-          <n-text class="tip" :depth="3">是否将歌词字体加粗显示，部分字体可能显示异常</n-text>
+          <n-text class="name">{{ t("settings.lyrics.fontBold") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.fontBoldTip") }}</n-text>
         </div>
+
         <n-switch v-model:value="settingStore.lyricFontBold" class="set" :round="false" />
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">歌词位置</n-text>
-          <n-text class="tip" :depth="3">歌词的默认垂直位置</n-text>
+          <n-text class="name">{{ t("settings.lyrics.position") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.positionTip") }}</n-text>
         </div>
+
         <n-select
           v-model:value="settingStore.lyricsPosition"
           :disabled="settingStore.useAMLyrics"
           :options="[
             {
-              label: '居左',
+              label: t('settings.lyrics.posLeft'),
               value: 'flex-start',
             },
             {
-              label: '居中',
+              label: t('settings.lyrics.posCenter'),
               value: 'center',
             },
             {
-              label: '居右',
+              label: t('settings.lyrics.posRight'),
               value: 'flex-end',
             },
           ]"
           class="set"
         />
+
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">歌词滚动位置</n-text>
-          <n-text class="tip" :depth="3">歌词高亮时所处的位置</n-text>
+          <n-text class="name">{{ t("settings.lyrics.scrollPos") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.scrollPosTip") }}</n-text>
         </div>
+
         <n-select
           v-model:value="settingStore.lyricsScrollPosition"
           :options="[
             {
-              label: '靠近顶部',
+              label: t('settings.lyrics.scrollPosTop'),
               value: 'start',
             },
             {
-              label: '水平居中',
+              label: t('settings.lyrics.scrollPosCenter'),
               value: 'center',
             },
           ]"
           class="set"
         />
+
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">自动暂停滚动</n-text>
-          <n-text class="tip" :depth="3"> 鼠标移入歌词区域时是否暂停滚动 </n-text>
+          <n-text class="name">{{ t("settings.lyrics.pauseScroll") }}</n-text>
+          <n-text class="tip" :depth="3"> {{ t("settings.lyrics.pauseScrollTip") }} </n-text>
         </div>
+
         <n-switch
           v-model:value="settingStore.lrcMousePause"
           :disabled="settingStore.useAMLyrics"
@@ -192,16 +208,18 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">显示逐字歌词</n-text>
+          <n-text class="name">{{ t("settings.lyrics.showYrc") }}</n-text>
         </div>
+
         <n-switch v-model:value="settingStore.showYrc" class="set" :round="false" />
       </n-card>
       <n-collapse-transition :show="settingStore.showYrc">
         <n-card class="set-item">
           <div class="label">
-            <n-text class="name">显示逐字歌词动画</n-text>
-            <n-text class="tip" :depth="3"> 可能会造成性能问题，如遇卡顿请关闭 </n-text>
+            <n-text class="name">{{ t("settings.lyrics.showYrcAnim") }}</n-text>
+            <n-text class="tip" :depth="3"> {{ t("settings.lyrics.showYrcAnimTip") }} </n-text>
           </div>
+
           <n-switch
             v-model:value="settingStore.showYrcAnimation"
             :disabled="settingStore.useAMLyrics"
@@ -212,8 +230,9 @@
       </n-collapse-transition>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">显示歌词翻译</n-text>
+          <n-text class="name">{{ t("settings.lyrics.showTran") }}</n-text>
         </div>
+
         <n-switch
           v-model:value="settingStore.showTran"
           class="set"
@@ -223,8 +242,9 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">显示歌词音译</n-text>
+          <n-text class="name">{{ t("settings.lyrics.showRoma") }}</n-text>
         </div>
+
         <n-switch
           v-model:value="settingStore.showRoma"
           class="set"
@@ -234,16 +254,18 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">歌词自动模糊</n-text>
-          <n-text class="tip" :depth="3"> 是否聚焦显示当前播放行，其他行将模糊显示 </n-text>
+          <n-text class="name">{{ t("settings.lyrics.autoBlur") }}</n-text>
+          <n-text class="tip" :depth="3"> {{ t("settings.lyrics.autoBlurTip") }} </n-text>
         </div>
+
         <n-switch v-model:value="settingStore.lyricsBlur" class="set" :round="false" />
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">歌词时延调节步长</n-text>
-          <n-text class="tip" :depth="3">单位毫秒，每次点击调节的时延大小</n-text>
+          <n-text class="name">{{ t("settings.lyrics.delayStep") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.delayStepTip") }}</n-text>
         </div>
+
         <n-flex>
           <Transition name="fade" mode="out-in">
             <n-button
@@ -253,8 +275,9 @@
               secondary
               @click="settingStore.lyricOffsetStep = 500"
             >
-              恢复默认
+              {{ t("settings.lyrics.restoreDefault") }}
             </n-button>
+
           </Transition>
           <n-input-number
             v-model:value="settingStore.lyricOffsetStep"
@@ -262,8 +285,9 @@
             :max="10000"
             :step="10"
             class="set"
-            placeholder="请输入时延步长"
+            :placeholder="t('settings.lyrics.delayStepPlaceholder')"
             @blur="
+
               settingStore.lyricOffsetStep === null ? (settingStore.lyricOffsetStep = 500) : null
             "
           >
@@ -273,58 +297,58 @@
       </n-card>
     </div>
     <div class="set-list">
-      <n-h3 prefix="bar"> 歌词内容 </n-h3>
+      <n-h3 prefix="bar"> {{ t("settings.lyrics.content") }} </n-h3>
       <n-card class="set-item">
         <div class="label">
           <n-text class="name">
-            启用在线 TTML 歌词
+            {{ t("settings.lyrics.onlineTtml") }}
             <n-tag type="warning" size="small" round> Beta </n-tag>
           </n-text>
           <n-text class="tip" :depth="3">
-            是否从 AMLL TTML DB 获取歌词（如有），TTML
-            歌词支持逐字、翻译、音译等功能，将会在下一首歌生效
+            {{ t("settings.lyrics.onlineTtmlTip") }}
           </n-text>
         </div>
+
         <n-switch v-model:value="settingStore.enableTTMLLyric" class="set" :round="false" />
       </n-card>
       <n-collapse-transition :show="settingStore.enableTTMLLyric">
         <n-card class="set-item">
           <div class="label">
-            <n-text class="name">AMLL TTML DB 地址</n-text>
+            <n-text class="name">{{ t("settings.lyrics.ttmlDb") }}</n-text>
             <n-text class="tip" :depth="3">
-              AMLL TTML DB 地址，请确保地址正确，否则将导致歌词获取失败
+              {{ t("settings.lyrics.ttmlDbTip") }}
             </n-text>
           </div>
-          <n-button type="primary" strong secondary @click="openAMLLServer"> 配置 </n-button>
+          <n-button type="primary" strong secondary @click="openAMLLServer"> {{ t("settings.general.configure") }} </n-button>
         </n-card>
+
       </n-collapse-transition>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">启用歌词排除</n-text>
+          <n-text class="name">{{ t("settings.lyrics.exclude") }}</n-text>
           <n-text class="tip" :depth="3">
-            开启后可配置排除歌词，包含关键词或匹配正则表达式的歌词行将不会显示
+            {{ t("settings.lyrics.excludeTip") }}
           </n-text>
         </div>
+
         <n-switch v-model:value="settingStore.enableExcludeLyrics" class="set" :round="false" />
       </n-card>
       <n-collapse-transition :show="settingStore.enableExcludeLyrics">
         <n-card class="set-item">
           <div class="label">
-            <n-text class="name">TTML 歌词排除</n-text>
-            <n-text class="tip" :depth="3">
-              是否要对 TTML 歌词进行歌词排除 <br />
-              AMLL TTML DB 对此有硬性规定，不得包含作词、作曲等歌词无关内容，因此大多情况下无需开启
-            </n-text>
+            <n-text class="name">{{ t("settings.lyrics.excludeTtml") }}</n-text>
+            <n-text class="tip" :depth="3" v-html="t('settings.lyrics.excludeTtmlTip')"></n-text>
           </div>
           <n-switch v-model:value="settingStore.enableExcludeTTML" class="set" :round="false" />
         </n-card>
         <n-card class="set-item">
           <div class="label">
-            <n-text class="name">本地歌词排除</n-text>
+            <n-text class="name">{{ t("settings.lyrics.excludeLocal") }}</n-text>
             <n-text class="tip" :depth="3">
-              是否要对来自本地的歌词进行歌词排除，这包含本地覆盖的在线歌词和本地歌曲中的歌词
+              {{ t("settings.lyrics.excludeLocalTip") }}
             </n-text>
           </div>
+
           <n-switch
             v-model:value="settingStore.enableExcludeLocalLyrics"
             class="set"
@@ -333,55 +357,53 @@
         </n-card>
         <n-card class="set-item">
           <div class="label">
-            <n-text class="name">歌词排除内容</n-text>
-            <n-text class="tip" :depth="3"> 包含关键词或匹配正则表达式的歌词行将不会显示 </n-text>
+            <n-text class="name">{{ t("settings.lyrics.excludeContent") }}</n-text>
+            <n-text class="tip" :depth="3"> {{ t("settings.lyrics.excludeContentTip") }} </n-text>
           </div>
-          <n-button type="primary" strong secondary @click="openLyricExclude">配置</n-button>
+          <n-button type="primary" strong secondary @click="openLyricExclude">{{ t("settings.general.configure") }}</n-button>
+
         </n-card>
       </n-collapse-transition>
     </div>
     <div class="set-list">
       <n-h3 prefix="bar">
-        Apple Music-like Lyrics
+        {{ t("settings.lyrics.amLyrics") }}
         <n-tag type="warning" size="small" round>Beta</n-tag>
       </n-h3>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">使用 Apple Music-like Lyrics</n-text>
+          <n-text class="name">{{ t("settings.lyrics.useAmLyrics") }}</n-text>
           <n-text class="tip" :depth="3">
-            歌词使用 Apple Music-like Lyrics 进行渲染，需要高性能设备
+            {{ t("settings.lyrics.useAmLyricsTip") }}
           </n-text>
         </div>
+
         <n-switch v-model:value="settingStore.useAMLyrics" class="set" :round="false" />
       </n-card>
       <n-collapse-transition :show="settingStore.useAMLyrics">
         <n-card class="set-item">
           <div class="label">
-            <n-text class="name">歌词弹簧效果</n-text>
+            <n-text class="name">{{ t("settings.lyrics.springEffect") }}</n-text>
             <n-text class="tip" :depth="3">
-              是否使用物理弹簧算法实现歌词动画效果，需要高性能设备
+              {{ t("settings.lyrics.springEffectTip") }}
             </n-text>
           </div>
           <n-switch v-model:value="settingStore.useAMSpring" class="set" :round="false" />
         </n-card>
         <n-card class="set-item">
           <div class="label">
-            <n-text class="name">隐藏已播放歌词</n-text>
-            <n-text class="tip" :depth="3">是否隐藏已播放歌词</n-text>
+            <n-text class="name">{{ t("settings.lyrics.hidePassed") }}</n-text>
+            <n-text class="tip" :depth="3">{{ t("settings.lyrics.hidePassedTip") }}</n-text>
           </div>
+
           <n-switch v-model:value="settingStore.hidePassedLines" class="set" :round="false" />
         </n-card>
         <n-card class="set-item">
           <div class="label">
-            <n-text class="name">文字动画的渐变宽度</n-text>
-            <n-text class="tip" :depth="3">
-              单位以歌词行的主文字字体大小的倍数为单位 <br />
-              默认为 0.5，即一个全角字符的一半宽度 <br />
-              若模拟 Apple Music for Android 的效果，可以设为 1 <br />
-              若模拟 Apple Music for iPad 的效果，可以设为 0.5 <br />
-              若需近乎禁用渐变，可设为非常接近 0 的小数，如 0.01
-            </n-text>
+            <n-text class="name">{{ t("settings.lyrics.gradientWidth") }}</n-text>
+            <n-text class="tip" :depth="3" v-html="t('settings.lyrics.gradientWidthTip')"></n-text>
           </div>
+
           <n-input-number
             v-model:value="settingStore.wordFadeWidth"
             class="set"
@@ -395,13 +417,13 @@
     </div>
     <div v-if="isElectron" ref="desktopLyricRef" class="set-list">
       <n-h3 prefix="bar">
-        桌面歌词
+        {{ t("settings.lyrics.desktop") }}
         <n-tag type="warning" size="small" round>Beta</n-tag>
       </n-h3>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">开启桌面歌词</n-text>
-          <n-text class="tip" :depth="3"> 如遇问题请向开发者反馈 </n-text>
+          <n-text class="name">{{ t("settings.lyrics.enableDesktop") }}</n-text>
+          <n-text class="tip" :depth="3"> {{ t("settings.lyrics.enableDesktopTip") }} </n-text>
         </div>
         <n-switch
           :value="statusStore.showDesktopLyric"
@@ -412,9 +434,10 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">锁定桌面歌词位置</n-text>
-          <n-text class="tip" :depth="3">是否锁定桌面歌词位置，防止误触或遮挡内容</n-text>
+          <n-text class="name">{{ t("settings.lyrics.lockDesktop") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.lockDesktopTip") }}</n-text>
         </div>
+
         <n-switch
           v-model:value="desktopLyricConfig.isLock"
           :round="false"
@@ -424,8 +447,8 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">双行歌词</n-text>
-          <n-text class="tip" :depth="3">是否启用双行歌词，交替显示当前句和下一句</n-text>
+          <n-text class="name">{{ t("settings.lyrics.twoLine") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.twoLineTip") }}</n-text>
         </div>
         <n-switch
           v-model:value="desktopLyricConfig.isDoubleLine"
@@ -436,9 +459,10 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">限制歌词位置</n-text>
-          <n-text class="tip" :depth="3">是否限制桌面歌词位置在当前屏幕内</n-text>
+          <n-text class="name">{{ t("settings.lyrics.limitPos") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.limitPosTip") }}</n-text>
         </div>
+
         <n-switch
           v-model:value="desktopLyricConfig.limitBounds"
           :round="false"
@@ -449,25 +473,26 @@
       <!-- position -->
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">对齐方式</n-text>
-          <n-text class="tip" :depth="3">桌面歌词对齐方式</n-text>
+          <n-text class="name">{{ t("settings.lyrics.align") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.alignTip") }}</n-text>
         </div>
         <n-select
           v-model:value="desktopLyricConfig.position"
           :options="[
-            { label: '左对齐', value: 'left' },
-            { label: '居中对齐', value: 'center' },
-            { label: '右对齐', value: 'right' },
-            { label: '左右分离', value: 'both' },
+            { label: t('settings.lyrics.alignLeft'), value: 'left' },
+            { label: t('settings.lyrics.alignCenter'), value: 'center' },
+            { label: t('settings.lyrics.alignRight'), value: 'right' },
+            { label: t('settings.lyrics.alignBoth'), value: 'both' },
           ]"
+
           class="set"
           @update:value="saveDesktopLyricConfig"
         />
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">歌词字体</n-text>
-          <n-text class="tip" :depth="3"> 更改桌面歌词字体 </n-text>
+          <n-text class="name">{{ t("settings.lyrics.desktopFont") }}</n-text>
+          <n-text class="tip" :depth="3"> {{ t("settings.lyrics.desktopFontTip") }} </n-text>
         </div>
         <n-flex>
           <Transition name="fade" mode="out-in">
@@ -483,8 +508,9 @@
                 }
               "
             >
-              恢复默认
+              {{ t("settings.lyrics.restoreDefault") }}
             </n-button>
+
           </Transition>
           <n-select
             v-model:value="desktopLyricConfig.fontFamily"
@@ -497,8 +523,8 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">显示逐字歌词</n-text>
-          <n-text class="tip" :depth="3">是否显示桌面歌词逐字效果</n-text>
+          <n-text class="name">{{ t("settings.lyrics.showYrc") }}</n-text>
+          <n-text class="tip" :depth="3">显示桌面歌词逐字效果</n-text>
         </div>
         <n-switch
           v-model:value="desktopLyricConfig.showYrc"
@@ -509,8 +535,8 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">显示翻译</n-text>
-          <n-text class="tip" :depth="3">是否显示桌面歌词翻译</n-text>
+          <n-text class="name">{{ t("settings.lyrics.showDesktopTran") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.showDesktopTranTip") }}</n-text>
         </div>
         <n-switch
           v-model:value="desktopLyricConfig.showTran"
@@ -521,9 +547,10 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">文字加粗</n-text>
-          <n-text class="tip" :depth="3">是否加粗桌面歌词文字</n-text>
+          <n-text class="name">{{ t("settings.lyrics.desktopBold") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.desktopBoldTip") }}</n-text>
         </div>
+
         <n-switch
           v-model:value="desktopLyricConfig.fontIsBold"
           :round="false"
@@ -533,9 +560,10 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">文字大小</n-text>
-          <n-text class="tip" :depth="3">翻译或其他文字将会跟随变化</n-text>
+          <n-text class="name">{{ t("settings.lyrics.desktopFontSize") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.desktopFontSizeTip") }}</n-text>
         </div>
+
         <n-select
           v-model:value="desktopLyricConfig.fontSize"
           :options="
@@ -552,8 +580,8 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">已播放文字</n-text>
-          <n-text class="tip" :depth="3">桌面歌词已播放文字颜色</n-text>
+          <n-text class="name">{{ t("settings.lyrics.playedColor") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.playedColorTip") }}</n-text>
         </div>
         <n-color-picker
           v-model:value="desktopLyricConfig.playedColor"
@@ -565,8 +593,8 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">未播放文字</n-text>
-          <n-text class="tip" :depth="3">桌面歌词未播放文字颜色</n-text>
+          <n-text class="name">{{ t("settings.lyrics.unplayedColor") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.unplayedColorTip") }}</n-text>
         </div>
         <n-color-picker
           v-model:value="desktopLyricConfig.unplayedColor"
@@ -578,9 +606,10 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">描边色</n-text>
-          <n-text class="tip" :depth="3">桌面歌词文字描边色</n-text>
+          <n-text class="name">{{ t("settings.lyrics.strokeColor") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.strokeColorTip") }}</n-text>
         </div>
+
         <n-color-picker
           v-model:value="desktopLyricConfig.shadowColor"
           :modes="['rgb']"
@@ -590,8 +619,8 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">文本背景遮罩</n-text>
-          <n-text class="tip" :depth="3">防止在某些界面看不清文本</n-text>
+          <n-text class="name">{{ t("settings.lyrics.bgMask") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.bgMaskTip") }}</n-text>
         </div>
         <n-switch
           v-model:value="desktopLyricConfig.textBackgroundMask"
@@ -602,9 +631,10 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">始终展示播放信息</n-text>
-          <n-text class="tip" :depth="3">是否始终展示当前歌曲名及歌手</n-text>
+          <n-text class="name">{{ t("settings.lyrics.alwaysShowInfo") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.alwaysShowInfoTip") }}</n-text>
         </div>
+
         <n-switch
           v-model:value="desktopLyricConfig.alwaysShowPlayInfo"
           :round="false"
@@ -614,10 +644,11 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">恢复默认配置</n-text>
-          <n-text class="tip" :depth="3">恢复默认桌面歌词配置</n-text>
+          <n-text class="name">{{ t("settings.lyrics.restoreConfig") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.lyrics.restoreConfigTip") }}</n-text>
         </div>
-        <n-button type="primary" @click="restoreDesktopLyricConfig">恢复默认</n-button>
+        <n-button type="primary" @click="restoreDesktopLyricConfig">{{ t("settings.lyrics.restoreDefault") }}</n-button>
+
       </n-card>
     </div>
   </div>
@@ -626,7 +657,9 @@
 <script setup lang="ts">
 import { NFlex, NText } from "naive-ui";
 import { useSettingStore, useStatusStore } from "@/stores";
+import { useI18n } from "vue-i18n";
 import { cloneDeep, isEqual } from "lodash-es";
+
 import { isElectron } from "@/utils/env";
 import { openLyricExclude, openAMLLServer, openFontManager } from "@/utils/modal";
 import { LyricConfig } from "@/types/desktop-lyric";
@@ -639,6 +672,8 @@ const props = defineProps<{ scrollTo?: string }>();
 const player = usePlayerController();
 const statusStore = useStatusStore();
 const settingStore = useSettingStore();
+const { t } = useI18n();
+
 
 // 桌面歌词区域引用
 const desktopLyricRef = ref<HTMLElement | null>(null);
@@ -671,10 +706,11 @@ const saveDesktopLyricConfig = () => {
       cloneDeep(desktopLyricConfig),
       true,
     );
-    window.$message.success("桌面歌词配置已保存");
+    window.$message.success(t("settings.lyrics.saveSuccess"));
   } catch (error) {
     console.error("Failed to save options:", error);
-    window.$message.error("桌面歌词配置保存失败");
+    window.$message.error(t("settings.lyrics.saveFail"));
+
     getDesktopLyricConfig();
   }
 };
@@ -684,25 +720,27 @@ const restoreDesktopLyricConfig = () => {
   try {
     if (!isElectron) return;
     window.$dialog.warning({
-      title: "警告",
-      content: "此操作将恢复所有桌面歌词配置为默认值，是否继续?",
-      positiveText: "确定",
-      negativeText: "取消",
+      title: t("general.dialog.title"),
+      content: t("settings.lyrics.restoreConfirm"),
+      positiveText: t("general.dialog.confirm"),
+      negativeText: t("general.dialog.cancel"),
+
       onPositiveClick: () => {
         window.electron.ipcRenderer.send(
           "update-desktop-lyric-option",
           defaultDesktopLyricConfig,
           true,
         );
-        window.$message.success("桌面歌词配置已恢复默认");
+        window.$message.success(t("settings.lyrics.restoreSuccess"));
         console.log(defaultDesktopLyricConfig, desktopLyricConfig);
       },
     });
   } catch (error) {
     console.error("Failed to save options:", error);
-    window.$message.error("桌面歌词配置恢复默认失败");
+    window.$message.error(t("settings.lyrics.restoreFail"));
     getDesktopLyricConfig();
   }
+
 };
 
 onMounted(async () => {

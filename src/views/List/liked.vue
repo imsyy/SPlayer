@@ -8,7 +8,7 @@
       :list-scrolling="listScrolling"
       :search-value="searchValue"
       :config="listConfig"
-      title-text="我喜欢的音乐"
+      :title-text="t('menu.myLikeSongs')"
       :play-button-text="playButtonText"
       :more-options="moreOptions"
       @update:search-value="handleSearchUpdate"
@@ -54,6 +54,9 @@ import { useListDetail } from "@/composables/List/useListDetail";
 import { useListSearch } from "@/composables/List/useListSearch";
 import { useListScroll } from "@/composables/List/useListScroll";
 import { useListActions } from "@/composables/List/useListActions";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const router = useRouter();
 const dataStore = useDataStore();
@@ -102,15 +105,15 @@ const playButtonText = computed(() => {
   if (showLoading.value) {
     const loaded =
       listData.value.length === (detailData.value?.count || 0) ? 0 : listData.value.length;
-    return `正在更新... (${loaded}/${detailData.value?.count || 0})`;
+    return `${t("general.list.loading")} (${loaded}/${detailData.value?.count || 0})`;
   }
-  return "播放";
+  return t("video.player.play");
 });
 
 // 更多操作
 const moreOptions = computed<DropdownOption[]>(() => [
   {
-    label: "编辑歌单",
+    label: t("modal.titles.update"),
     key: "edit",
     props: {
       onClick: () => {
@@ -123,7 +126,7 @@ const moreOptions = computed<DropdownOption[]>(() => [
     icon: renderIcon("EditNote"),
   },
   {
-    label: "批量操作",
+    label: t("modal.titles.batch"),
     key: "batch",
     props: {
       onClick: () => openBatchList(displayData.value, false, playlistId.value),
@@ -131,19 +134,19 @@ const moreOptions = computed<DropdownOption[]>(() => [
     icon: renderIcon("Batch"),
   },
   {
-    label: "复制分享链接",
+    label: t("general.copyShareLink"),
     key: "copy",
     props: {
       onClick: () =>
         copyData(
           `https://music.163.com/#/playlist?id=${playlistId.value}`,
-          "已复制分享链接到剪贴板",
+          t("general.copyShareLinkSuccess"),
         ),
     },
     icon: renderIcon("Share"),
   },
   {
-    label: "打开源页面",
+    label: t("general.openSource"),
     key: "open",
     props: {
       onClick: () => {

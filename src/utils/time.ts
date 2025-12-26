@@ -85,23 +85,24 @@ export const calculateProgress = (currentTime: number, duration: number): number
 export const getGreeting = () => {
   const hour = dayjs().hour();
   if (hour < 6) {
-    return "凌晨好";
+    return "earlyMorning";
   } else if (hour < 9) {
-    return "早上好";
+    return "morning";
   } else if (hour < 12) {
-    return "上午好";
+    return "lateMorning";
   } else if (hour < 14) {
-    return "中午好";
+    return "noon";
   } else if (hour < 17) {
-    return "下午好";
+    return "afternoon";
   } else if (hour < 19) {
-    return "傍晚好";
+    return "evening";
   } else if (hour < 22) {
-    return "晚上好";
+    return "night";
   } else {
-    return "夜深了";
+    return "lateNight";
   }
 };
+
 
 /**
  * 是否为当天的6点之前

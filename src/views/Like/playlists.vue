@@ -14,19 +14,21 @@
       </n-tag>
     </n-flex>
     <Transition name="fade" mode="out-in">
-      <CoverList :key="plTypeChoose" :data="listData" :loading="true" type="playlist" />
+      <CoverList :key="plTypeChoose" :data="listData" :loading="!listData" type="playlist" />
     </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useDataStore } from "@/stores";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const dataStore = useDataStore();
 
 // 歌单分类
 const plTypeChoose = ref(0);
-const plTypeName = ["我创建的", "我收藏的"];
+const plTypeName = computed(() => [t("user.createdPlaylists"), t("user.collectedPlaylists")]);
 
 // 歌单列表内容
 const listData = computed(() =>

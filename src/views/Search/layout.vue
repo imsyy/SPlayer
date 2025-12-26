@@ -2,16 +2,16 @@
   <div class="search">
     <div class="title">
       <n-text class="keyword">{{ searchKeyword }}</n-text>
-      <n-text depth="3">的相关搜索</n-text>
+      <n-text depth="3">{{ t("searchView.related") }}</n-text>
     </div>
     <!-- 标签页 -->
     <n-tabs v-model:value="searchType" class="tabs" type="segment" @update:value="tabChange">
-      <n-tab name="search-songs"> 单曲 </n-tab>
-      <n-tab name="search-playlists"> 歌单 </n-tab>
-      <n-tab name="search-artists"> 歌手 </n-tab>
-      <n-tab name="search-albums"> 专辑 </n-tab>
-      <n-tab name="search-videos"> 视频 </n-tab>
-      <n-tab name="search-radios"> 播客 </n-tab>
+      <n-tab name="search-songs"> {{ t("searchView.tabs.songs") }} </n-tab>
+      <n-tab name="search-playlists"> {{ t("searchView.tabs.playlists") }} </n-tab>
+      <n-tab name="search-artists"> {{ t("searchView.tabs.artists") }} </n-tab>
+      <n-tab name="search-albums"> {{ t("searchView.tabs.albums") }} </n-tab>
+      <n-tab name="search-videos"> {{ t("searchView.tabs.videos") }} </n-tab>
+      <n-tab name="search-radios"> {{ t("searchView.tabs.radios") }} </n-tab>
     </n-tabs>
     <!-- 路由 -->
     <RouterView v-slot="{ Component }">
@@ -38,9 +38,12 @@
 
 <script setup lang="ts">
 import { useSettingStore } from "@/stores";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
+
 const settingStore = useSettingStore();
 
 // 搜索关键词

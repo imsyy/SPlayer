@@ -83,7 +83,7 @@
             />
             <!-- 歌手 -->
             <div v-else class="artists">
-              <n-text v-if="musicStore.playSong.type === 'radio'" class="ar-item">播客电台</n-text>
+              <n-text v-if="musicStore.playSong.type === 'radio'" class="ar-item">{{ t("menu.podcast") }}</n-text>
               <template v-else-if="Array.isArray(musicStore.playSong.artists)">
                 <n-text
                   v-for="(item, index) in musicStore.playSong.artists"
@@ -95,7 +95,7 @@
                 </n-text>
               </template>
               <n-text v-else class="ar-item" @click="openJumpArtist(musicStore.playSong.artists)">
-                {{ musicStore.playSong.artists || "未知艺术家" }}
+                {{ musicStore.playSong.artists || t("general.unknownArtist") }}
               </n-text>
             </div>
           </Transition>
@@ -201,7 +201,9 @@ import {
 } from "@/utils/modal";
 import { useSongManager } from "@/core/player/SongManager";
 import { usePlayerController } from "@/core/player/PlayerController";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const router = useRouter();
 const dataStore = useDataStore();
 const musicStore = useMusicStore();
@@ -221,12 +223,12 @@ const songMoreOptions = computed<DropdownOption[]>(() => {
   return [
     {
       key: "more",
-      label: "更多操作",
+      label: t("player.moreOptions"),
       icon: renderIcon("Menu", { size: 18 }),
       children: [
         {
           key: "code-name",
-          label: `复制${song.type === "song" ? "歌曲" : "节目"}名称`,
+          label: `${t("player.copyName")} (${song.type === "song" ? t("player.song") : t("player.program")})`,
           props: {
             onClick: () => copyData(song.name),
           },
@@ -234,7 +236,7 @@ const songMoreOptions = computed<DropdownOption[]>(() => {
         },
         {
           key: "code-id",
-          label: `复制${song.type === "song" ? "歌曲" : "节目"} ID`,
+          label: `${t("player.copyId")} (${song.type === "song" ? t("player.song") : t("player.program")})`,
           show: !isLocal,
           props: {
             onClick: () => copyData(song.id),
@@ -243,13 +245,13 @@ const songMoreOptions = computed<DropdownOption[]>(() => {
         },
         {
           key: "share",
-          label: `分享${song.type === "song" ? "歌曲" : "节目"}链接`,
+          label: `${t("player.shareLink")} (${song.type === "song" ? t("player.song") : t("player.program")})`,
           show: !isLocal,
           props: {
             onClick: () =>
               copyData(
                 `https://music.163.com/#/${song.type}?id=${song.id}`,
-                "已复制分享链接到剪切板",
+                t("general.copyShareLinkSuccess"),
               ),
           },
           icon: renderIcon("Share", { size: 18 }),
@@ -258,7 +260,7 @@ const songMoreOptions = computed<DropdownOption[]>(() => {
     },
     {
       key: "search",
-      label: "同名搜索",
+      label: t("player.searchSameName"),
       props: {
         onClick: () => router.push({ name: "search", query: { keyword: song.name } }),
       },
@@ -270,7 +272,7 @@ const songMoreOptions = computed<DropdownOption[]>(() => {
     },
     {
       key: "playlist-add",
-      label: "添加到歌单",
+      label: t("player.addToPlaylist"),
       props: {
         onClick: () => openPlaylistAdd([song], isLocal),
       },
@@ -278,7 +280,7 @@ const songMoreOptions = computed<DropdownOption[]>(() => {
     },
     {
       key: "mv",
-      label: "观看 MV",
+      label: t("player.watchMV"),
       show: isSong && isHasMv,
       props: {
         onClick: () =>
@@ -288,14 +290,14 @@ const songMoreOptions = computed<DropdownOption[]>(() => {
     },
     {
       key: "download",
-      label: "下载歌曲",
+      label: t("player.download"),
       show: statusStore.isDeveloperMode && !isLocal && isSong,
       props: { onClick: () => openDownloadSong(musicStore.playSong) },
       icon: renderIcon("Download"),
     },
     {
       key: "comment",
-      label: "查看评论",
+      label: t("player.viewComments"),
       show: !isLocal,
       props: {
         onClick: () => {

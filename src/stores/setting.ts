@@ -1,4 +1,6 @@
 import { defineStore } from "pinia";
+import i18n from "@/i18n";
+
 import { keywords, regexes } from "@/assets/data/exclude";
 import { SongUnlockServer } from "@/core/player/SongManager";
 import type { SongLevelType } from "@/types/main";
@@ -8,7 +10,10 @@ import { CURRENT_SETTING_SCHEMA_VERSION, settingMigrations } from "./migrations/
 export interface SettingState {
   /** Schema 版本号（可选，用于数据迁移） */
   schemaVersion?: number;
+  /** 语言设置 */
+  language: "zh-CN" | "en-US";
   /** 明暗模式 */
+
   themeMode: "light" | "dark" | "auto";
   /** 主题类别 */
   themeColorType:
@@ -279,7 +284,9 @@ export interface SettingState {
 export const useSettingStore = defineStore("setting", {
   state: (): SettingState => ({
     schemaVersion: 0,
+    language: "zh-CN",
     themeMode: "auto",
+
     themeColorType: "default",
     themeCustomColor: "#fe7971",
     themeFollowCover: false,
@@ -479,19 +486,28 @@ export const useSettingStore = defineStore("setting", {
         this.themeMode = mode;
       }
       window.$message.info(
-        `已切换至
+        // @ts-ignore
+        `${i18n.global.t("general.message.switchedTo")}
         ${
           this.themeMode === "auto"
-            ? "跟随系统"
+            ? i18n.global.t("nav.menu.auto")
             : this.themeMode === "light"
-              ? "浅色模式"
-              : "深色模式"
+              ? i18n.global.t("nav.menu.light")
+              : i18n.global.t("nav.menu.dark")
         }`,
         {
           showIcon: false,
         },
       );
+
     },
+    setLanguage(lang: "zh-CN" | "en-US") {
+      this.language = lang;
+      // @ts-ignore
+      i18n.global.locale.value = lang;
+      localStorage.setItem("locale", lang);
+    },
+
   },
   // 持久化
   persist: {

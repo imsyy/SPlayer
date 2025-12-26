@@ -19,7 +19,7 @@
         </div>
         <div class="user-data">
           <n-text class="name">
-            {{ dataStore.userLoginStatus ? dataStore.userData.name || "未知用户名" : "未登录" }}
+            {{ dataStore.userLoginStatus ? dataStore.userData.name || t("user.unknownName") : t("user.notLoggedIn") }}
           </n-text>
           <!-- VIP -->
           <img
@@ -45,8 +45,8 @@
         </div>
       </div>
       <n-flex v-else align="center" vertical>
-        <n-text>UID 登录模式</n-text>
-        <n-text :depth="3">部分功能暂不可用</n-text>
+        <n-text>{{ t("user.uidMode") }}</n-text>
+        <n-text :depth="3">{{ t("user.uidModeTip") }}</n-text>
       </n-flex>
       <n-divider />
       <!-- 退出登录 -->
@@ -54,7 +54,7 @@
         <template #icon>
           <SvgIcon name="Power" />
         </template>
-        退出登录
+        {{ t("user.logout") }}
       </n-button>
     </div>
   </n-popover>
@@ -71,6 +71,9 @@ import {
   updateUserData,
   updateSpecialUserData,
 } from "@/utils/auth";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const router = useRouter();
 const dataStore = useDataStore();
@@ -91,17 +94,17 @@ const openMenu = () => {
 const userLikeData = computed(() => {
   return [
     {
-      label: "歌单",
+      label: t("auth.playlist"),
       name: "like-playlists",
       value: dataStore.userLikeData.playlists.length,
     },
     {
-      label: "专辑",
+      label: t("auth.album"),
       name: "like-albums",
       value: dataStore.userLikeData.albums.length,
     },
     {
-      label: "歌手",
+      label: t("auth.artist"),
       name: "like-artists",
       value: dataStore.userLikeData.artists.length,
     },
@@ -129,7 +132,7 @@ const checkLoginStatus = async () => {
   else if (dataStore.userData.userId !== 0) {
     dataStore.userLoginStatus = false;
     dataStore.userData.userId = 0;
-    window.$message.warning("登录已过期，请重新登录", { duration: 2000 });
+    window.$message.warning(t("user.loginExpired"), { duration: 2000 });
     openUserLogin();
   }
 };
@@ -141,10 +144,10 @@ const isLogout = () => {
     return;
   }
   window.$dialog.warning({
-    title: "退出登录",
-    content: "确认退出当前用户登录？",
-    positiveText: "确认登出",
-    negativeText: "取消",
+    title: t("user.logout"),
+    content: t("user.logoutConfirm"),
+    positiveText: t("user.logoutPositive"),
+    negativeText: t("general.dialog.cancel"),
     onPositiveClick: () => toLogout(),
   });
 };

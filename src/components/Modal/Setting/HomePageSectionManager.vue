@@ -13,7 +13,7 @@
         class="sortable-item"
       >
         <SvgIcon :depth="3" name="Menu" />
-        <n-text class="name">{{ item.name }}</n-text>
+        <n-text class="name">{{ t("home.recommend." + item.key) }}</n-text>
         <n-switch v-model:value="item.visible" :round="false" />
       </n-card>
     </div>
@@ -24,8 +24,11 @@
 import { useSettingStore } from "@/stores";
 import { useSortable } from "@vueuse/integrations/useSortable";
 import SvgIcon from "@/components/Global/SvgIcon.vue";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const settingStore = useSettingStore();
+
 
 const sortableRef = ref<HTMLElement | null>(null);
 

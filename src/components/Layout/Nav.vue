@@ -23,7 +23,7 @@
       <User v-if="settingStore.useOnlineService" />
       <!-- 设置菜单 -->
       <n-dropdown :options="setOptions" trigger="click" show-arrow @select="setSelect">
-        <n-button :focusable="false" title="设置" tertiary circle>
+        <n-button :focusable="false" :title="t('nav.setting')" tertiary circle>
           <template #icon>
             <SvgIcon name="Settings" />
           </template>
@@ -33,18 +33,18 @@
     <!-- 客户端控制 -->
     <n-flex v-if="isElectron" align="center" class="client-control">
       <n-divider class="divider" vertical />
-      <div class="min-button-wrapper" @click="min" title="最小化">
-        <n-button :focusable="false" title="最小化" tertiary circle @click.stop="min">
+      <div class="min-button-wrapper" @click="min" :title="t('nav.minimize')">
+        <n-button :focusable="false" :title="t('nav.minimize')" tertiary circle @click.stop="min">
           <template #icon>
             <SvgIcon name="WindowMinimize" />
           </template>
         </n-button>
         <div class="min-expanded-area"></div>
       </div>
-      <div class="max-button-wrapper" @click="maxOrRes" :title="isMax ? '还原' : '最大化'">
+      <div class="max-button-wrapper" @click="maxOrRes" :title="isMax ? t('nav.restore') : t('nav.maximize')">
         <n-button
           :focusable="false"
-          :title="isMax ? '还原' : '最大化'"
+          :title="isMax ? t('nav.restore') : t('nav.maximize')"
           tertiary
           circle
           @click.stop="maxOrRes"
@@ -55,8 +55,8 @@
         </n-button>
         <div class="max-expanded-area"></div>
       </div>
-      <div class="close-button-wrapper" @click="tryClose" title="关闭">
-        <n-button :focusable="false" title="关闭" tertiary circle @click.stop="tryClose">
+      <div class="close-button-wrapper" @click="tryClose" :title="t('nav.close')">
+        <n-button :focusable="false" :title="t('nav.close')" tertiary circle @click.stop="tryClose">
           <template #icon>
             <SvgIcon name="WindowClose" />
           </template>
@@ -68,32 +68,33 @@
     <n-modal
       v-model:show="showCloseModal"
       :auto-focus="false"
-      title="关闭软件"
+      :title="t('nav.client.title')"
       style="width: 600px"
       preset="card"
       transform-origin="center"
       bordered
       @after-leave="rememberNotAsk = false"
     >
-      <n-text class="tip">确认关闭软件吗？</n-text>
-      <n-checkbox v-model:checked="rememberNotAsk" class="checkbox"> 记住且不再询问 </n-checkbox>
+      <n-text class="tip">{{ t("nav.client.content") }}</n-text>
+      <n-checkbox v-model:checked="rememberNotAsk" class="checkbox"> {{ t("nav.client.remember") }} </n-checkbox>
       <template #footer>
         <n-flex justify="end">
           <n-button strong secondary @click="hideOrClose('exit')">
             <template #icon>
               <SvgIcon name="ExitToApp" />
             </template>
-            关闭
+            {{ t("nav.client.close") }}
           </n-button>
           <n-button type="primary" strong secondary @click="hideOrClose('hide')">
             <template #icon>
               <SvgIcon name="WindowHide" />
             </template>
-            隐藏到托盘
+            {{ t("nav.client.hide") }}
           </n-button>
         </n-flex>
       </template>
     </n-modal>
+
   </n-layout-header>
 </template>
 
@@ -103,7 +104,9 @@ import { useSettingStore } from "@/stores";
 import { renderIcon } from "@/utils/helper";
 import { openSetting } from "@/utils/modal";
 import { isDev, isElectron } from "@/utils/env";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const router = useRouter();
 const settingStore = useSettingStore();
 
@@ -150,10 +153,10 @@ const setOptions = computed<DropdownOption[]>(() => [
   {
     label:
       settingStore.themeMode === "auto"
-        ? "浅色模式"
+        ? t("nav.menu.auto")
         : settingStore.themeMode === "light"
-          ? "深色模式"
-          : "跟随系统",
+          ? t("nav.menu.light")
+          : t("nav.menu.dark"),
     key: "themeMode",
     icon: renderIcon(
       settingStore.themeMode === "auto"
@@ -170,20 +173,20 @@ const setOptions = computed<DropdownOption[]>(() => [
   {
     // 重启
     key: "restart",
-    label: "软件热重载",
+    label: t("nav.menu.reload"),
     show: isElectron,
     props: { onClick: () => window.electron.ipcRenderer.send("win-reload") },
     icon: renderIcon("Restart"),
   },
   {
     key: "dev-tools",
-    label: "开启控制台",
+    label: t("nav.menu.console"),
     show: isDev,
     icon: renderIcon("Code"),
   },
   {
     key: "setting",
-    label: "全局设置",
+    label: t("nav.menu.global"),
     icon: renderIcon("Settings"),
   },
 ]);
@@ -214,6 +217,7 @@ onMounted(() => {
     });
   }
 });
+
 </script>
 
 <style lang="scss" scoped>

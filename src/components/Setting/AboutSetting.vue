@@ -1,7 +1,7 @@
 <template>
   <div class="setting-type">
     <div class="set-list">
-      <n-h3 prefix="bar"> 关于软件 </n-h3>
+      <n-h3 prefix="bar"> {{ t("settings.about.title") }} </n-h3>
       <n-card class="set-item">
         <n-flex align="center" class="about">
           <SvgIcon name="SPlayer" size="26" />
@@ -18,18 +18,18 @@
           secondary
           @click="checkUpdate"
         >
-          {{ statusStore.updateCheck ? "检查更新中" : "检查更新" }}
+          {{ statusStore.updateCheck ? t("settings.about.checking") : t("settings.about.check") }}
         </n-button>
       </n-card>
       <n-collapse-transition :show="!!updateData">
         <n-card class="set-item update-data">
           <n-flex class="version">
-            <n-text>最新版本</n-text>
+            <n-text>{{ t("settings.about.latest") }}</n-text>
             <n-tag :bordered="false" size="small" type="primary">
               {{ newVersion?.version || "v0.0.0" }}
             </n-tag>
             <n-tag v-if="newVersion?.prerelease" class="test" size="small" type="warning">
-              测试版
+              {{ t("settings.about.beta") }}
             </n-tag>
             <n-text :depth="3" class="time">{{ newVersion?.time }}</n-text>
           </n-flex>
@@ -38,7 +38,7 @@
       </n-collapse-transition>
     </div>
     <div class="set-list">
-      <n-h3 prefix="bar"> 特别鸣谢 </n-h3>
+      <n-h3 prefix="bar"> {{ t("settings.about.thanks") }} </n-h3>
       <n-flex :size="12" class="link">
         <n-card
           v-for="(item, index) in contributors"
@@ -57,7 +57,7 @@
       </n-flex>
     </div>
     <div class="set-list">
-      <n-h3 prefix="bar"> 开发人员 </n-h3>
+      <n-h3 prefix="bar"> {{ t("settings.about.dev") }} </n-h3>
       <n-flex :size="12" class="link">
         <n-card
           v-for="(item, index) in developers"
@@ -81,7 +81,7 @@
     <Transition name="fade" mode="out-in">
       <div v-if="allContributors.length > 0" class="set-list">
         <n-collapse arrow-placement="right">
-          <n-collapse-item title="更多贡献者" name="1">
+          <n-collapse-item :title="t('settings.about.moreDev')" name="1">
             <n-flex :size="12" class="link">
               <n-card
                 v-for="(item, index) in allContributors"
@@ -106,7 +106,7 @@
       </div>
     </Transition>
     <div class="set-list">
-      <n-h3 prefix="bar"> 社区与资讯 </n-h3>
+      <n-h3 prefix="bar"> {{ t("settings.about.community") }} </n-h3>
       <n-flex :size="12" class="link">
         <n-card
           v-for="(item, index) in communityData"
@@ -121,7 +121,7 @@
       </n-flex>
     </div>
     <div class="set-list">
-      <n-h3 prefix="bar"> 历史版本 </n-h3>
+      <n-h3 prefix="bar"> {{ t("settings.about.history") }} </n-h3>
       <n-collapse-transition :show="oldVersion?.length > 0">
         <n-collapse accordion>
           <n-collapse-item
@@ -151,10 +151,13 @@ import type { UpdateLogType } from "@/types/main";
 import { getUpdateLog, openLink } from "@/utils/helper";
 import { debounce } from "lodash-es";
 import { useStatusStore } from "@/stores";
+import { useI18n } from "vue-i18n";
 import { isElectron } from "@/utils/env";
 import packageJson from "@/../package.json";
 
 const statusStore = useStatusStore();
+const { t } = useI18n();
+
 
 // 开发者模式点击次数
 const developerModeClickCount = ref(0);
@@ -196,39 +199,40 @@ const getContributors = async () => {
 };
 
 // 特别鸣谢
-const contributors = [
+const contributors = computed(() => [
   {
     name: "NeteaseCloudMusicApi",
     url: "https://github.com/Binaryify/NeteaseCloudMusicApi",
-    description: "网易云音乐 API",
+    description: t("settings.about.contributors.ncma"),
   },
   // https://github.com/neteasecloudmusicapienhanced/api-enhanced
   {
     name: "NeteaseCloudMusicApiEnhanced",
     url: "https://github.com/neteasecloudmusicapienhanced/api-enhanced",
-    description: "网易云音乐 API 备份 + 增强",
+    description: t("settings.about.contributors.ncmaEnhanced"),
   },
   {
     name: "YesPlayMusic",
     url: "https://github.com/qier222/YesPlayMusic",
-    description: "高颜值的第三方网易云播放器",
+    description: t("settings.about.contributors.ypm"),
   },
   {
     name: "UnblockNeteaseMusic",
     url: "https://github.com/UnblockNeteaseMusic/server",
-    description: "Revive unavailable songs for Netease Cloud Music",
+    description: t("settings.about.contributors.unm"),
   },
   {
     name: "applemusic-like-lyrics",
     url: "https://github.com/Steve-xmh/applemusic-like-lyrics",
-    description: "类 Apple Music 歌词显示组件库",
+    description: t("settings.about.contributors.amll"),
   },
-];
+]);
+
 
 // 社区数据
-const communityData = [
+const communityData = computed(() => [
   {
-    name: "加入交流群",
+    name: t("settings.about.group"),
     url: "https://qm.qq.com/cgi-bin/qm/qr?k=2-cVSf1bE0AvAehCib00qFEFdUvPaJ_k&jump_from=webapi&authKey=1NEhib9+GsmsXVo2rCc0IbRaVHeeRXJJ0gbsyKDcIwDdAzYySOubkFCvkV32+7Cw",
     icon: "QQ",
   },
@@ -238,11 +242,12 @@ const communityData = [
     icon: "Github",
   },
   {
-    name: "官方博客",
+    name: t("settings.about.blog"),
     url: packageJson.blog,
     icon: "RssFeed",
   },
-];
+]);
+
 
 // 更新日志数据
 const updateData = ref<UpdateLogType[] | null>(null);
@@ -288,16 +293,19 @@ const openDeveloperMode = useThrottleFn(() => {
   developerModeClickCount.value++;
   if (developerModeClickCount.value >= 5 && developerModeClickCount.value < 8) {
     if (statusStore.developerMode) {
-      window.$message.info("已处于开发者模式！");
+      window.$message.info(t("settings.about.devModeEnabled"));
       developerModeClickCount.value = 0;
       return;
     }
-    window.$message.info(`再点击${8 - developerModeClickCount.value}次以开启开发者模式`);
+    window.$message.info(
+      t("settings.about.devModeClick", { count: 8 - developerModeClickCount.value }),
+    );
   } else if (developerModeClickCount.value >= 8) {
     developerModeClickCount.value = 0;
     statusStore.developerMode = true;
-    window.$message.warning("开发者模式已开启，请谨慎使用！");
+    window.$message.warning(t("settings.about.devModeWarning"));
   }
+
 }, 100);
 
 onMounted(() => {

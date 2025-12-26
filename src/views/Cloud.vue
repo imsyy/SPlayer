@@ -1,7 +1,7 @@
 <template>
   <div class="cloud">
     <div class="title">
-      <n-text class="keyword">我的云盘</n-text>
+      <n-text class="keyword">{{ t("menu.myCloud") }}</n-text>
       <n-flex class="status">
         <n-text class="item">
           <SvgIcon name="Music" :depth="3" />
@@ -39,8 +39,8 @@
           {{
             loading
               ? `
-              正在更新... (${cloudData.length === cloudCount ? 0 : cloudData.length}/${cloudCount})`
-              : "播放"
+              ${t("general.list.loading")} (${cloudData.length === cloudCount ? 0 : cloudData.length}/${cloudCount})`
+              : t("video.player.play")
           }}
         </n-button>
         <n-button :focusable="false" class="more" strong secondary circle @click="getAllCloudMusic">
@@ -63,7 +63,7 @@
         v-model:value="searchValue"
         :input-props="{ autocomplete: 'off' }"
         class="search"
-        placeholder="模糊搜索"
+        :placeholder="t('general.searchKeywordTip')"
         clearable
         round
       >
@@ -103,6 +103,9 @@ import { formatSongsList } from "@/utils/format";
 import { fuzzySearch, renderIcon } from "@/utils/helper";
 import { openBatchList } from "@/utils/modal";
 import { usePlayerController } from "@/core/player/PlayerController";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const router = useRouter();
 const dataStore = useDataStore();
@@ -133,7 +136,7 @@ const isCloudPage = computed<boolean>(() => router.currentRoute.value.name === "
 // 更多操作
 const moreOptions = computed<DropdownOption[]>(() => [
   {
-    label: "批量操作",
+    label: t("modal.titles.batch"),
     key: "batch",
     props: {
       onClick: () => openBatchList(cloudData.value, false),

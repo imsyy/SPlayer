@@ -27,6 +27,8 @@ import {
   NAvatar,
   NBadge,
 } from "naive-ui";
+import { useI18n } from "vue-i18n";
+
 import type { CoverType } from "@/types/main";
 import { useStatusStore, useSettingStore, useDataStore, useMusicStore } from "@/stores";
 import { useRouter, RouterLink } from "vue-router";
@@ -43,6 +45,8 @@ const musicStore = useMusicStore();
 const statusStore = useStatusStore();
 const settingStore = useSettingStore();
 const player = usePlayerController();
+const { t } = useI18n();
+
 
 // 菜单数据
 const menuRef = ref<MenuInst | null>(null);
@@ -55,7 +59,8 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
         {
           key: "home",
           link: "home",
-          label: "为我推荐",
+          label: t("menu.recommend"),
+
           icon: renderIcon("Home", {
             style: {
               transform: "translateY(-1px)",
@@ -65,7 +70,8 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
         {
           key: "discover",
           link: "discover",
-          label: "发现音乐",
+          label: t("menu.discover"),
+
           show: !settingStore.hideDiscover,
           icon: renderIcon("Discover", {
             style: {
@@ -75,7 +81,8 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
         },
         {
           key: "personal-fm",
-          label: "私人漫游",
+          label: t("menu.roaming"),
+
           show: isLogin() !== 0 && !settingStore.hidePersonalFM,
           icon: renderIcon("Radio", {
             style: {
@@ -86,7 +93,8 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
         {
           key: "radio-hot",
           link: "radio-hot",
-          label: "播客电台",
+          label: t("menu.podcast"),
+
           show: !settingStore.hideRadioHot,
           icon: renderIcon("Record", {
             style: {
@@ -102,8 +110,9 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
           key: "like-songs",
           label: () =>
             h("div", { class: "user-liked" }, [
-              h(NText, null, () => "我喜欢的音乐"),
+              h(NText, null, () => t("menu.myLikeSongs")),
               !settingStore.hideHeartbeatMode
+
                 ? h(NButton, {
                     type: statusStore.playHeartbeatMode ? "primary" : "default",
                     round: true,
@@ -122,14 +131,16 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
         {
           key: "like",
           link: "like",
-          label: "我的收藏",
+          label: t("menu.myCollection"),
+
           show: !settingStore.hideLike,
           icon: renderIcon("Star"),
         },
         {
           key: "cloud",
           link: "cloud",
-          label: "我的云盘",
+          label: t("menu.myCloud"),
+
           show: isLogin() === 1 && !settingStore.hideCloud,
           icon: renderIcon("Cloud"),
         },
@@ -143,22 +154,25 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
                 value: dataStore.downloadingSongs.length,
                 offset: [22, 13],
               },
-              () => "下载管理",
+              () => t("menu.download"),
             ),
+
           show: statusStore.isDeveloperMode && isElectron && !settingStore.hideDownload,
           icon: renderIcon("Download"),
         },
         {
           key: "local",
           link: "local",
-          label: "本地歌曲",
+          label: t("menu.local"),
+
           show: isElectron && !settingStore.hideLocal,
           icon: renderIcon("FolderMusic"),
         },
         {
           key: "history",
           link: "history",
-          label: "最近播放",
+          label: t("menu.recent"),
+
           show: !settingStore.hideHistory,
           icon: renderIcon("History"),
         },
@@ -173,8 +187,9 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
           icon: statusStore.menuCollapsed ? renderIcon("PlaylistAdd") : undefined,
           label: () =>
             h("div", { class: "user-list" }, [
-              h(NText, { depth: 3 }, () => ["创建的歌单"]),
+              h(NText, { depth: 3 }, () => [t("menu.createdList")]),
               h(NButton, {
+
                 type: "tertiary",
                 round: true,
                 strong: true,
@@ -197,8 +212,9 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
             h(
               "div",
               { class: "user-list" },
-              h(NText, { depth: 3 }, () => ["收藏的歌单"]),
+              h(NText, { depth: 3 }, () => [t("menu.collectedList")]),
             ),
+
           children: [...likedPlaylist.value],
         },
       ]
@@ -206,7 +222,8 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
         {
           key: "local",
           link: "local",
-          label: "本地歌曲",
+          label: t("menu.local"),
+
           show: isElectron,
           icon: renderIcon("FolderMusic"),
         },

@@ -1,11 +1,12 @@
 <template>
   <div class="local">
     <div class="title">
-      <n-text class="keyword">本地歌曲</n-text>
+      <n-text class="keyword">{{ t("menu.local") }}</n-text>
       <n-flex class="status">
         <n-text class="item">
           <SvgIcon name="Music" :depth="3" />
-          <n-number-animation :from="0" :to="localStore.localSongs?.length || 0" /> 首歌曲
+          <n-number-animation :from="0" :to="localStore.localSongs?.length || 0" />
+          {{ t("general.list.songUnit") }}
         </n-text>
         <n-text class="item">
           <SvgIcon name="Storage" :depth="3" />
@@ -28,7 +29,7 @@
           <template #icon>
             <SvgIcon name="Play" />
           </template>
-          播放
+          {{ t("video.player.play") }}
         </n-button>
         <n-button
           :disabled="loading"
@@ -60,7 +61,7 @@
           v-model:value="searchValue"
           :input-props="{ autocomplete: 'off' }"
           class="search"
-          placeholder="模糊搜索"
+          :placeholder="t('general.searchKeywordTip')"
           clearable
           round
           @input="listSearch"
@@ -75,10 +76,14 @@
           type="segment"
           @update:value="handleTabUpdate"
         >
-          <n-tab :disabled="tabsDisabled" name="local-songs"> 单曲 </n-tab>
-          <n-tab :disabled="tabsDisabled" name="local-artists"> 歌手 </n-tab>
-          <n-tab :disabled="tabsDisabled" name="local-albums"> 专辑 </n-tab>
-          <n-tab :disabled="tabsDisabled" name="local-folders"> 文件夹 </n-tab>
+          <n-tab :disabled="tabsDisabled" name="local-songs"> {{ t("menu.local") }} </n-tab>
+          <n-tab :disabled="tabsDisabled" name="local-artists">
+            {{ t("auth.artist") }}
+          </n-tab>
+          <n-tab :disabled="tabsDisabled" name="local-albums"> {{ t("auth.album") }} </n-tab>
+          <n-tab :disabled="tabsDisabled" name="local-folders">
+            {{ t("settings.local.folders") }}
+          </n-tab>
         </n-tabs>
       </n-flex>
     </n-flex>
@@ -99,7 +104,7 @@
             <template #icon>
               <SvgIcon name="FolderCog" />
             </template>
-            本地目录管理
+            {{ t("settings.local.manage") }}
           </n-button>
         </template>
       </n-empty>
@@ -110,7 +115,7 @@
       :close-on-esc="false"
       :mask-closable="false"
       preset="card"
-      title="目录管理"
+      :title="t('settings.local.manage')"
       transform-origin="center"
       style="width: 600px"
     >
@@ -138,7 +143,7 @@
             <template #icon>
               <SvgIcon name="FolderPlus" />
             </template>
-            添加文件夹
+            {{ t("settings.local.addFolder") }}
           </n-button>
         </n-flex>
       </template>
@@ -155,6 +160,9 @@ import { debounce } from "lodash-es";
 import { changeLocalMusicPath, fuzzySearch, renderIcon } from "@/utils/helper";
 import { openBatchList } from "@/utils/modal";
 import { usePlayerController } from "@/core/player/PlayerController";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const router = useRouter();
 const localStore = useLocalStore();
@@ -213,7 +221,7 @@ const allMusicSize = computed<number>(() => {
 // 更多操作
 const moreOptions = computed<DropdownOption[]>(() => [
   {
-    label: "本地目录管理",
+    label: t("settings.local.manage"),
     key: "folder",
     props: {
       onClick: () => (localPathShow.value = true),
@@ -221,7 +229,7 @@ const moreOptions = computed<DropdownOption[]>(() => [
     icon: renderIcon("FolderCog"),
   },
   {
-    label: "批量操作",
+    label: t("modal.titles.batch"),
     key: "batch",
     props: {
       onClick: () => openBatchList(listData.value, true),

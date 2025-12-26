@@ -1,6 +1,6 @@
 <template>
   <div class="like-type">
-    <CoverList :data="dataStore.userLikeData.albums" :loading="true" type="album" />
+    <CoverList :data="dataStore.userLikeData.albums" :loading="!dataStore.userLikeData.albums" type="album" />
   </div>
 </template>
 

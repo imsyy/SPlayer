@@ -78,6 +78,7 @@
     "pinia-plugin-persistedstate": "^4.7.1",
     "plyr": "^3.8.3",
     "sortablejs": "^1.15.6",
+    "vue-i18n": "^11.2.7",
     "ws": "^8.18.3"
   },
   "devDependencies": {

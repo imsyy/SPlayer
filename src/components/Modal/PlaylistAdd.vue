@@ -2,7 +2,7 @@
 <template>
   <div class="playlist-add">
     <n-tabs :default-value="isLocal ? 'local' : 'online'" type="segment" animated>
-      <n-tab-pane :disabled="isLocal" name="online" tab="在线歌单">
+      <n-tab-pane :disabled="isLocal" name="online" :tab="t('menu.onlinePlaylist')">
         <n-scrollbar style="max-height: 70vh">
           <n-list class="playlists-list" hoverable clickable>
             <!-- 新建歌单 -->
@@ -10,7 +10,7 @@
               <template #prefix>
                 <SvgIcon name="Add" :size="20" />
               </template>
-              <n-thing title="创建新歌单" />
+              <n-thing :title="t('menu.createNewPlaylist')" />
             </n-list-item>
             <!-- 已有歌单 -->
             <n-list-item
@@ -34,17 +34,17 @@
                   </template>
                 </n-image>
               </template>
-              <n-thing :title="index === 0 ? '我喜欢的音乐' : item.name">
+              <n-thing :title="index === 0 ? t('menu.myLikeSongs') : item.name">
                 <template #description>
-                  <n-text depth="3" class="size">{{ item.count }} 首音乐</n-text>
+                  <n-text depth="3" class="size">{{ item.count }} {{ t('general.list.songUnit') }}</n-text>
                 </template>
               </n-thing>
             </n-list-item>
           </n-list>
         </n-scrollbar>
       </n-tab-pane>
-      <n-tab-pane name="local" tab="本地歌单">
-        <n-empty description="暂未实现" />
+      <n-tab-pane name="local" :tab="t('menu.localPlaylist')">
+        <n-empty :description="t('menu.notImplemented')" />
       </n-tab-pane>
     </n-tabs>
   </div>
@@ -59,6 +59,9 @@ import { playlistTracks } from "@/api/playlist";
 import { debounce } from "lodash-es";
 import { isLogin, updateUserLikePlaylist, updateUserLikeSongs } from "@/utils/auth";
 import { openCreatePlaylist } from "@/utils/modal";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const props = defineProps<{
   data: SongType[];
@@ -87,24 +90,24 @@ const onlinePlaylists = computed(() => {
 const addPlaylist = debounce(
   async (id: number, index: number) => {
     if (isLogin() === 2) {
-      window.$message.warning("该登录模式暂不支持该操作");
+      window.$message.warning(t("menu.operationNotSupported"));
       return;
     }
-    loadingMsg.value = window.$message.loading("正在添加歌曲至歌单", { duration: 0 });
+    loadingMsg.value = window.$message.loading(t("menu.addingToPlaylist"), { duration: 0 });
     const ids = props.data.map((item) => item.id).filter((item) => item !== 0);
     const result = await playlistTracks(id, ids);
     if (loadingMsg.value) loadingMsg.value.destroy();
     if (result.status === 200) {
       if (result.body?.code !== 200) {
-        window.$message.error(result.body?.message || "添加失败，请重试");
+        window.$message.error(result.body?.message || t("menu.addToPlaylistFailed"));
         return;
       }
       emit("close");
-      window.$message.success("添加歌曲至歌单成功");
+      window.$message.success(t("menu.addToPlaylistSuccess"));
       if (index === 0) await updateUserLikeSongs();
       await updateUserLikePlaylist();
     } else {
-      window.$message.error(result?.message || "添加失败，请重试");
+      window.$message.error(result?.message || t("menu.addToPlaylistFailed"));
     }
   },
   500,

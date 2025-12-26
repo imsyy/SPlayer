@@ -1,24 +1,24 @@
 <template>
   <n-flex vertical size="large">
     <n-alert :show-icon="false" type="warning">
-      如果你不清楚这里是做什么的，请不要修改，或仅使用推荐服务器
+      {{ t("modal.amll.warning") }}
     </n-alert>
 
     <n-text>
-      请确保地址正确，并且包含 <span class="replace-part">%s</span>（ 用于替换歌曲 ID ）
+      <span v-html="t('modal.amll.tip').replace('%s', '<span class=\'replace-part\'>%s</span>')"></span>
     </n-text>
 
     <n-input
       v-model:value="serverUrl"
       :status="inputStatus"
       :allow-input="noSideSpace"
-      placeholder="请输入 AMLL TTML DB 地址"
+      :placeholder="t('modal.amll.placeholder')"
     />
 
     <n-text depth="3">
-      更多信息可前往
+      {{ t("modal.amll.more") }}
       <n-a @click="openLink('https://github.com/Steve-xmh/amll-ttml-db')"> AMLL TTML DB </n-a>
-      仓库查看
+      {{ t("modal.amll.repo") }}
     </n-text>
 
     <!-- <n-collapse class="servers-collapse">
@@ -42,8 +42,8 @@
     </n-collapse> -->
 
     <n-flex justify="end">
-      <n-button @click="props.onClose()">取消</n-button>
-      <n-button type="primary" @click="handleConfirm">确认</n-button>
+      <n-button @click="props.onClose()">{{ t("modal.cancel") }}</n-button>
+      <n-button type="primary" @click="handleConfirm">{{ t("modal.confirm") }}</n-button>
     </n-flex>
   </n-flex>
 </template>
@@ -54,7 +54,9 @@ import { isValidURL } from "@/utils/validate";
 // import { amllDbServers } from "@/utils/meta";
 import { useSettingStore } from "@/stores";
 import { openLink } from "@/utils/helper";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const props = defineProps<{ onClose: () => void }>();
 
 const settingStore = useSettingStore();
@@ -72,12 +74,13 @@ const handleConfirm = async () => {
   if (isValidServer(url)) {
     await window.api.store.set("amllDbServer", url);
     settingStore.amllDbServer = url;
-    window.$message.success("AMLL TTML DB 地址已更新");
+    window.$message.success(t("modal.amll.updateSuccess"));
     props.onClose();
   } else {
-    window.$message.error("请输入正确的网址格式，需包含 %s");
+    window.$message.error(t("modal.amll.formatError"));
   }
 };
+
 
 // 输入变动时向输入框反馈
 watch(serverUrl, (url: string) => {

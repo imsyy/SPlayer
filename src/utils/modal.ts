@@ -1,4 +1,5 @@
 import { h } from "vue";
+import i18n from "@/i18n";
 import type { CoverType, UpdateInfoType, SettingType, SongType } from "@/types/main";
 import { CURRENT_AGREEMENT_VERSION } from "@/constants/agreement";
 import { NScrollbar } from "naive-ui";
@@ -54,14 +55,14 @@ export const openUserAgreement = () => {
       });
     },
     onEsc: () => {
-      window.$message.warning("请先阅读并同意用户协议");
+      window.$message.warning(i18n.global.t("modal.tips.reAgree"));
     },
   });
 };
 
 // 用户登录
 export const openUserLogin = (showTip: boolean = false) => {
-  if (showTip) window.$message.warning("请登录后使用");
+  if (showTip) window.$message.warning(i18n.global.t("modal.tips.login"));
   const modal = window.$modal.create({
     preset: "card",
     transformOrigin: "center",
@@ -89,7 +90,7 @@ export const openJumpArtist = (data: SongType["artists"]) => {
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "600px" },
-    title: "跳转到歌手",
+    title: i18n.global.t("modal.titles.jump"),
     content: () => {
       return h(JumpArtist, { artist: data, onClose: () => modal.destroy() });
     },
@@ -105,7 +106,7 @@ export const openSongInfoEditor = (song: SongType) => {
     trapFocus: false,
     // contentStyle: { padding: 0 },
     style: { width: "600px" },
-    title: "编辑歌曲信息",
+    title: i18n.global.t("modal.titles.edit"),
     content: () => {
       return h(SongInfoEditor, { song, onClose: () => modal.destroy() });
     },
@@ -114,14 +115,14 @@ export const openSongInfoEditor = (song: SongType) => {
 
 // 添加到歌单
 export const openPlaylistAdd = (data: SongType[], isLocal: boolean) => {
-  if (!data.length) return window.$message.warning("请正确选择歌曲");
+  if (!data.length) return window.$message.warning(i18n.global.t("modal.tips.selectSong"));
   if (!isLogin() && !isLocal) return openUserLogin();
   const modal = window.$modal.create({
     preset: "card",
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "600px" },
-    title: "添加到歌单",
+    title: i18n.global.t("modal.titles.add"),
     content: () => {
       return h(PlaylistAdd, { data, isLocal, onClose: () => modal.destroy() });
     },
@@ -142,7 +143,7 @@ export const openBatchList = (data: SongType[], isLocal: boolean, playListId?: n
     style: {
       maxWidth: "70vw",
     },
-    title: "批量操作",
+    title: i18n.global.t("modal.titles.batch"),
     content: () => h(BatchList, { data, isLocal, playListId }),
   });
 };
@@ -154,7 +155,7 @@ export const openCloudMatch = (id: number, index: number) => {
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "600px" },
-    title: "云盘歌曲纠正",
+    title: i18n.global.t("modal.titles.cloud"),
     content: () => {
       return h(CloudMatch, { id, index, onClose: () => modal.destroy() });
     },
@@ -168,7 +169,7 @@ export const openCreatePlaylist = () => {
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "600px" },
-    title: "新建歌单",
+    title: i18n.global.t("modal.titles.create"),
     content: () => {
       return h(CreatePlaylist, { onClose: () => modal.destroy() });
     },
@@ -182,7 +183,7 @@ export const openUpdatePlaylist = (id: number, data: CoverType, func: () => Prom
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "600px" },
-    title: "编辑歌单",
+    title: i18n.global.t("modal.titles.update"),
     content: () => {
       return h(UpdatePlaylist, {
         id,
@@ -202,16 +203,16 @@ export const openDownloadSong = (song: SongType) => {
   const dataStore = useDataStore();
   if (!isLogin()) return openUserLogin();
   // 是否可下载
-  if (!song) return window.$message.warning("请正确选择歌曲");
+  if (!song) return window.$message.warning(i18n.global.t("modal.tips.selectSong"));
   if (song.free !== 0 && dataStore.userData.vipType === 0 && !song?.pc) {
-    return window.$message.warning("账号会员等级不足，请提升权限");
+    return window.$message.warning(i18n.global.t("modal.tips.vip"));
   }
   const modal = window.$modal.create({
     preset: "card",
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "600px" },
-    title: "下载歌曲",
+    title: i18n.global.t("modal.titles.download"),
     content: () => {
       return h(DownloadModal, { songId: song.id, onClose: () => modal.destroy() });
     },
@@ -222,7 +223,7 @@ export const openDownloadSong = (song: SongType) => {
 export const openDownloadSongs = (songs: SongType[]): void => {
   if (!isLogin()) return openUserLogin();
   if (!songs || songs.length === 0) {
-    window.$message.warning("请选择要下载的歌曲");
+    window.$message.warning(i18n.global.t("modal.tips.selectDownload"));
     return;
   }
   const modal = window.$modal.create({
@@ -230,7 +231,7 @@ export const openDownloadSongs = (songs: SongType[]): void => {
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "600px" },
-    title: "批量下载",
+    title: i18n.global.t("modal.titles.batchDownload"),
     content: () => {
       return h(DownloadModal, { songs, onClose: () => modal.destroy() });
     },
@@ -244,7 +245,7 @@ let isSettingOpen = false;
 export const openSetting = (type: SettingType = "general", scrollTo?: string) => {
   // 如果设置页面已打开，显示提醒
   if (isSettingOpen) {
-    window.$message.warning("设置页面已打开");
+    window.$message.warning(i18n.global.t("modal.tips.settingOpen"));
     return;
   }
   isSettingOpen = true;
@@ -272,7 +273,7 @@ export const openUpdateApp = (data: UpdateInfoType) => {
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "600px" },
-    title: "发现新版本",
+    title: i18n.global.t("modal.titles.newVersion"),
     content: () => {
       return h(UpdateApp, { data, onClose: () => modal.destroy() });
     },
@@ -286,7 +287,7 @@ export const openLyricExclude = () => {
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "600px" },
-    title: "歌词排除内容",
+    title: i18n.global.t("modal.titles.setting-exclude"),
     content: () => {
       return h(ExcludeLyrics);
     },
@@ -300,7 +301,7 @@ export const openChangeRate = () => {
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "600px" },
-    title: "播放速度",
+    title: i18n.global.t("modal.titles.setting-rate"),
     content: () => {
       return h(ChangeRate);
     },
@@ -314,7 +315,7 @@ export const openAutoClose = () => {
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "600px" },
-    title: "自动关闭",
+    title: i18n.global.t("modal.titles.setting-autoClose"),
     content: () => {
       return h(AutoClose);
     },
@@ -328,7 +329,7 @@ export const openEqualizer = () => {
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "620px" },
-    title: "均衡器",
+    title: i18n.global.t("modal.titles.setting-equalizer"),
     content: () => {
       return h(Equalizer);
     },
@@ -339,13 +340,13 @@ export const openEqualizer = () => {
  * 打开简介弹窗
  * @param content 简介内容
  */
-export const openDescModal = (content: string, title: string = "歌单简介") => {
+export const openDescModal = (content: string, title?: string) => {
   window.$modal.create({
     preset: "card",
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "600px" },
-    title,
+    title: title || "歌单简介",
     content: () => {
       return h(
         NScrollbar,
@@ -366,7 +367,7 @@ export const openSongUnlockManager = () => {
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "500px" },
-    title: "音源管理",
+    title: i18n.global.t("modal.titles.setting-unlock"),
     content: () => {
       return h(SongUnlockManager);
     },
@@ -380,7 +381,7 @@ export const openSidebarHideManager = () => {
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "500px" },
-    title: "侧边栏隐藏管理",
+    title: i18n.global.t("modal.titles.setting-sidebar"),
     content: () => {
       return h(SidebarHideManager);
     },
@@ -394,7 +395,7 @@ export const openHomePageSectionManager = () => {
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "500px" },
-    title: "首页栏目配置",
+    title: i18n.global.t("modal.titles.setting-homepage"),
     content: () => {
       return h(HomePageSectionManager);
     },
@@ -408,7 +409,7 @@ export const openCopyLyrics = () => {
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "500px" },
-    title: "复制歌词",
+    title: i18n.global.t("modal.titles.setting-copy"),
     content: () => {
       return h(CopyLyrics, {
         onClose: () => modal.destroy(),
@@ -424,7 +425,7 @@ export const openAMLLServer = () => {
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "600px" },
-    title: "AMLL TTML DB 服务器配置",
+    title: i18n.global.t("modal.titles.setting-amll"),
     content: () => {
       return h(AMLLServer, {
         onClose: () => modal.destroy(),
@@ -440,7 +441,7 @@ export const openFontManager = () => {
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "700px" },
-    title: "字体设置",
+    title: i18n.global.t("modal.titles.setting-font"),
     content: () => {
       return h(FontManager);
     },

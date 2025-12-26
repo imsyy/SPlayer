@@ -84,7 +84,7 @@
       <n-skeleton :repeat="20" />
     </div>
     <!-- 空列表 -->
-    <n-empty v-else description="空空如也，怎么什么都没有啊" size="large" />
+    <n-empty v-else :description="t('general.list.emptyDesc')" size="large" />
   </Transition>
 </template>
 
@@ -97,6 +97,9 @@ import { isLogin } from "@/utils/auth";
 import { openUserLogin } from "@/utils/modal";
 import emoji from "@/assets/data/emoji.json";
 import { commentLike } from "@/api/comment";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const props = defineProps<{
   data: CommentType[];

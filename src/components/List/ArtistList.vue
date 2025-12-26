@@ -63,12 +63,13 @@
       </n-grid>
     </div>
     <!-- 空列表 -->
-    <n-empty v-else description="空空如也，怎么什么都没有啊" size="large" />
+    <n-empty v-else :description="t('general.list.emptyDesc')" size="large" />
   </Transition>
 </template>
 
 <script setup lang="ts">
 import type { ArtistType } from "@/types/main";
+import { useI18n } from "vue-i18n";
 
 interface Props {
   data: ArtistType[];
@@ -89,6 +90,7 @@ const emit = defineEmits<{
 }>();
 
 const router = useRouter();
+const { t } = useI18n();
 </script>
 
 <style lang="scss" scoped>

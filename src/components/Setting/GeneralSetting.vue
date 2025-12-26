@@ -2,26 +2,44 @@
 <template>
   <div class="setting-type">
     <div class="set-list">
-      <n-h3 prefix="bar"> 主题设置 </n-h3>
+      <n-h3 prefix="bar"> {{ t("settings.general.basic") }} </n-h3>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">主题模式</n-text>
-          <n-text class="tip" :depth="3">调整全局主题明暗模式</n-text>
+          <n-text class="name">{{ t("settings.general.language") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.general.languageTip") }}</n-text>
+        </div>
+
+        <n-select
+          :value="settingStore.language"
+          class="set"
+          :options="languageOptions"
+          @update:value="settingStore.setLanguage"
+        />
+      </n-card>
+    </div>
+    <div class="set-list">
+
+      <n-h3 prefix="bar"> {{ t("settings.general.theme") }} </n-h3>
+      <n-card class="set-item">
+        <div class="label">
+          <n-text class="name">{{ t("settings.general.themeMode") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.general.themeModeTip") }}</n-text>
+
         </div>
         <n-select
           v-model:value="settingStore.themeMode"
           class="set"
           :options="[
             {
-              label: '跟随系统',
+              label: t('nav.menu.auto'),
               value: 'auto',
             },
             {
-              label: '浅色模式',
+              label: t('nav.menu.light'),
               value: 'light',
             },
             {
-              label: '深色模式',
+              label: t('nav.menu.dark'),
               value: 'dark',
             },
           ]"
@@ -29,9 +47,10 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">主题配置</n-text>
-          <n-text class="tip" :depth="3">更改主题色或自定义图片</n-text>
+          <n-text class="name">{{ t("settings.general.themeConfig") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.general.themeConfigTip") }}</n-text>
         </div>
+
         <n-select
           v-model:value="settingStore.themeColorType"
           class="set"
@@ -44,9 +63,10 @@
       >
         <n-card class="set-item">
           <div class="label">
-            <n-text class="name">自定义主题色</n-text>
-            <n-text class="tip" :depth="3">可在此处自定义全局主题色</n-text>
+            <n-text class="name">{{ t("settings.general.customThemeColor") }}</n-text>
+            <n-text class="tip" :depth="3">{{ t("settings.general.customThemeColorTip") }}</n-text>
           </div>
+
           <n-color-picker
             v-model:value="settingStore.themeCustomColor"
             :show-alpha="false"
@@ -57,9 +77,10 @@
       </n-collapse-transition>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">全局着色</n-text>
-          <n-text class="tip" :depth="3">是否将主题色应用至所有元素</n-text>
+          <n-text class="name">{{ t("settings.general.globalColor") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.general.globalColorTip") }}</n-text>
         </div>
+
         <n-switch
           v-model:value="settingStore.themeGlobalColor"
           class="set"
@@ -69,9 +90,10 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">全局动态取色</n-text>
-          <n-text class="tip" :depth="3">主题色是否跟随封面，开启后自定义主题色将失效</n-text>
+          <n-text class="name">{{ t("settings.general.dynamicColor") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.general.dynamicColorTip") }}</n-text>
         </div>
+
         <n-switch
           v-model:value="settingStore.themeFollowCover"
           :disabled="isEmpty(statusStore.songCoverTheme)"
@@ -81,104 +103,115 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">字体设置</n-text>
-          <n-text class="tip" :depth="3"> 统一配置全局及歌词区域的字体 </n-text>
+          <n-text class="name">{{ t("settings.general.font") }}</n-text>
+          <n-text class="tip" :depth="3"> {{ t("settings.general.fontTip") }} </n-text>
         </div>
-        <n-button type="primary" strong secondary @click="openFontManager"> 配置 </n-button>
+        <n-button type="primary" strong secondary @click="openFontManager"> {{ t("settings.general.configure") }} </n-button>
       </n-card>
+
     </div>
     <div class="set-list">
-      <n-h3 prefix="bar"> 杂项设置 </n-h3>
+      <n-h3 prefix="bar"> {{ t("settings.general.misc") }} </n-h3>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">显示搜索历史</n-text>
+          <n-text class="name">{{ t("settings.general.searchHistory") }}</n-text>
         </div>
+
         <n-switch class="set" v-model:value="settingStore.showSearchHistory" :round="false" />
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">搜索关键词建议</n-text>
-          <n-text class="tip" :depth="3">是否启用搜索关键词建议</n-text>
+          <n-text class="name">{{ t("settings.general.searchKeyword") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.general.searchKeywordTip") }}</n-text>
         </div>
+
         <n-switch class="set" v-model:value="settingStore.enableSearchKeyword" :round="false" />
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">侧边栏显示封面</n-text>
-          <n-text class="tip" :depth="3">是否显示歌单的封面，如果有</n-text>
+          <n-text class="name">{{ t("settings.general.sidebarCover") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.general.sidebarCoverTip") }}</n-text>
         </div>
+
         <n-switch class="set" v-model:value="settingStore.menuShowCover" :round="false" />
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">侧边栏隐藏</n-text>
-          <n-text class="tip" :depth="3">配置需要在侧边栏隐藏的菜单项</n-text>
+          <n-text class="name">{{ t("settings.general.sidebarHide") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.general.sidebarHideTip") }}</n-text>
         </div>
-        <n-button type="primary" strong secondary @click="openSidebarHideManager"> 配置 </n-button>
+        <n-button type="primary" strong secondary @click="openSidebarHideManager"> {{ t("settings.general.configure") }} </n-button>
+
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">首页栏目配置</n-text>
-          <n-text class="tip" :depth="3">调整首页各栏目的显示顺序或隐藏不需要的栏目</n-text>
+          <n-text class="name">{{ t("settings.general.homePage") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.general.homePageTip") }}</n-text>
         </div>
         <n-button type="primary" strong secondary @click="openHomePageSectionManager">
-          配置
+          {{ t("settings.general.configure") }}
         </n-button>
+
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">显示歌曲音质</n-text>
-          <n-text class="tip" :depth="3">是否列表中显示歌曲音质</n-text>
+          <n-text class="name">{{ t("settings.general.songQuality") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.general.songQualityTip") }}</n-text>
         </div>
+
         <n-switch class="set" v-model:value="settingStore.showSongQuality" :round="false" />
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">显示特权标签</n-text>
-          <n-text class="tip" :depth="3">是否显示如 VIP、EP 等特权标签</n-text>
+          <n-text class="name">{{ t("settings.general.privilegeTag") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.general.privilegeTagTip") }}</n-text>
         </div>
+
         <n-switch class="set" v-model:value="settingStore.showSongPrivilegeTag" :round="false" />
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">显示原唱翻唱标签</n-text>
-          <n-text class="tip" :depth="3">是否显示歌曲原唱翻唱标签</n-text>
+          <n-text class="name">{{ t("settings.general.originalTag") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.general.originalTagTip") }}</n-text>
         </div>
+
         <n-switch class="set" v-model:value="settingStore.showSongOriginalTag" :round="false" />
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">开启页面缓存</n-text>
-          <n-text class="tip" :depth="3">是否开启部分页面的缓存，这将会增加内存占用</n-text>
+          <n-text class="name">{{ t("settings.general.keepAlive") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.general.keepAliveTip") }}</n-text>
         </div>
+
         <n-switch class="set" v-model:value="settingStore.useKeepAlive" :round="false" />
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">页面切换动画</n-text>
-          <n-text class="tip" :depth="3">选择页面切换时的动画效果</n-text>
+          <n-text class="name">{{ t("settings.general.routeAnimation") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.general.routeAnimationTip") }}</n-text>
         </div>
+
         <n-select
           v-model:value="settingStore.routeAnimation"
           :options="[
             {
-              label: '无动画',
+              label: t('settings.general.animation.none'),
               value: 'none',
             },
             {
-              label: '淡入淡出',
+              label: t('settings.general.animation.fade'),
               value: 'fade',
             },
             {
-              label: '缩放',
+              label: t('settings.general.animation.zoom'),
               value: 'zoom',
             },
             {
-              label: '滑动',
+              label: t('settings.general.animation.slide'),
               value: 'slide',
             },
             {
-              label: '上浮',
+              label: t('settings.general.animation.up'),
               value: 'up',
             },
           ]"
@@ -187,29 +220,31 @@
       </n-card>
     </div>
     <div v-if="isElectron" class="set-list">
-      <n-h3 prefix="bar"> 系统设置 </n-h3>
+      <n-h3 prefix="bar"> {{ t("settings.general.system") }} </n-h3>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">在线服务</n-text>
-          <n-text class="tip" :depth="3">是否开启软件的在线服务</n-text>
+          <n-text class="name">{{ t("settings.general.onlineService") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.general.onlineServiceTip") }}</n-text>
         </div>
+
         <n-switch class="set" :value="useOnlineService" :round="false" @update:value="modeChange" />
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">关闭软件时</n-text>
-          <n-text class="tip" :depth="3">选择关闭软件的方式</n-text>
+          <n-text class="name">{{ t("settings.general.closeApp") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.general.closeAppTip") }}</n-text>
         </div>
+
         <n-select
           v-model:value="settingStore.closeAppMethod"
           :disabled="settingStore.showCloseAppTip"
           :options="[
             {
-              label: '最小化到任务栏',
+              label: t('settings.general.closeAppMethods.hide'),
               value: 'hide',
             },
             {
-              label: '直接退出',
+              label: t('settings.general.closeAppMethods.close'),
               value: 'close',
             },
           ]"
@@ -218,15 +253,17 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">每次关闭前都进行提醒</n-text>
+          <n-text class="name">{{ t("settings.general.closeAppRemind") }}</n-text>
         </div>
+
         <n-switch v-model:value="settingStore.showCloseAppTip" class="set" :round="false" />
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">任务栏显示播放进度</n-text>
-          <n-text class="tip" :depth="3"> 是否在任务栏显示歌曲播放进度 </n-text>
+          <n-text class="name">{{ t("settings.general.taskbarProgress") }}</n-text>
+          <n-text class="tip" :depth="3"> {{ t("settings.general.taskbarProgressTip") }} </n-text>
         </div>
+
         <n-switch
           v-model:value="settingStore.showTaskbarProgress"
           class="set"
@@ -236,18 +273,20 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">阻止系统息屏</n-text>
-          <n-text class="tip" :depth="3">是否在播放界面阻止系统息屏</n-text>
+          <n-text class="name">{{ t("settings.general.preventSleep") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.general.preventSleepTip") }}</n-text>
         </div>
+
         <n-switch v-model:value="settingStore.preventSleep" class="set" :round="false" />
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">通过 Orpheus 协议唤起本应用</n-text>
+          <n-text class="name">{{ t("settings.general.orpheus") }}</n-text>
           <n-text class="tip" :depth="3">
-            该协议通常用于官方网页端唤起官方客户端， 启用后可能导致官方客户端无法被唤起
+            {{ t("settings.general.orpheusTip") }}
           </n-text>
         </div>
+
         <n-switch
           v-model:value="settingStore.registryProtocol.orpheus"
           class="set"
@@ -257,9 +296,10 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">自动检查更新</n-text>
-          <n-text class="tip" :depth="3">在每次开启软件时自动检查更新</n-text>
+          <n-text class="name">{{ t("settings.general.checkUpdate") }}</n-text>
+          <n-text class="tip" :depth="3">{{ t("settings.general.checkUpdateTip") }}</n-text>
         </div>
+
         <n-switch v-model:value="settingStore.checkUpdateOnStart" class="set" :round="false" />
       </n-card>
     </div>
@@ -276,25 +316,38 @@ import { openSidebarHideManager, openHomePageSectionManager, openFontManager } f
 import { sendRegisterProtocol } from "@/utils/protocol";
 import { getCoverColor } from "@/utils/color";
 
+import { useI18n } from "vue-i18n";
+
 const dataStore = useDataStore();
 const musicStore = useMusicStore();
 const settingStore = useSettingStore();
 const statusStore = useStatusStore();
+const { t } = useI18n();
+
+
+// 语言选项
+const languageOptions = [
+  { label: "简体中文", value: "zh-CN" },
+  { label: "English", value: "en-US" },
+  { label: "日本語", value: "ja-JP" },
+  { label: "한국어", value: "ko-KR" },
+  { label: "Русский", value: "ru-RU" },
+];
 
 // 是否开启在线服务
+
 const useOnlineService = ref(settingStore.useOnlineService);
 
 // 全局主题色配置
-const themeColorOptions: SelectOption[] = [
-  // { label: "关闭主题色", value: "close" },
+const themeColorOptions = computed<SelectOption[]>(() => [
   ...Object.keys(themeColor).map((key) => ({
     value: key,
-    label: themeColor[key].name,
+    label: t(`settings.general.themeOptions.${key}`),
     style: {
-      color: themeColor[key].color,
+      color: themeColor[key as keyof typeof themeColor].color,
     },
   })),
-];
+]);
 
 // 关闭任务栏进度
 const closeTaskbarProgress = (val: boolean) => {

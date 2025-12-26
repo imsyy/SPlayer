@@ -19,19 +19,25 @@
               @select="sortSelect"
             >
               <div class="title has-sort">
-                <n-text>标题</n-text>
+                <n-text>{{ t("general.list.title") }}</n-text>
                 <n-text v-if="statusStore.listSort !== 'default'" class="sort" depth="3">
-                  {{ sortOptions[statusStore.listSort].name }}
+                  {{ t("general.sort." + statusStore.listSort) }}
                 </n-text>
               </div>
             </n-dropdown>
-            <n-text v-else class="title">标题</n-text>
-            <n-text v-if="type !== 'radio' && !hiddenAlbum" class="album">专辑</n-text>
-            <n-text v-if="type !== 'radio'" class="actions">操作</n-text>
-            <n-text v-if="type === 'radio'" class="meta date">更新日期</n-text>
-            <n-text v-if="type === 'radio'" class="meta">播放量</n-text>
-            <n-text class="meta">时长</n-text>
-            <n-text v-if="data?.[0].size && !hiddenSize" class="meta size">大小</n-text>
+            <n-text v-else class="title">{{ t("general.list.title") }}</n-text>
+            <n-text v-if="type !== 'radio' && !hiddenAlbum" class="album">{{
+              t("general.list.album")
+            }}</n-text>
+            <n-text v-if="type !== 'radio'" class="actions">{{ t("general.list.actions") }}</n-text>
+            <n-text v-if="type === 'radio'" class="meta date">{{
+              t("general.list.updateDate")
+            }}</n-text>
+            <n-text v-if="type === 'radio'" class="meta">{{ t("general.list.playCount") }}</n-text>
+            <n-text class="meta">{{ t("general.list.duration") }}</n-text>
+            <n-text v-if="data?.[0].size && !hiddenSize" class="meta size">{{
+              t("general.list.size")
+            }}</n-text>
           </div>
           <!-- 虚拟列表 -->
           <VirtualScroll
@@ -72,9 +78,9 @@
               <div v-else-if="item.type === 'footer'" class="load-more">
                 <n-flex v-if="loadMore && loading">
                   <n-spin size="small" />
-                  <n-text>{{ loadingText || "努力加载中" }}</n-text>
+                  <n-text>{{ loadingText || t("general.list.loading") }}</n-text>
                 </n-flex>
-                <n-divider v-else dashed> 没有更多啦 ~ </n-divider>
+                <n-divider v-else dashed> {{ t("general.list.noMore") }} </n-divider>
               </div>
             </template>
           </VirtualScroll>
@@ -103,7 +109,12 @@
       <n-skeleton :repeat="10" text />
     </div>
     <!-- 空列表 -->
-    <n-empty v-else description="列表光秃秃的，啥都没有哦" size="large" class="song-list empty" />
+    <n-empty
+      v-else
+      :description="t('general.list.empty')"
+      size="large"
+      class="song-list empty"
+    />
   </Transition>
 </template>
 
@@ -117,6 +128,9 @@ import { renderIcon } from "@/utils/helper";
 import { usePlayerController } from "@/core/player/PlayerController";
 import SongListMenu from "@/components/Menu/SongListMenu.vue";
 import VirtualScroll from "@/components/UI/VirtualScroll.vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const props = withDefaults(
   defineProps<{
@@ -153,7 +167,7 @@ const props = withDefaults(
   }>(),
   {
     type: "song",
-    loadingText: "努力加载中...",
+    loadingText: "",
     playListId: 0,
     isDailyRecommend: false,
     listVersion: 0,
@@ -273,13 +287,14 @@ const { height: songListHeight, stop: stopCalcHeight } = useElementSize(songList
 
 // 列表排序菜单
 const sortMenuOptions = computed<DropdownOption[]>(() =>
-  entries(sortOptions).map(([key, { name, show, icon }]) => ({
+  entries(sortOptions).map(([key, { show, icon }]) => ({
     key,
-    label: name,
+    label: t("general.sort." + key),
     show: show === "all" ? true : show === props.type ? true : false,
     icon: renderIcon(icon),
   })),
 );
+
 
 // 列表滚动
 const onScroll = (e: Event) => {
@@ -434,13 +449,13 @@ onBeforeUnmount(() => {
       width: 40px;
     }
     .meta {
-      width: 50px;
+      width: 70px;
       text-align: center;
       &.size {
         width: 60px;
       }
       &.date {
-        width: 80px;
+        width: 100px;
       }
     }
   }
