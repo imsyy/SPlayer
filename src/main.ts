@@ -11,15 +11,14 @@ import { debounceDirective, throttleDirective, visibleDirective } from "@/utils/
 import initIpc from "@/utils/initIpc";
 // use-store
 import { useSettingStore } from "@/stores";
+import { isElectron } from "@/utils/env";
 import { sendRegisterProtocol } from "@/utils/protocol";
 // i18n
 import i18n from "@/i18n";
-
 // 全局样式
 import "@/style/main.scss";
 import "@/style/animate.scss";
 import "github-markdown-css/github-markdown.css";
-import { isElectron } from "./utils/env";
 
 // 挂载
 const app = createApp(App);

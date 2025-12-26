@@ -299,7 +299,6 @@
           <n-text class="name">{{ t("settings.general.checkUpdate") }}</n-text>
           <n-text class="tip" :depth="3">{{ t("settings.general.checkUpdateTip") }}</n-text>
         </div>
-
         <n-switch v-model:value="settingStore.checkUpdateOnStart" class="set" :round="false" />
       </n-card>
     </div>
@@ -335,7 +334,6 @@ const languageOptions = [
 ];
 
 // 是否开启在线服务
-
 const useOnlineService = ref(settingStore.useOnlineService);
 
 // 全局主题色配置

@@ -137,13 +137,11 @@ import { isArray, isEmpty } from "lodash-es";
 import { formatNumber } from "@/utils/helper";
 import { getComment } from "@/api/comment";
 import { usePlayerController } from "@/core/player/PlayerController";
-// @ts-ignore
-
-import Plyr from "plyr";
-
-import "plyr/dist/plyr.css";
 import { formatTimestamp } from "@/utils/time";
 import { useI18n } from "vue-i18n";
+// @ts-ignore
+import Plyr from "plyr";
+import "plyr/dist/plyr.css";
 
 const { t } = useI18n();
 const router = useRouter();

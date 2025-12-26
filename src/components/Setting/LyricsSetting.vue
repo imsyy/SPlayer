@@ -720,7 +720,7 @@ const restoreDesktopLyricConfig = () => {
   try {
     if (!isElectron) return;
     window.$dialog.warning({
-      title: t("general.dialog.title"),
+      title: t("general.dialog.warningTitle"),
       content: t("settings.lyrics.restoreConfirm"),
       positiveText: t("general.dialog.confirm"),
       negativeText: t("general.dialog.cancel"),

@@ -11,6 +11,7 @@
   "compilerOptions": {
     "composite": true,
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "moduleResolution": "bundler",
     "maxNodeModuleJsDepth": 2,
     "baseUrl": ".",
