@@ -37,14 +37,10 @@
         <PlaySetting v-else-if="activeKey === 'play'" />
         <!-- 歌词 -->
         <LyricsSetting v-else-if="activeKey === 'lyrics'" :scroll-to="props.scrollTo" />
-        <!-- 快捷键 -->
-        <KeyboardSetting v-else-if="activeKey === 'keyboard'" />
         <!-- 本地 -->
         <LocalSetting v-else-if="activeKey === 'local'" />
-        <!-- 第三方 -->
-        <ThirdSetting v-else-if="activeKey === 'third'" />
-        <!-- 其他 -->
-        <OtherSetting v-else-if="activeKey === 'other'" />
+        <!-- 工具 -->
+        <ToolsSetting v-else-if="activeKey === 'tools'" />
         <!-- 关于 -->
         <AboutSetting v-else-if="activeKey === 'about'" />
         <!-- 空白 -->
@@ -58,7 +54,6 @@
 import type { MenuOption, NScrollbar } from "naive-ui";
 import type { SettingType } from "@/types/main";
 import { renderIcon } from "@/utils/helper";
-import { isElectron } from "@/utils/env";
 import { useStatusStore } from "@/stores";
 import packageJson from "@/../package.json";
 
@@ -90,25 +85,13 @@ const menuOptions: MenuOption[] = [
     icon: renderIcon("Lyrics"),
   },
   {
-    key: "keyboard",
-    label: "快捷键设置",
-    show: isElectron,
-    icon: renderIcon("Keyboard"),
-  },
-  {
     key: "local",
-    label: "本地与缓存",
-    show: isElectron,
-    icon: renderIcon("Storage"),
+    label: "资源库",
+    icon: renderIcon("Storage"), // Keeping Storage icon, label changed to Library (资源库)
   },
   {
-    key: "third",
-    label: "连接与集成",
-    icon: renderIcon("Extension"),
-  },
-  {
-    key: "other",
-    label: "其他设置",
+    key: "tools",
+    label: "工具设置",
     icon: renderIcon("SettingsOther"),
   },
   {
@@ -123,6 +106,7 @@ const toGithub = () => {
   window.open(packageJson.github);
 };
 </script>
+
 
 <style lang="scss" scoped>
 .setting {

@@ -8,6 +8,11 @@
     "electron/preload/index.d.ts",
     "dist/lastfm.ts"
   ],
+  "exclude": [
+    "src/components/Setting/KeyboardSetting.vue",
+    "src/components/Setting/OtherSetting.vue",
+    "src/components/Setting/ThirdSetting.vue"
+  ],
   "compilerOptions": {
     "composite": true,
     "esModuleInterop": true,
