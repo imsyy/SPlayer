@@ -31,7 +31,7 @@
       </n-dropdown>
     </n-flex>
     <!-- 客户端控制 -->
-    <n-flex v-if="isElectron" align="center" class="client-control">
+    <n-flex v-if="isElectron && useBorderless" align="center" class="client-control">
       <n-divider class="divider" vertical />
       <div class="min-button-wrapper" @click="min" :title="t('nav.minimize')">
         <n-button :focusable="false" :title="t('nav.minimize')" tertiary circle @click.stop="min">
@@ -113,6 +113,9 @@ const settingStore = useSettingStore();
 const showCloseModal = ref(false);
 // 是否记住
 const rememberNotAsk = ref(false);
+
+// 是否启用无边框窗口
+const useBorderless = ref(true);
 
 // 当前窗口状态
 const isMax = ref(false);
@@ -208,9 +211,13 @@ const setSelect = (key: string) => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   // 获取窗口状态并监听主进程的状态变更
   if (isElectron) {
+    // 获取无边框窗口配置
+    const windowConfig = await window.api.store.get("window");
+    useBorderless.value = windowConfig?.useBorderless ?? true;
+    // 获取窗口状态
     isMax.value = window.electron.ipcRenderer.sendSync("win-state");
     window.electron.ipcRenderer.on("win-state-change", (_event, value: boolean) => {
       isMax.value = value;

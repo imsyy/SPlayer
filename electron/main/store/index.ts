@@ -21,6 +21,8 @@ export interface StoreType {
     y?: number;
     /** 是否最大化 */
     maximized?: boolean;
+    /** 是否启用无边框窗口 */
+    useBorderless?: boolean;
   };
   /** 歌词 */
   lyric: {
@@ -64,6 +66,7 @@ export const useStore = () => {
       window: {
         width: 1280,
         height: 800,
+        useBorderless: true,
       },
       lyric: {
         x: screenData.workAreaSize.width / 2 - 400,

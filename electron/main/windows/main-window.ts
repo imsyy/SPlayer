@@ -101,10 +101,11 @@ class MainWindow {
    */
   create(): BrowserWindow | null {
     const store = useStore();
-    const { width, height } = store.get("window");
+    const { width, height, useBorderless = true } = store.get("window");
     this.win = createWindow({
       // 菜单栏
-      titleBarStyle: "customButtonsOnHover",
+      titleBarStyle: useBorderless ? "customButtonsOnHover" : "default",
+      frame: !useBorderless,
       width,
       height,
       minHeight: 600,

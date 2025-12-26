@@ -281,7 +281,21 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
-          <n-text class="name">{{ t("settings.general.orpheus") }}</n-text>
+          <n-text class="name">无边框窗口模式</n-text>
+          <n-text class="tip" :depth="3">
+            是否开启无边框窗口模式，关闭后将使用系统原生边框（需重启）
+          </n-text>
+        </div>
+        <n-switch
+          v-model:value="useBorderless"
+          class="set"
+          :round="false"
+          @update:value="borderlessChange"
+        />
+      </n-card>
+      <n-card class="set-item">
+        <div class="label">
+          <n-text class="name">通过 Orpheus 协议唤起本应用</n-text>
           <n-text class="tip" :depth="3">
             {{ t("settings.general.orpheusTip") }}
           </n-text>
@@ -335,6 +349,9 @@ const languageOptions = [
 
 // 是否开启在线服务
 const useOnlineService = ref(settingStore.useOnlineService);
+
+// 是否开启无边框窗口
+const useBorderless = ref(true);
 
 // 全局主题色配置
 const themeColorOptions = computed<SelectOption[]>(() => [
@@ -409,4 +426,22 @@ const themeGlobalColorChange = (val: boolean) => {
 const orpheusChange = async (isRegistry: boolean) => {
   sendRegisterProtocol("orpheus", isRegistry);
 };
+
+// 无边框窗口切换
+const borderlessChange = async (val: boolean) => {
+  const windowConfig = await window.api.store.get("window");
+  window.api.store.set("window", {
+    ...windowConfig,
+    useBorderless: val,
+  });
+  window.$message.warning("设置已保存，重启软件后生效");
+};
+
+onMounted(async () => {
+  if (isElectron) {
+    // 获取无边框窗口配置
+    const windowConfig = await window.api.store.get("window");
+    useBorderless.value = windowConfig?.useBorderless ?? true;
+  }
+});
 </script>
