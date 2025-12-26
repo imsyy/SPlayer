@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import { NScrollbar } from "naive-ui";
-import { useSettingStore } from "@/stores";
+import { useSettingStore } from "@/stores/setting";
 import { useI18n } from "vue-i18n";
 import { computed } from "vue";
 
@@ -35,21 +35,34 @@ const { t } = useI18n();
 
 const settingStore = useSettingStore();
 
-const sidebarItems = computed(() => [
-  { label: t("menu.discover"), key: "hideDiscover" as keyof typeof settingStore },
-  { label: t("menu.roaming"), key: "hidePersonalFM" as keyof typeof settingStore },
-  { label: t("menu.podcast"), key: "hideRadioHot" as keyof typeof settingStore },
-  { label: t("menu.myCollection"), key: "hideLike" as keyof typeof settingStore },
-  { label: t("menu.myCloud"), key: "hideCloud" as keyof typeof settingStore },
-  { label: t("menu.download"), key: "hideDownload" as keyof typeof settingStore },
-  { label: t("menu.local"), key: "hideLocal" as keyof typeof settingStore },
-  { label: t("menu.recent"), key: "hideHistory" as keyof typeof settingStore },
-  { label: t("menu.createdList"), key: "hideUserPlaylists" as keyof typeof settingStore },
-  { label: t("menu.collectedList"), key: "hideLikedPlaylists" as keyof typeof settingStore },
-  { label: t("menu.heartbeatMode"), key: "hideHeartbeatMode" as keyof typeof settingStore },
+type SidebarHideKey =
+  | "hideDiscover"
+  | "hidePersonalFM"
+  | "hideRadioHot"
+  | "hideLike"
+  | "hideCloud"
+  | "hideDownload"
+  | "hideLocal"
+  | "hideHistory"
+  | "hideUserPlaylists"
+  | "hideLikedPlaylists"
+  | "hideHeartbeatMode";
+
+const sidebarItems = computed<{ label: string; key: SidebarHideKey }[]>(() => [
+  { label: t("menu.discover"), key: "hideDiscover" },
+  { label: t("menu.roaming"), key: "hidePersonalFM" },
+  { label: t("menu.podcast"), key: "hideRadioHot" },
+  { label: t("menu.myCollection"), key: "hideLike" },
+  { label: t("menu.myCloud"), key: "hideCloud" },
+  { label: t("menu.download"), key: "hideDownload" },
+  { label: t("menu.local"), key: "hideLocal" },
+  { label: t("menu.recent"), key: "hideHistory" },
+  { label: t("menu.createdList"), key: "hideUserPlaylists" },
+  { label: t("menu.collectedList"), key: "hideLikedPlaylists" },
+  { label: t("menu.heartbeatMode"), key: "hideHeartbeatMode" },
 ]);
 
-const updateSetting = (key: keyof typeof settingStore, val: boolean) => {
+const updateSetting = (key: SidebarHideKey, val: boolean) => {
   // @ts-ignore
   settingStore[key] = val;
 };

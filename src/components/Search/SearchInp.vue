@@ -96,7 +96,8 @@ const updatePlaceholder = async () => {
   }
   try {
     const result = await searchDefault();
-    searchPlaceholder.value = t("nav.search.placeholder");
+    searchPlaceholder.value = result.data.showKeyword;
+    searchRealkeyword.value = result.data.realkeyword;
   } catch (error) {
     console.error("搜索关键词获取失败：", error);
     searchPlaceholder.value = t("nav.search.placeholder");

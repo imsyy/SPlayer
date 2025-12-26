@@ -101,42 +101,7 @@ const dailySongsTitle = computed(() => {
 });
 
 // 推荐数据
-const recData = computed<RecDataType>(() => ({
-  playlist: {
-    name: isLogin() ? t("home.recommend.myPlaylist") : t("home.recommend.playlist"),
-    list: [] as CoverType[],
-    type: "playlist",
-    path: "/discover/playlists",
-  },
-  radar: {
-    name: t("home.recommend.radar"),
-    list: [] as CoverType[],
-    type: "playlist",
-  },
-  artist: {
-    name: t("home.recommend.artist"),
-    list: [] as ArtistType[],
-    type: "artist",
-    path: "/discover/artists",
-  },
-  video: {
-    name: t("home.recommend.video"),
-    list: [] as CoverType[],
-    type: "video",
-    cols: "2 600:2 800:3 900:4 1200:5 1400:6",
-  },
-  radio: {
-    name: t("home.recommend.radio"),
-    list: [] as CoverType[],
-    type: "radio",
-  },
-  album: {
-    name: t("home.recommend.album"),
-    list: [] as CoverType[],
-    type: "album",
-    path: "/discover/new",
-  },
-}));
+
 
 // 推荐数据 Ref (to hold the list data)
 // We need to separate the dynamic lists from the translated static data
