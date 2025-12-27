@@ -309,3 +309,7 @@ export interface UpdateInfoType {
 
 // 登录方式
 export type LoginType = "qr" | "phone" | "cookie" | "uid";
+
+/** 语言类型 */
+export type Language = "zh-CN" | "en-US" | "ja-JP" | "ko-KR" | "ru-RU";
+

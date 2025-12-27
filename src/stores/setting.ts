@@ -3,7 +3,7 @@ import i18n from "@/i18n";
 
 import { keywords, regexes } from "@/assets/data/exclude";
 import { SongUnlockServer } from "@/core/player/SongManager";
-import type { SongLevelType } from "@/types/main";
+import type { SongLevelType, Language } from "@/types/main";
 import { defaultAMLLDbServer } from "@/utils/meta";
 import { CURRENT_SETTING_SCHEMA_VERSION, settingMigrations } from "./migrations/settingMigrations";
 
@@ -11,23 +11,23 @@ export interface SettingState {
   /** Schema 版本号（可选，用于数据迁移） */
   schemaVersion?: number;
   /** 语言设置 */
-  language: "zh-CN" | "en-US";
+  language: Language;
   /** 明暗模式 */
 
   themeMode: "light" | "dark" | "auto";
   /** 主题类别 */
   themeColorType:
-    | "default"
-    | "orange"
-    | "blue"
-    | "pink"
-    | "brown"
-    | "indigo"
-    | "green"
-    | "purple"
-    | "yellow"
-    | "teal"
-    | "custom";
+  | "default"
+  | "orange"
+  | "blue"
+  | "pink"
+  | "brown"
+  | "indigo"
+  | "green"
+  | "purple"
+  | "yellow"
+  | "teal"
+  | "custom";
   /** 主题自定义颜色 */
   themeCustomColor: string;
   /** 全局着色 */
@@ -108,14 +108,14 @@ export interface SettingState {
   proxyPort: number;
   /** 歌曲音质 */
   songLevel:
-    | "standard"
-    | "higher"
-    | "exhigh"
-    | "lossless"
-    | "hires"
-    | "jyeffect"
-    | "sky"
-    | "jymaster";
+  | "standard"
+  | "higher"
+  | "exhigh"
+  | "lossless"
+  | "hires"
+  | "jyeffect"
+  | "sky"
+  | "jymaster";
   /** 播放设备 */
   playDevice: "default" | string;
   /** 自动播放 */
@@ -488,12 +488,11 @@ export const useSettingStore = defineStore("setting", {
       window.$message.info(
         // @ts-ignore
         `${i18n.global.t("general.message.switchedTo")}
-        ${
-          this.themeMode === "auto"
-            ? i18n.global.t("nav.menu.auto")
-            : this.themeMode === "light"
-              ? i18n.global.t("nav.menu.light")
-              : i18n.global.t("nav.menu.dark")
+        ${this.themeMode === "auto"
+          ? i18n.global.t("nav.menu.auto")
+          : this.themeMode === "light"
+            ? i18n.global.t("nav.menu.light")
+            : i18n.global.t("nav.menu.dark")
         }`,
         {
           showIcon: false,
@@ -501,7 +500,7 @@ export const useSettingStore = defineStore("setting", {
       );
 
     },
-    setLanguage(lang: "zh-CN" | "en-US") {
+    setLanguage(lang: Language) {
       this.language = lang;
       // @ts-ignore
       i18n.global.locale.value = lang;
