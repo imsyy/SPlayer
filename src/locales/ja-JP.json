@@ -961,6 +961,41 @@
     "close": "閉じる",
     "cancel": "キャンセル",
     "confirm": "OK",
-    "create": "新しい"
+    "create": "新しい",
+    "playlist": {
+      "name": "プレイリスト名",
+      "desc": "説明",
+      "tags": "タグ",
+      "placeholderName": "プレイリスト名を入力してください",
+      "placeholderDesc": "プレイリストの説明を入力してください",
+      "placeholderTags": "タグを選択してください",
+      "defaultName": "お気に入りの曲",
+      "success": "更新しました",
+      "fail": "更新に失敗しました"
+    },
+    "batch": {
+      "title": "一括操作",
+      "selected": "{count} 曲を選択中",
+      "filter": "高度なフィルタ",
+      "start": "開始",
+      "end": "終了",
+      "select": "選択",
+      "delete": "選択した曲を削除",
+      "deleteLocal": "曲を削除",
+      "add": "プレイリストに追加",
+      "all": "すべて選択",
+      "download": "一括ダウンロード",
+      "tips": {
+        "range": "開始番号と終了番号を入力してください",
+        "rangeError": "開始番号は終了番号より大きくできません",
+        "deleteConfirm": "選択した曲を削除してもよろしいですか？この操作は取り消せません！",
+        "inputConfirm": "入力してください：確認削除",
+        "placeholder": "確認削除",
+        "inputError": "入力内容が正しくありません",
+        "deleteSuccess": "{success} 曲を削除しました，{fail} 曲失敗",
+        "deleteFail": "削除に失敗しました、再試行してください",
+        "deleteError": "削除中にエラーが発生しました"
+      }
+    }
   }
 }

@@ -961,6 +961,41 @@
     "close": "닫기",
     "cancel": "취소",
     "confirm": "확인",
-    "create": "새로운"
+    "create": "새로운",
+    "playlist": {
+      "name": "플레이리스트 이름",
+      "desc": "설명",
+      "tags": "태그",
+      "placeholderName": "플레이리스트 이름을 입력하세요",
+      "placeholderDesc": "플레이리스트 설명을 입력하세요",
+      "placeholderTags": "태그를 선택하세요",
+      "defaultName": "좋아요 표시한 곡",
+      "success": "업데이트되었습니다",
+      "fail": "업데이트 실패"
+    },
+    "batch": {
+      "title": "일괄 작업",
+      "selected": "{count} 곡 선택됨",
+      "filter": "고급 필터",
+      "start": "시작",
+      "end": "종료",
+      "select": "선택",
+      "delete": "선택한 곡 삭제",
+      "deleteLocal": "곡 삭제",
+      "add": "재생목록에 추가",
+      "all": "전체 선택",
+      "download": "일괄 다운로드",
+      "tips": {
+        "range": "시작 및 종료 번호를 입력하세요",
+        "rangeError": "시작 번호는 종료 번호보다 클 수 없습니다",
+        "deleteConfirm": "선택한 곡을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다!",
+        "inputConfirm": "입력하세요: 확인 삭제",
+        "placeholder": "확인 삭제",
+        "inputError": "입력 내용이 올바르지 않습니다",
+        "deleteSuccess": "{success} 곡 삭제 성공, {fail} 곡 실패",
+        "deleteFail": "삭제 실패, 다시 시도해주세요",
+        "deleteError": "삭제 중 오류가 발생했습니다"
+      }
+    }
   }
 }

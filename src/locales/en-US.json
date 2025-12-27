@@ -961,6 +961,42 @@
     "close": "Close",
     "cancel": "Cancel",
     "confirm": "Confirm",
-    "create": "New"
+    "create": "New",
+    "playlist": {
+      "name": "Playlist Name",
+      "namePlaceholder": "Enter playlist name",
+      "desc": "Description",
+      "descPlaceholder": "Enter playlist description",
+      "tags": "Tags",
+      "tagsPlaceholder": "Select tags",
+      "edit": "Edit",
+      "tagLimit": "Maximum 3 tags allowed",
+      "editSuccess": "Playlist updated successfully",
+      "editFail": "Failed to update playlist"
+    },
+    "batch": {
+      "title": "Batch Actions",
+      "selected": "{count} Selected",
+      "filter": "Advanced Filter",
+      "start": "Start",
+      "end": "End",
+      "select": "Select",
+      "delete": "Delete Selected",
+      "deleteLocal": "Delete Songs",
+      "add": "Add to Playlist",
+      "all": "Select All",
+      "download": "Batch Download",
+      "tips": {
+        "range": "Please enter start and end index",
+        "rangeError": "Start index cannot be greater than end index",
+        "deleteConfirm": "Are you sure you want to delete selected songs? This cannot be undone!",
+        "inputConfirm": "Please type: confirm delete",
+        "placeholder": "confirm delete",
+        "inputError": "Incorrect input",
+        "deleteSuccess": "Successfully deleted {success} songs, {fail} failed",
+        "deleteFail": "Delete failed, please try again",
+        "deleteError": "Error occurred during deletion"
+      }
+    }
   }
 }

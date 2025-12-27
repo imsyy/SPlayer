@@ -961,6 +961,42 @@
     "close": "关闭",
     "cancel": "取消",
     "confirm": "确认",
-    "create": "新建"
+    "create": "新建",
+    "playlist": {
+      "name": "歌单名",
+      "namePlaceholder": "请输入歌单名",
+      "desc": "歌单描述",
+      "descPlaceholder": "请输入歌单描述",
+      "tags": "歌单分类",
+      "tagsPlaceholder": "请选择歌单标签",
+      "edit": "编辑",
+      "tagLimit": "最多只能有 3 个标签",
+      "editSuccess": "歌单编辑成功",
+      "editFail": "歌单编辑失败，请重试"
+    },
+    "batch": {
+      "title": "批量操作",
+      "selected": "已选择 {count} 首",
+      "filter": "高级筛选",
+      "start": "开始",
+      "end": "结束",
+      "select": "选择",
+      "delete": "删除选中的歌曲",
+      "deleteLocal": "删除歌曲",
+      "add": "添加到歌单",
+      "all": "全选",
+      "download": "批量下载",
+      "tips": {
+        "range": "请输入起始和结束序号",
+        "rangeError": "起始序号不能大于结束序号",
+        "deleteConfirm": "确定删除选中的歌曲吗？该操作将永久删除文件且无法撤销！",
+        "inputConfirm": "请输入：确认删除",
+        "placeholder": "确认删除",
+        "inputError": "输入内容不正确",
+        "deleteSuccess": "成功删除 {success} 首歌曲，{fail} 首失败",
+        "deleteFail": "删除失败，请重试",
+        "deleteError": "删除过程中出现错误"
+      }
+    }
   }
 }

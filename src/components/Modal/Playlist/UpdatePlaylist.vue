@@ -1,14 +1,14 @@
 <template>
   <div class="update-playlist">
     <n-form ref="updateFormRef" :model="updateFormData" :rules="updateFormRules">
-      <n-form-item label="歌单名" path="name">
+      <n-form-item :label="t('modal.playlist.name')" path="name">
         <n-input
           v-model:value="updateFormData.name"
           :disabled="isLiked"
-          placeholder="请输入歌单名"
+          :placeholder="t('modal.playlist.namePlaceholder')"
         />
       </n-form-item>
-      <n-form-item label="歌单描述" path="desc">
+      <n-form-item :label="t('modal.playlist.desc')" path="desc">
         <n-input
           v-model:value="updateFormData.desc"
           :autosize="{
@@ -16,24 +16,26 @@
             maxRows: 6,
           }"
           :maxlength="800"
-          placeholder="请输入歌单描述"
+          :placeholder="t('modal.playlist.descPlaceholder')"
           type="textarea"
           show-count
           clearable
         />
       </n-form-item>
-      <n-form-item label="歌单分类" path="tags">
+      <n-form-item :label="t('modal.playlist.tags')" path="tags">
         <n-select
           v-model:value="updateFormData.tags"
           :options="tagList"
-          placeholder="请选择歌单标签"
+          :placeholder="t('modal.playlist.tagsPlaceholder')"
           filterable
           multiple
           @update:value="checkTags"
         />
       </n-form-item>
     </n-form>
-    <n-button class="create" type="primary" @click="toUpdatePlaylist"> 编辑 </n-button>
+    <n-button class="create" type="primary" @click="toUpdatePlaylist">
+      {{ t("modal.playlist.edit") }}
+    </n-button>
   </div>
 </template>
 
@@ -45,6 +47,9 @@ import { useDataStore } from "@/stores";
 import { debounce, isEmpty, size } from "lodash-es";
 import { updatePlaylist } from "@/api/playlist";
 import { updateUserLikePlaylist } from "@/utils/auth";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 // 表单类型
 interface UpdateFormType {
@@ -68,7 +73,7 @@ const isLiked = computed(() => dataStore.userLikeData.playlists?.[0]?.id === pro
 // 表单数据
 const updateFormRef = ref<FormInst | null>(null);
 const updateFormData = ref<UpdateFormType>({
-  name: isLiked.value ? "我喜欢的音乐" : props.data.name,
+  name: isLiked.value ? t("menu.myLikeSongs") : props.data.name,
   desc: props.data.description,
   tags: props.data.tags,
 });
@@ -94,7 +99,7 @@ const tagList = computed<SelectOption[]>(() => {
 const checkTags = (tags: string[]) => {
   if (size(tags) > 3) {
     updateFormData.value.tags = tags.slice(0, 3);
-    window.$message.warning("最多只能有3个标签");
+    window.$message.warning(t("modal.playlist.tagLimit"));
   }
 };
 
@@ -113,10 +118,10 @@ const toUpdatePlaylist = debounce(
     );
     if (result.code === 200) {
       emit("success");
-      window.$message.success("歌单编辑成功");
+      window.$message.success(t("modal.playlist.editSuccess"));
       await updateUserLikePlaylist();
     } else {
-      window.$message.error(result.message || "歌单编辑失败，请重试");
+      window.$message.error(result.message || t("modal.playlist.editFail"));
     }
   },
   300,

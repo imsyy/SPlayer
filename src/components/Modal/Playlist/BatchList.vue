@@ -11,16 +11,16 @@
     />
     <n-flex class="batch-footer" justify="space-between" align="center">
       <n-flex align="center">
-        <n-text :depth="3" class="count">已选择 {{ checkCount }} 首</n-text>
+        <n-text :depth="3" class="count">{{ t("modal.batch.selected", { count: checkCount }) }}</n-text>
         <n-popover trigger="click" placement="right">
           <template #trigger>
-            <n-button tertiary> 高级筛选 </n-button>
+            <n-button tertiary> {{ t("modal.batch.filter") }} </n-button>
           </template>
           <n-flex :wrap="false" align="center">
             <n-input-number
               v-model:value="startRange"
               class="range-input"
-              placeholder="开始"
+              :placeholder="t('modal.batch.start')"
               :min="1"
               :max="props.data.length"
               size="small"
@@ -29,12 +29,12 @@
             <n-input-number
               v-model:value="endRange"
               class="range-input"
-              placeholder="结束"
+              :placeholder="t('modal.batch.end')"
               :min="1"
               :max="props.data.length"
               size="small"
             />
-            <n-button size="small" secondary @click="handleRangeSelect"> 选择 </n-button>
+            <n-button size="small" secondary @click="handleRangeSelect"> {{ t("modal.batch.select") }} </n-button>
           </n-flex>
         </n-popover>
       </n-flex>
@@ -51,7 +51,7 @@
           <template #icon>
             <SvgIcon name="Download" />
           </template>
-          批量下载
+          {{ t("modal.batch.download") }}
         </n-button>
         <!-- 批量删除 -->
         <n-button
@@ -70,7 +70,7 @@
           <template #icon>
             <SvgIcon name="Delete" />
           </template>
-          删除选中的歌曲
+          {{ t("modal.batch.delete") }}
         </n-button>
         <!-- 添加到歌单 -->
         <n-button
@@ -83,7 +83,7 @@
           <template #icon>
             <SvgIcon name="AddList" />
           </template>
-          添加到歌单
+          {{ t("modal.batch.add") }}
         </n-button>
         <!-- 删除本地歌曲 -->
         <n-button
@@ -97,7 +97,7 @@
           <template #icon>
             <SvgIcon name="Delete" />
           </template>
-          删除歌曲
+          {{ t("modal.batch.deleteLocal") }}
         </n-button>
       </n-flex>
     </n-flex>
@@ -113,7 +113,9 @@ import { deleteSongs } from "@/utils/auth";
 import { NInput, NInputNumber, NButton, NText, NFlex } from "naive-ui";
 import { useLocalStore, useStatusStore } from "@/stores";
 import { openDownloadSongs } from "@/utils/modal";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const localStore = useLocalStore();
 const statusStore = useStatusStore();
 
@@ -207,7 +209,7 @@ const tableCheck = (keys: DataTableRowKey[]) => {
 // 范围选择处理
 const handleRangeSelect = () => {
   if (startRange.value === null || endRange.value === null) {
-    window.$message.warning("请输入起始和结束序号");
+    window.$message.warning(t("modal.batch.tips.range"));
     return;
   }
 
@@ -215,7 +217,7 @@ const handleRangeSelect = () => {
   const end = Math.max(1, Math.min(endRange.value, props.data.length));
 
   if (start > end) {
-    window.$message.warning("起始序号不能大于结束序号");
+    window.$message.warning(t("modal.batch.tips.rangeError"));
     return;
   }
 
@@ -230,36 +232,36 @@ const handleRangeSelect = () => {
 const handleDeleteLocalSongs = () => {
   const confirmText = ref("");
   window.$dialog.warning({
-    title: "删除歌曲",
+    title: t("modal.batch.deleteLocal"),
     content: () =>
       h("div", { style: { marginTop: "20px" } }, [
         h(
           "div",
           { style: { marginBottom: "12px" } },
-          "确定删除选中的歌曲吗？该操作将永久删除文件且无法撤销！",
+          t("modal.batch.tips.deleteConfirm"),
         ),
         h(
           "div",
           { style: { marginBottom: "12px", fontSize: "12px", opacity: 0.8 } },
-          "请输入：确认删除",
+          t("modal.batch.tips.inputConfirm"),
         ),
         h(NInput, {
           value: confirmText.value,
-          placeholder: "确认删除",
+          placeholder: t("modal.batch.tips.placeholder"),
           onUpdateValue: (v) => {
             confirmText.value = v;
           },
         }),
       ]),
-    positiveText: "删除",
-    negativeText: "取消",
+    positiveText: t("general.dialog.delete"),
+    negativeText: t("general.dialog.cancel"),
     onPositiveClick: async () => {
-      if (confirmText.value !== "确认删除") {
-        window.$message.error("输入内容不正确");
+      if (confirmText.value !== t("modal.batch.tips.placeholder")) {
+        window.$message.error(t("modal.batch.tips.inputError"));
         return false;
       }
 
-      const loading = window.$message.loading("正在删除...", { duration: 0 });
+      const loading = window.$message.loading(t("general.dialog.delete"), { duration: 0 });
       try {
         const deletePromises = checkSongData.value.map(async (song) => {
           if (song.path) {
@@ -282,17 +284,17 @@ const handleDeleteLocalSongs = () => {
           localStore.updateLocalSong(newLocalSongs);
 
           window.$message.success(
-            `成功删除 ${successIds.length} 首歌曲` + (failCount > 0 ? `，${failCount} 首失败` : ""),
+            t("modal.batch.tips.deleteSuccess", { success: successIds.length, fail: failCount }),
           );
           // 刷新列表
           const localEventBus = useEventBus("local");
           localEventBus.emit();
         } else {
-          window.$message.error("删除失败，请重试");
+          window.$message.error(t("modal.batch.tips.deleteFail"));
         }
       } catch (error) {
         console.error("批量删除失败:", error);
-        window.$message.error("删除过程中出现错误");
+        window.$message.error(t("modal.batch.tips.deleteError"));
       } finally {
         loading.destroy();
       }
@@ -304,7 +306,7 @@ const handleDeleteLocalSongs = () => {
 // 批量下载处理
 const handleBatchDownloadClick = () => {
   if (checkSongData.value.length === 0) {
-    window.$message.warning("请选择要下载的歌曲");
+    window.$message.warning(t("modal.tips.selectDownload"));
     return;
   }
   openDownloadSongs(checkSongData.value);

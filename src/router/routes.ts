@@ -120,7 +120,7 @@ const appRoutes: Array<RouteRecordRaw> = [
       if (!to.query.id) next({ path: "/403" });
       else next();
     },
-    component: () => import("@/views/Video.vue"),
+    component: () => import("@/views/Video/index.vue"),
   },
   // 专辑
   {
@@ -181,14 +181,14 @@ const appRoutes: Array<RouteRecordRaw> = [
     path: "/cloud",
     name: "cloud",
     meta: { needLogin: true },
-    component: () => import("@/views/Cloud.vue"),
+    component: () => import("@/views/Cloud/index.vue"),
   },
   // 每日推荐
   {
     path: "/daily-songs",
     name: "daily-songs",
     meta: { needLogin: true },
-    component: () => import("@/views/DailySongs.vue"),
+    component: () => import("@/views/DailySongs/index.vue"),
   },
   // 收藏
   {
@@ -279,7 +279,7 @@ const appRoutes: Array<RouteRecordRaw> = [
   {
     path: "/history",
     name: "history",
-    component: () => import("@/views/History.vue"),
+    component: () => import("@/views/History/index.vue"),
   },
   // 状态
   {
