@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
 import { basename, dirname, extname, isAbsolute, join, relative, resolve } from "path";
 import { access, mkdir, readdir, readFile, stat, unlink, writeFile } from "fs/promises";
 import { parseFile } from "music-metadata";
-import { getFileID, getFileMD5, metaDataLyricsArrayToLrc } from "../utils/helper";
+import { getFileID, getFileMD5, metaDataLyricsArrayToLrc, tryDecodeShiftJIS } from "../utils/helper";
 import { File, Picture, Id3v2Settings, TagTypes } from "node-taglib-sharp";
 import { ipcLog } from "../logger";
 import { createWriteStream } from "fs";
@@ -148,9 +148,9 @@ const initFileIpc = (): void => {
 
             return {
               id: getFileID(fullPath),
-              name: common.title || basename(fullPath, ext),
-              artists: common.artists?.[0] || common.artist,
-              album: common.album || "",
+              name: tryDecodeShiftJIS(common.title || "") || basename(fullPath, ext),
+              artists: tryDecodeShiftJIS(common.artists?.[0] || common.artist || ""),
+              album: tryDecodeShiftJIS(common.album || ""),
               alia: common.comment?.[0]?.text || "",
               duration: (format?.duration ?? 0) * 1000,
               size: (size / (1024 * 1024)).toFixed(2),
@@ -177,13 +177,22 @@ const initFileIpc = (): void => {
     try {
       const filePath = resolve(path).replace(/\\/g, "/");
       const { common, format } = await parseFile(filePath);
+      // 对可能存在乱码的文本字段进行 Shift_JIS 编码修复
+      const decodedCommon = {
+        ...common,
+        title: tryDecodeShiftJIS(common.title || ""),
+        artist: tryDecodeShiftJIS(common.artist || ""),
+        album: tryDecodeShiftJIS(common.album || ""),
+        artists: common.artists?.map((a) => tryDecodeShiftJIS(a)),
+        albumartist: tryDecodeShiftJIS(common.albumartist || ""),
+      };
       return {
         // 文件名称
         fileName: basename(filePath),
         // 文件大小
         fileSize: (await stat(filePath)).size / (1024 * 1024),
-        // 元信息
-        common,
+        // 元信息（已修复编码）
+        common: decodedCommon,
         // 歌词
         lyric:
           metaDataLyricsArrayToLrc(common?.lyrics?.[0]?.syncText || []) ||

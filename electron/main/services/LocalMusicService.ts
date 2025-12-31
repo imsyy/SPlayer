@@ -6,8 +6,10 @@ import { existsSync } from "fs";
 import { createHash } from "crypto";
 import { useStore } from "../store";
 import { type IAudioMetadata, parseFile } from "music-metadata";
+import { tryDecodeShiftJIS } from "../utils/helper";
 import FastGlob, { type Entry } from "fast-glob";
 import pLimit from "p-limit";
+
 
 /** 当前本地音乐库 DB 版本，用于控制缓存结构升级 */
 const CURRENT_DB_VERSION = 2;
@@ -292,13 +294,13 @@ export class LocalMusicService {
             if (metadata.format.duration && metadata.format.duration > 7200) return;
             // 提取封面
             const coverPath = await this.extractCover(metadata, id);
-            // 构建音乐数据
+            // 构建音乐数据（对文本字段应用 Shift_JIS 编码修复）
             const track: MusicTrack = {
               id,
               path: filePath,
-              title: metadata.common.title || basename(filePath),
-              artist: metadata.common.artist || "Unknown Artist",
-              album: metadata.common.album || "Unknown Album",
+              title: tryDecodeShiftJIS(metadata.common.title || "") || basename(filePath),
+              artist: tryDecodeShiftJIS(metadata.common.artist || "") || "Unknown Artist",
+              album: tryDecodeShiftJIS(metadata.common.album || "") || "Unknown Album",
               duration: (metadata.format.duration || 0) * 1000,
               mtime,
               size,

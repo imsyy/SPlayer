@@ -336,7 +336,7 @@ const getAllLocalMusic = debounce(
 
     // 加载提示
     if (showTip) {
-      loadingMsg.value = window.$message.loading("正在获取本地歌曲", {
+      loadingMsg.value = window.$message.loading("正在扫描本地歌曲...", {
         duration: 0,
       });
       syncProgress.value = { current: 0, total: 0 };
@@ -496,7 +496,7 @@ onMounted(() => {
     if (!total || total <= 0) return;
     syncProgress.value = { current, total };
     if (loadingMsg.value) {
-      loadingMsg.value.content = `正在获取本地歌曲（${current}/${total}）`;
+      loadingMsg.value.content = `已扫描 ${current} / ${total} 个文件`;
     }
   };
   // 监听进度

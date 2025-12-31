@@ -52,7 +52,9 @@ class SongManager {
         );
         if (cachePath) {
           console.log(`🚀 [${id}] 由本地音乐缓存提供`);
-          return `file://${cachePath}`;
+          // 对路径进行 URL 编码，处理空格和特殊字符
+          const encodedPath = cachePath.split('/').map(encodeURIComponent).join('/');
+          return `file://${encodedPath}`;
         }
       } catch (e) {
         console.error(`❌ [${id}] 检查缓存失败:`, e);
@@ -254,7 +256,15 @@ class SongManager {
         console.error("❌ 本地文件不存在");
         return { id: song.id, url: undefined };
       }
-      return { id: song.id, url: `file://${song.path}` };
+      // 对路径进行 URL 编码，处理空格和特殊字符
+      // 保留斜杠和盘符
+      const normalizedPath = song.path.replace(/\\/g, '/');
+      const encodedPath = normalizedPath.split('/').map((segment, index) => {
+        // 保留盘符（如 D:）
+        if (index === 0 && segment.endsWith(':')) return segment;
+        return encodeURIComponent(segment);
+      }).join('/');
+      return { id: song.id, url: `file://${encodedPath}` };
     }
 
     // 在线歌曲
