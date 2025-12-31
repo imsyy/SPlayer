@@ -185,6 +185,20 @@ const initFileIpc = (): void => {
         album: tryDecodeShiftJIS(common.album || ""),
         artists: common.artists?.map((a) => tryDecodeShiftJIS(a)),
         albumartist: tryDecodeShiftJIS(common.albumartist || ""),
+        // 解码歌词
+        lyrics: common.lyrics?.map((lyric) => ({
+          ...lyric,
+          text: lyric.text ? tryDecodeShiftJIS(lyric.text) : undefined,
+          syncText: lyric.syncText?.map((sync) => ({
+            ...sync,
+            text: tryDecodeShiftJIS(sync.text || ""),
+          })),
+        })),
+        // 解码评论（IComment 类型包含 text 属性）
+        comment: common.comment?.map((c) => ({
+          ...c,
+          text: typeof c === "string" ? tryDecodeShiftJIS(c) : tryDecodeShiftJIS(c.text || ""),
+        })),
       };
       return {
         // 文件名称
@@ -193,10 +207,10 @@ const initFileIpc = (): void => {
         fileSize: (await stat(filePath)).size / (1024 * 1024),
         // 元信息（已修复编码）
         common: decodedCommon,
-        // 歌词
+        // 歌词（使用已解码的 decodedCommon）
         lyric:
-          metaDataLyricsArrayToLrc(common?.lyrics?.[0]?.syncText || []) ||
-          common?.lyrics?.[0]?.text ||
+          metaDataLyricsArrayToLrc(decodedCommon?.lyrics?.[0]?.syncText || []) ||
+          decodedCommon?.lyrics?.[0]?.text ||
           "",
         // 音质信息
         format,

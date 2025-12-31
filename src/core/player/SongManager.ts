@@ -9,6 +9,35 @@ import { handleSongQuality } from "@/utils/helper";
 import { openUserLogin } from "@/utils/modal";
 
 /**
+ * 将文件路径转换为 file:// URL
+ * 正确处理 Windows 和 Unix 路径中的空格、中文和特殊字符
+ */
+const pathToFileUrl = (filePath: string): string => {
+  // 统一将反斜杠转换为正斜杠
+  let normalizedPath = filePath.replace(/\\/g, '/');
+  
+  // 处理 Windows 盘符（如 C:/）
+  // file:// URL 在 Windows 上需要格式为 file:///C:/...
+  if (/^[a-zA-Z]:/.test(normalizedPath)) {
+    normalizedPath = '/' + normalizedPath;
+  }
+  
+  // 对路径中的特殊字符进行编码，但保留斜杠和冒号
+  const encodedPath = normalizedPath
+    .split('/')
+    .map((segment, index) => {
+      // 第一个段可能是空句（因为前缀 /），或者第二个段是盘符（如 C:）
+      if (segment === '' || (index === 1 && /^[a-zA-Z]:$/.test(segment))) {
+        return segment;
+      }
+      return encodeURIComponent(segment);
+    })
+    .join('/');
+  
+  return `file://${encodedPath}`;
+};
+
+/**
  * 歌曲解锁服务器
  */
 export enum SongUnlockServer {
@@ -52,9 +81,7 @@ class SongManager {
         );
         if (cachePath) {
           console.log(`🚀 [${id}] 由本地音乐缓存提供`);
-          // 对路径进行 URL 编码，处理空格和特殊字符
-          const encodedPath = cachePath.split('/').map(encodeURIComponent).join('/');
-          return `file://${encodedPath}`;
+          return pathToFileUrl(cachePath);
         }
       } catch (e) {
         console.error(`❌ [${id}] 检查缓存失败:`, e);
@@ -256,15 +283,7 @@ class SongManager {
         console.error("❌ 本地文件不存在");
         return { id: song.id, url: undefined };
       }
-      // 对路径进行 URL 编码，处理空格和特殊字符
-      // 保留斜杠和盘符
-      const normalizedPath = song.path.replace(/\\/g, '/');
-      const encodedPath = normalizedPath.split('/').map((segment, index) => {
-        // 保留盘符（如 D:）
-        if (index === 0 && segment.endsWith(':')) return segment;
-        return encodeURIComponent(segment);
-      }).join('/');
-      return { id: song.id, url: `file://${encodedPath}` };
+      return { id: song.id, url: pathToFileUrl(song.path) };
     }
 
     // 在线歌曲

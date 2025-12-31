@@ -72,6 +72,11 @@ class PlayerController {
       // 停止当前播放
       audioManager.stop();
       musicStore.playSong = playSongData;
+
+      // 如果播放本地歌曲且当前为心动模式，自动关闭心动模式
+      if (playSongData.path && statusStore.shuffleMode === "heartbeat") {
+        await this.playModeManager.toggleShuffle("off");
+      }
       // 重置播放进度
       statusStore.currentTime = 0;
       statusStore.progress = 0;
@@ -954,10 +959,14 @@ class PlayerController {
    */
   public async toggleShuffle(mode?: ShuffleModeType) {
     const statusStore = useStatusStore();
+    const musicStore = useMusicStore();
     const currentMode = statusStore.shuffleMode;
 
+    // 检测当前播放的歌曲是否为本地文件，本地文件不支持心动模式
+    const isCurrentSongLocal = !!musicStore.playSong?.path;
+
     // 预判下一个模式
-    const nextMode = mode ?? this.playModeManager.calculateNextShuffleMode(currentMode);
+    const nextMode = mode ?? this.playModeManager.calculateNextShuffleMode(currentMode, isCurrentSongLocal);
 
     // 已经是心动模式，再次触发心动模式并播放
     if (currentMode === "heartbeat" && nextMode === "heartbeat") {

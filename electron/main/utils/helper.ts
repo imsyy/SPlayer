@@ -81,37 +81,23 @@ export const tryDecodeShiftJIS = (text: string): string => {
     return text;
   }
 
-  // 尝试方案1：Latin-1 → Shift_JIS
-  try {
-    const buffer = Buffer.from(text, "latin1");
-    const decoded = iconv.decode(buffer, "Shift_JIS");
-    if (isValidDecodedJapanese(decoded) && !hasJapaneseMojibakeChars(decoded)) {
-      return decoded;
-    }
-  } catch {
-    // 解码失败，尝试下一种方案
-  }
+  // 解码策略列表
+  const strategies: { from: BufferEncoding; to: string }[] = [
+    { from: "latin1", to: "Shift_JIS" },
+    { from: "utf8", to: "Shift_JIS" }, // 某些工具会错误地将 Shift_JIS 当作 UTF-8 解码
+    { from: "latin1", to: "CP932" }, // Windows 日文扩展
+  ];
 
-  // 尝试方案2：UTF-8 → Shift_JIS（某些工具会错误地将 Shift_JIS 当作 UTF-8 解码）
-  try {
-    const buffer = Buffer.from(text, "utf8");
-    const decoded = iconv.decode(buffer, "Shift_JIS");
-    if (isValidDecodedJapanese(decoded) && !hasJapaneseMojibakeChars(decoded)) {
-      return decoded;
+  for (const { from, to } of strategies) {
+    try {
+      const buffer = Buffer.from(text, from);
+      const decoded = iconv.decode(buffer, to);
+      if (isValidDecodedJapanese(decoded) && !hasJapaneseMojibakeChars(decoded)) {
+        return decoded;
+      }
+    } catch {
+      // 解码失败，尝试下一种方案
     }
-  } catch {
-    // 解码失败
-  }
-
-  // 尝试方案3：CP932（Windows 日文扩展）
-  try {
-    const buffer = Buffer.from(text, "latin1");
-    const decoded = iconv.decode(buffer, "CP932");
-    if (isValidDecodedJapanese(decoded) && !hasJapaneseMojibakeChars(decoded)) {
-      return decoded;
-    }
-  } catch {
-    // 解码失败
   }
 
   return text;

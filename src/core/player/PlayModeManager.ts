@@ -77,10 +77,17 @@ export class PlayModeManager {
 
   /**
    * 计算下一个随机模式
+   * @param skipHeartbeat 是否跳过心动模式（本地文件播放时应跳过）
    */
-  public calculateNextShuffleMode(currentMode: ShuffleModeType): ShuffleModeType {
+  public calculateNextShuffleMode(
+    currentMode: ShuffleModeType,
+    skipHeartbeat: boolean = false,
+  ): ShuffleModeType {
     if (currentMode === "off") return "on";
-    if (currentMode === "on") return "heartbeat";
+    if (currentMode === "on") {
+      // 如果需要跳过心动模式，直接回到关闭状态
+      return skipHeartbeat ? "off" : "heartbeat";
+    }
     return "off";
   }
 
