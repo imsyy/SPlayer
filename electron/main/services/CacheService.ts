@@ -255,7 +255,7 @@ export class CacheService {
     try {
       const now = new Date();
       await utimes(target, now, now);
-    } catch (e) {
+    } catch {
       // 忽略 utimes 失败
     }
 

@@ -34,7 +34,7 @@ lastfmClient.interceptors.response.use(
     const { status, data } = response;
 
     switch (status) {
-      case 403:
+      case 403: {
         const code = data?.error;
         if (code === 9 || code === 4 || code === 26) {
           window.$message.error("Last.fm 认证失败，需要重新授权，已断开与 Last.fm 的连接！");
@@ -43,6 +43,7 @@ lastfmClient.interceptors.response.use(
           window.$message.error("Last.fm 认证失败，可能需要重新授权");
         }
         break;
+      }
       case 401:
         window.$message.error("Last.fm 未授权，已断开与 Last.fm 的连接！");
         disconnect();

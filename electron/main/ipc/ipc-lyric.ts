@@ -40,14 +40,14 @@ const initLyricIpc = (): void => {
     // 立即禁用 forward
     setLyricMouseEvents(false);
     // 防抖恢复：300ms 内无新事件则恢复
-    restoreTimer && clearTimeout(restoreTimer);
+    if (restoreTimer) clearTimeout(restoreTimer);
     restoreTimer = setTimeout(() => setLyricMouseEvents(true), 300);
   };
 
   // 主窗口移动/调整大小结束：立即恢复 forward（仅 Windows/macOS 支持）
   const onMoveOrResizeEnd = () => {
     if (!isLocked) return;
-    restoreTimer && clearTimeout(restoreTimer);
+    if (restoreTimer) clearTimeout(restoreTimer);
     setLyricMouseEvents(true);
   };
 
@@ -91,7 +91,7 @@ const initLyricIpc = (): void => {
     }
 
     // 清理定时器
-    restoreTimer && clearTimeout(restoreTimer);
+    if (restoreTimer) clearTimeout(restoreTimer);
     restoreTimer = null;
   };
 

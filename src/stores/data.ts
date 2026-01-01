@@ -268,12 +268,21 @@ export const useDataStore = defineStore("data", {
       try {
         let historyList: SongType[] = (await musicDB.getItem("historyList")) || [];
         if (!Array.isArray(historyList)) historyList = [];
-        // 过滤旧的同名歌曲，把新的放到第一位
-        const updatedList = [song, ...historyList.filter((item) => item.id !== song.id)];
+
+        // 优化：使用增量更新而非克隆整个数组
+        // 过滤旧的同名歌曲
+        const filteredList = historyList.filter((item) => item.id !== song.id);
+
+        // 在头部插入新歌曲
+        const updatedList = [song, ...filteredList];
+
         // 最多 500 首
-        if (updatedList.length > 500) updatedList.splice(500);
-        // 存储
-        await musicDB.setItem("historyList", cloneDeep(toRaw(updatedList)));
+        if (updatedList.length > 500) {
+          updatedList.length = 500;
+        }
+
+        // 存储 - 使用 toRaw 而非 cloneDeep，减少内存开销
+        await musicDB.setItem("historyList", toRaw(updatedList));
         this.historyList = markRaw(updatedList);
       } catch (error) {
         console.error("Error updating history:", error);
