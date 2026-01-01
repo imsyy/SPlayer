@@ -43,7 +43,6 @@ import { type LyricLine } from "@applemusic-like-lyrics/core";
 import { useMusicStore, useSettingStore, useStatusStore } from "@/stores";
 import { getLyricLanguage } from "@/utils/format";
 import { usePlayerController } from "@/core/player/PlayerController";
-import { cloneDeep } from "lodash-es";
 import "@applemusic-like-lyrics/core/style.css";
 import { lyricLangFontStyle } from "@/utils/lyricFontConfig";
 
@@ -76,7 +75,8 @@ const amLyricsData = computed(() => {
   // 简单检查歌词有效性
   if (!Array.isArray(lyrics) || lyrics.length === 0) return [];
 
-  return cloneDeep(lyrics) as LyricLine[];
+  // 直接返回引用，避免深拷贝
+  return lyrics as LyricLine[];
 });
 
 // 进度跳转

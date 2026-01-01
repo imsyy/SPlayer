@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import type { SongType } from "@/types/main";
 import { isElectron } from "@/utils/env";
-import { cloneDeep } from "lodash-es";
+import { markRaw } from "vue";
 import { SongLyric } from "@/types/lyric";
 
 interface MusicState {
@@ -93,27 +93,29 @@ export const useMusicStore = defineStore("music", {
      * @param replace 是否覆盖（true：用提供的数据覆盖并为缺省字段置空；false：合并更新）
      */
     setSongLyric(updates: Partial<SongLyric>, replace: boolean = false) {
-      if (replace) {
-        this.songLyric = {
-          lrcData: updates.lrcData ?? [],
-          yrcData: updates.yrcData ?? [],
-        };
-      } else {
-        this.songLyric = {
-          lrcData: updates.lrcData ?? this.songLyric.lrcData,
-          yrcData: updates.yrcData ?? this.songLyric.yrcData,
-        };
-      }
+      const newLyric = replace
+        ? {
+            lrcData: updates.lrcData ?? [],
+            yrcData: updates.yrcData ?? [],
+          }
+        : {
+            lrcData: updates.lrcData ?? this.songLyric.lrcData,
+            yrcData: updates.yrcData ?? this.songLyric.yrcData,
+          };
+
+      // 使用 markRaw 避免深度响应式，减少内存占用
+      this.songLyric = markRaw(newLyric);
+
       // 更新歌词窗口数据
       if (isElectron) {
         window.electron.ipcRenderer.send(
           "play-lyric-change",
-          cloneDeep({
+          {
             songId: this.playSong?.id,
             lyricLoading: false,
             lrcData: this.songLyric.lrcData ?? [],
             yrcData: this.songLyric.yrcData ?? [],
-          }),
+          },
         );
       }
     },

@@ -48,8 +48,10 @@ class AudioManager {
   private isInitialized = false;
   /** 音量 (0-1) */
   private volume: number = 1;
-  /** 事件监听器集合 */
+  /** 自定义事件监听器集合 */
   private eventListeners: Map<string, Set<(e: Event) => void>> = new Map();
+  /** 保存原生音频元素事件监听器引用，用于清理 */
+  private audioElementListeners: Map<AudioEventType, (e: Event) => void> = new Map();
 
   /** 均衡器频段 (10段) */
   private readonly eqFrequencies = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
@@ -288,12 +290,23 @@ class AudioManager {
    * 移除所有事件监听
    */
   public offAll() {
+    // 清理自定义事件管理器
     this.eventListeners.clear();
+
+    // 清理原生音频元素监听器
+    if (this.audioElement) {
+      this.audioElementListeners.forEach((handler, event) => {
+        this.audioElement?.removeEventListener(event, handler);
+      });
+    }
+    this.audioElementListeners.clear();
+
+    // 重新绑定内部事件监听器
+    this.bindInternalEvents();
   }
 
   /**
    * 绑定内部音频元素事件并转发
-   * @param event 事件名称
    */
   private bindInternalEvents() {
     if (!this.audioElement) return;
@@ -314,7 +327,8 @@ class AudioManager {
     ];
 
     events.forEach((event) => {
-      this.audioElement!.addEventListener(event, (e) => {
+      // 创建事件处理函数并保存引用
+      const handler = (e: Event) => {
         // 传递错误码
         if (event === "error" && this.audioElement) {
           const errCode = this.getErrorCode();
@@ -331,7 +345,13 @@ class AudioManager {
             listeners.forEach((cb) => cb(e));
           }
         }
-      });
+      };
+
+      // 保存引用以便后续清理
+      this.audioElementListeners.set(event, handler);
+
+      // 添加监听器
+      this.audioElement?.addEventListener(event, handler);
     });
   }
 

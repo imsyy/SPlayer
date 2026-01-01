@@ -325,16 +325,17 @@ onMounted(() => {
     lyricsScroll(statusStore.lyricIndex);
   });
   if (isElectron) {
-    window.electron.ipcRenderer.on("lyricsScroll", () => lyricsScroll(statusStore.lyricIndex));
+    // 使用 IPC 管理器，确保组件卸载时自动清理
+    const { useIPCManager } = require("@/utils/ipcManager");
+    const ipcManager = useIPCManager();
+    ipcManager.on("lyricsScroll", () => lyricsScroll(statusStore.lyricIndex));
   }
 });
 
 onBeforeUnmount(() => {
   console.log("离开歌词");
   pauseSeek();
-  if (isElectron) {
-    window.electron.ipcRenderer.removeAllListeners("lyricsScroll");
-  }
+  // IPC 管理器会自动清理监听器，无需手动调用 removeAllListeners
 });
 </script>
 
