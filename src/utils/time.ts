@@ -61,7 +61,14 @@ export const formatCommentTime = (timestamp: number): string => {
     return `${Math.floor(diff / 60)}小时前`;
   } else if (diff < 525600) {
     // 1年约等于 525600分钟
-    return dayjs(timestamp).format("MM-DD HH:mm");
+    const commentYear = dayjs(timestamp).year();
+    const currentYear = now.year();
+    // 如果是今年的评论，不显示年份；跨年则显示
+    if (commentYear === currentYear) {
+      return dayjs(timestamp).format("MM-DD HH:mm");
+    } else {
+      return dayjs(timestamp).format("YYYY-MM-DD HH:mm");
+    }
   } else {
     return dayjs(timestamp).format("YYYY-MM-DD HH:mm");
   }
