@@ -29,6 +29,35 @@ export interface DiscordTimelineParam {
   totalTime: number;
 }
 
+export interface MprisMetadataParam {
+  title?: string;
+  artist?: string;
+  album?: string;
+  length?: number; // milliseconds
+  url?: string;
+}
+
+export interface MprisPlayStateParam {
+  status: "Playing" | "Paused" | "Stopped";
+}
+
+export interface MprisTimelineParam {
+  position: number; // milliseconds
+  length: number; // milliseconds
+}
+
+export interface MprisLoopStatusParam {
+  status: "None" | "Track" | "Playlist";
+}
+
+export interface MprisShuffleParam {
+  shuffle: boolean;
+}
+
+export interface MprisVolumeParam {
+  volume: number; // 0.0 - 1.0
+}
+
 export interface IpcChannelMap {
   "smtc-update-metadata": MetadataParam;
   "smtc-update-play-state": PlayStatePayload;
@@ -40,6 +69,12 @@ export interface IpcChannelMap {
   "discord-update-metadata": DiscordMetadataParam;
   "discord-update-play-state": DiscordPlayStateParam;
   "discord-update-timeline": DiscordTimelineParam;
+  "mpris-update-metadata": MprisMetadataParam;
+  "mpris-update-play-state": MprisPlayStateParam;
+  "mpris-update-timeline": MprisTimelineParam;
+  "mpris-update-loop-status": MprisLoopStatusParam;
+  "mpris-update-shuffle": MprisShuffleParam;
+  "mpris-update-volume": MprisVolumeParam;
 }
 
 declare global {

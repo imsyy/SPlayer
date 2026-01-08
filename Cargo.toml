@@ -1,5 +1,5 @@
 [workspace]
-members = ["native/smtc-for-splayer", "native/discord-rpc-for-splayer"]
+members = ["native/smtc-for-splayer", "native/discord-rpc-for-splayer", "native/mpris-for-splayer"]
 
 resolver = "3"
 

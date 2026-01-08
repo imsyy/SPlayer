@@ -52,4 +52,20 @@ if (process.platform === "win32") {
   console.log("[BuildNative] 不是 Windows, 跳过 SMTC 模块构建");
 }
 
+// 仅在 Linux 平台构建 MPRIS 模块
+if (process.platform === "linux") {
+  try {
+    console.log("[BuildNative] 构建 MPRIS 模块...");
+    execSync("pnpm --filter mpris-for-splayer build", {
+      stdio: "inherit",
+    });
+    console.log("[BuildNative] MPRIS 模块构建成功");
+  } catch (error) {
+    console.error("[BuildNative] MPRIS 模块构建失败", error);
+    process.exit(1);
+  }
+} else {
+  console.log("[BuildNative] 不是 Linux, 跳过 MPRIS 模块构建");
+}
+
 console.log("[BuildNative] 所有原生模块构建完成");

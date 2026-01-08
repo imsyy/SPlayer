@@ -14,6 +14,8 @@ import loadWindow from "./windows/load-window";
 import mainWindow from "./windows/main-window";
 import initIpc from "./ipc";
 import { shutdownSmtc } from "./ipc/ipc-smtc";
+import { shutdownMpris } from "./ipc/ipc-mpris";
+import { MpvService } from "./services/MpvService";
 
 // 屏蔽报错
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = "true";
@@ -48,6 +50,13 @@ class MainProcess {
       );
       // GPU 稳定性配置：禁用 GPU 进程崩溃次数限制，允许 GPU 进程自动恢复
       app.commandLine.appendSwitch("disable-gpu-process-crash-limit");
+    }
+    // 在 Linux 上禁用 Chromium 内置的 MPRIS 服务，使用原生 MPRIS 插件
+    if (process.platform === "linux") {
+      app.commandLine.appendSwitch(
+        "disable-features",
+        "MediaSessionService",
+      );
     }
     // 防止后台时渲染进程被休眠
     app.commandLine.appendSwitch("disable-renderer-backgrounding");
@@ -98,18 +107,31 @@ class MainProcess {
       trySendCustomProtocol(url);
     });
 
-    // 将要退出
-    app.on("will-quit", () => {
-      // 注销全部快捷键
-      unregisterShortcuts();
-
-      // 清理 SMTC 相关资源
-      shutdownSmtc();
-    });
-
     // 退出前
-    app.on("before-quit", () => {
+    app.on("before-quit", (event) => {
+      event.preventDefault();
       this.isQuit = true;
+      (async () => {
+        // 注销全部快捷键
+        unregisterShortcuts();
+        // 清理 SMTC 相关资源
+        shutdownSmtc();
+        // 清理 MPRIS 相关资源
+        shutdownMpris();
+        // 停止 MPV 服务
+        const mpvService = MpvService.getInstance();
+        try {
+          await mpvService.stop();
+          processLog.info("MPV 进程已停止");
+        } catch (err) {
+          processLog.error("停止 MPV 进程失败", err);
+        } finally {
+          mpvService.terminate();
+          processLog.info("MPV 进程已终止");
+        }
+        processLog.info("全部服务已停止，退出应用...");
+        app.exit(0);
+      })();
     });
   }
 }

@@ -1,0 +1,16 @@
+{
+  "name": "mpris-for-splayer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "napi build --release --no-const-enum"
+  },
+  "napi": {
+    "binaryName": "mpris-for-splayer",
+    "triples": {}
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.5.0"
+  }
+}

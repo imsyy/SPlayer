@@ -275,6 +275,12 @@ importers:
         specifier: ^3.5.0
         version: 3.5.0(@emnapi/runtime@1.7.1)(@types/node@24.10.1)(node-addon-api@7.1.1)
 
+  native/mpris-for-splayer:
+    devDependencies:
+      '@napi-rs/cli':
+        specifier: ^3.5.0
+        version: 3.5.0(@emnapi/runtime@1.7.1)(@types/node@24.10.1)(node-addon-api@7.1.1)
+
   native/smtc-for-splayer:
     devDependencies:
       '@napi-rs/cli':

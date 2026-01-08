@@ -99,14 +99,32 @@
       </n-card>
       <n-card v-if="isElectron" class="set-item">
         <div class="label">
+          <n-text class="name">播放引擎</n-text>
+          <n-text class="tip" :depth="3">切换播放引擎，MPV 引擎支持更多的格式和采样率及原生输出</n-text>
+        </div>
+        <n-select
+          :value="settingStore.playbackEngine"
+          @update:value="playbackEngineChange"
+          :options="[
+            { label: 'Web Audio (默认)', value: 'web-audio' },
+            { label: 'MPV 引擎', value: 'mpv' },
+          ]"
+          class="set"
+        />
+      </n-card>
+      <n-card v-if="isElectron" class="set-item">
+        <div class="label">
           <n-text class="name">音频输出设备</n-text>
-          <n-text class="tip" :depth="3">新增或移除音频设备后请重新打开设置</n-text>
+          <n-text class="tip" :depth="3">
+            {{ settingStore.playbackEngine === 'mpv' ? 'MPV 引擎暂不支持手动切换输出设备' : '新增或移除音频设备后请重新打开设置' }}
+          </n-text>
         </div>
         <n-select
           v-model:value="settingStore.playDevice"
           class="set"
           :options="outputDevices"
           :render-option="renderOption"
+          :disabled="settingStore.playbackEngine === 'mpv'"
           @update:value="playDeviceChange"
         />
       </n-card>
@@ -298,13 +316,14 @@
         <div class="label">
           <n-text class="name">音乐频谱</n-text>
           <n-text class="tip" :depth="3">
-            开启音乐频谱会影响性能或增加内存占用，如遇问题请关闭
+            {{ settingStore.playbackEngine === 'mpv' ? 'MPV 引擎暂不支持显示音乐频谱' : '开启音乐频谱会影响性能或增加内存占用，如遇问题请关闭' }}
           </n-text>
         </div>
         <n-switch
           class="set"
           :value="showSpectrums"
           :round="false"
+          :disabled="settingStore.playbackEngine === 'mpv'"
           @update:value="showSpectrumsChange"
         />
       </n-card>
@@ -356,6 +375,35 @@ const player = usePlayerController();
 const settingStore = useSettingStore();
 // 输出设备数据
 const outputDevices = ref<SelectOption[]>([]);
+
+type PlaybackEngine = "web-audio" | "mpv";
+
+// 切换播放引擎（切换后热重载以确保完整生效）
+const playbackEngineChange = async (engine: PlaybackEngine) => {
+  if (engine === settingStore.playbackEngine) return;
+
+  // 如果切换到 MPV 引擎，先检查是否已安装
+  if (engine === "mpv" && isElectron) {
+    const result = await window.electron.ipcRenderer.invoke("mpv-check-installed");
+    if (!result.installed) {
+      window.$message.error("未检测到 MPV，请先安装 MPV 播放器", { duration: 3000 });
+      return;
+    }
+  }
+
+  settingStore.playbackEngine = engine;
+
+  window.$message.loading("播放引擎切换完成，软件即将热重载", {
+    duration: 1500,
+    onAfterLeave: () => {
+      if (isElectron) {
+        window.electron.ipcRenderer.send("win-reload");
+      } else {
+        window.location.reload();
+      }
+    },
+  });
+};
 
 // 显示音乐频谱
 const showSpectrums = ref<boolean>(settingStore.showSpectrums);

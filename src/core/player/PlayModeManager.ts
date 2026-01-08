@@ -249,6 +249,13 @@ export class PlayModeManager {
       if (statusStore.repeatMode === "one") smtcRepeat = RepeatMode.Track;
 
       playerIpc.sendSmtcPlayMode(smtcShuffle, smtcRepeat);
+    } else if (isElectron && !isWin) {
+      // Linux MPRIS 同步
+      const loopStatus = statusStore.repeatMode === "list" ? "Playlist" : statusStore.repeatMode === "one" ? "Track" : "None";
+      const shuffle = statusStore.shuffleMode !== "off";
+      
+      playerIpc.sendMprisLoopStatus(loopStatus);
+      playerIpc.sendMprisShuffle(shuffle);
     }
   }
 

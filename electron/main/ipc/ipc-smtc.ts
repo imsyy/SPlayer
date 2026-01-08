@@ -38,10 +38,14 @@ const registerHandler = <M, K extends keyof IpcChannelMap>(
 
 export default function initSmtcIpc() {
   // 加载 SMTC 原生模块（仅 Windows）
-  nativeSmtc = loadNativeModule("smtc-for-splayer.node", "smtc-for-splayer");
+  if (process.platform === "win32") {
+    nativeSmtc = loadNativeModule("smtc-for-splayer.node", "smtc-for-splayer");
+  }
 
   if (!nativeSmtc) {
-    processLog.warn("[SMTC] 找不到原生插件，SMTC 功能将不可用");
+    if (process.platform === "win32") {
+      processLog.warn("[SMTC] 找不到原生插件，SMTC 功能将不可用");
+    }
   } else {
     try {
       const logDir = join(app.getPath("userData"), "logs", "smtc");

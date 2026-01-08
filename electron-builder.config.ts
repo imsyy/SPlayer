@@ -41,6 +41,16 @@ const config: Configuration = {
           },
         ]
       : []),
+    // MPRIS - 仅 Linux
+    ...(process.platform === "linux"
+      ? [
+          {
+            from: "native/mpris-for-splayer",
+            to: "native",
+            filter: ["*.node"],
+          },
+        ]
+      : []),
   ],
   win: {
     // 可执行文件名

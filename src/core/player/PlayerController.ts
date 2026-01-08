@@ -12,6 +12,7 @@ import lastfmScrobbler from "@/utils/lastfmScrobbler";
 import { calculateProgress } from "@/utils/time";
 import { LyricLine } from "@applemusic-like-lyrics/lyric";
 import { throttle } from "lodash-es";
+import { toRaw, watch } from "vue";
 import { useAudioManager } from "./AudioManager";
 import { useLyricManager } from "./LyricManager";
 import { mediaSessionManager } from "./MediaSessionManager";
@@ -34,11 +35,38 @@ class PlayerController {
   private currentRequestToken = 0;
   /** 连续跳过计数 */
   private failSkipCount = 0;
+  /** MPV：当前 loadfile 请求期望自动播放 */
+  private mpvAutoPlayPending: boolean | null = null;
+  /** MPV：当前 loadfile 请求期望 seek（秒） */
+  private mpvSeekPendingSeconds: number | null = null;
+  /** MPV：当前曲目是否已开始播放（playback-restart 后才响应 pause 变化） */
+  private mpvPlaybackStarted: boolean = false;
+  /** MPV：在期望暂停的场景下，强制保持 UI 暂停，直到用户主动播放 */
+  private mpvForcePaused: boolean = false;
   /** 负责管理播放模式相关的逻辑 */
   private playModeManager = new PlayModeManager();
 
   constructor() {
     this.bindAudioEvents();
+    if (isElectron) {
+      this.bindMpvEvents();
+      // 监听引擎切换
+      const settingStore = useSettingStore();
+      const statusStore = useStatusStore();
+      watch(
+        () => settingStore.playbackEngine,
+        async (engine) => {
+          if (engine === "mpv") {
+            // MPV 引擎下，初始化时不启动进程（等播放时再启动）
+            // MPV idle 状态下 pause 属性可能为 false，但并不代表正在播放；这里强制复位 UI 状态
+            statusStore.playStatus = false;
+          } else {
+            window.electron.ipcRenderer.send("mpv-stop");
+          }
+        },
+        { immediate: true },
+      );
+    }
   }
 
   /**
@@ -165,17 +193,43 @@ class PlayerController {
     audioManager.setRate(statusStore.playRate);
 
     // 切换输出设备
-    if (!settingStore.showSpectrums) this.toggleOutputDevice();
+    if (!settingStore.showSpectrums && settingStore.playbackEngine === "web-audio")
+      this.toggleOutputDevice();
 
     // 播放新音频
     try {
-      // 计算渐入时间
-      const fadeTime = settingStore.getFadeTime ? settingStore.getFadeTime / 1000 : 0;
-      await audioManager.play(url, { fadeIn: !!fadeTime, fadeDuration: fadeTime, autoPlay });
-      // 恢复进度
-      if (seek > 0) audioManager.seek(seek / 1000);
+      if (settingStore.playbackEngine === "mpv") {
+        // 记录期望行为，等 MPV file-loaded 后再执行，避免被随后的 pause=true 覆盖
+        this.mpvAutoPlayPending = autoPlay;
+        this.mpvSeekPendingSeconds = seek > 0 ? seek / 1000 : null;
+        this.mpvPlaybackStarted = false;
+        this.mpvForcePaused = autoPlay === false;
+        // 通过启动参数在 MPV 创建时设置标题
+        const { name, artist } = getPlayerInfoObj() || {};
+        const playTitle = `${name || ""} - ${artist || ""}`;
+        // 直接播放（每次都会重启 MPV 进程并传入标题）
+        // 使用 invoke 等待主进程确认 file-loaded，避免偶发错过事件导致 loading 卡住
+        const res = await window.electron.ipcRenderer.invoke("mpv-play", url, playTitle, autoPlay);
+        if (!res?.success) {
+          throw new Error(res?.error || "MPV 播放失败");
+        }
+
+        // 兜底：即使渲染层没收到 mpv-file-loaded 事件，也能结束 loading
+        statusStore.playLoading = false;
+        // 音量在 file-loaded 后设置
+        // 不在这里直接 seek/resume：由 mpv-file-loaded 触发后再做
+      } else {
+        // 计算渐入时间
+        const fadeTime = settingStore.getFadeTime ? settingStore.getFadeTime / 1000 : 0;
+        await audioManager.play(url, { fadeIn: !!fadeTime, fadeDuration: fadeTime, autoPlay });
+        // 恢复进度
+        if (seek > 0) audioManager.seek(seek / 1000);
+      }
       // 如果不自动播放，设置任务栏暂停状态
       if (!autoPlay) {
+        // 立即将 UI 置为暂停，防止事件竞态导致短暂显示为播放
+        statusStore.playStatus = false;
+        playerIpc.sendPlayStatus(false);
         playerIpc.sendTaskbarMode("paused");
         if (seek > 0) {
           const duration = this.getDuration();
@@ -308,6 +362,8 @@ class PlayerController {
 
     // 播放开始
     audioManager.on("play", () => {
+      // 在 MPV 引擎下，忽略 Web Audio 的播放事件，避免状态被覆盖
+      if (settingStore.playbackEngine !== "web-audio") return;
       const { name, artist } = getPlayerInfoObj() || {};
       const playTitle = `${name} - ${artist}`;
       // 更新状态
@@ -316,6 +372,7 @@ class PlayerController {
       if (settingStore.discordRpc.enabled) {
         playerIpc.sendDiscordPlayState(PlaybackStatus.Playing);
       }
+      mediaSessionManager.updatePlaybackStatus(true);
       window.document.title = `${playTitle} | SPlayer`;
       // 只有真正播放了才重置重试计数
       if (this.retryInfo.count > 0) this.retryInfo.count = 0;
@@ -332,11 +389,14 @@ class PlayerController {
 
     // 暂停
     audioManager.on("pause", () => {
+      // 在 MPV 引擎下，忽略 Web Audio 的暂停事件，避免状态被覆盖
+      if (settingStore.playbackEngine !== "web-audio") return;
       statusStore.playStatus = false;
       playerIpc.sendSmtcPlayState(PlaybackStatus.Paused);
       if (settingStore.discordRpc.enabled) {
         playerIpc.sendDiscordPlayState(PlaybackStatus.Paused);
       }
+      mediaSessionManager.updatePlaybackStatus(false);
       if (!isElectron) window.document.title = "SPlayer";
       playerIpc.sendPlayStatus(false);
       playerIpc.sendTaskbarMode("paused");
@@ -347,6 +407,8 @@ class PlayerController {
 
     // 播放结束
     audioManager.on("ended", () => {
+      // 在 MPV 引擎下，忽略 Web Audio 的结束事件，交由 MPV 事件处理
+      if (settingStore.playbackEngine !== "web-audio") return;
       console.log(`⏹️ [${musicStore.playSong?.id}] 歌曲结束`);
       lastfmScrobbler.stop();
       // 检查定时关闭
@@ -395,7 +457,11 @@ class PlayerController {
       // Socket 进度
       playerIpc.sendSocketProgress(currentTime, duration);
     }, 200);
-    audioManager.on("timeupdate", handleTimeUpdate);
+    audioManager.on("timeupdate", () => {
+      // 在 MPV 引擎下，忽略 Web Audio 的进度事件，使用 MPV 的 time-pos
+      if (settingStore.playbackEngine !== "web-audio") return;
+      handleTimeUpdate();
+    });
 
     // 错误处理
     audioManager.on("error", (e: any) => {
@@ -496,6 +562,17 @@ class PlayerController {
     const settingStore = useSettingStore();
     const audioManager = useAudioManager();
 
+    // 如果已经在播放，直接返回
+    if (statusStore.playStatus) return;
+
+    if (settingStore.playbackEngine === "mpv") {
+      window.electron.ipcRenderer.send("mpv-resume");
+      // 在 MPV 引擎下，不做乐观 UI 更新：播放态以 mpv 的事件/属性为准
+      // 同时明确解除“强制暂停”状态（用户主动点击播放）
+      this.mpvForcePaused = false;
+      return;
+    }
+
     // 如果没有源，尝试重新初始化当前歌曲
     if (!audioManager.src) {
       await this.playSong({ autoPlay: true });
@@ -526,6 +603,13 @@ class PlayerController {
     const statusStore = useStatusStore();
     const settingStore = useSettingStore();
     const audioManager = useAudioManager();
+
+    if (settingStore.playbackEngine === "mpv") {
+      window.electron.ipcRenderer.send("mpv-pause");
+      if (changeStatus) statusStore.playStatus = false;
+      return;
+    }
+
     if (!audioManager.src) return;
     // 计算渐出时间
     const fadeTime = settingStore.getFadeTime ? settingStore.getFadeTime / 1000 : 0;
@@ -596,13 +680,23 @@ class PlayerController {
 
   /** 获取总时长 (ms) */
   public getDuration(): number {
+    const settingStore = useSettingStore();
+    const statusStore = useStatusStore();
     const audioManager = useAudioManager();
+    if (isElectron && settingStore.playbackEngine === "mpv") {
+      return statusStore.duration;
+    }
     return Math.floor(audioManager.duration * 1000);
   }
 
   /** 获取当前播放位置 (ms) */
   public getSeek(): number {
+    const settingStore = useSettingStore();
+    const statusStore = useStatusStore();
     const audioManager = useAudioManager();
+    if (isElectron && settingStore.playbackEngine === "mpv") {
+      return statusStore.currentTime;
+    }
     return Math.floor(audioManager.currentTime * 1000);
   }
 
@@ -612,11 +706,16 @@ class PlayerController {
    */
   public setSeek(time: number) {
     const statusStore = useStatusStore();
+    const settingStore = useSettingStore();
     const audioManager = useAudioManager();
-    // 边界检查
-    const safeTime = Math.max(0, Math.min(time, this.getDuration()));
-    audioManager.seek(safeTime / 1000);
-    statusStore.currentTime = safeTime;
+    if (settingStore.playbackEngine === "mpv") {
+      console.log(`MPV Seek: ${time}ms (${time / 1000}s)`);
+      window.electron.ipcRenderer.send("mpv-seek", time / 1000);
+    } else {
+      const safeTime = Math.max(0, Math.min(time, this.getDuration()));
+      audioManager.seek(safeTime / 1000);
+      statusStore.currentTime = safeTime;
+    }
   }
 
   /**
@@ -625,6 +724,7 @@ class PlayerController {
    */
   public setVolume(actions: number | "up" | "down" | WheelEvent) {
     const statusStore = useStatusStore();
+    const settingStore = useSettingStore();
     const audioManager = useAudioManager();
     // 增量
     const increment = 0.05;
@@ -647,12 +747,17 @@ class PlayerController {
       statusStore.playVolume = Math.max(0, Math.min(statusStore.playVolume + volumeChange, 1));
     }
 
-    audioManager.setVolume(statusStore.playVolume);
+    if (settingStore.playbackEngine === "mpv") {
+      window.electron.ipcRenderer.send("mpv-set-volume", statusStore.playVolume * 100);
+    } else {
+      audioManager.setVolume(statusStore.playVolume);
+    }
   }
 
   /** 切换静音 */
   public toggleMute() {
     const statusStore = useStatusStore();
+    const settingStore = useSettingStore();
     const audioManager = useAudioManager();
 
     // 是否静音
@@ -661,10 +766,15 @@ class PlayerController {
     if (isMuted) {
       statusStore.playVolume = statusStore.playVolumeMute;
     } else {
-      statusStore.playVolumeMute = audioManager.getVolume();
+      statusStore.playVolumeMute = statusStore.playVolume;
       statusStore.playVolume = 0;
     }
-    audioManager.setVolume(statusStore.playVolume);
+
+    if (settingStore.playbackEngine === "mpv") {
+      window.electron.ipcRenderer.send("mpv-set-volume", statusStore.playVolume * 100);
+    } else {
+      audioManager.setVolume(statusStore.playVolume);
+    }
   }
 
   /**
@@ -673,10 +783,17 @@ class PlayerController {
    */
   public setRate(rate: number) {
     const statusStore = useStatusStore();
+    const settingStore = useSettingStore();
     const audioManager = useAudioManager();
 
     statusStore.playRate = rate;
-    audioManager.setRate(rate);
+
+    if (settingStore.playbackEngine === "mpv") {
+      console.log(`MPV SetRate: ${rate}x`);
+      window.electron.ipcRenderer.send("mpv-set-rate", rate);
+    } else {
+      audioManager.setRate(rate);
+    }
   }
 
   /**
@@ -1078,6 +1195,209 @@ class PlayerController {
    */
   public playModeSyncIpc() {
     this.playModeManager.playModeSyncIpc();
+  }
+
+  /**
+   * 绑定 MPV 事件
+   */
+  private bindMpvEvents() {
+    const dataStore = useDataStore();
+    const statusStore = useStatusStore();
+    const musicStore = useMusicStore();
+    const settingStore = useSettingStore();
+
+    // 防止开发环境 HMR / 重复初始化导致事件重复注册（会引发多次 seek / 状态抖动）
+    window.electron.ipcRenderer.removeAllListeners("mpv-property-change");
+    window.electron.ipcRenderer.removeAllListeners("mpv-file-loaded");
+    window.electron.ipcRenderer.removeAllListeners("mpv-playback-restart");
+    window.electron.ipcRenderer.removeAllListeners("mpv-ended");
+
+    window.electron.ipcRenderer.on("mpv-property-change", (_: any, { name, value }: any) => {
+      if (settingStore.playbackEngine !== "mpv") return;
+      if (value === null || value === undefined) return;
+      //if (name !== "time-pos") console.log(`MPV Property Change: ${name} =`, value);
+
+      switch (name) {
+        case "time-pos": {
+          const currentTime = Math.floor(value * 1000);
+          const duration = statusStore.duration;
+
+          const songId = musicStore.playSong?.id;
+          const offset = statusStore.getSongOffset(songId);
+          const useYrc = !!(settingStore.showYrc && musicStore.songLyric.yrcData?.length);
+          let rawLyrics: LyricLine[] = [];
+          if (useYrc) {
+            rawLyrics = toRaw(musicStore.songLyric.yrcData);
+          } else {
+            rawLyrics = toRaw(musicStore.songLyric.lrcData);
+          }
+          const lyricIndex = calculateLyricIndex(currentTime, rawLyrics, offset);
+
+          statusStore.$patch({
+            currentTime,
+            progress: calculateProgress(currentTime, duration),
+            lyricIndex,
+          });
+
+          mediaSessionManager.updateState(duration, currentTime);
+          playerIpc.sendLyric({
+            lyricIndex: statusStore.lyricIndex,
+            currentTime,
+            songId: musicStore.playSong?.id,
+            songOffset: statusStore.getSongOffset(musicStore.playSong?.id),
+          });
+          break;
+        }
+        case "pause": {
+          // 仅在 playback-restart 之后才同步 pause，避免启动阶段的抖动
+          if (!this.mpvPlaybackStarted) break;
+          const isPaused = !!value;
+
+          // 若当前是期望暂停场景（autoPlay=false），强制保持 UI 暂停，忽略 pause=false 报告
+          if (this.mpvForcePaused) {
+            statusStore.playStatus = false;
+            playerIpc.sendPlayStatus(false);
+            playerIpc.sendSmtcPlayState(PlaybackStatus.Paused);
+            if (settingStore.discordRpc.enabled) {
+              playerIpc.sendDiscordPlayState(PlaybackStatus.Paused);
+            }
+            playerIpc.sendTaskbarMode("paused");
+            mediaSessionManager.updatePlaybackStatus(false);
+            break;
+          }
+
+          statusStore.playStatus = !isPaused;
+          playerIpc.sendPlayStatus(!isPaused);
+
+          if (isPaused) {
+            playerIpc.sendSmtcPlayState(PlaybackStatus.Paused);
+            if (settingStore.discordRpc.enabled) {
+              playerIpc.sendDiscordPlayState(PlaybackStatus.Paused);
+            }
+            playerIpc.sendTaskbarMode("paused");
+            mediaSessionManager.updatePlaybackStatus(false);
+          } else {
+            playerIpc.sendSmtcPlayState(PlaybackStatus.Playing);
+            if (settingStore.discordRpc.enabled) {
+              playerIpc.sendDiscordPlayState(PlaybackStatus.Playing);
+            }
+            playerIpc.sendTaskbarMode("normal");
+            playerIpc.sendTaskbarProgress(statusStore.progress);
+            mediaSessionManager.updatePlaybackStatus(true);
+          }
+          break;
+        }
+        case "duration":
+          if (value) statusStore.duration = Math.floor(value * 1000);
+          break;
+        case "volume":
+          statusStore.playVolume = value / 100;
+          break;
+      }
+    });
+
+    window.electron.ipcRenderer.on("mpv-file-loaded", () => {
+      if (settingStore.playbackEngine !== "mpv") return;
+      //console.log("MPV 模式：文件加载完成");
+      statusStore.playLoading = false;
+
+      // 设置音量（每次重启进程都需要重新设置）
+      window.electron.ipcRenderer.send("mpv-set-volume", statusStore.playVolume * 100);
+
+      // 设置播放速率（每次重启进程都需要重新设置）
+      window.electron.ipcRenderer.send("mpv-set-rate", statusStore.playRate);
+
+      // MPV 模式下，在文件加载完成时发送歌曲信息（类似 Web Audio 的 canplay）
+      const playSongData = getPlaySongData();
+      if (playSongData) {
+        // 更新喜欢状态
+        playerIpc.sendLikeStatus(dataStore.isLikeSong(playSongData?.id || 0));
+        // 更新信息
+        const { name, artist, album } = getPlayerInfoObj() || {};
+        const playTitle = `${name} - ${artist}`;
+        playerIpc.sendSongChange(playTitle, name || "", artist || "", album || "");
+      }
+
+      // file-loaded 之后处理 seek 和暂停命令
+      // 注意：MPV 启动时带 URL 会自动播放，playStatus 由 playback-restart 统一设置
+      if (this.mpvSeekPendingSeconds && this.mpvSeekPendingSeconds > 0) {
+        window.electron.ipcRenderer.send("mpv-seek", this.mpvSeekPendingSeconds);
+      }
+      if (this.mpvAutoPlayPending === false) {
+        window.electron.ipcRenderer.send("mpv-pause");
+        statusStore.playStatus = false;
+        playerIpc.sendPlayStatus(false);
+        this.mpvForcePaused = true;
+      }
+      // 仅清理 seek，autoPlayPending 保留到 playback-restart 决定最终状态
+      this.mpvSeekPendingSeconds = null;
+    });
+
+    window.electron.ipcRenderer.on("mpv-playback-restart", () => {
+      if (settingStore.playbackEngine !== "mpv") return;
+      //console.log("MPV 模式：播放开始 (playback-restart)");
+      this.mpvPlaybackStarted = true;
+      statusStore.playLoading = false;
+      // playback-restart 可能在暂停/seek 等情况下多次触发。
+      // 只要当前处于“强制暂停”或明确 autoPlay=false，就绝不能把 UI 推到播放态。
+      if (this.mpvForcePaused || this.mpvAutoPlayPending === false) {
+        statusStore.playStatus = false;
+        playerIpc.sendPlayStatus(false);
+        playerIpc.sendSmtcPlayState(PlaybackStatus.Paused);
+        playerIpc.sendTaskbarMode("paused");
+        mediaSessionManager.updatePlaybackStatus(false);
+        window.electron.ipcRenderer.send("mpv-pause");
+        this.mpvForcePaused = true;
+      } else {
+        statusStore.playStatus = true;
+        this.mpvForcePaused = false;
+        mediaSessionManager.updatePlaybackStatus(true);
+      }
+
+      // MPV 播放开始时的处理（类似 Web Audio 的 play 事件）
+      const { name, artist } = getPlayerInfoObj() || {};
+      const playTitle = `${name} - ${artist}`;
+      window.document.title = `${playTitle} | SPlayer`;
+
+      // 只有真正播放了才重置重试计数
+      if (this.retryInfo.count > 0) this.retryInfo.count = 0;
+      this.failSkipCount = 0;
+
+      // Last.fm Scrobbler
+      lastfmScrobbler.resume();
+
+      // IPC 通知
+      if (statusStore.playStatus) {
+        playerIpc.sendSmtcPlayState(PlaybackStatus.Playing);
+        if (settingStore.discordRpc.enabled) {
+          playerIpc.sendDiscordPlayState(PlaybackStatus.Playing);
+        }
+        playerIpc.sendPlayStatus(true);
+        playerIpc.sendTaskbarMode("normal");
+        playerIpc.sendTaskbarProgress(statusStore.progress);
+      }
+
+      //console.log(`▶️ [${musicStore.playSong?.id}] 歌曲播放:`, name);
+
+      // 决定完最终播放状态后，清理 pending 标志
+      this.mpvAutoPlayPending = null;
+    });
+
+    window.electron.ipcRenderer.on("mpv-ended", (_: any, reason: string) => {
+      if (settingStore.playbackEngine !== "mpv") return;
+      //console.log(`MPV 模式：文件播放结束，原因: ${reason}`);
+      this.mpvPlaybackStarted = false;
+      if (reason === "error") {
+        window.$message.error("MPV 播放出错，请检查音频文件或网络状态");
+        statusStore.playLoading = false;
+        return;
+      }
+      // 只有在自然播放结束 (eof) 时才切换下一首
+      // reason 为 stop 通常是由于手动切换歌曲或 loadfile 导致的，不应触发 nextOrPrev
+      if (reason === "eof") {
+        this.nextOrPrev("next", true, true);
+      }
+    });
   }
 }
 

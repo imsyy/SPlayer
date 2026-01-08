@@ -1,5 +1,9 @@
 import { useSettingStore } from "@/stores/setting";
-import { type DiscordMetadataParam } from "@/types/global";
+import {
+  type DiscordMetadataParam,
+  type MprisMetadataParam,
+  type MprisPlayStateParam,
+} from "@/types/global";
 import { PlayModePayload, RepeatModeType, ShuffleModeType } from "@/types/shared";
 import { PlaybackStatus, RepeatMode } from "@/types/smtc";
 import { isElectron } from "@/utils/env";
@@ -231,4 +235,63 @@ export const updateDiscordConfig = (payload: {
       displayMode: displayModeMap[payload.displayMode],
     });
   }
+};
+
+///////////////////////////////////////////
+//
+// MPRIS 原生插件相关部分 (Linux)
+//
+///////////////////////////////////////////
+
+/**
+ * @description 通过原生插件更新 MPRIS 元数据
+ * @param payload - 参见 {@link MprisMetadataParam}
+ */
+export const sendMprisMetadata = (payload: MprisMetadataParam) => {
+  if (isElectron) window.electron.ipcRenderer.send("mpris-update-metadata", payload);
+};
+
+/**
+ * @description 通过原生插件更新 MPRIS 播放状态
+ * @param status - 参见 {@link MprisPlayStateParam}
+ */
+export const sendMprisPlayState = (status: "Playing" | "Paused" | "Stopped") => {
+  if (isElectron) window.electron.ipcRenderer.send("mpris-update-play-state", { status });
+};
+
+/**
+ * @description 通过原生插件更新 MPRIS 进度信息
+ * @param position - 当前的播放进度，单位是毫秒
+ * @param length - 总时长，单位是毫秒
+ */
+export const sendMprisTimeline: (position: number, length: number) => void = throttle(
+  (position: number, length: number) => {
+    if (isElectron)
+      window.electron.ipcRenderer.send("mpris-update-timeline", { position, length });
+  },
+  1000,
+);
+
+/**
+ * @description 通过原生插件更新 MPRIS 循环状态
+ * @param status - 循环状态 ('None' | 'Track' | 'Playlist')
+ */
+export const sendMprisLoopStatus = (status: "None" | "Track" | "Playlist") => {
+  if (isElectron) window.electron.ipcRenderer.send("mpris-update-loop-status", { status });
+};
+
+/**
+ * @description 通过原生插件更新 MPRIS 随机播放状态
+ * @param shuffle - 是否随机播放
+ */
+export const sendMprisShuffle = (shuffle: boolean) => {
+  if (isElectron) window.electron.ipcRenderer.send("mpris-update-shuffle", { shuffle });
+};
+
+/**
+ * @description 通过原生插件更新 MPRIS 音量
+ * @param volume - 音量 (0.0 - 1.0)
+ */
+export const sendMprisVolume = (volume: number) => {
+  if (isElectron) window.electron.ipcRenderer.send("mpris-update-volume", { volume });
 };

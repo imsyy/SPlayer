@@ -1,0 +1,17 @@
+[package]
+name = "mpris-for-splayer"
+version = "0.1.0"
+edition = "2021"
+description = "Native MPRIS bridge for SPlayer (Linux, MPV engine)"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+mpris-server = "^0.8.1"
+tokio = { version = "1", features = ["rt-multi-thread"] }
+napi = { version = "3.8", features = ["serde-json", "tokio_rt", "napi9"] }
+napi-derive = "3.5"
+
+[build-dependencies]
+napi-build = "2"
