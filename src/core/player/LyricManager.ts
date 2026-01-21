@@ -918,6 +918,7 @@ class LyricManager {
         lyricData = await this.handleStreamingLyric(song);
         // 排除内容
         lyricData = this.handleLyricExclude(lyricData);
+        lyricData = await this.applyChineseVariant(lyricData);
         this.setFinalLyric(lyricData, req);
         return;
       }
