@@ -1,0 +1,15 @@
+{
+  "name": "ferrous-opencc-wasm",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "ferrous_opencc_wasm_bg.wasm",
+    "ferrous_opencc_wasm.js",
+    "ferrous_opencc_wasm.d.ts"
+  ],
+  "main": "ferrous_opencc_wasm.js",
+  "types": "ferrous_opencc_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
