@@ -90,7 +90,7 @@
               MV
             </n-tag>
             <!-- 歌手 -->
-            <div v-if="Array.isArray(song.artists)" class="artists text-hidden">
+            <div v-if="Array.isArray(song.artists)" class="artists">
               <n-text
                 v-for="ar in song.artists"
                 :key="ar.id"
@@ -103,7 +103,7 @@
             <div v-else-if="song.type === 'radio'" class="artists">
               <n-text class="ar"> 电台节目 </n-text>
             </div>
-            <div v-else class="artists text-hidden" @click="openJumpArtist(song.artists)">
+            <div v-else class="artists" @click="openJumpArtist(song.artists)">
               <n-text class="ar"> {{ song.artists || "未知艺术家" }} </n-text>
             </div>
           </n-flex>
@@ -320,6 +320,7 @@ const localCover = async (show: boolean) => {
   }
   .title {
     flex: 1;
+    min-width: 0;
     display: flex;
     align-items: center;
     padding: 4px 20px 4px 0;
@@ -335,6 +336,7 @@ const localCover = async (show: boolean) => {
       overflow: hidden;
     }
     .info {
+      min-width: 0;
       .name {
         display: flex;
         flex-direction: row;
@@ -343,6 +345,7 @@ const localCover = async (show: boolean) => {
         font-size: 16px;
       }
       .desc {
+        min-width: 0;
         margin-top: 2px;
         font-size: 13px;
         .n-tag {
@@ -375,8 +378,13 @@ const localCover = async (show: boolean) => {
         }
       }
       .artists {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
         .ar {
-          display: inline-flex;
+          display: inline;
           transition: opacity 0.3s;
           opacity: 0.6;
           cursor: pointer;
@@ -407,6 +415,7 @@ const localCover = async (show: boolean) => {
   }
   .album {
     flex: 1;
+    min-width: 0;
     line-clamp: 2;
     -webkit-line-clamp: 2;
     padding-right: 20px;
