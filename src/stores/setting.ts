@@ -75,6 +75,8 @@ export interface SettingState {
   lyricsPosition: "flex-start" | "center" | "flex-end";
   /** 歌词滚动位置偏移量 */
   lyricsScrollOffset: number;
+  /** 歌词水平位置偏移量 */
+  lyricHorizontalOffset: number;
   /** 下载路径 */
   downloadPath: string;
   /** 是否启用缓存 */
@@ -402,6 +404,7 @@ export const useSettingStore = defineStore("setting", {
     lyricsPosition: "flex-start",
     lyricsBlur: false,
     lyricsScrollOffset: 0.25,
+    lyricHorizontalOffset: 10,
     enableExcludeLyrics: true,
     enableExcludeTTML: false,
     enableExcludeLocalLyrics: false,

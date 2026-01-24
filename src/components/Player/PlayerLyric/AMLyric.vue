@@ -6,6 +6,7 @@
       :style="{
         '--amll-lp-color': 'rgb(var(--main-cover-color, 239 239 239))',
         '--amll-lp-hover-bg-color': 'rgba(var(--main-cover-color), 0.08)',
+        '--amll-lyric-left-padding': `${settingStore.lyricHorizontalOffset}px`,
       }"
     >
       <div v-if="statusStore.lyricLoading" class="lyric-loading">歌词正在加载中...</div>
@@ -143,7 +144,7 @@ watch(lyricPlayerRef, (player) => {
     position: absolute;
     left: 0;
     top: 0;
-    padding-left: 10px;
+    padding-left: var(--amll-lyric-left-padding, 10px);
     padding-right: 80px;
     div {
       div[class^="_interludeDots"] {

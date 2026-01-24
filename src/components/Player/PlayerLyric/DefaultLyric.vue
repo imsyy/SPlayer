@@ -6,6 +6,7 @@
       '--lrc-tran-size': settingStore.lyricTranFontSize + 'px',
       '--lrc-roma-size': settingStore.lyricRomaFontSize + 'px',
       '--lrc-bold': settingStore.lyricFontWeight,
+      '--lrc-left-padding': `${settingStore.lyricHorizontalOffset}px`,
       'font-family': settingStore.LyricFont !== 'follow' ? settingStore.LyricFont : '',
       cursor: statusStore.playerMetaShow ? 'auto' : 'none',
       ...lyricLangFontStyle(settingStore),
@@ -566,7 +567,7 @@ onBeforeUnmount(() => {
     height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-left: 10px;
+    padding-left: var(--lrc-left-padding, 10px);
     padding-right: 80px;
     box-sizing: border-box;
     /* 隐藏滚动条 */

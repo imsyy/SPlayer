@@ -213,7 +213,7 @@
       <n-card class="set-item">
         <div class="label">
           <n-text class="name">封面/歌词占比</n-text>
-          <n-text class="tip" :depth="3">调整全屏模式下封面与歌词的宽度比例</n-text>
+          <n-text class="tip" :depth="3">调整全屏模式下封面与歌词的宽度比例（默认50%）</n-text>
         </div>
         <n-slider
           v-model:value="settingStore.playerStyleRatio"
@@ -221,6 +221,20 @@
           :max="70"
           :step="1"
           :format-tooltip="(value: number) => `${value}%`"
+          class="set"
+        />
+      </n-card>
+      <n-card class="set-item">
+        <div class="label">
+          <n-text class="name">歌词左侧边距</n-text>
+          <n-text class="tip" :depth="3">调整全屏模式下歌词的起始位置（默认10px）</n-text>
+        </div>
+        <n-slider
+          v-model:value="settingStore.lyricHorizontalOffset"
+          :min="0"
+          :max="200"
+          :step="1"
+          :format-tooltip="(value: number) => `${value}px`"
           class="set"
         />
       </n-card>
