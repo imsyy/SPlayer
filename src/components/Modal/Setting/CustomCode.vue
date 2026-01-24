@@ -5,19 +5,7 @@
     </n-alert>
     <div class="code-section">
       <n-h3 prefix="bar">自定义 CSS</n-h3>
-      <n-text :depth="3">
-        输入自定义 CSS 样式，将会被注入到页面中
-        <n-text :depth="3" style="color: #f5222d; font-weight: bold">
-          (填写不当可能导致致命性问题，请在有条件的情况下使用外部文件导入)
-        </n-text>
-      </n-text>
-      <n-input
-        v-model:value="customCss"
-        :autosize="{ minRows: 6, maxRows: 12 }"
-        type="textarea"
-        placeholder="/* 输入自定义 CSS */"
-        style="font-family: monospace"
-      />
+      <n-text :depth="3"> 导入自定义 CSS 样式文件，将会被注入到页面中 </n-text>
       <n-card
         title="外部 CSS 文件"
         size="small"
@@ -61,20 +49,7 @@
     </div>
     <div class="code-section">
       <n-h3 prefix="bar">自定义 JavaScript</n-h3>
-      <n-text :depth="3">
-        输入自定义 JavaScript 代码，将在应用启动时执行（ 重启后生效 ）
-        <n-text :depth="3" style="color: #f5222d; font-weight: bold">
-          (填写不当可能导致致命性问题，请在有条件的情况下使用外部文件导入)
-        </n-text>
-      </n-text>
-      <n-input
-        v-model:value="customJs"
-        :autosize="{ minRows: 6, maxRows: 12 }"
-        type="textarea"
-        placeholder="// 输入自定义 JavaScript"
-        style="font-family: monospace"
-      />
-      <n-text :depth="3"> 导入自定义 JavaScript 代码文件 </n-text>
+      <n-text :depth="3"> 导入自定义 JavaScript 代码文件，将在应用启动时执行（ 重启后生效 ） </n-text>
       <n-card
         title="外部 JS 文件"
         size="small"
@@ -130,8 +105,6 @@ const settingStore = useSettingStore();
 const { updateCustomFileCss, executeCustomJs } = useCustomCode();
 
 // 本地编辑状态
-const customCss = ref(settingStore.customCss);
-const customJs = ref(settingStore.customJs);
 const customCssFiles = ref<string[]>(settingStore.customCssFiles || []);
 const customJsFiles = ref<string[]>(settingStore.customJsFiles || []);
 
@@ -186,21 +159,11 @@ const removeJsFile = (index: number) => {
 
 // 保存代码
 const saveCode = () => {
-  settingStore.customCss = customCss.value;
-  settingStore.customJs = customJs.value;
   settingStore.customCssFiles = customCssFiles.value;
   settingStore.customJsFiles = customJsFiles.value;
-  window.$message.success("自定义代码及列表已保存");
+  window.$message.success("自定义代码列表已保存");
 };
 
-watch(
-  () => settingStore.customCss,
-  (val) => (customCss.value = val),
-);
-watch(
-  () => settingStore.customJs,
-  (val) => (customJs.value = val),
-);
 watch(
   () => settingStore.customCssFiles,
   (val) => (customCssFiles.value = val || []),
