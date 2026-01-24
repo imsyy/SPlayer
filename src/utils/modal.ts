@@ -1,5 +1,6 @@
 import { h } from "vue";
 import type { CoverType, UpdateInfoType, SettingType, SongType } from "@/types/main";
+import type { RemoteFolderType } from "@/types/local";
 import { CURRENT_AGREEMENT_VERSION } from "@/constants/agreement";
 import { NScrollbar } from "naive-ui";
 import { isLogin } from "./auth";
@@ -30,6 +31,7 @@ import AMLLServer from "@/components/Modal/Setting/AMLLServer.vue";
 import FontManager from "@/components/Modal/Setting/FontManager.vue";
 import CustomCode from "@/components/Modal/Setting/CustomCode.vue";
 import StreamingServerConfig from "@/components/Modal/Setting/StreamingServerConfig.vue";
+import AddRemoteFolderModal from "@/components/Modal/AddRemoteFolderModal.vue";
 import type { StreamingServerConfig as StreamingServerConfigType } from "@/types/streaming";
 
 export const openUserAgreement = () => {
@@ -493,6 +495,26 @@ export const openStreamingServerConfig = (
           modal.destroy();
         },
         onCancel: () => modal.destroy(),
+      });
+    },
+  });
+};
+
+/**
+ * 打开添加远程文件夹弹窗
+ * @param initialType 初始协议类型
+ */
+export const openAddRemoteFolder = (initialType: RemoteFolderType = "smb") => {
+  const modal = window.$modal.create({
+    preset: "card",
+    transformOrigin: "center",
+    autoFocus: false,
+    style: { width: "500px" },
+    title: "添加远程文件夹",
+    content: () => {
+      return h(AddRemoteFolderModal, {
+        initialType,
+        onClose: () => modal.destroy(),
       });
     },
   });

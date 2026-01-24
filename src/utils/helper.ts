@@ -50,6 +50,20 @@ export const sleep = (ms: number): Promise<void> => {
 };
 
 /**
+ * 生成唯一ID
+ * @param size ID 长度，默认 16
+ * @returns 唯一ID字符串
+ */
+export const nanoid = (size: number = 16): string => {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let id = "";
+  for (let i = 0; i < size; i++) {
+    id += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return id;
+};
+
+/**
  * 渲染选项
  * @param param0 包含节点和选项的对象
  * @returns 包含工具提示的节点

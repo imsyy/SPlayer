@@ -12,6 +12,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AboutSetting: typeof import('./src/components/Setting/AboutSetting.vue')['default']
+    AddRemoteFolderModal: typeof import('./src/components/Modal/AddRemoteFolderModal.vue')['default']
     AMLLServer: typeof import('./src/components/Modal/Setting/AMLLServer.vue')['default']
     AMLyric: typeof import('./src/components/Player/PlayerLyric/AMLyric.vue')['default']
     ArtistList: typeof import('./src/components/List/ArtistList.vue')['default']

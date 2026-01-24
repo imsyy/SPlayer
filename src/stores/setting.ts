@@ -1,6 +1,7 @@
 import { TimeFormat } from "@/composables/useTimeFormat";
 import { SongUnlockServer } from "@/core/player/SongManager";
 import type { SongLevelType } from "@/types/main";
+import type { RemoteFolderConfig } from "@/types/local";
 import { defaultAMLLDbServer } from "@/utils/meta";
 import { defineStore } from "pinia";
 import { CURRENT_SETTING_SCHEMA_VERSION, settingMigrations } from "./migrations/settingMigrations";
@@ -233,6 +234,8 @@ export interface SettingState {
   showDefaultLocalPath: boolean;
   /** 本地文件夹显示模式 */
   localFolderDisplayMode: "tab" | "dropdown";
+  /** 远程文件夹配置 */
+  remoteFolders: RemoteFolderConfig[];
   /** 展示当前歌曲歌词状态信息 */
   showPlayMeta: boolean;
   /** 显示歌曲音质 */
@@ -411,6 +414,7 @@ export const useSettingStore = defineStore("setting", {
     localLyricPath: [],
     showDefaultLocalPath: true,
     localFolderDisplayMode: "tab",
+    remoteFolders: [],
     localSeparators: ["/", "&"],
     showLocalCover: true,
     downloadPath: "",

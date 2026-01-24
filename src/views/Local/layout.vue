@@ -171,6 +171,7 @@
         请选择本地音乐文件夹，将自动扫描您添加的目录，歌曲增删实时同步
       </n-text>
       <n-scrollbar style="max-height: 50vh">
+        <!-- 本地文件夹 -->
         <n-list class="local-list" hoverable clickable bordered>
           <n-list-item v-for="(item, index) in settingStore.localFilesPath" :key="index">
             <template #prefix>
@@ -186,15 +187,45 @@
             <n-thing :title="item" />
           </n-list-item>
         </n-list>
+        <!-- 远程文件夹 -->
+        <n-list
+          v-if="settingStore.remoteFolders.length > 0"
+          class="local-list"
+          hoverable
+          clickable
+          bordered
+          style="margin-top: 12px"
+        >
+          <n-list-item v-for="(item, index) in settingStore.remoteFolders" :key="item.id">
+            <template #prefix>
+              <SvgIcon :size="20" name="Link" />
+            </template>
+            <template #suffix>
+              <n-button :focusable="false" quaternary @click="removeRemoteFolder(index)">
+                <template #icon>
+                  <SvgIcon :size="20" name="Delete" />
+                </template>
+              </n-button>
+            </template>
+            <n-thing :title="item.name" :description="`${item.type.toUpperCase()} · ${item.host}`" />
+          </n-list-item>
+        </n-list>
       </n-scrollbar>
       <template #footer>
         <n-flex justify="center">
-          <n-button class="add-path" strong secondary @click="changeLocalMusicPath()">
-            <template #icon>
-              <SvgIcon name="FolderPlus" />
-            </template>
-            添加文件夹
-          </n-button>
+          <n-dropdown
+            :options="addFolderOptions"
+            trigger="click"
+            placement="top"
+            @select="handleAddFolderSelect"
+          >
+            <n-button class="add-path" strong secondary>
+              <template #icon>
+                <SvgIcon name="FolderPlus" />
+              </template>
+              添加文件夹
+            </n-button>
+          </n-dropdown>
         </n-flex>
       </template>
     </n-modal>
@@ -209,7 +240,7 @@ import { useMobile } from "@/composables/useMobile";
 import { formatSongsList } from "@/utils/format";
 import { debounce } from "lodash-es";
 import { changeLocalMusicPath, fuzzySearch, renderIcon } from "@/utils/helper";
-import { openBatchList, openCreatePlaylist } from "@/utils/modal";
+import { openBatchList, openCreatePlaylist, openAddRemoteFolder } from "@/utils/modal";
 import { usePlayerController } from "@/core/player/PlayerController";
 
 const router = useRouter();
@@ -238,13 +269,19 @@ const listVersion = ref<number>(0);
 const folderOptions = computed(() => {
   const options: { label: string; value: string }[] = [{ label: "全部文件夹", value: "all" }];
 
-  // 基于配置的目录列表生成选项
+  // 基于配置的本地目录列表生成选项
   settingStore.localFilesPath.forEach((folderPath) => {
     if (!folderPath) return;
     const isWindows = folderPath.includes("\\");
     const sep = isWindows ? "\\" : "/";
     const folderName = folderPath.split(sep).pop() || folderPath;
     options.push({ label: folderName, value: folderPath });
+  });
+
+  // 添加远程文件夹选项
+  settingStore.remoteFolders.forEach((folder) => {
+    if (!folder.enabled) return;
+    options.push({ label: folder.name, value: folder.fullPath });
   });
 
   return options;
@@ -374,6 +411,42 @@ const moreOptions = computed<DropdownOption[]>(() => [
     icon: renderIcon("Batch"),
   },
 ]);
+
+// 添加文件夹下拉选项
+const addFolderOptions: DropdownOption[] = [
+  { label: "选择本地文件夹", key: "local", icon: renderIcon("Folder") },
+  { label: "添加SMB", key: "smb", icon: renderIcon("Link") },
+  { label: "添加FTP", key: "ftp", icon: renderIcon("Link") },
+  { label: "添加NFS", key: "nfs", icon: renderIcon("Link") },
+  { label: "添加WebDAV", key: "webdav", icon: renderIcon("Cloud") },
+];
+
+// 处理添加文件夹选择
+const handleAddFolderSelect = (key: string) => {
+  switch (key) {
+    case "local":
+      changeLocalMusicPath();
+      break;
+    case "smb":
+      openAddRemoteFolder("smb");
+      break;
+    case "ftp":
+      openAddRemoteFolder("ftp");
+      break;
+    case "nfs":
+      openAddRemoteFolder("nfs");
+      break;
+    case "webdav":
+      openAddRemoteFolder("webdav");
+      break;
+  }
+};
+
+// 删除远程文件夹
+const removeRemoteFolder = (index: number) => {
+  settingStore.remoteFolders.splice(index, 1);
+  window.$message.success("已移除远程文件夹");
+};
 
 // Tab 标签映射
 const tabLabels: Record<string, string> = {

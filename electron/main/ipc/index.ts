@@ -13,6 +13,7 @@ import initSocketIpc from "./ipc-socket";
 import initMediaIpc from "./ipc-media";
 import initMpvIpc from "./ipc-mpv";
 import initRendererLogIpc from "./ipc-renderer-log";
+import { registerRemoteFolderIpc } from "./ipc-remote-folder";
 
 /**
  * 初始化全部 IPC 通信
@@ -34,6 +35,7 @@ const initIpc = (): void => {
   initMediaIpc();
   initMpvIpc();
   initRendererLogIpc();
+  registerRemoteFolderIpc();
 };
 
 export default initIpc;
