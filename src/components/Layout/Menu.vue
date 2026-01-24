@@ -69,7 +69,7 @@ const handleRefreshFM = async (e: Event) => {
   e.stopPropagation();
   await songManager.refreshPersonalFM();
   // 刷新后如果处于私人漫游模式，则重新播放
-  if (statusStore.personalFmMode) {
+  if (statusStore.personalFmMode && musicStore.personalFMSong?.id) {
     player.playSong();
   }
 };

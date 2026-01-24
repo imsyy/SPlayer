@@ -450,10 +450,13 @@ class SongManager {
       musicStore.personalFM.playIndex = 0;
       // 重新加载
       await this.initPersonalFM(false);
+      if (musicStore.personalFM.list.length === 0) {
+        throw new Error("加载私人漫游列表失败");
+      }
       window.$message.success("刷新成功");
     } catch (error) {
-       console.error("❌ 刷新私人 FM 失败", error);
-       window.$message.error("刷新失败，请重试");
+      console.error("❌ 刷新私人 FM 失败", error);
+      window.$message.error("刷新失败，请重试");
     }
   }
 }
