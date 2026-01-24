@@ -38,6 +38,7 @@ class LyricManager {
     statusStore.usingTTMLLyric = false;
     // 重置歌词索引
     statusStore.lyricIndex = -1;
+    statusStore.lyricLoading = false;
   }
 
   /**
