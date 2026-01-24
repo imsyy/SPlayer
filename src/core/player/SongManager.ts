@@ -432,6 +432,30 @@ class SongManager {
       console.error("❌ 私人 FM 垃圾桶失败", error);
     }
   }
+
+  /**
+   * 刷新私人 FM
+   */
+  public async refreshPersonalFM() {
+    const musicStore = useMusicStore();
+
+    if (!isLogin()) {
+      window.$message.error("请先登录");
+      return;
+    }
+
+    try {
+      // 清空列表
+      musicStore.personalFM.list = [];
+      musicStore.personalFM.playIndex = 0;
+      // 重新加载
+      await this.initPersonalFM(false);
+      window.$message.success("刷新成功");
+    } catch (error) {
+       console.error("❌ 刷新私人 FM 失败", error);
+       window.$message.error("刷新失败，请重试");
+    }
+  }
 }
 
 let instance: SongManager | null = null;
