@@ -56,10 +56,19 @@ export const sleep = (ms: number): Promise<void> => {
  */
 export const nanoid = (size: number = 16): string => {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const bytes = crypto.getRandomValues(new Uint8Array(size));
+  const charsLength = chars.length;
+  const maxByte = 256 - (256 % charsLength);
   let id = "";
-  for (let i = 0; i < size; i++) {
-    id += chars[bytes[i] % chars.length];
+
+  while (id.length < size) {
+    // 生成随机字节批次并使用拒绝采样
+    const bytes = crypto.getRandomValues(new Uint8Array(size - id.length));
+    for (let i = 0; i < bytes.length && id.length < size; i++) {
+      const randomByte = bytes[i];
+      if (randomByte < maxByte) {
+        id += chars[randomByte % charsLength];
+      }
+    }
   }
   return id;
 };
