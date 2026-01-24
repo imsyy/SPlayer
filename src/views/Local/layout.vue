@@ -210,6 +210,29 @@
             <n-thing :title="item.name" :description="`${item.type.toUpperCase()} · ${item.host}`" />
           </n-list-item>
         </n-list>
+        <!-- Google Drive -->
+        <n-list
+          v-if="googleDriveStatus.authenticated"
+          class="local-list"
+          hoverable
+          clickable
+          bordered
+          style="margin-top: 12px"
+        >
+          <n-list-item>
+            <template #prefix>
+              <SvgIcon :size="20" name="Cloud" />
+            </template>
+            <template #suffix>
+              <n-button :focusable="false" quaternary @click="disconnectGoogleDrive">
+                <template #icon>
+                  <SvgIcon :size="20" name="Delete" />
+                </template>
+              </n-button>
+            </template>
+            <n-thing title="Google Drive" description="已连接" />
+          </n-list-item>
+        </n-list>
       </n-scrollbar>
       <template #footer>
         <n-flex justify="center">
@@ -293,6 +316,34 @@ const filteredSearchResult = ref<SongType[]>([]);
 
 // 目录管理
 const localPathShow = ref<boolean>(false);
+
+// Google Drive 状态
+const googleDriveStatus = ref<{ authenticated: boolean; hasRefreshToken: boolean }>({
+  authenticated: false,
+  hasRefreshToken: false,
+});
+
+// 加载 Google Drive 状态
+const loadGoogleDriveStatus = async () => {
+  try {
+    const status = await window.api.googleDrive.getStatus();
+    googleDriveStatus.value = status;
+  } catch (error) {
+    console.error("获取 Google Drive 状态失败:", error);
+  }
+};
+
+// 断开 Google Drive 连接
+const disconnectGoogleDrive = async () => {
+  try {
+    await window.api.googleDrive.logout();
+    googleDriveStatus.value = { authenticated: false, hasRefreshToken: false };
+    window.$message.success("已断开 Google Drive 连接");
+  } catch (error) {
+    console.error("断开 Google Drive 失败:", error);
+    window.$message.error("断开连接失败");
+  }
+};
 
 // 获取基于文件夹过滤后的数据
 const getFilteredData = (): SongType[] => {
@@ -419,10 +470,12 @@ const addFolderOptions: DropdownOption[] = [
   { label: "添加FTP", key: "ftp", icon: renderIcon("Link") },
   { label: "添加NFS", key: "nfs", icon: renderIcon("Link") },
   { label: "添加WebDAV", key: "webdav", icon: renderIcon("Cloud") },
+  { type: "divider", key: "d1" },
+  { label: "连接 Google Drive", key: "google-drive", icon: renderIcon("Cloud") },
 ];
 
 // 处理添加文件夹选择
-const handleAddFolderSelect = (key: string) => {
+const handleAddFolderSelect = async (key: string) => {
   switch (key) {
     case "local":
       changeLocalMusicPath();
@@ -438,6 +491,24 @@ const handleAddFolderSelect = (key: string) => {
       break;
     case "webdav":
       openAddRemoteFolder("webdav");
+      break;
+    case "google-drive":
+      try {
+        window.$message.info("正在打开 Google 授权页面...");
+        const result = await window.api.googleDrive.login();
+        if (result.status === "success") {
+          window.$message.success(result.message || "Google Drive 连接成功！");
+          // 刷新状态
+          await loadGoogleDriveStatus();
+        } else if (result.status === "pending") {
+          window.$message.warning(result.message || "认证正在进行中");
+        } else {
+          window.$message.error(result.message || "连接失败");
+        }
+      } catch (error) {
+        console.error("Google Drive 登录失败:", error);
+        window.$message.error("Google Drive 连接失败");
+      }
       break;
   }
 };
@@ -494,8 +565,11 @@ const getAllLocalMusic = debounce(
   async (showTip: boolean = false) => {
     // 获取路径
     const allPath = await getMusicFolder();
-    if (!allPath || !allPath.length) {
-      // 目录列表为空，以目录为准，清空本地歌曲
+    // 检查是否有 Google Drive 连接
+    const hasGoogleDrive = googleDriveStatus.value.authenticated;
+    
+    if ((!allPath || !allPath.length) && !hasGoogleDrive) {
+      // 目录列表为空且未连接云盘，以目录为准，清空本地歌曲
       localStore.updateLocalSong([]);
       filteredSearchResult.value = [];
       loading.value = false;
@@ -679,6 +753,8 @@ onMounted(() => {
   // 监听进度
   window.electron.ipcRenderer.on("music-sync-progress", progressHandler);
   getAllLocalMusic();
+  // 加载 Google Drive 状态
+  loadGoogleDriveStatus();
 });
 
 onUnmounted(() => {

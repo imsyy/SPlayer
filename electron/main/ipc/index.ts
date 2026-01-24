@@ -14,6 +14,7 @@ import initMediaIpc from "./ipc-media";
 import initMpvIpc from "./ipc-mpv";
 import initRendererLogIpc from "./ipc-renderer-log";
 import { registerRemoteFolderIpc } from "./ipc-remote-folder";
+import initGoogleDriveIpc from "./ipc-google-drive";
 
 /**
  * 初始化全部 IPC 通信
@@ -36,6 +37,7 @@ const initIpc = (): void => {
   initMpvIpc();
   initRendererLogIpc();
   registerRemoteFolderIpc();
+  initGoogleDriveIpc();
 };
 
 export default initIpc;

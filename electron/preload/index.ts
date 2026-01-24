@@ -29,6 +29,18 @@ if (process.contextIsolated) {
         debug: (message: string, ...args: unknown[]) =>
           ipcRenderer.send("renderer-log", "debug", message, args),
       },
+      // Google Drive API
+      googleDrive: {
+        login: () => ipcRenderer.invoke("google-drive-login"),
+        getStatus: () => ipcRenderer.invoke("google-drive-status"),
+        getFiles: (pageSize?: number) => ipcRenderer.invoke("google-drive-files", pageSize),
+        logout: () => ipcRenderer.invoke("google-drive-logout"),
+        // 新增 API
+        scanAudio: (pageSize?: number) => ipcRenderer.invoke("google-drive-scan", pageSize),
+        getStreamInfo: (fileId: string) => ipcRenderer.invoke("google-drive-stream-info", fileId),
+        downloadFile: (fileId: string, destPath: string) => 
+          ipcRenderer.invoke("google-drive-download", fileId, destPath),
+      },
     });
   } catch (error) {
     console.error(error);

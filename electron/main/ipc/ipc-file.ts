@@ -1,10 +1,11 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
 import { basename, dirname, extname, isAbsolute, join, relative, resolve } from "path";
 import { access, mkdir, readdir, readFile, stat, unlink, writeFile } from "fs/promises";
-import { parseFile } from "music-metadata";
+import { parseFile, parseStream as parseFileFromStream } from "music-metadata";
 import { getFileID, getFileMD5, metaDataLyricsArrayToLrc } from "../utils/helper";
 import { File, Picture, Id3v2Settings, TagTypes } from "node-taglib-sharp";
-import { ipcLog } from "../logger";
+import { GoogleDriveService } from "../services/GoogleDriveService";
+import { ipcLog, processLog } from "../logger";
 import { createWriteStream } from "fs";
 import { pipeline } from "stream/promises";
 import { Options as GlobOptions } from "fast-glob/out/settings";
@@ -58,6 +59,47 @@ const initFileIpc = (): void => {
       const store = useStore();
       const localCachePath = join(store.get("cachePath"), "local-data");
       const coverDir = join(localCachePath, "covers");
+      
+      // --- Google Drive 集成 ---
+      try {
+        const driveService = GoogleDriveService.getInstance();
+        if (driveService.hasValidTokens()) {
+          processLog.info("☁️ Fetching Google Drive audio files...");
+          const driveFiles = await driveService.getAudioFiles();
+          
+          const driveTracks = driveFiles.map(file => ({
+             id: file.id || "",
+             path: `google-drive://${file.id}`,
+             // 去除扩展名作为标题
+             title: file.name?.replace(/\.[^/.]+$/, "") || "Unknown Title",
+             artist: "Google Drive", 
+             album: "Cloud Drive",
+             // 暂无时长信息
+             duration: 0,
+             size: parseInt(file.size || "0"),
+             mtime: file.modifiedTime ? new Date(file.modifiedTime).getTime() : Date.now(),
+             cover: undefined,
+             bitrate: 0
+          }));
+          
+          // 发送 Drive 数据批次
+          event.sender.send("music-sync-tracks-batch", driveTracks);
+          processLog.info(`☁️ Sent ${driveTracks.length} Google Drive tracks`);
+        }
+      } catch (error: any) {
+        processLog.error("❌ Failed to sync Google Drive files:", error);
+        // 如果是权限不足 (Permission denied)，发送明确提示
+        if (error.message && (error.message.includes("403") || error.message.includes("insufficient"))) {
+           event.sender.send("music-sync-complete", { 
+             success: false, 
+             message: "Google Drive 权限不足，请在目录管理中重新连接以授权" 
+           });
+           return { success: false, message: "Google Drive Auth Error" };
+        }
+      }
+      // ------------------------
+
+      // 使用批量流式传输，减少 IPC 通信次数
 
       // 使用批量流式传输，减少 IPC 通信次数
       await localMusicService.refreshLibrary(
@@ -175,6 +217,45 @@ const initFileIpc = (): void => {
   // 获取音乐元信息
   ipcMain.handle("get-music-metadata", async (_, path: string) => {
     try {
+      if (path.startsWith("google-drive://")) {
+        const fileId = path.replace("google-drive://", "");
+        try {
+          const driveService = GoogleDriveService.getInstance();
+          
+          // 并行获取：文件流（用于解析 tag）和 API 元数据（用于获取准确大小）
+          const [metadata, streamReuslt] = await Promise.all([
+            driveService.getFileMetadata(fileId),
+            driveService.getFileStream(fileId),
+          ]);
+
+          const { data } = streamReuslt;
+          // 解析流
+          const { common, format } = await parseFileFromStream(data);
+          
+          return {
+            fileName: common.title || metadata.name || "Unknown Title",
+            fileSize: metadata.size / (1024 * 1024), // 转换为 MB
+            common,
+            lyric:
+              metaDataLyricsArrayToLrc(common?.lyrics?.[0]?.syncText || []) ||
+              common?.lyrics?.[0]?.text ||
+              "",
+            format,
+            md5: "",
+          };
+        } catch (e) {
+          processLog.error(`⚠️ Failed to parse Google Drive metadata for ${fileId}:`, e);
+          // Fallback
+          return {
+            fileName: "Google Drive File",
+            fileSize: 0,
+            common: { title: "Cloud Song", artist: "Google Drive" },
+            lyric: "",
+            format: {},
+            md5: "",
+          };
+        }
+      }
       const filePath = resolve(path).replace(/\\/g, "/");
       const { common, format } = await parseFile(filePath);
       return {
@@ -243,6 +324,32 @@ const initFileIpc = (): void => {
       format: "lrc" | "ttml";
     }> => {
       try {
+        // Google Drive 逻辑
+        if (musicPath.startsWith("google-drive://")) {
+          const fileId = musicPath.replace("google-drive://", "");
+          try {
+            const driveService = GoogleDriveService.getInstance();
+            const { data } = await driveService.getFileStream(fileId);
+            const { common } = await parseFileFromStream(data);
+            
+            const syncedLyric = common?.lyrics?.[0]?.syncText;
+            if (syncedLyric && syncedLyric.length > 0) {
+              return {
+                lyric: metaDataLyricsArrayToLrc(syncedLyric),
+                format: "lrc",
+              };
+            } else if (common?.lyrics?.[0]?.text) {
+              return {
+                lyric: common?.lyrics?.[0]?.text,
+                format: "lrc",
+              };
+            }
+          } catch (e) {
+            processLog.error(`⚠️ Failed to parse lyrics from Drive file ${fileId}:`, e);
+          }
+          return { lyric: "", format: "lrc" };
+        }
+
         // 获取文件基本信息
         const absPath = resolve(musicPath);
         const dir = dirname(absPath);
@@ -305,6 +412,21 @@ const initFileIpc = (): void => {
     "get-music-cover",
     async (_, path: string): Promise<{ data: Buffer; format: string } | null> => {
       try {
+        if (path.startsWith("google-drive://")) {
+          const fileId = path.replace("google-drive://", "");
+          try {
+            const driveService = GoogleDriveService.getInstance();
+            const { data } = await driveService.getFileStream(fileId);
+            const { common } = await parseFileFromStream(data);
+            const picture = common.picture?.[0];
+            if (picture) {
+              return { data: Buffer.from(picture.data), format: picture.format };
+            }
+          } catch (e) {
+            processLog.error(`⚠️ Failed to parse cover from Drive file ${fileId}:`, e);
+          }
+          return null;
+        }
         const { common } = await parseFile(path);
         // 获取封面数据
         const picture = common.picture?.[0];

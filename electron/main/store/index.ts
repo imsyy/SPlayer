@@ -54,6 +54,12 @@ export interface StoreType {
     /** 端口 */
     port: number;
   };
+  /** Google Drive OAuth2 tokens */
+  googleDrive?: {
+    accessToken?: string;
+    refreshToken?: string;
+    expiryDate?: number;
+  };
 }
 
 /**

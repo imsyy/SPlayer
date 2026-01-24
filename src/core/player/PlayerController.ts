@@ -127,8 +127,13 @@ class PlayerController {
       if (requestToken !== this.currentRequestToken) return;
       // 后置处理
       await this.afterPlaySetup(playSongData);
-    } catch (error) {
+    } catch (error: any) {
       if (requestToken === this.currentRequestToken) {
+        // 如果是 AbortError，忽略（通常是切歌导致）
+        if (error.name === "AbortError") {
+          console.log(`🚫 [${playSongData.id}] 播放被中止`);
+          return;
+        }
         console.error("❌ 播放初始化失败:", error);
         this.handlePlaybackError(undefined);
       }
@@ -494,8 +499,8 @@ class PlayerController {
       await this.skipToNextWithDelay();
       return;
     }
-    // 本地文件错误
-    if (musicStore.playSong.path && musicStore.playSong.type !== "streaming") {
+    // 本地文件错误 (排除流媒体和 Google Drive)
+    if (musicStore.playSong.path && musicStore.playSong.type !== "streaming" && !musicStore.playSong.path.startsWith("google-drive://")) {
       console.error("❌ 本地文件加载失败");
       window.$message.error("本地文件无法播放");
       statusStore.playLoading = false;

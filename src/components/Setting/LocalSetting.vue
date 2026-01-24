@@ -106,6 +106,30 @@
       </n-card>
     </div>
     <div class="set-list">
+      <n-h3 prefix="bar"> 云盘配置 </n-h3>
+      <n-card class="set-item">
+        <div class="label">
+          <n-text class="name">Google Drive 播放模式</n-text>
+          <n-text class="tip" :depth="3">选择云盘歌曲的播放方式</n-text>
+        </div>
+        <n-select
+          class="set"
+          v-model:value="settingStore.googleDrive.playbackMode"
+          :options="[
+            { label: '流式播放', value: 'stream' },
+            { label: '下载后播放', value: 'download' },
+          ]"
+        />
+      </n-card>
+      <n-card class="set-item">
+        <div class="label">
+          <n-text class="name">仅扫描音频文件</n-text>
+          <n-text class="tip" :depth="3">扫描时忽略非音频文件</n-text>
+        </div>
+        <n-switch class="set" v-model:value="settingStore.googleDrive.audioOnly" :round="false" />
+      </n-card>
+    </div>
+    <div class="set-list">
       <n-h3 prefix="bar"> 缓存配置 </n-h3>
       <n-card class="set-item">
         <div class="label">
@@ -367,10 +391,12 @@ const addFolderOptions: DropdownOption[] = [
   { label: "添加FTP", key: "ftp", icon: renderIcon("Link") },
   { label: "添加NFS", key: "nfs", icon: renderIcon("Link") },
   { label: "添加WebDAV", key: "webdav", icon: renderIcon("Cloud") },
+  { type: "divider", key: "d1" },
+  { label: "连接 Google Drive", key: "google-drive", icon: renderIcon("Cloud") },
 ];
 
 // 处理添加文件夹选择
-const handleAddFolderSelect = (key: string) => {
+const handleAddFolderSelect = async (key: string) => {
   switch (key) {
     case "local":
       changeLocalMusicPath();
@@ -386,6 +412,22 @@ const handleAddFolderSelect = (key: string) => {
       break;
     case "webdav":
       openAddRemoteFolder("webdav");
+      break;
+    case "google-drive":
+      try {
+        window.$message.info("正在打开 Google 授权页面...");
+        const result = await window.api.googleDrive.login();
+        if (result.status === "success") {
+          window.$message.success(result.message || "Google Drive 连接成功！");
+        } else if (result.status === "pending") {
+          window.$message.warning(result.message || "认证正在进行中");
+        } else {
+          window.$message.error(result.message || "连接失败");
+        }
+      } catch (error) {
+        console.error("Google Drive 登录失败:", error);
+        window.$message.error("Google Drive 连接失败");
+      }
       break;
   }
 };

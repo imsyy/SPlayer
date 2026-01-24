@@ -321,6 +321,13 @@ export interface SettingState {
   playerStyleRatio: number;
   /** 是否启用流媒体功能 */
   streamingEnabled: boolean;
+  /** Google Drive 配置 */
+  googleDrive: {
+    /** 播放模式: stream（流式）或 download（下载后播放） */
+    playbackMode: "stream" | "download";
+    /** 只扫描音频文件 */
+    audioOnly: boolean;
+  };
 }
 
 export const useSettingStore = defineStore("setting", {
@@ -488,6 +495,10 @@ export const useSettingStore = defineStore("setting", {
     customJs: "",
     playerStyleRatio: 50,
     streamingEnabled: false,
+    googleDrive: {
+      playbackMode: "stream",
+      audioOnly: true,
+    },
   }),
   getters: {
     /**

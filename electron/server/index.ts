@@ -5,6 +5,7 @@ import { initNcmAPI } from "./netease";
 import { initUnblockAPI } from "./unblock";
 import { initControlAPI } from "./control";
 import { initQQMusicAPI } from "./qqmusic";
+import { initGoogleDriveProxy } from "./google-drive";
 import fastifyCookie from "@fastify/cookie";
 import fastifyMultipart from "@fastify/multipart";
 import fastifyStatic from "@fastify/static";
@@ -59,6 +60,8 @@ const initAppServer = async () => {
     server.register(initUnblockAPI, { prefix: "/api" });
     server.register(initControlAPI, { prefix: "/api" });
     server.register(initQQMusicAPI, { prefix: "/api" });
+    // 注册 Google Drive 代理
+    server.register(initGoogleDriveProxy, { prefix: "/api" });
     // 启动端口
     const port = Number(process.env["VITE_SERVER_PORT"] || 25884);
     await server.listen({ port });

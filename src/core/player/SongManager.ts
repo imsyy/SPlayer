@@ -298,8 +298,50 @@ class SongManager {
   public getAudioSource = async (song: SongType): Promise<AudioSource> => {
     const settingStore = useSettingStore();
 
-    // 本地文件直接返回
+    // 本地文件或 Google Drive 文件
     if (song.path && song.type !== "streaming") {
+      // 处理 Google Drive 路径
+      if (song.path.startsWith("google-drive://")) {
+        const fileId = song.path.replace("google-drive://", "");
+        
+        // 获取设置
+        const playbackMode = settingStore.googleDrive.playbackMode;
+        
+        if (playbackMode === "download") {
+          // 下载模式
+          try {
+            console.log(`📥 [${song.id}] 准备下载播放...`);
+
+            // 简单的缓存检查 (实际应该有更完善的缓存管理)
+            // 这里我们暂时直接请求流式地址作为兜底，或者触发下载
+            // 由于下载是异步的，这里先用流式播放，同时触发下载
+            window.electron.ipcRenderer.invoke("google-drive-download", fileId, settingStore.downloadPath);
+          } catch (e) {
+            console.error("Download trigger failed", e);
+          }
+        }
+
+        // 获取流式播放地址 (默认)
+        try {
+          const res = await window.electron.ipcRenderer.invoke("google-drive-stream-info", fileId);
+          if (res.status === "success" && res.info) {
+            console.log(`☁️ [${song.id}] Google Drive Stream URL:`, res.info.url);
+            // Google Drive 流式播放需要带 Auth Header，但 HTML5 Audio/Howler 不支持直接带 Header
+            // 如果 URL 包含 access token (alt=media)，通常可以直接播放
+            // 注意：access token 有效期短，需要实时获取
+            return { 
+              id: song.id, 
+              url: res.info.url,
+              quality: QualityType.SQ,
+              isUnlocked: true 
+            };
+          }
+        } catch (e) {
+          console.error(`❌ [${song.id}] 获取 Google Drive 播放地址失败:`, e);
+        }
+        return { id: song.id, url: undefined };
+      }
+
       // 检查本地文件是否存在
       const result = await window.electron.ipcRenderer.invoke("file-exists", song.path);
       if (!result) {
