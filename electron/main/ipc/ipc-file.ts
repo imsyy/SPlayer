@@ -433,44 +433,6 @@ const initFileIpc = (): void => {
     }
   });
 
-  // 文件选择窗口
-  ipcMain.handle(
-    "choose-file",
-    async (
-      _,
-      title: string,
-      options: { filters?: Electron.FileFilter[]; multiSelect?: boolean } = {},
-    ) => {
-      try {
-        const properties: ("openFile" | "multiSelections")[] = ["openFile"];
-        if (options.multiSelect) {
-          properties.push("multiSelections");
-        }
-        const { filePaths } = await dialog.showOpenDialog({
-          title: title ?? "选择文件",
-          properties,
-          filters: options.filters,
-        });
-        if (!filePaths || filePaths.length === 0) return null;
-        return options.multiSelect ? filePaths : filePaths[0];
-      } catch (error) {
-        ipcLog.error("❌ File choose error", error);
-        return null;
-      }
-    },
-  );
-
-  // 读取文件内容
-  ipcMain.handle("read-file-content", async (_, path: string) => {
-    try {
-      const content = await readFile(path, "utf-8");
-      return content;
-    } catch (error) {
-      ipcLog.error(`❌ Failed to read file: ${path}`, error);
-      return null;
-    }
-  });
-
   // 路径选择窗口
   ipcMain.handle("choose-path", async (_, title: string, multiSelect: boolean = false) => {
     try {

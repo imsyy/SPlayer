@@ -324,10 +324,6 @@ export interface SettingState {
   customCss: string;
   /** 自定义 JS */
   customJs: string;
-  /** 自定义 CSS 文件列表 */
-  customCssFiles: string[];
-  /** 自定义 JS 文件列表 */
-  customJsFiles: string[];
   /** 播放器封面/歌词占比 (0-100) */
   playerStyleRatio: number;
   /** 是否启用流媒体功能 */
@@ -501,8 +497,6 @@ export const useSettingStore = defineStore("setting", {
     playbackEngine: "web-audio",
     customCss: "",
     customJs: "",
-    customCssFiles: [],
-    customJsFiles: [],
     playerStyleRatio: 50,
     streamingEnabled: false,
   }),
