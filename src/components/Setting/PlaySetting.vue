@@ -213,13 +213,14 @@
       <n-card class="set-item">
         <div class="label">
           <n-text class="name">封面/歌词占比</n-text>
-          <n-text class="tip" :depth="3">调整全屏模式下封面与歌词的宽度比例（默认50%）</n-text>
+          <n-text class="tip" :depth="3">调整全屏模式下封面与歌词的宽度比例</n-text>
         </div>
         <n-slider
           v-model:value="settingStore.playerStyleRatio"
           :min="30"
           :max="70"
           :step="1"
+          :marks="{ 50: '默认' }"
           :format-tooltip="(value: number) => `${value}%`"
           class="set"
         />

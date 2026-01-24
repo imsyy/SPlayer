@@ -119,7 +119,7 @@
       <n-card class="set-item">
         <div class="label">
           <n-text class="name">隐藏括号与别名</n-text>
-          <n-text class="tip" :depth="3">开启后隐藏歌曲名与专辑名中的（）内容和歌曲别名灰字，对歌词不生效</n-text>
+          <n-text class="tip" :depth="3">隐藏歌曲名与专辑名中的括号内容和别名</n-text>
         </div>
         <n-switch v-model:value="settingStore.hideLyricBrackets" class="set" :round="false" />
       </n-card>

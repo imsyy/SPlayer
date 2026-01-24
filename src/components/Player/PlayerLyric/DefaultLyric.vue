@@ -88,7 +88,7 @@
                   {{ item.data.words?.[0]?.word }}
                 </span>
               </template>
-              <!-- 翻译和音译（根据设置调整顺序） -->
+              <!-- 翻译和音译 -->
               <template v-if="settingStore.swapTranRoma">
                 <!-- 音译在前 -->
                 <span v-if="item.data.romanLyric && settingStore.showRoma" class="roma" lang="en">
@@ -149,8 +149,6 @@ const lyricScrollContainer = ref<HTMLElement | null>(null);
 
 // 是否为逐字歌词模式
 const isYrcMode = computed(() => settingStore.showYrc && musicStore.isHasYrc);
-
-
 
 // 获取当前使用的歌词数据
 const currentLyricData = computed(() => {

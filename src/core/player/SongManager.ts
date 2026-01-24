@@ -438,21 +438,18 @@ class SongManager {
    */
   public async refreshPersonalFM() {
     const musicStore = useMusicStore();
-
     if (!isLogin()) {
       window.$message.error("请先登录");
       return;
     }
-
     try {
-      // 清空列表
-      musicStore.personalFM.list = [];
-      musicStore.personalFM.playIndex = 0;
-      // 重新加载
-      await this.initPersonalFM(false);
-      if (musicStore.personalFM.list.length === 0) {
+      const res = await personalFm();
+      const newList = formatSongsList(res.data);
+      if (!newList || newList.length === 0) {
         throw new Error("加载私人漫游列表失败");
       }
+      musicStore.personalFM.list = newList;
+      musicStore.personalFM.playIndex = 0;
       window.$message.success("刷新成功");
     } catch (error) {
       console.error("❌ 刷新私人 FM 失败", error);
