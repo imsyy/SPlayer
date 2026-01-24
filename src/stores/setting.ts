@@ -81,6 +81,8 @@ export interface SettingState {
   lyricHorizontalOffset: number;
   /** 歌词默认靠右（对唱互换） */
   lyricAlignRight: boolean;
+  /** 隐藏歌词括号内容和别名 */
+  hideLyricBrackets: boolean;
   /** 下载路径 */
   downloadPath: string;
   /** 是否启用缓存 */
@@ -411,6 +413,7 @@ export const useSettingStore = defineStore("setting", {
     lyricsScrollOffset: 0.25,
     lyricHorizontalOffset: 10,
     lyricAlignRight: false,
+    hideLyricBrackets: false,
     enableExcludeLyrics: true,
     enableExcludeTTML: false,
     enableExcludeLocalLyrics: false,

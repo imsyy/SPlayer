@@ -150,9 +150,29 @@ const lyricScrollContainer = ref<HTMLElement | null>(null);
 // 是否为逐字歌词模式
 const isYrcMode = computed(() => settingStore.showYrc && musicStore.isHasYrc);
 
+/**
+ * 移除文本中的括号内容
+ * @param text 原始文本
+ */
+const removeBrackets = (text: string | undefined): string => {
+  if (!text) return "";
+  // 移除中英文括号及其内容
+  return text.replace(/[（(][^）)]*[）)]/g, "").trim();
+};
+
 // 获取当前使用的歌词数据
 const currentLyricData = computed(() => {
-  return isYrcMode.value ? musicStore.songLyric.yrcData : musicStore.songLyric.lrcData;
+  const lyrics = isYrcMode.value ? musicStore.songLyric.yrcData : musicStore.songLyric.lrcData;
+  if (!settingStore.hideLyricBrackets || !lyrics) return lyrics;
+  
+  // 过滤括号内容
+  return lyrics.map((line) => ({
+    ...line,
+    words: line.words?.map((word) => ({
+      ...word,
+      word: removeBrackets(word.word),
+    })),
+  }));
 });
 
 /** 处理后的歌词项类型 */

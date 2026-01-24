@@ -39,8 +39,8 @@
               }"
               class="name-text"
             >
-              {{ song?.name || "未知曲目" }}
-              <n-text v-if="song.alia?.length" class="alia" depth="3"> ({{ song.alia }}) </n-text>
+              {{ settingStore.hideLyricBrackets ? removeBrackets(song?.name) : (song?.name || "未知曲目") }}
+              <n-text v-if="song.alia?.length && !settingStore.hideLyricBrackets" class="alia" depth="3"> ({{ song.alia }}) </n-text>
             </n-ellipsis>
           </div>
           <n-flex :size="4" :wrap="false" class="desc" align="center">
@@ -163,6 +163,7 @@ import { QualityType, type SongType } from "@/types/main";
 import { useStatusStore, useMusicStore, useDataStore, useSettingStore } from "@/stores";
 import { formatNumber } from "@/utils/helper";
 import { openJumpArtist } from "@/utils/modal";
+import { removeBrackets } from "@/utils/format";
 import { toLikeSong } from "@/utils/auth";
 import { isObject } from "lodash-es";
 import { formatTimestamp, msToTime } from "@/utils/time";

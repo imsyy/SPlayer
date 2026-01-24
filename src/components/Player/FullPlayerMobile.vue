@@ -127,7 +127,7 @@
         <div class="lyric-header">
           <s-image :src="musicStore.getSongCover('s')" class="lyric-cover" />
           <div class="lyric-info">
-            <div class="name text-hidden">{{ musicStore.playSong.name }}</div>
+            <div class="name text-hidden">{{ settingStore.hideLyricBrackets ? removeBrackets(musicStore.playSong.name) : musicStore.playSong.name }}</div>
             <div class="artist text-hidden">{{ artistName }}</div>
           </div>
           <!-- 喜欢按钮 -->
@@ -165,14 +165,16 @@
 
 <script setup lang="ts">
 import { useSwipe } from "@vueuse/core";
-import { useMusicStore, useStatusStore, useDataStore } from "@/stores";
+import { useMusicStore, useStatusStore, useDataStore, useSettingStore } from "@/stores";
 import { usePlayerController } from "@/core/player/PlayerController";
 import { useTimeFormat } from "@/composables/useTimeFormat";
 import { toLikeSong } from "@/utils/auth";
 import { openPlaylistAdd } from "@/utils/modal";
+import { removeBrackets } from "@/utils/format";
 
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
+const settingStore = useSettingStore();
 const dataStore = useDataStore();
 const player = usePlayerController();
 const { timeDisplay, toggleTimeFormat } = useTimeFormat();

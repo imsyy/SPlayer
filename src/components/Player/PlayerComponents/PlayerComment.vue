@@ -16,7 +16,7 @@
         </template>
       </n-image>
       <n-flex :size="2" class="song-info" vertical>
-        <span class="title text-hidden">{{ musicStore.playSong.name }}</span>
+        <span class="title text-hidden">{{ settingStore.hideLyricBrackets ? removeBrackets(musicStore.playSong.name) : musicStore.playSong.name }}</span>
         <span class="artist text-hidden">
           {{
             Array.isArray(musicStore.playSong.artists)
@@ -70,15 +70,16 @@
 
 <script setup lang="ts">
 import type { CommentType } from "@/types/main";
-import { useMusicStore, useStatusStore } from "@/stores";
+import { useMusicStore, useStatusStore, useSettingStore } from "@/stores";
 import { getComment, getHotComment } from "@/api/comment";
 import { isEmpty } from "lodash-es";
-import { formatCommentList } from "@/utils/format";
+import { formatCommentList, removeBrackets } from "@/utils/format";
 import { NScrollbar } from "naive-ui";
 import { coverLoaded } from "@/utils/helper";
 
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
+const settingStore = useSettingStore();
 
 const commentScroll = ref<InstanceType<typeof NScrollbar> | null>(null);
 

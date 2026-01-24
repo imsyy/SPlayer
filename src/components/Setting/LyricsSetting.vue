@@ -201,6 +201,13 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
+          <n-text class="name">隐藏括号与别名</n-text>
+          <n-text class="tip" :depth="3">开启后隐藏歌词中的（）内容和歌曲别名灰字</n-text>
+        </div>
+        <n-switch v-model:value="settingStore.hideLyricBrackets" class="set" :round="false" />
+      </n-card>
+      <n-card class="set-item">
+        <div class="label">
           <n-text class="name">歌词滚动位置</n-text>
           <n-text class="tip" :depth="3">歌词高亮时在屏幕中的垂直位置</n-text>
         </div>

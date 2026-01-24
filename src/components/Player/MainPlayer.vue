@@ -44,7 +44,7 @@
             <!-- 名称 -->
             <TextContainer
               :key="musicStore.playSong.name"
-              :text="musicStore.playSong.name"
+              :text="settingStore.hideLyricBrackets ? removeBrackets(musicStore.playSong.name) : musicStore.playSong.name"
               :speed="0.2"
               class="name"
             />
@@ -224,6 +224,7 @@ import {
   openPlaylistAdd,
 } from "@/utils/modal";
 import { convertSecondsToTime } from "@/utils/time";
+import { removeBrackets } from "@/utils/format";
 import type { DropdownOption } from "naive-ui";
 
 const router = useRouter();

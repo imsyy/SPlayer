@@ -87,6 +87,19 @@ const amLyricsData = computed(() => {
     });
   }
 
+  // 隐藏括号内容
+  if (settingStore.hideLyricBrackets) {
+    const removeBrackets = (text: string | undefined): string => {
+      if (!text) return "";
+      return text.replace(/[（(][^）)]*[）)]/g, "").trim();
+    };
+    clonedLyrics.forEach((line) => {
+      line.words.forEach((word) => {
+        word.word = removeBrackets(word.word);
+      });
+    });
+  }
+
   // 调换翻译与音译位置
   if (settingStore.swapTranRoma) {
     clonedLyrics.forEach((line) => {
