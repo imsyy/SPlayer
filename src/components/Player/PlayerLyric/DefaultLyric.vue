@@ -15,7 +15,11 @@
       'lyric',
       settingStore.playerType,
       settingStore.lyricsPosition,
-      { pure: statusStore.pureLyricMode },
+      settingStore.lyricsPosition,
+      {
+        pure: statusStore.pureLyricMode,
+        'align-right': settingStore.lyricAlignRight,
+      },
     ]"
     @mouseleave="lrcAllLeave"
   >
@@ -789,7 +793,8 @@ onBeforeUnmount(() => {
       }
     }
   }
-  &.flex-end {
+  &.flex-end,
+  &.align-right {
     span {
       text-align: right;
     }
@@ -800,6 +805,15 @@ onBeforeUnmount(() => {
       transform-origin: right;
       .content {
         text-align: right;
+      }
+      &.is-duet {
+        transform-origin: left;
+        .content,
+        .tran,
+        .roma {
+          text-align: left;
+          justify-content: flex-start;
+        }
       }
     }
     .countdown-line {

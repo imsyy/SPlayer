@@ -174,6 +174,27 @@
       </n-card>
       <n-card class="set-item">
         <div class="label">
+          <n-text class="name">歌词左侧边距</n-text>
+          <n-text class="tip" :depth="3">调整全屏模式下歌词的起始位置（默认10px）</n-text>
+        </div>
+        <n-slider
+          v-model:value="settingStore.lyricHorizontalOffset"
+          :min="0"
+          :max="200"
+          :step="1"
+          :format-tooltip="(value: number) => `${value}px`"
+          class="set"
+        />
+      </n-card>
+      <n-card class="set-item">
+        <div class="label">
+          <n-text class="name">默认歌词靠右</n-text>
+          <n-text class="tip" :depth="3">左右对唱位置互换</n-text>
+        </div>
+        <n-switch v-model:value="settingStore.lyricAlignRight" class="set" :round="false" />
+      </n-card>
+      <n-card class="set-item">
+        <div class="label">
           <n-text class="name">歌词滚动位置</n-text>
           <n-text class="tip" :depth="3">歌词高亮时在屏幕中的垂直位置</n-text>
         </div>

@@ -2,11 +2,12 @@
   <Transition name="fade" mode="out-in">
     <div
       :key="amLyricsData?.[0]?.words?.length"
-      :class="['lyric-am', { pure: statusStore.pureLyricMode, duet: hasDuet }]"
+      :class="['lyric-am', { pure: statusStore.pureLyricMode, duet: hasDuet, 'align-right': settingStore.lyricAlignRight }]"
       :style="{
         '--amll-lp-color': 'rgb(var(--main-cover-color, 239 239 239))',
         '--amll-lp-hover-bg-color': 'rgba(var(--main-cover-color), 0.08)',
-        '--amll-lyric-left-padding': `${settingStore.lyricHorizontalOffset}px`,
+        '--amll-lyric-left-padding': settingStore.lyricAlignRight ? '' : `${settingStore.lyricHorizontalOffset}px`,
+        '--amll-lyric-right-padding': settingStore.lyricAlignRight ? `${settingStore.lyricHorizontalOffset}px` : '',
       }"
     >
       <div v-if="statusStore.lyricLoading" class="lyric-loading">歌词正在加载中...</div>
@@ -86,6 +87,13 @@ const amLyricsData = computed(() => {
     });
   }
 
+  // 如果开启了歌词靠右，反转 isDuet
+  if (settingStore.lyricAlignRight) {
+    clonedLyrics.forEach((line) => {
+      line.isDuet = !line.isDuet;
+    });
+  }
+
   return clonedLyrics;
 });
 
@@ -151,12 +159,23 @@ watch(lyricPlayerRef, (player) => {
         display: var(--display-count-down-show);
       }
     }
-    @media (max-width: 990px) {
-      padding: 0;
-      margin-left: -20px;
-    }
     @media (max-width: 500px) {
       margin-left: 0;
+    }
+  }
+
+  &.align-right {
+    :deep(.am-lyric) {
+      padding-left: 80px;
+      padding-right: var(--amll-lyric-right-padding, 10px);
+
+      @media (max-width: 990px) {
+        padding: 0;
+        margin-right: -20px;
+      }
+      @media (max-width: 500px) {
+        margin-right: 0;
+      }
     }
   }
   &.pure {
