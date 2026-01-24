@@ -69,6 +69,8 @@ export interface SettingState {
   showTran: boolean;
   /** 显示歌词音译 */
   showRoma: boolean;
+  /** 调换翻译与音译位置 */
+  swapTranRoma: boolean;
   /** 显示逐字音译 */
   showWordsRoma: boolean;
   /** 歌词位置 */
@@ -402,6 +404,7 @@ export const useSettingStore = defineStore("setting", {
     showYrc: true,
     showTran: true,
     showRoma: true,
+    swapTranRoma: false,
     showWordsRoma: true,
     lyricsPosition: "flex-start",
     lyricsBlur: false,

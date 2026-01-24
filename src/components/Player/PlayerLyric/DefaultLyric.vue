@@ -88,18 +88,33 @@
                   {{ item.data.words?.[0]?.word }}
                 </span>
               </template>
-              <!-- 翻译 -->
-              <span
-                v-if="item.data.translatedLyric && settingStore.showTran"
-                class="tran"
-                lang="en"
-              >
-                {{ item.data.translatedLyric }}
-              </span>
-              <!-- 音译 -->
-              <span v-if="item.data.romanLyric && settingStore.showRoma" class="roma" lang="en">
-                {{ item.data.romanLyric }}
-              </span>
+              <!-- 翻译和音译（根据设置调整顺序） -->
+              <template v-if="settingStore.swapTranRoma">
+                <!-- 音译在前 -->
+                <span v-if="item.data.romanLyric && settingStore.showRoma" class="roma" lang="en">
+                  {{ item.data.romanLyric }}
+                </span>
+                <span
+                  v-if="item.data.translatedLyric && settingStore.showTran"
+                  class="tran"
+                  lang="en"
+                >
+                  {{ item.data.translatedLyric }}
+                </span>
+              </template>
+              <template v-else>
+                <!-- 翻译在前（默认） -->
+                <span
+                  v-if="item.data.translatedLyric && settingStore.showTran"
+                  class="tran"
+                  lang="en"
+                >
+                  {{ item.data.translatedLyric }}
+                </span>
+                <span v-if="item.data.romanLyric && settingStore.showRoma" class="roma" lang="en">
+                  {{ item.data.romanLyric }}
+                </span>
+              </template>
             </div>
           </template>
           <!-- 底部占位 -->

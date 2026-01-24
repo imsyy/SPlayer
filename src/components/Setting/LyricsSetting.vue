@@ -28,8 +28,14 @@
         </n-card>
         <div v-for="item in 2" :key="item" :class="['lrc-item', { on: item === 2 }]">
           <n-text>我是一句歌词</n-text>
-          <n-text v-if="settingStore.showTran">I'm the lyric</n-text>
-          <n-text v-if="settingStore.showRoma">wo shi yi ju ge ci</n-text>
+          <template v-if="settingStore.swapTranRoma">
+            <n-text v-if="settingStore.showRoma">wo shi yi ju ge ci</n-text>
+            <n-text v-if="settingStore.showTran">I'm the lyric</n-text>
+          </template>
+          <template v-else>
+            <n-text v-if="settingStore.showTran">I'm the lyric</n-text>
+            <n-text v-if="settingStore.showRoma">wo shi yi ju ge ci</n-text>
+          </template>
         </div>
       </n-card>
       <n-card class="set-item">
@@ -248,6 +254,18 @@
           <n-text class="name">显示歌词音译</n-text>
         </div>
         <n-switch v-model:value="settingStore.showRoma" class="set" :round="false" />
+      </n-card>
+      <n-card class="set-item">
+        <div class="label">
+          <n-text class="name">调换翻译与音译位置</n-text>
+          <n-text class="tip" :depth="3">开启后音译显示在翻译上方</n-text>
+        </div>
+        <n-switch
+          v-model:value="settingStore.swapTranRoma"
+          :disabled="!settingStore.showTran || !settingStore.showRoma"
+          class="set"
+          :round="false"
+        />
       </n-card>
       <n-card class="set-item">
         <div class="label">

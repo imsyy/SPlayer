@@ -87,6 +87,15 @@ const amLyricsData = computed(() => {
     });
   }
 
+  // 调换翻译与音译位置
+  if (settingStore.swapTranRoma) {
+    clonedLyrics.forEach((line) => {
+      const temp = line.translatedLyric;
+      line.translatedLyric = line.romanLyric;
+      line.romanLyric = temp;
+    });
+  }
+
   // 如果开启了歌词靠右，反转 isDuet
   if (settingStore.lyricAlignRight) {
     clonedLyrics.forEach((line) => {
