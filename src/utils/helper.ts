@@ -56,9 +56,10 @@ export const sleep = (ms: number): Promise<void> => {
  */
 export const nanoid = (size: number = 16): string => {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const bytes = crypto.getRandomValues(new Uint8Array(size));
   let id = "";
   for (let i = 0; i < size; i++) {
-    id += chars.charAt(Math.floor(Math.random() * chars.length));
+    id += chars[bytes[i] % chars.length];
   }
   return id;
 };

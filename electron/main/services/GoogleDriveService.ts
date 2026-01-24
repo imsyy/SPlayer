@@ -329,12 +329,24 @@ export class GoogleDriveService {
   }
 
   /**
+   * 验证 File ID 格式
+   * Google Drive ID 通常由字母、数字、下划线和连字符组成
+   */
+  private isValidFileId(fileId: string): boolean {
+    return /^[a-zA-Z0-9_-]+$/.test(fileId);
+  }
+
+  /**
    * 获取流式播放信息
    * 返回 URL 和需要的 Headers
    */
   async getStreamInfo(fileId: string): Promise<{ url: string; headers: Record<string, string> }> {
     if (!this.hasValidTokens()) {
       throw new Error("Not authenticated");
+    }
+
+    if (!this.isValidFileId(fileId)) {
+      throw new Error("Invalid File ID");
     }
 
     // 确保 token 是新的 (虽然 proxy 会再次检查，但这里用于快速校验)
@@ -363,6 +375,10 @@ export class GoogleDriveService {
   async getFileStream(fileId: string, headers: Record<string, string> = {}): Promise<{ data: any; headers: Record<string, string>; statusCode: number }> {
     if (!this.hasValidTokens()) {
       throw new Error("Not authenticated");
+    }
+
+    if (!this.isValidFileId(fileId)) {
+      throw new Error("Invalid File ID");
     }
 
     // 确保 token 是新的

@@ -1,4 +1,6 @@
 import { existsSync, promises as fs } from "fs";
+import { createClient } from "webdav";
+import { Client } from "basic-ftp";
 
 /** 远程文件夹类型 */
 export type RemoteFolderType = "smb" | "nfs" | "webdav" | "ftp";
@@ -60,8 +62,8 @@ export class RemoteFolderService {
    */
   private async testNetworkPath(path: string): Promise<TestConnectionResult> {
     try {
-      // 验证路径格式
-      if (!path.startsWith("\\\\")) {
+      // 验证路径格式 (仅 Windows 需要 UNC 格式)
+      if (process.platform === "win32" && !path.startsWith("\\\\")) {
         return { success: false, message: "路径格式错误，应为 \\\\server\\share 格式" };
       }
 
@@ -90,123 +92,50 @@ export class RemoteFolderService {
 
   /**
    * 测试 WebDAV 连接
-   * 使用 HTTP OPTIONS 请求检测 WebDAV 服务
+   * 使用 webdav 库
    */
   private async testWebDav(params: TestConnectionParams): Promise<TestConnectionResult> {
-    return new Promise((resolve) => {
-      try {
-        const url = new URL(params.path);
-        const isHttps = url.protocol === "https:";
-        const httpModule = isHttps ? require("https") : require("http");
-        
-        const options = {
-          hostname: url.hostname,
-          port: url.port || (isHttps ? 443 : 80),
-          path: url.pathname || "/",
-          method: "OPTIONS",
-          timeout: 10000,
-          headers: {} as Record<string, string>,
-        };
-        
-        // 添加认证
-        if (params.username && params.password) {
-          const auth = Buffer.from(`${params.username}:${params.password}`).toString("base64");
-          options.headers["Authorization"] = `Basic ${auth}`;
-        }
-        
-        const req = httpModule.request(options, (res: { statusCode: number; headers: Record<string, string> }) => {
-          // WebDAV 服务通常会在 DAV header 中返回支持的版本
-          const davHeader = res.headers["dav"];
-          if (res.statusCode >= 200 && res.statusCode < 400) {
-            if (davHeader) {
-              resolve({ success: true, message: `WebDAV 连接成功 (DAV: ${davHeader})` });
-            } else {
-              resolve({ success: true, message: "HTTP 服务可访问（可能支持 WebDAV）" });
-            }
-          } else if (res.statusCode === 401) {
-            resolve({ success: false, message: "认证失败，请检查用户名和密码" });
-          } else {
-            resolve({ success: false, message: `服务器返回错误: ${res.statusCode}` });
-          }
-        });
-        
-        req.on("error", (err: Error) => {
-          resolve({ success: false, message: `连接失败: ${err.message}` });
-        });
-        
-        req.on("timeout", () => {
-          req.destroy();
-          resolve({ success: false, message: "连接超时" });
-        });
-        
-        req.end();
-      } catch (error) {
-        resolve({ success: false, message: `URL 格式错误: ${(error as Error).message}` });
-      }
-    });
+    try {
+      const client = createClient(params.path, {
+        username: params.username,
+        password: params.password,
+      });
+
+      // 尝试获取根目录信息以验证连接
+      await client.stat("/");
+      return { success: true, message: "WebDAV 连接成功" };
+    } catch (error) {
+      return { success: false, message: `连接失败: ${(error as Error).message}` };
+    }
   }
 
   /**
    * 测试 FTP 连接
-   * 使用 TCP Socket 检测 FTP 服务器
+   * 使用 basic-ftp 库
    */
   private async testFtp(params: TestConnectionParams): Promise<TestConnectionResult> {
-    return new Promise((resolve) => {
-      try {
-        const url = new URL(params.path);
-        const net = require("net");
-        const port = parseInt(url.port) || 21;
-        
-        const socket = net.createConnection({ host: url.hostname, port, timeout: 10000 }, () => {
-          // FTP 服务器会发送欢迎消息
-        });
-        
-        let welcomed = false;
-        
-        socket.on("data", (data: Buffer) => {
-          const response = data.toString();
-          if (response.startsWith("220")) {
-            welcomed = true;
-            
-            // 如果有认证信息，尝试登录
-            if (params.username) {
-              socket.write(`USER ${params.username}\r\n`);
-            } else {
-              socket.end();
-              resolve({ success: true, message: "FTP 服务器可访问" });
-            }
-          } else if (response.startsWith("331") && params.password) {
-            // 需要密码
-            socket.write(`PASS ${params.password}\r\n`);
-          } else if (response.startsWith("230")) {
-            // 登录成功
-            socket.write("QUIT\r\n");
-            resolve({ success: true, message: "FTP 登录成功" });
-          } else if (response.startsWith("530") || response.startsWith("430")) {
-            // 登录失败
-            socket.end();
-            resolve({ success: false, message: "FTP 认证失败" });
-          }
-        });
-        
-        socket.on("error", (err: Error) => {
-          resolve({ success: false, message: `连接失败: ${err.message}` });
-        });
-        
-        socket.on("timeout", () => {
-          socket.destroy();
-          resolve({ success: false, message: "连接超时" });
-        });
-        
-        socket.on("close", () => {
-          if (!welcomed) {
-            resolve({ success: false, message: "无法连接到 FTP 服务器" });
-          }
-        });
-      } catch (error) {
-        resolve({ success: false, message: `URL 格式错误: ${(error as Error).message}` });
-      }
-    });
+    const client = new Client();
+    // 设置超时
+    client.ftp.verbose = false;
+    
+    try {
+      const url = new URL(params.path);
+      const port = parseInt(url.port) || 21;
+      
+      await client.access({
+        host: url.hostname,
+        port: port,
+        user: params.username,
+        password: params.password,
+        secure: false, // 暂不支持 FTPS，如有需要可扩展
+      });
+      
+      return { success: true, message: "FTP 连接成功" };
+    } catch (error) {
+      return { success: false, message: `连接失败: ${(error as Error).message}` };
+    } finally {
+      client.close();
+    }
   }
 
   /**

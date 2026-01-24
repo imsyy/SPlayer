@@ -163,15 +163,28 @@ const getFullPath = (): string => {
   switch (type) {
     case "smb":
       // SMB 使用 UNC 路径: \\host\share\path
-      return `\\\\${host}\\${cleanPath}`;
+      // 将所有正斜杠替换为反斜杠
+      return `\\\\${host}\\${cleanPath.replace(/\//g, "\\")}`;
     case "nfs":
       // NFS 使用网络路径: \\host\path
       return `\\\\${host}${path.startsWith("/") ? path : "/" + path}`;
     case "webdav":
-      // WebDAV URL
+      // WebDAV URL (支持 http/https)
       const webdavPort = port || defaultPorts.webdav;
       const webdavAuth = username ? `${username}:${password}@` : "";
-      return `https://${webdavAuth}${host}:${webdavPort}${path.startsWith("/") ? path : "/" + path}`;
+      
+      let protocol = "https://";
+      let cleanHost = host;
+      
+      if (host.startsWith("http://")) {
+        protocol = "http://";
+        cleanHost = host.slice(7);
+      } else if (host.startsWith("https://")) {
+        protocol = "https://";
+        cleanHost = host.slice(8);
+      }
+      
+      return `${protocol}${webdavAuth}${cleanHost}:${webdavPort}${path.startsWith("/") ? path : "/" + path}`;
     case "ftp":
       // FTP URL
       const ftpPort = port || defaultPorts.ftp;
