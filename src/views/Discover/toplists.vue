@@ -29,7 +29,7 @@
       </div>
       <div v-else class="official-list">
         <n-grid cols="1 600:2 1000:3" x-gap="20" y-gap="20">
-          <n-gi v-for="item in 4" :key="item">
+          <n-gi v-for="item in 6" :key="item">
             <n-card class="loading">
               <n-skeleton class="cover" />
               <div class="desc">
@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { topPlaylist } from "@/api/playlist";
+import { topPlaylist, playlistDetail } from "@/api/playlist";
 import type { CoverType } from "@/types/main";
 import { formatCoverList } from "@/utils/format";
 
@@ -64,10 +64,36 @@ const topListData = ref<{
 // 获取排行榜数据
 const getTopPlaylistData = async () => {
   const result = await topPlaylist();
-  // 区分榜单
-  const official = formatCoverList(result.list?.filter((v: any) => v.ToplistType !== undefined));
-  const selected = formatCoverList(result.list?.filter((v: any) => v.ToplistType === undefined));
-  topListData.value = { official, selected };
+  // 按照要求改为 6 个
+  const officialData = result.list?.slice(0, 6) || [];
+
+  // 处理官方榜数据
+  const official = await Promise.all(
+    officialData.map(async (item: any) => {
+      // 去除 "网易云"
+      item.name = item.name.replace("网易云", "");
+
+      // 如果没有 tracks 数据（第5、6个通常没有），获取详情
+      if (!item.tracks || item.tracks.length === 0) {
+        try {
+          const detail = await playlistDetail(item.id);
+          // 提取前3首歌曲并格式化为 { first, second } 结构
+          if (detail.playlist?.tracks) {
+            item.tracks = detail.playlist.tracks.slice(0, 3).map((track: any) => ({
+              first: track.name,
+              second: track.ar?.map((a: any) => a.name).join("/") || "",
+            }));
+          }
+        } catch (error) {
+          console.error(`Failed to fetch tracks for playlist ${item.id}`, error);
+        }
+      }
+      return item;
+    }),
+  );
+
+  const selected = formatCoverList(result.list?.slice(6));
+  topListData.value = { official: formatCoverList(official), selected };
 };
 
 onMounted(getTopPlaylistData);
