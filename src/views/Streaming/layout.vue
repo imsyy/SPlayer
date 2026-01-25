@@ -100,7 +100,7 @@
     </n-flex>
     <!-- 路由 -->
     <RouterView v-if="!showEmptyState" v-slot="{ Component }">
-      <Transition :name="`router-${settingStore.routeAnimation}`" mode="out-in">
+      <Transition :name="`router-${routeAnimation}`" mode="out-in">
         <KeepAlive v-if="settingStore.useKeepAlive">
           <component :is="Component" :data="listData" :loading="loading" class="router-view" />
         </KeepAlive>
@@ -129,6 +129,7 @@ import type { SongType } from "@/types/main";
 import type { DropdownOption } from "naive-ui";
 import { useStreamingStore, useSettingStore } from "@/stores";
 import { useMobile } from "@/composables/useMobile";
+import { useRouteAnimation } from "@/composables/useRouteAnimation";
 import { renderIcon } from "@/utils/helper";
 import { usePlayerController } from "@/core/player/PlayerController";
 import { openStreamingServerConfig, openSetting } from "@/utils/modal";
@@ -136,6 +137,7 @@ import { openStreamingServerConfig, openSetting } from "@/utils/modal";
 const router = useRouter();
 const streamingStore = useStreamingStore();
 const settingStore = useSettingStore();
+const routeAnimation = useRouteAnimation();
 const player = usePlayerController();
 const { isLargeDesktop } = useMobile();
 

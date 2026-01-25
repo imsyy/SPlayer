@@ -202,6 +202,10 @@
               label: '上浮',
               value: 'up',
             },
+            {
+              label: '随机',
+              value: 'random',
+            },
           ]"
           class="set"
         />

@@ -68,7 +68,7 @@
     </n-flex>
     <!-- Router View -->
     <RouterView v-slot="{ Component }">
-      <Transition :name="`router-${settingStore.routeAnimation}`" mode="out-in">
+      <Transition :name="`router-${routeAnimation}`" mode="out-in">
         <component :is="Component" :data="listData" :loading="loading" class="router-view" />
       </Transition>
     </RouterView>
@@ -78,6 +78,7 @@
 <script setup lang="ts">
 import { useSettingStore, useDataStore } from "@/stores";
 import type { SongType } from "@/types/main";
+import { useRouteAnimation } from "@/composables/useRouteAnimation";
 import { formatSongsList } from "@/utils/format";
 import { usePlayerController } from "@/core/player/PlayerController";
 import type { MessageReactive } from "naive-ui";
@@ -87,6 +88,7 @@ const route = useRoute();
 const router = useRouter();
 const dataStore = useDataStore();
 const settingStore = useSettingStore();
+const routeAnimation = useRouteAnimation();
 
 const player = usePlayerController();
 const downloadManager = useDownloadManager();

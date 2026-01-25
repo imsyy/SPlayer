@@ -124,7 +124,7 @@
     </n-tabs>
     <!-- 路由 -->
     <RouterView v-slot="{ Component }">
-      <Transition :name="`router-${settingStore.routeAnimation}`" mode="out-in">
+      <Transition :name="`router-${routeAnimation}`" mode="out-in">
         <KeepAlive v-if="settingStore.useKeepAlive">
           <component
             ref="componentRef"
@@ -157,12 +157,14 @@ import { artistDetail } from "@/api/artist";
 import { formatArtistsList } from "@/utils/format";
 import { useDataStore, useSettingStore } from "@/stores";
 import { toLikeArtist } from "@/utils/auth";
+import { useRouteAnimation } from "@/composables/useRouteAnimation";
 import ArtistSongs from "./songs.vue";
 
 const route = useRoute();
 const router = useRouter();
 const dataStore = useDataStore();
 const settingStore = useSettingStore();
+const routeAnimation = useRouteAnimation();
 
 // 路由元素
 const componentRef = ref<InstanceType<typeof ArtistSongs> | null>(null);

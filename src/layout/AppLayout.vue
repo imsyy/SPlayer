@@ -55,7 +55,7 @@
         >
           <!-- 路由页面 -->
           <RouterView v-slot="{ Component }">
-            <Transition :name="`router-${settingStore.routeAnimation}`" mode="out-in">
+            <Transition :name="`router-${routeAnimation}`" mode="out-in">
               <KeepAlive v-if="settingStore.useKeepAlive" :max="20" :exclude="['layout']">
                 <component :is="Component" class="router-view" />
               </KeepAlive>
@@ -83,11 +83,13 @@ import { useMusicStore, useStatusStore, useSettingStore } from "@/stores";
 import { useBlobURLManager } from "@/core/resource/BlobURLManager";
 import { isElectron } from "@/utils/env";
 import { useMobile } from "@/composables/useMobile";
+import { useRouteAnimation } from "@/composables/useRouteAnimation";
 import init from "@/utils/init";
 
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
 const settingStore = useSettingStore();
+const routeAnimation = useRouteAnimation();
 
 const blobURLManager = useBlobURLManager();
 

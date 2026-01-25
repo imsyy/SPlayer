@@ -31,7 +31,7 @@
     </n-tabs>
     <!-- 路由 -->
     <RouterView v-slot="{ Component }">
-      <Transition :name="`router-${settingStore.routeAnimation}`" mode="out-in">
+      <Transition :name="`router-${routeAnimation}`" mode="out-in">
         <KeepAlive v-if="settingStore.useKeepAlive">
           <component :is="Component" class="router-view" />
         </KeepAlive>
@@ -44,10 +44,12 @@
 <script setup lang="ts">
 import { useMobile } from "@/composables/useMobile";
 import { useDataStore, useSettingStore } from "@/stores";
+import { useRouteAnimation } from "@/composables/useRouteAnimation";
 
 const router = useRouter();
 const dataStore = useDataStore();
 const settingStore = useSettingStore();
+const routeAnimation = useRouteAnimation();
 
 const { isSmall } = useMobile();
 

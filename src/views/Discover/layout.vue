@@ -17,7 +17,7 @@
     </n-tabs>
     <!-- 路由 -->
     <RouterView v-slot="{ Component }">
-      <Transition :name="`router-${settingStore.routeAnimation}`" mode="out-in">
+      <Transition :name="`router-${routeAnimation}`" mode="out-in">
         <KeepAlive v-if="settingStore.useKeepAlive">
           <component :is="Component" class="router-view" />
         </KeepAlive>
@@ -28,10 +28,13 @@
 </template>
 
 <script setup lang="ts">
+
 import { useSettingStore } from "@/stores";
+import { useRouteAnimation } from "@/composables/useRouteAnimation";
 
 const router = useRouter();
 const settingStore = useSettingStore();
+const routeAnimation = useRouteAnimation();
 
 // 发现路由
 const discoverType = ref<string>(

@@ -15,7 +15,7 @@
     </n-tabs>
     <!-- 路由 -->
     <RouterView v-slot="{ Component }">
-      <Transition :name="`router-${settingStore.routeAnimation}`" mode="out-in">
+      <Transition :name="`router-${routeAnimation}`" mode="out-in">
         <KeepAlive v-if="settingStore.useKeepAlive">
           <component
             :is="Component"
@@ -38,10 +38,12 @@
 
 <script setup lang="ts">
 import { useSettingStore } from "@/stores";
+import { useRouteAnimation } from "@/composables/useRouteAnimation";
 
 const route = useRoute();
 const router = useRouter();
 const settingStore = useSettingStore();
+const routeAnimation = useRouteAnimation();
 
 // 搜索关键词
 const searchKeyword = computed(() => route.query.keyword as string);

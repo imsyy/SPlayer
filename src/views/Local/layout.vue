@@ -131,7 +131,7 @@
     </n-flex>
     <!-- 路由 -->
     <RouterView v-if="!showEmptyState" v-slot="{ Component }">
-      <Transition :name="`router-${settingStore.routeAnimation}`" mode="out-in">
+      <Transition :name="`router-${routeAnimation}`" mode="out-in">
         <KeepAlive v-if="settingStore.useKeepAlive">
           <component
             :is="Component"
@@ -206,6 +206,7 @@ import type { SongType } from "@/types/main";
 import type { DropdownOption, MessageReactive } from "naive-ui";
 import { useLocalStore, useSettingStore } from "@/stores";
 import { useMobile } from "@/composables/useMobile";
+import { useRouteAnimation } from "@/composables/useRouteAnimation";
 import { formatSongsList } from "@/utils/format";
 import { debounce } from "lodash-es";
 import { changeLocalMusicPath, fuzzySearch, renderIcon } from "@/utils/helper";
@@ -215,6 +216,7 @@ import { usePlayerController } from "@/core/player/PlayerController";
 const router = useRouter();
 const localStore = useLocalStore();
 const settingStore = useSettingStore();
+const routeAnimation = useRouteAnimation();
 const player = usePlayerController();
 const { isLargeDesktop } = useMobile();
 

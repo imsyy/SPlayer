@@ -220,7 +220,7 @@ export interface SettingState {
   /** 显示本地封面 */
   showLocalCover: boolean;
   /** 路由动画 */
-  routeAnimation: "none" | "fade" | "zoom" | "slide" | "up";
+  routeAnimation: "none" | "fade" | "zoom" | "slide" | "up" | "random";
   /** 播放器展开动画 */
   playerExpandAnimation: "up" | "smooth";
   /** 是否使用真实 IP */
