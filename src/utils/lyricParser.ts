@@ -19,7 +19,7 @@ type LyricWord = { word: string; startTime: number; endTime: number; romanWord: 
 const META_TAG_REGEX = /^\[[a-z]+:/i;
 const TIME_TAG_REGEX = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/g;
 const ENHANCED_TIME_TAG_REGEX = /<(\d{2}):(\d{2})\.(\d{2,3})>/;
-const WORD_BY_WORD_REGEX = /\[(\d{2}):(\d{2})\.(\d{2,3})\]([^\[\]]*)/g;
+const WORD_BY_WORD_REGEX = /\[(\d{2}):(\d{2})\.(\d{2,3})\]([^[\]]*)/g;
 const ENHANCED_WORD_REGEX = /<(\d{2}):(\d{2})\.(\d{2,3})>([^<]*)/g;
 const LINE_TIME_REGEX = /^\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
 

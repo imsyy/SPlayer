@@ -12,7 +12,7 @@ const initMpvIpc = (): void => {
       const command = process.platform === "win32" ? "where.exe mpv" : "which mpv";
       execSync(command, { encoding: "utf-8" });
       return { installed: true };
-    } catch (e) {
+    } catch {
       return { installed: false };
     }
   });

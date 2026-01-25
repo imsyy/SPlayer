@@ -195,7 +195,7 @@ export class CacheService {
       if (existsSync(dbPath)) dbTotal += (await stat(dbPath)).size;
       if (existsSync(dbPath + "-wal")) dbTotal += (await stat(dbPath + "-wal")).size;
       if (existsSync(dbPath + "-shm")) dbTotal += (await stat(dbPath + "-shm")).size;
-    } catch (e) {
+    } catch {
       // ignore
     }
 
@@ -342,7 +342,7 @@ export class CacheService {
       try {
         const now = new Date();
         await utimes(target, now, now);
-      } catch (e) {
+      } catch {
         // 忽略 utimes 失败
       }
 

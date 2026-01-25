@@ -147,7 +147,7 @@ export class MpvService {
           });
         });
         return;
-      } catch (e) {
+      } catch {
         await new Promise((r) => setTimeout(r, 500));
       }
     }

@@ -284,6 +284,7 @@ export class FFmpegAudioPlayer extends BaseAudioPlayer {
    * 设置音频输出设备
    * @param _deviceId 设备 ID（不支持，依赖基类的 AudioContext.setSinkId）
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected async doSetSinkId(_deviceId: string) {
     console.warn("[FFmpegAudioPlayer] doSetSinkId is not supported");
   }
