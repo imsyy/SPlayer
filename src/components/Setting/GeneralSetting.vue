@@ -210,6 +210,22 @@
           class="set"
         />
       </n-card>
+      <n-card class="set-item">
+        <div class="label">
+          <n-text class="name">全局帧率限制</n-text>
+          <n-text class="tip" :depth="3">限制全局动画的最大帧率 (5-240 FPS)</n-text>
+        </div>
+        <n-input-number
+          v-model:value="settingStore.globalFps"
+          :min="5"
+          :max="240"
+          :show-button="false"
+          class="set"
+          placeholder="请输入全局帧率"
+        >
+          <template #suffix> FPS </template>
+        </n-input-number>
+      </n-card>
     </div>
     <div v-if="isElectron" class="set-list">
       <n-h3 prefix="bar"> 系统设置 </n-h3>

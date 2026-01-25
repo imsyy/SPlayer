@@ -157,12 +157,13 @@ export interface SettingState {
   playerType: "cover" | "record";
   /** 背景类型 */
   playerBackgroundType: "none" | "animation" | "blur" | "color";
-  /** 背景动画帧率 */
-  playerBackgroundFps: number;
+
   /** 背景动画流动速度 */
   playerBackgroundFlowSpeed: number;
   /** 背景动画是否在歌曲暂停时暂停 */
   playerBackgroundPause: boolean;
+  /** 全局帧率限制 (5-240) */
+  globalFps: number;
   /** 背景动画是否响应低频音量 */
   playerBackgroundLowFreqVolume: boolean;
   /** 背景动画渲染比例 */
@@ -387,9 +388,10 @@ export const useSettingStore = defineStore("setting", {
     timeFormat: "current-total",
     playerType: "cover",
     playerBackgroundType: "blur",
-    playerBackgroundFps: 30,
+
     playerBackgroundFlowSpeed: 4,
     playerBackgroundPause: false,
+    globalFps: 60,
     playerBackgroundLowFreqVolume: false,
     playerBackgroundRenderScale: 0.5,
     autoHidePlayerMeta: true,

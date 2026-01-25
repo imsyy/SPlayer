@@ -19,7 +19,7 @@
       <BackgroundRender
         v-else-if="settingStore.playerBackgroundType === 'animation'"
         :album="musicStore.songCover"
-        :fps="settingStore.playerBackgroundFps ?? 60"
+        :fps="settingStore.globalFps ?? 60"
         :flowSpeed="flowSpeed"
         :hasLyric="musicStore.isHasLrc"
         :lowFreqVolume="lowFreqVolume"
