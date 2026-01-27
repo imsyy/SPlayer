@@ -90,6 +90,8 @@ interface StatusState {
   listSortOrder: SortOrder;
   /** 桌面歌词 */
   showDesktopLyric: boolean;
+  /** 任务栏歌词 */
+  showTaskbarLyric: boolean;
   /** 播放器评论 */
   showPlayerComment: boolean;
   /** 私人FM模式 */
@@ -187,6 +189,7 @@ export const useStatusStore = defineStore("status", {
     listSortField: "default",
     listSortOrder: "default",
     showDesktopLyric: false,
+    showTaskbarLyric: false,
     showPlayerComment: false,
     updateCheck: false,
     eqEnabled: false,
@@ -410,6 +413,7 @@ export const useStatusStore = defineStore("status", {
       "listSortField",
       "listSortOrder",
       "showDesktopLyric",
+      "showTaskbarLyric",
       "personalFmMode",
       "autoClose",
       "eqEnabled",

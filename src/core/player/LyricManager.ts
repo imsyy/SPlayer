@@ -11,6 +11,7 @@ import { stripLyricMetadata } from "@/utils/lyricStripper";
 import { getConverter } from "@/utils/opencc";
 import { type LyricLine, parseLrc, parseTTML, parseYrc } from "@applemusic-like-lyrics/lyric";
 import { cloneDeep, escapeRegExp, isEmpty } from "lodash-es";
+import * as playerIpc from "./PlayerIpc";
 
 class LyricManager {
   /**
@@ -1117,6 +1118,13 @@ class LyricManager {
     musicStore.setSongLyric(lyricData, true);
     // 结束加载状态
     statusStore.lyricLoading = false;
+
+    // 发送任务栏歌词
+    const taskbarLyrics = lyricData.yrcData.length > 0 ? lyricData.yrcData : lyricData.lrcData;
+    playerIpc.sendTaskbarLyrics({
+      lines: toRaw(taskbarLyrics),
+      type: lyricData.yrcData.length > 0 ? "word" : "line",
+    });
   }
 
   /**

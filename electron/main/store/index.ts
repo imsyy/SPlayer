@@ -1,10 +1,10 @@
 import { app, screen } from "electron";
-import { storeLog } from "../logger";
-import type { LyricConfig } from "../../../src/types/desktop-lyric";
-import { defaultAMLLDbServer } from "../utils/config";
+import Store from "electron-store";
 import { join } from "path";
 import defaultLyricConfig from "../../../src/assets/data/lyricConfig";
-import Store from "electron-store";
+import type { LyricConfig } from "../../../src/types/desktop-lyric";
+import { storeLog } from "../logger";
+import { defaultAMLLDbServer } from "../utils/config";
 
 storeLog.info("🌱 Store init");
 
@@ -38,6 +38,11 @@ export interface StoreType {
     height?: number;
     /** 配置 */
     config?: LyricConfig;
+  };
+  /** 任务栏歌词 */
+  taskbar: {
+    /** 是否启用 */
+    enabled: boolean;
   };
   /** 代理 */
   proxy: string;
@@ -76,6 +81,9 @@ export const useStore = () => {
         width: 800,
         height: 136,
         config: defaultLyricConfig,
+      },
+      taskbar: {
+        enabled: false,
       },
       proxy: "",
       amllDbServer: defaultAMLLDbServer,

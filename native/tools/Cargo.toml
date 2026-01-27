@@ -1,0 +1,20 @@
+[package]
+name = "tools"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = "3.8"
+napi-derive = "3.5"
+
+[build-dependencies]
+napi-build = "2"
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62", features = [
+  "Win32_Foundation",
+  "Win32_UI_WindowsAndMessaging",
+] }

@@ -1,5 +1,10 @@
 [workspace]
-members = ["native/external-media-integration", "native/ferrous-opencc-wasm"]
+members = [
+  "native/external-media-integration",
+  "native/ferrous-opencc-wasm",
+  "native/taskbar-lyric",
+  "native/tools",
+]
 
 resolver = "3"
 

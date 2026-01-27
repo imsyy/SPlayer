@@ -1,0 +1,14 @@
+{
+  "name": "tools",
+  "version": "0.1.0",
+  "main": "tools.node",
+  "napi": {
+    "binaryName": "tools"
+  },
+  "scripts": {
+    "build": "napi build --release --no-const-enum"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3"
+  }
+}

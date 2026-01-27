@@ -1,0 +1,434 @@
+import type {
+  RegistryWatcher,
+  TaskbarLayout,
+  TaskbarService,
+  TrayWatcher,
+  UiaWatcher,
+} from "@native/taskbar-lyric";
+import { app, type BrowserWindow, nativeTheme, screen } from "electron";
+import { debounce } from "lodash-es";
+import { join } from "node:path";
+import { processLog } from "../logger";
+import { isDev, port } from "../utils/config";
+import { loadNativeModule } from "../utils/native-loader";
+import { createWindow } from "./index";
+
+type taskbarLyricModule = typeof import("@native/taskbar-lyric");
+
+const taskbarLyricNative: taskbarLyricModule = loadNativeModule(
+  "taskbar-lyric.node",
+  "taskbar-lyric",
+);
+
+if (taskbarLyricNative) {
+  try {
+    const logDir = join(app.getPath("userData"), "logs", "taskbar-lyric");
+    taskbarLyricNative.initLogger(logDir);
+    // processLog.info(`[TaskbarLyric] 日志初始化于 ${logDir}`);
+  } catch (e) {
+    processLog.error("[TaskbarLyric] 初始化日志失败", e);
+  }
+}
+
+const taskbarLyricUrl =
+  isDev && process.env.ELECTRON_RENDERER_URL
+    ? `${process.env.ELECTRON_RENDERER_URL}/#/taskbar-lyric?win=taskbar-lyric`
+    : `http://localhost:${port}/#/taskbar-lyric?win=taskbar-lyric`;
+
+class TaskbarLyricWindow {
+  private win: BrowserWindow | null = null;
+  private registryWatcher: RegistryWatcher | null = null;
+  private uiaWatcher: UiaWatcher | null = null;
+  private trayWatcher: TrayWatcher | null = null;
+  private currentWidth = 300;
+  private themeListener: (() => void) | null = null;
+  private animationTimer: NodeJS.Timeout | null = null;
+  private service: TaskbarService | null = null;
+  private useAnimation = false;
+  private isNativeDisposed = false;
+
+  private debouncedUpdateLayout = debounce(() => {
+    this.updateLayout(true);
+  }, 150);
+
+  private debouncedRegistryUpdate = debounce(() => {
+    this.updateLayout(false);
+    this.win?.webContents.send("taskbar:fade-in");
+  }, 500);
+
+  create(): BrowserWindow | null {
+    if (this.win && !this.win.isDestroyed()) {
+      this.win.show();
+      return this.win;
+    }
+
+    this.isNativeDisposed = false;
+
+    if (taskbarLyricNative?.TaskbarService) {
+      try {
+        this.service = new taskbarLyricNative.TaskbarService(
+          (err: Error | null, layout: TaskbarLayout) => {
+            if (err) {
+              processLog.error("[TaskbarLyric] Rust Worker 回调错误", err);
+              return;
+            }
+            this.applyLayout(layout);
+          },
+        );
+      } catch (e) {
+        processLog.error("[TaskbarLyric] 初始化 TaskbarService 失败", e);
+      }
+    }
+
+    this.win = createWindow({
+      width: this.currentWidth,
+      height: 48,
+      minWidth: 100,
+      minHeight: 30,
+      maxWidth: 1000,
+      maxHeight: 100,
+      type: "toolbar",
+      frame: false,
+      transparent: true,
+      backgroundColor: "#00000000",
+      hasShadow: false,
+      show: false,
+      skipTaskbar: true,
+      minimizable: false,
+      maximizable: false,
+      fullscreenable: false,
+      resizable: false,
+    });
+
+    if (!this.win) return null;
+
+    this.win.loadURL(taskbarLyricUrl);
+
+    const sendTheme = () => {
+      if (this.win && !this.win.isDestroyed()) {
+        const isDark = nativeTheme.shouldUseDarkColors;
+        this.win.webContents.send("taskbar:update-theme", { isDark });
+      }
+    };
+
+    if (!this.themeListener) {
+      this.themeListener = sendTheme;
+      nativeTheme.on("updated", this.themeListener);
+    }
+
+    sendTheme();
+
+    this.win.once("ready-to-show", () => {
+      if (this.win) {
+        this.embed();
+        this.win.show();
+        this.updateLayout(false);
+        sendTheme();
+      }
+    });
+
+    if (taskbarLyricNative) {
+      if (!this.registryWatcher && taskbarLyricNative.RegistryWatcher) {
+        try {
+          this.registryWatcher = new taskbarLyricNative.RegistryWatcher(() => {
+            this.win?.webContents.send("taskbar:fade-out");
+            this.debouncedRegistryUpdate();
+          });
+        } catch (e) {
+          processLog.error("[TaskbarLyric] 启动 RegistryWatcher 失败", e);
+        }
+      }
+
+      if (!this.uiaWatcher && taskbarLyricNative.UiaWatcher) {
+        try {
+          this.uiaWatcher = new taskbarLyricNative.UiaWatcher(() => {
+            this.debouncedUpdateLayout();
+          });
+        } catch (e) {
+          processLog.error("[TaskbarLyric] 启动 UiaWatcher 失败", e);
+        }
+      }
+
+      if (!this.trayWatcher && taskbarLyricNative.TrayWatcher) {
+        try {
+          this.trayWatcher = new taskbarLyricNative.TrayWatcher(() => {
+            this.debouncedUpdateLayout();
+          });
+        } catch (e) {
+          processLog.error("[TaskbarLyric] 启动 TrayWatcher 失败", e);
+        }
+      }
+    }
+
+    this.win.on("closed", () => {
+      this.disposeNativeResources();
+      this.win = null;
+    });
+
+    return this.win;
+  }
+
+  embed() {
+    if (!this.win || !this.service) return;
+    try {
+      const handle = this.win.getNativeWindowHandle();
+      this.service.embedWindow(handle);
+    } catch (e) {
+      processLog.error("[TaskbarLyric] 嵌入窗口失败", e);
+    }
+  }
+
+  updateLayout(animate: boolean = false) {
+    if (!this.win || !this.service) return;
+    this.useAnimation = animate;
+
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const scaleFactor = primaryDisplay.scaleFactor;
+    const requestWidth = Math.round(300 * scaleFactor);
+
+    this.service.update(requestWidth);
+  }
+
+  private applyLayout(layout: TaskbarLayout | null) {
+    if (!layout) {
+      processLog.warn("[TaskbarLyric] applyLayout 收到空布局");
+      return;
+    }
+
+    if (!this.win || this.win.isDestroyed()) return;
+
+    try {
+      const primaryDisplay = screen.getPrimaryDisplay();
+      const scaleFactor = primaryDisplay.scaleFactor;
+      const GAP = 10 * scaleFactor;
+      const MAX_WIDTH_PHYSICAL = 300 * scaleFactor;
+      const MIN_WIDTH_PHYSICAL = 50 * scaleFactor;
+
+      let targetBounds: Electron.Rectangle = {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+      };
+      let shouldCenter = false;
+
+      if (layout.systemType === "win10" && layout.win10) {
+        const { x, y, width, height } = layout.win10.lyricArea;
+        targetBounds = { x, y, width, height };
+        shouldCenter = false;
+      } else if (layout.systemType === "win11" && layout.win11) {
+        const { startButton, widgets, content, tray, isCentered } = layout.win11;
+        shouldCenter = isCentered;
+
+        let effectiveRightAnchor = tray.x;
+        const contentRightEdge = content.x + content.width;
+        if (widgets.width > 0 && widgets.x > contentRightEdge) {
+          if (widgets.x < tray.x) effectiveRightAnchor = widgets.x;
+        }
+        const rightSpaceRaw = effectiveRightAnchor - contentRightEdge;
+        const rightSpaceNet = rightSpaceRaw - GAP;
+
+        const widgetsRightEdge = widgets.width > 0 ? widgets.x + widgets.width : 0;
+        const startLeftEdge = startButton.x;
+        const leftSpaceRaw = startLeftEdge - widgetsRightEdge;
+        const leftSpaceNet = leftSpaceRaw - GAP;
+
+        let finalPhysicalX = 0;
+        const finalPhysicalY = 0;
+        let finalPhysicalWidth = 0;
+
+        const clampWidth = (space: number) => {
+          if (space < MIN_WIDTH_PHYSICAL) return 0;
+          return Math.min(space, MAX_WIDTH_PHYSICAL);
+        };
+
+        if (isCentered) {
+          if (leftSpaceNet >= MIN_WIDTH_PHYSICAL) {
+            finalPhysicalWidth = clampWidth(leftSpaceNet);
+            finalPhysicalX = widgetsRightEdge + GAP;
+          } else {
+            finalPhysicalWidth = clampWidth(rightSpaceNet);
+            finalPhysicalX = effectiveRightAnchor - finalPhysicalWidth - GAP;
+          }
+        } else {
+          finalPhysicalWidth = clampWidth(rightSpaceNet);
+          finalPhysicalX = effectiveRightAnchor - finalPhysicalWidth - GAP;
+        }
+
+        // processLog.info(finalPhysicalWidth, finalPhysicalX);
+
+        if (finalPhysicalWidth < MIN_WIDTH_PHYSICAL) {
+          processLog.warn("[TaskbarLyric] 无可用空间");
+          this.win.hide();
+          return;
+        }
+
+        this.currentWidth = Math.round(finalPhysicalWidth / scaleFactor);
+
+        targetBounds = {
+          x: finalPhysicalX,
+          y: finalPhysicalY,
+          width: finalPhysicalWidth,
+          height: tray.height,
+        };
+      }
+
+      const finalBounds = {
+        x: Math.round(targetBounds.x / scaleFactor),
+        y: Math.round(targetBounds.y / scaleFactor),
+        width: Math.round(targetBounds.width / scaleFactor),
+        height: Math.round(targetBounds.height / scaleFactor),
+      };
+
+      // processLog.info(JSON.stringify(finalBounds));
+
+      if (this.useAnimation) {
+        this.animateToBounds(finalBounds);
+      } else {
+        if (this.animationTimer) clearInterval(this.animationTimer);
+        this.win.setBounds(finalBounds);
+      }
+
+      this.win.webContents.send("taskbar:update-layout", {
+        isCenter: shouldCenter,
+      });
+    } catch (e) {
+      processLog.error("[TaskbarLyric] 应用布局失败", e);
+    }
+  }
+
+  private animateToBounds(target: Electron.Rectangle) {
+    if (!this.win || this.win.isDestroyed()) return;
+
+    const screenBounds = this.win.getBounds();
+
+    const start = {
+      x: screenBounds.x,
+      y: target.y,
+      width: screenBounds.width,
+      height: target.height,
+    };
+
+    if (Math.abs(start.x - target.x) < 2 && Math.abs(start.width - target.width) < 2) {
+      this.win.setBounds(target);
+      return;
+    }
+
+    if (this.animationTimer) clearInterval(this.animationTimer);
+
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const refreshRate = primaryDisplay.displayFrequency || 60;
+    const interval = 1000 / refreshRate;
+
+    const duration = 300;
+    const startTime = Date.now();
+
+    const easeOutCubic = (t: number): number => {
+      return 1 - (1 - t) ** 3;
+    };
+
+    this.animationTimer = setInterval(() => {
+      if (!this.win || this.win.isDestroyed()) {
+        if (this.animationTimer) clearInterval(this.animationTimer);
+        return;
+      }
+
+      const now = Date.now();
+      const progress = Math.min((now - startTime) / duration, 1);
+      const ease = easeOutCubic(progress);
+
+      const currentBounds = {
+        x: Math.round(start.x + (target.x - start.x) * ease),
+        y: target.y,
+        width: Math.round(start.width + (target.width - start.width) * ease),
+        height: target.height,
+      };
+
+      this.win.setBounds(currentBounds);
+
+      if (progress >= 1) {
+        if (this.animationTimer) clearInterval(this.animationTimer);
+        this.animationTimer = null;
+        this.win.setBounds(target);
+      }
+    }, interval);
+  }
+
+  private disposeNativeResources() {
+    if (this.isNativeDisposed) return;
+    this.debouncedUpdateLayout.cancel();
+    this.debouncedRegistryUpdate.cancel();
+    if (this.themeListener) {
+      nativeTheme.removeListener("updated", this.themeListener);
+      this.themeListener = null;
+    }
+    if (this.registryWatcher) {
+      try {
+        this.registryWatcher.stop();
+      } catch (e) {
+        processLog.error(e);
+      }
+      this.registryWatcher = null;
+    }
+
+    if (this.uiaWatcher) {
+      try {
+        this.uiaWatcher.stop();
+      } catch (e) {
+        processLog.error(e);
+      }
+      this.uiaWatcher = null;
+    }
+
+    if (this.trayWatcher) {
+      try {
+        this.trayWatcher.stop();
+      } catch (e) {
+        processLog.error(e);
+      }
+      this.trayWatcher = null;
+    }
+
+    if (this.service) {
+      try {
+        this.service.stop();
+      } catch (e) {
+        processLog.error("停止 TaskbarService 失败", e);
+      }
+      this.service = null;
+    }
+
+    this.isNativeDisposed = true;
+  }
+
+  close(animate: boolean = true) {
+    this.disposeNativeResources();
+    if (this.animationTimer) {
+      clearInterval(this.animationTimer);
+      this.animationTimer = null;
+    }
+    if (this.win && !this.win.isDestroyed()) {
+      if (animate) {
+        this.win.webContents.send("taskbar:fade-out");
+        const winToClose = this.win;
+        setTimeout(() => {
+          if (winToClose && !winToClose.isDestroyed()) {
+            winToClose.close();
+          }
+        }, 350);
+      } else {
+        this.win.close();
+      }
+    } else {
+      this.win = null;
+    }
+  }
+
+  send(channel: string, ...args: unknown[]) {
+    if (this.win && !this.win.isDestroyed()) {
+      this.win.webContents.send(channel, ...args);
+    }
+  }
+}
+
+export default new TaskbarLyricWindow();

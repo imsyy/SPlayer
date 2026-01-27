@@ -1,5 +1,5 @@
-import { type RouteRecordRaw } from "vue-router";
 import AppLayout from "@/layout/AppLayout.vue";
+import { type RouteRecordRaw } from "vue-router";
 
 /**
  * 应用路由
@@ -370,6 +370,12 @@ const routes: Array<RouteRecordRaw> = [
     name: "desktop-lyric",
     meta: { needApp: true },
     component: () => import("@/views/DesktopLyric/index.vue"),
+  },
+  // 任务栏歌词
+  {
+    path: "/taskbar-lyric",
+    name: "taskbar-lyric",
+    component: () => import("@/views/TaskbarLyric/index.vue"),
   },
   // 404
   {

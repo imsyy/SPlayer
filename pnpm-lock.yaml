@@ -287,6 +287,18 @@ importers:
         specifier: ^0.13.1
         version: 0.13.1
 
+  native/taskbar-lyric:
+    devDependencies:
+      '@napi-rs/cli':
+        specifier: ^3.5.1
+        version: 3.5.1(@emnapi/runtime@1.7.1)(@types/node@24.10.1)(node-addon-api@7.1.1)
+
+  native/tools:
+    devDependencies:
+      '@napi-rs/cli':
+        specifier: ^3.0.0
+        version: 3.5.1(@emnapi/runtime@1.7.1)(@types/node@24.10.1)(node-addon-api@7.1.1)
+
 packages:
 
   7zip-bin@5.2.0:

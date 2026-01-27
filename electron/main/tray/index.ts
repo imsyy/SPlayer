@@ -26,6 +26,7 @@ let playName: string = "未播放歌曲";
 let likeSong: boolean = false;
 let desktopLyricShow: boolean = false;
 let desktopLyricLock: boolean = false;
+let taskbarLyricShow: boolean = false;
 
 export interface MainTray {
   setTitle(title: string): void;
@@ -35,6 +36,7 @@ export interface MainTray {
   setPlayName(name: string): void;
   setDesktopLyricShow(show: boolean): void;
   setDesktopLyricLock(lock: boolean): void;
+  setTaskbarLyricShow(show: boolean): void;
   destroyTray(): void;
 }
 
@@ -179,6 +181,14 @@ const createTrayMenu = (win: BrowserWindow): MenuItemConstructorOptions[] => {
       },
     },
     {
+      id: "toggle-taskbar-lyric",
+      label: `${taskbarLyricShow ? "关闭" : "开启"}任务栏歌词`,
+      // TODO: 换一个更好的图标
+      icon: showIcon("lyric"),
+      visible: isWin,
+      click: () => win.webContents.send("toggle-taskbar-lyric"),
+    },
+    {
       type: "separator",
     },
     {
@@ -313,6 +323,10 @@ class CreateTray implements MainTray {
   setDesktopLyricLock(lock: boolean) {
     desktopLyricLock = lock;
     // 更新菜单
+    this.initTrayMenu();
+  }
+  setTaskbarLyricShow(show: boolean) {
+    taskbarLyricShow = show;
     this.initTrayMenu();
   }
   /**

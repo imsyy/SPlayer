@@ -1,0 +1,765 @@
+<template>
+  <div
+    class="taskbar-lyric"
+    :class="{ dark: state.isDark, 'layout-reverse': !state.isCenter }"
+    :style="{
+      opacity: state.opacity,
+      filter: state.opacity === 0 ? 'blur(10px)' : 'blur(0px)',
+    }"
+    @mouseenter="isHovering = true"
+    @mouseleave="isHovering = false"
+  >
+    <div class="cover-wrapper" v-if="state.cover">
+      <Transition name="cross-fade">
+        <img :key="state.cover" :src="state.cover" class="cover" alt="cover" />
+      </Transition>
+    </div>
+
+    <Transition name="controls-expand">
+      <div class="media-controls" v-if="isHovering">
+        <div class="control-btn" @click.stop="controlAction('playPrev')">
+          <SvgIcon name="SkipPrev" />
+        </div>
+        <div class="control-btn" @click.stop="controlAction('playOrPause')">
+          <SvgIcon :name="state.isPlaying ? 'Pause' : 'Play'" />
+        </div>
+        <div class="control-btn" @click.stop="controlAction('playNext')">
+          <SvgIcon name="SkipNext" />
+        </div>
+      </div>
+    </Transition>
+
+    <div class="content" :style="contentStyle">
+      <Transition name="content-switch">
+        <div :key="viewKey" class="lyric-view-container">
+          <Transition :name="state.animationMode" mode="out-in">
+            <TransitionGroup
+              tag="div"
+              class="lyric-list-wrapper"
+              :class="{ 'metadata-mode': isHovering }"
+              name="lyric-list"
+              :key="innerTransitionKey"
+            >
+              <div
+                v-for="item in itemsToRender"
+                :key="item.key"
+                class="lyric-item"
+                :class="{
+                  'is-primary': item.isPrimary,
+                  'is-sub': item.itemType === 'sub',
+                  'is-next': item.itemType === 'next',
+                }"
+              >
+                <LyricScroll
+                  class="line-text"
+                  :style="{ transformOrigin: state.isCenter ? 'center left' : 'center right' }"
+                  :text="item.text"
+                  :isActive="item.isPrimary"
+                  :mode="
+                    item.itemType === 'main' && !currentLyricText && !isHovering
+                      ? 'line'
+                      : state.lyricType
+                  "
+                  :progress="item.itemType === 'main' ? currentLineProgress : 0"
+                />
+              </div>
+            </TransitionGroup>
+          </Transition>
+        </div>
+      </Transition>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import type {
+  TaskbarLyricsPayload,
+  TaskbarMetadataPayload,
+  TaskbarProgressPayload,
+  TaskbarStatePayload,
+} from "@/core/player/PlayerIpc";
+import type { LyricLine } from "@applemusic-like-lyrics/lyric";
+import { type CSSProperties, computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
+import LyricScroll from "./LyricScroll.vue";
+
+interface DisplayItem {
+  key: string | number;
+  text: string;
+  isPrimary: boolean;
+  itemType: "main" | "sub" | "next";
+}
+
+const state = reactive({
+  title: "",
+  artist: "",
+  cover: "",
+  opacity: 1,
+  isPlaying: false,
+  currentTime: 0,
+  duration: 0,
+  offset: 0,
+  lyrics: [] as LyricLine[],
+  lyricIndex: -1,
+  isDark: true,
+  /**
+   * 当前任务栏的对齐方式
+   *
+   * 只在 Win11 上可能会为 true，Win10 上总为 false
+   */
+  isCenter: false,
+  // "left-sm" 是主界面底部歌曲信息的动画
+  animationMode: "slide-blur" as "slide-blur" | "left-sm",
+  lyricType: "line" as "line" | "word",
+  singleLineMode: false,
+});
+
+const isHovering = ref(false);
+
+const controlAction = (action: "playPrev" | "playOrPause" | "playNext") => {
+  const ipc = window.electron?.ipcRenderer;
+  if (!ipc) return;
+
+  if (action === "playOrPause") {
+    state.isPlaying = !state.isPlaying;
+  }
+
+  ipc.send("send-to-main-win", action);
+};
+
+const transitionKey = computed(() => {
+  if (!currentLyricText.value) {
+    return `meta-${state.title}-${state.artist}`;
+  }
+
+  return `lyric-group-${jumpCount.value}`;
+});
+
+const createMetadataItems = (title: string, artist: string): DisplayItem[] => {
+  const items: DisplayItem[] = [
+    {
+      key: `meta-title-${title}`,
+      text: title || "SPlayer",
+      isPrimary: true,
+      itemType: "main",
+    },
+  ];
+
+  if (artist) {
+    items.push({
+      key: `meta-artist-${artist}`,
+      text: artist,
+      isPrimary: false,
+      itemType: "sub",
+    });
+  }
+
+  return items;
+};
+
+const itemsToRender = computed(() => {
+  if (isHovering.value) {
+    return createMetadataItems(state.title, state.artist);
+  }
+  return displayItems.value;
+});
+
+const viewKey = computed(() => (isHovering.value ? "metadata-view" : "lyric-view"));
+
+const innerTransitionKey = computed(() => {
+  if (isHovering.value) {
+    return `meta-${state.title}-${state.artist}`;
+  }
+  return transitionKey.value;
+});
+
+const displayItems = computed<DisplayItem[]>(() => {
+  if (!currentLyricText.value) {
+    return createMetadataItems(state.title, state.artist);
+  }
+
+  if (!state.lyrics.length || state.lyricIndex < 0) return [];
+
+  const currentLine = state.lyrics[state.lyricIndex];
+  const currentText =
+    currentLine.words
+      ?.map((w) => w.word)
+      .join("")
+      .trim() || "";
+
+  let subText = "";
+  if (currentLine.translatedLyric) {
+    subText = currentLine.translatedLyric;
+  } else if (currentLine.romanLyric) {
+    subText = currentLine.romanLyric;
+  }
+
+  const items: DisplayItem[] = [];
+
+  items.push({
+    key: `${currentLine.startTime}-${state.lyricIndex}-main`,
+    text: currentText,
+    isPrimary: true,
+    itemType: "main",
+  });
+
+  if (subText) {
+    items.push({
+      key: `${currentLine.startTime}-${state.lyricIndex}-sub`,
+      text: subText,
+      isPrimary: false,
+      itemType: "sub",
+    });
+  } else if (!state.singleLineMode) {
+    const nextLine = state.lyrics[state.lyricIndex + 1];
+    if (nextLine) {
+      const nextText =
+        nextLine.words
+          ?.map((w) => w.word)
+          .join("")
+          .trim() || "";
+      items.push({
+        key: `${nextLine.startTime}-${state.lyricIndex + 1}-main`,
+        text: nextText,
+        isPrimary: false,
+        itemType: "next",
+      });
+    }
+  }
+
+  return items;
+});
+
+const currentLineProgress = computed(() => {
+  if (!state.lyrics.length || state.lyricIndex < 0) return 0;
+  if (state.lyricType !== "word") return 0;
+
+  const currentLine = state.lyrics[state.lyricIndex];
+  const startTime = currentLine.startTime;
+  const endTime = currentLine.endTime;
+  const totalDuration = endTime - startTime;
+
+  if (totalDuration <= 0) return 1;
+
+  const BUFFER_RATIO = 0.2;
+
+  const activeScrollDuration = totalDuration * (1 - BUFFER_RATIO);
+
+  const elapsed = state.currentTime - startTime;
+
+  if (activeScrollDuration <= 10) {
+    return elapsed >= activeScrollDuration ? 1 : 0;
+  }
+
+  const rawProgress = elapsed / activeScrollDuration;
+
+  return Math.max(0, Math.min(rawProgress, 1));
+});
+
+const currentLyricText = computed(() => {
+  if (!state.lyrics.length || state.lyricIndex < 0) return "";
+  return state.lyrics[state.lyricIndex]?.words?.map((w) => w.word).join("") || "";
+});
+
+const contentStyle = computed<CSSProperties>(() => ({
+  textAlign: state.isCenter ? "left" : "right",
+}));
+
+const findLyricIndex = (currentTime: number, lyrics: LyricLine[], offset: number = 0): number => {
+  const targetTime = currentTime - offset;
+  let low = 0;
+  let high = lyrics.length - 1;
+  let index = -1;
+  while (low <= high) {
+    const mid = (low + high) >> 1;
+    const lineTime = lyrics[mid].startTime;
+    if (lineTime <= targetTime) {
+      index = mid;
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+  return index;
+};
+
+let rafId: number | null = null;
+let lastTimestamp = 0;
+const LYRIC_LOOKAHEAD = 300;
+const jumpCount = ref(0);
+
+const updateLyric = () => {
+  if (state.lyrics.length) {
+    // 提前 0.4s 以便让歌词进场动画跑完
+    const firstLineCompensation = state.lyricIndex === -1 ? 400 : 0;
+
+    const newIndex = findLyricIndex(
+      state.currentTime + LYRIC_LOOKAHEAD + firstLineCompensation,
+      state.lyrics,
+      state.offset,
+    );
+    if (newIndex !== state.lyricIndex) {
+      state.lyricIndex = newIndex;
+    }
+  }
+};
+
+const loop = (timestamp: number) => {
+  if (!lastTimestamp) lastTimestamp = timestamp;
+  const delta = timestamp - lastTimestamp;
+  if (state.isPlaying) {
+    state.currentTime += delta;
+    updateLyric();
+  }
+  lastTimestamp = timestamp;
+  rafId = requestAnimationFrame(loop);
+};
+
+const startLoop = () => {
+  if (rafId) return;
+  lastTimestamp = performance.now();
+  rafId = requestAnimationFrame(loop);
+};
+
+const stopLoop = () => {
+  if (rafId) {
+    cancelAnimationFrame(rafId);
+    rafId = null;
+  }
+};
+
+watch(
+  () => state.lyricIndex,
+  (newIndex, oldIndex) => {
+    if (oldIndex === -1 || newIndex === -1) return;
+    if (newIndex !== oldIndex + 1) {
+      jumpCount.value++;
+    }
+  },
+);
+
+onMounted(() => {
+  const ipc = window.electron?.ipcRenderer;
+  if (!ipc) return;
+
+  ipc.on("taskbar:update-metadata", (_, { title, artist, cover }: TaskbarMetadataPayload) => {
+    if (title !== undefined) state.title = title;
+    if (artist !== undefined) state.artist = artist;
+    state.cover = cover || "";
+    state.lyricIndex = -1;
+    jumpCount.value = 0;
+    state.currentTime = 0;
+    lastTimestamp = performance.now();
+  });
+
+  ipc.on("taskbar:update-lyrics", (_, { lines, type }: TaskbarLyricsPayload) => {
+    if (!lines) return;
+    state.lyrics = lines;
+    state.lyricType = type || "line";
+    state.lyricIndex = -1;
+    jumpCount.value = 0;
+  });
+
+  ipc.on(
+    "taskbar:update-progress",
+    (_, { currentTime, duration, offset }: TaskbarProgressPayload) => {
+      state.currentTime = currentTime;
+      state.duration = duration;
+      state.offset = offset || 0;
+      lastTimestamp = performance.now();
+      updateLyric();
+    },
+  );
+
+  ipc.on("taskbar:update-state", (_, { isPlaying }: TaskbarStatePayload) => {
+    state.isPlaying = isPlaying;
+    isPlaying ? startLoop() : stopLoop();
+  });
+
+  ipc.on("taskbar:update-theme", (_, { isDark }: { isDark: boolean }) => {
+    state.isDark = isDark;
+  });
+
+  ipc.on("taskbar:update-layout", (_, { isCenter }: { isCenter: boolean }) => {
+    state.isCenter = isCenter;
+  });
+
+  ipc.on("taskbar:fade-out", () => {
+    state.opacity = 0;
+  });
+  ipc.on("taskbar:fade-in", () => {
+    state.opacity = 1;
+  });
+
+  ipc.send("taskbar:request-data");
+});
+
+onUnmounted(() => {
+  stopLoop();
+});
+</script>
+
+<style scoped lang="scss">
+$base-color: #333639;
+$dark-color: #ffffffd1;
+$radius: 4px;
+
+.taskbar-lyric {
+  width: 100vw;
+  height: 100vh;
+  margin: 5px 0;
+  padding: 0 10px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: hidden;
+
+  color: $base-color;
+  border-radius: $radius;
+  user-select: none;
+
+  will-change: opacity, filter;
+  transition:
+    background-color 0.15s,
+    opacity 0.3s ease,
+    filter 0.3s ease;
+
+  --lyric-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.layout-reverse {
+    flex-direction: row-reverse;
+
+    .cover-wrapper {
+      margin-right: 0;
+      margin-left: 8px;
+    }
+  }
+
+  &.dark {
+    color: $dark-color;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    &:not(:has(.control-btn:active)):active {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .control-btn:hover {
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+  }
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+
+  &:not(:has(.control-btn:active)):active {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+}
+
+.cover-wrapper {
+  position: relative;
+  height: 80%;
+  aspect-ratio: 1 / 1;
+  margin-right: 8px;
+  border-radius: $radius;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  .cover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+  }
+}
+
+.cross-fade {
+  &-enter-active,
+  &-leave-active {
+    transition: opacity 0.8s ease;
+  }
+
+  &-enter-active {
+    z-index: 2;
+  }
+
+  &-enter-from,
+  &-leave-to {
+    opacity: 0;
+  }
+}
+
+.media-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 6px;
+  overflow: hidden;
+  z-index: 10;
+
+  .control-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 62px;
+    height: 32px;
+    font-size: 18px;
+    color: inherit;
+    border-radius: $radius;
+    border: 1px solid rgba(128, 128, 128, 0.4);
+    box-sizing: border-box;
+    transition:
+      background-color 0.2s,
+      transform 0.1s,
+      border-color 0.2s;
+
+    &:hover {
+      background-color: rgba(128, 128, 128, 0.2);
+      border-color: rgba(128, 128, 128, 0.7);
+      opacity: 1;
+    }
+
+    &:active {
+      transform: scale(0.92);
+      background-color: rgba(128, 128, 128, 0.3);
+      border-color: rgba(128, 128, 128, 0.9);
+    }
+  }
+}
+
+.controls-expand {
+  &-enter-active,
+  &-leave-active {
+    transition: all 0.4s var(--lyric-ease);
+  }
+
+  &-enter-from,
+  &-leave-to {
+    max-width: 0;
+    opacity: 0;
+    margin: 0;
+  }
+
+  &-enter-to,
+  &-leave-from {
+    max-width: 120px;
+    opacity: 1;
+  }
+}
+
+.content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  transition: opacity 0.3s ease;
+
+  --mask-gap: 6px;
+  --mask-vertical: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 15%,
+    black 85%,
+    transparent 100%
+  );
+  --mask-horizontal: linear-gradient(
+    to right,
+    transparent 0,
+    black var(--mask-gap),
+    black calc(100% - var(--mask-gap)),
+    transparent 100%
+  );
+
+  mask-image: var(--mask-vertical), var(--mask-horizontal);
+  mask-composite: intersect;
+  -webkit-mask-image: var(--mask-vertical), var(--mask-horizontal);
+  -webkit-mask-composite: source-in;
+}
+
+.lyric-view-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.lyric-list-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  margin-top: 1px;
+
+  &.metadata-mode {
+    justify-content: center;
+  }
+}
+
+.lyric-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  min-height: 15px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  line-height: 1.1;
+  transition: all 0.4s var(--lyric-ease);
+
+  .line-text {
+    display: block;
+    width: 100%;
+    font-size: 14px;
+    transition:
+      transform 0.4s var(--lyric-ease),
+      opacity 0.4s var(--lyric-ease);
+    will-change: transform, opacity;
+    transform: scale(1);
+
+    &.single {
+      font-size: 14px;
+    }
+  }
+
+  &.is-sub {
+    .line-text {
+      opacity: 0.7;
+      transform: scale(0.8);
+    }
+  }
+
+  &.is-next {
+    .line-text {
+      opacity: 0.7;
+      transform: scale(0.8);
+    }
+  }
+}
+
+.content-switch {
+  &-enter-active,
+  &-leave-active {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    pointer-events: none;
+    transition: 0.4s var(--lyric-ease);
+  }
+
+  &-enter-from,
+  &-leave-to {
+    opacity: 0;
+  }
+}
+
+.lyric-list {
+  &-move {
+    transition: transform 0.4s var(--lyric-ease);
+  }
+
+  &-enter-active,
+  &-leave-active {
+    transition: all 0.4s var(--lyric-ease);
+  }
+
+  &-enter-from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  &-leave-active {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 0;
+  }
+
+  &-leave-to {
+    &.lyric-item {
+      opacity: 0;
+      filter: blur(3px);
+      transform: translateY(-100%);
+    }
+  }
+}
+
+.slide-blur {
+  &-move,
+  &-enter-active,
+  &-leave-active {
+    transition: all 0.4s var(--lyric-ease);
+  }
+
+  &-leave-active {
+    position: absolute;
+    width: 100%;
+    z-index: 0;
+  }
+
+  &-enter-from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(12px);
+
+    &.lyric-item {
+      opacity: 0;
+      filter: blur(4px);
+      transform: translateY(12px) scale(1);
+    }
+  }
+
+  &-leave-to {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(-12px);
+
+    &.lyric-item {
+      opacity: 0;
+      filter: blur(4px);
+      transform: translateY(-12px) scale(1);
+    }
+  }
+}
+
+.left-sm {
+  &-enter-active,
+  &-leave-active {
+    transition:
+      transform 0.4s ease,
+      opacity 0.4s ease;
+  }
+
+  &-enter-from,
+  &-leave-to {
+    opacity: 0;
+    transform: translate3d(-5px, 0, 0);
+  }
+}
+</style>
+
+<style lang="scss">
+body {
+  background-color: transparent !important;
+  margin: 0;
+  overflow: hidden;
+}
+</style>

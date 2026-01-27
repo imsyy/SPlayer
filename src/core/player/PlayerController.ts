@@ -1,8 +1,8 @@
 import { AudioErrorCode } from "@/core/audio-player/BaseAudioPlayer";
 import { useBlobURLManager } from "@/core/resource/BlobURLManager";
 import { useDataStore, useMusicStore, useSettingStore, useStatusStore } from "@/stores";
-import { type SongType } from "@/types/main";
-import { RepeatModeType, ShuffleModeType } from "@/types/shared";
+import type { SongType } from "@/types/main";
+import type { RepeatModeType, ShuffleModeType } from "@/types/shared";
 import { calculateLyricIndex } from "@/utils/calc";
 import { getCoverColor } from "@/utils/color";
 import { isElectron } from "@/utils/env";
@@ -11,8 +11,8 @@ import { handleSongQuality, shuffleArray, sleep } from "@/utils/helper";
 import lastfmScrobbler from "@/utils/lastfmScrobbler";
 import { DJ_MODE_KEYWORDS } from "@/utils/meta";
 import { calculateProgress } from "@/utils/time";
-import { LyricLine } from "@applemusic-like-lyrics/lyric";
-import { DebouncedFunc, throttle } from "lodash-es";
+import type { LyricLine } from "@applemusic-like-lyrics/lyric";
+import { type DebouncedFunc, throttle } from "lodash-es";
 import { useAudioManager } from "./AudioManager";
 import { useLyricManager } from "./LyricManager";
 import { mediaSessionManager } from "./MediaSessionManager";
@@ -99,14 +99,17 @@ class PlayerController {
 
     // 简单的防削波保护 (如果有峰值信息)
     // 目标: gain * peak <= 1.0
-    const peak = settingStore.replayGainMode === "album" ? (albumPeak ?? trackPeak) : (trackPeak ?? albumPeak);
+    const peak =
+      settingStore.replayGainMode === "album" ? (albumPeak ?? trackPeak) : (trackPeak ?? albumPeak);
     if (peak && peak > 0) {
       if (targetGain * peak > 1.0) {
         targetGain = 1.0 / peak;
       }
     }
 
-    console.log(`🔊 [ReplayGain] Applied: ${targetGain.toFixed(4)} (Mode: ${settingStore.replayGainMode})`);
+    console.log(
+      `🔊 [ReplayGain] Applied: ${targetGain.toFixed(4)} (Mode: ${settingStore.replayGainMode})`,
+    );
     audioManager.setReplayGain(targetGain);
   }
 
@@ -178,6 +181,15 @@ class PlayerController {
           lyricLoading: true,
         });
       }
+      // 更新任务栏歌词窗口的元数据
+      const { name, artist } = getPlayerInfoObj() || {};
+      const coverUrl = playSongData.cover || "";
+      playerIpc.sendTaskbarMetadata({
+        title: name || "",
+        artist: artist || "",
+        cover: coverUrl,
+      });
+
       // 获取歌词
       lyricManager.handleLyric(playSongData);
       // 获取音频
@@ -301,6 +313,7 @@ class PlayerController {
         // 立即将 UI 置为暂停，防止事件竞态导致短暂显示为播放
         statusStore.playStatus = false;
         playerIpc.sendPlayStatus(false);
+        playerIpc.sendTaskbarState({ isPlaying: false });
         playerIpc.sendTaskbarMode("paused");
         if (seek > 0) {
           const progress = calculateProgress(seek, duration);
@@ -378,6 +391,13 @@ class PlayerController {
       getCoverColor(musicStore.playSong.cover);
       // 更新媒体会话
       mediaSessionManager.updateMetadata();
+      // 更新任务栏歌词
+      const { name, artist } = getPlayerInfoObj() || {};
+      playerIpc.sendTaskbarMetadata({
+        title: name || "",
+        artist: artist || "",
+        cover: musicStore.playSong.cover || "",
+      });
     } catch (error) {
       console.error("❌ 解析本地歌曲元信息失败:", error);
     }
@@ -439,6 +459,7 @@ class PlayerController {
       lastfmScrobbler.resume();
       // IPC 通知
       playerIpc.sendPlayStatus(true);
+      playerIpc.sendTaskbarState({ isPlaying: true });
       playerIpc.sendTaskbarMode("normal");
       playerIpc.sendTaskbarProgress(statusStore.progress);
       console.log(`▶️ [${musicStore.playSong?.id}] 歌曲播放:`, name);
@@ -451,6 +472,7 @@ class PlayerController {
       mediaSessionManager.updatePlaybackStatus(false);
       if (!isElectron) window.document.title = "SPlayer";
       playerIpc.sendPlayStatus(false);
+      playerIpc.sendTaskbarState({ isPlaying: false });
       playerIpc.sendTaskbarMode("paused");
       playerIpc.sendTaskbarProgress(statusStore.progress);
       lastfmScrobbler.pause();
@@ -517,6 +539,12 @@ class PlayerController {
       } else {
         playerIpc.sendTaskbarProgress("none");
       }
+      // 任务栏歌词进度
+      playerIpc.sendTaskbarProgressData({
+        currentTime,
+        duration,
+        offset,
+      });
       // Socket 进度
       playerIpc.sendSocketProgress(currentTime, duration);
     }, 200);
@@ -1247,6 +1275,19 @@ class PlayerController {
     statusStore.showDesktopLyric = show;
     playerIpc.toggleDesktopLyric(show);
     window.$message.success(`${show ? "已开启" : "已关闭"}桌面歌词`);
+  }
+
+  public toggleTaskbarLyric() {
+    const statusStore = useStatusStore();
+    this.setTaskbarLyricShow(!statusStore.showTaskbarLyric);
+  }
+
+  public setTaskbarLyricShow(show: boolean) {
+    const statusStore = useStatusStore();
+    if (statusStore.showTaskbarLyric === show) return;
+    statusStore.showTaskbarLyric = show;
+    playerIpc.toggleTaskbarLyric(show);
+    window.$message.success(`${show ? "已开启" : "已关闭"}任务栏歌词`);
   }
 
   /**

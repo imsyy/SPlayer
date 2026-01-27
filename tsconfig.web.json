@@ -16,6 +16,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@emi": ["./native/external-media-integration"],
+      "@native/*": ["./native/*"],
       "@opencc": ["./native/ferrous-opencc-wasm/pkg"]
     },
     "types": ["node", "electron", "electron-vite/node", "./auto-imports.d.ts", "./components.d.ts"],

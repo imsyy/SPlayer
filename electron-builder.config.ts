@@ -30,6 +30,16 @@ const config: Configuration = {
       to: "native",
       filter: ["*.node"],
     },
+    {
+      from: "native/taskbar-lyric",
+      to: "native",
+      filter: ["*.node"],
+    },
+    {
+      from: "native/tools",
+      to: "tools",
+      filter: ["*.node"],
+    },
   ],
   win: {
     // 可执行文件名
