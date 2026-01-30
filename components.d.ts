@@ -161,6 +161,7 @@ declare module 'vue' {
     PlayerSlider: typeof import('./src/components/Player/PlayerComponents/PlayerSlider.vue')['default']
     PlayerSpectrum: typeof import('./src/components/Player/PlayerComponents/PlayerSpectrum.vue')['default']
     PlaylistAdd: typeof import('./src/components/Modal/PlaylistAdd.vue')['default']
+    PlaylistPageManager: typeof import('./src/components/Modal/Setting/PlaylistPageManager.vue')['default']
     PlaySetting: typeof import('./src/components/Setting/old/PlaySetting.vue')['default']
     Provider: typeof import('./src/components/Global/Provider.vue')['default']
     ProxyConfig: typeof import('./src/components/Setting/components/ProxyConfig.vue')['default']

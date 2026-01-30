@@ -8,6 +8,7 @@ import {
   openCustomCode,
   openThemeConfig,
   openExcludeComment,
+  openPlaylistPageManager,
 } from "@/utils/modal";
 import { sendRegisterProtocol } from "@/utils/protocol";
 import { SettingConfig } from "@/types/settings";
@@ -247,6 +248,14 @@ export const useGeneralSettings = (): SettingConfig => {
             description: "调整首页各栏目的显示顺序或隐藏不需要的栏目",
             buttonLabel: "配置",
             action: openHomePageSectionManager,
+          },
+          {
+            key: "playlistPageElements",
+            label: "歌单界面配置",
+            type: "button",
+            description: "自定义歌单界面的标签、拥有者、时间、描述显示",
+            buttonLabel: "配置",
+            action: openPlaylistPageManager,
           },
           {
             key: "showSongQuality",

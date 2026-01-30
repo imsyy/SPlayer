@@ -288,6 +288,14 @@ export interface SettingState {
     /** 隐藏心动模式 */
     hideHeartbeatMode: boolean;
   };
+  /** 歌单界面元素显示配置 */
+  // Controls the visibility of elements on the playlist detail page
+  playlistPageElements: {
+    tags: boolean;
+    creator: boolean;
+    time: boolean;
+    description: boolean;
+  };
   /** 启用搜索关键词获取 */
   enableSearchKeyword: boolean;
   /** 失焦后自动清空搜索框 */
@@ -493,6 +501,12 @@ export const useSettingStore = defineStore("setting", {
       hideUserPlaylists: false,
       hideLikedPlaylists: false,
       hideHeartbeatMode: false,
+    },
+    playlistPageElements: {
+      tags: true,
+      creator: true,
+      time: true,
+      description: true,
     },
     enableSearchKeyword: true,
     clearSearchOnBlur: false,

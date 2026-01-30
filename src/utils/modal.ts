@@ -68,6 +68,22 @@ export const openUserAgreement = async () => {
   });
 };
 
+/** 打开歌单界面配置弹窗 */
+export const openPlaylistPageManager = async () => {
+  const { default: PlaylistPageManager } =
+    await import("@/components/Modal/Setting/PlaylistPageManager.vue");
+  window.$modal.create({
+    preset: "card",
+    transformOrigin: "center",
+    autoFocus: false,
+    style: { width: "500px" },
+    title: "歌单界面配置",
+    content: () => {
+      return h(PlaylistPageManager);
+    },
+  });
+};
+
 // 用户登录
 export const openUserLogin = async (
   showTip: boolean = false,

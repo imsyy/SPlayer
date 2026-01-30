@@ -56,7 +56,7 @@
           <n-collapse-transition :show="!listScrolling" class="collapse">
             <!-- 简介 -->
             <n-text
-              v-if="detailData.description"
+              v-if="detailData.description && settingStore.playlistPageElements.description"
               class="description text-hidden"
               @click="handleDescriptionClick"
             >
@@ -65,7 +65,13 @@
             <!-- 信息 -->
             <n-flex class="meta">
               <!-- 艺术家/创建者 -->
-              <div v-if="config.showArtist || config.showCreator" class="item">
+              <div
+                v-if="
+                  (config.showArtist || config.showCreator) &&
+                  settingStore.playlistPageElements.creator
+                "
+                class="item"
+              >
                 <SvgIcon name="Person" :depth="3" />
                 <div
                   v-if="config.showArtist && Array.isArray(detailData.artists)"
@@ -97,17 +103,26 @@
                 <n-text>{{ detailData.count }}</n-text>
               </div>
               <!-- 更新时间 -->
-              <div v-if="detailData.updateTime" class="item">
+              <div
+                v-if="detailData.updateTime && settingStore.playlistPageElements.time"
+                class="item"
+              >
                 <SvgIcon name="Update" :depth="3" />
                 <n-text>{{ formatTimestamp(detailData.updateTime) }}</n-text>
               </div>
               <!-- 创建时间 -->
-              <div v-else-if="detailData.createTime" class="item">
+              <div
+                v-else-if="detailData.createTime && settingStore.playlistPageElements.time"
+                class="item"
+              >
                 <SvgIcon name="Time" :depth="3" />
                 <n-text>{{ formatTimestamp(detailData.createTime) }}</n-text>
               </div>
               <!-- 标签 -->
-              <div v-if="detailData.tags?.length" class="item hidden">
+              <div
+                v-if="detailData.tags?.length && settingStore.playlistPageElements.tags"
+                class="item hidden"
+              >
                 <SvgIcon name="Tag" :depth="3" />
                 <n-flex class="tags">
                   <n-tag
