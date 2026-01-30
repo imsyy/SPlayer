@@ -689,6 +689,37 @@ class LyricManager {
 
     const newLyricData = cloneDeep(lyricData);
 
+    // Determine replacement strategy
+    const preset = settingStore.bracketReplacementPreset || "dash";
+    const custom = settingStore.customBracketReplacement || "-";
+
+    let startStr = " - ";
+    let endStr = " ";
+    let isEnclosure = false;
+
+    if (preset === "angleBrackets") {
+      startStr = "〔";
+      endStr = "〕";
+      isEnclosure = true;
+    } else if (preset === "cornerBrackets") {
+      startStr = "「";
+      endStr = "」";
+      isEnclosure = true;
+    } else if (preset === "custom") {
+      const trimmed = custom.trim();
+      // Heuristic: if length is 2 and not just dashes, treat as pair
+      if (trimmed.length === 2 && trimmed[0] !== trimmed[1] && !trimmed.includes("-")) {
+        startStr = trimmed[0];
+        endStr = trimmed[1];
+        isEnclosure = true;
+      } else {
+        startStr = " " + trimmed + " ";
+        startStr = startStr.replace(/\s+/g, " ");
+        endStr = " ";
+        isEnclosure = false;
+      }
+    }
+
     const processLines = (lines: LyricLine[] | undefined) => {
       if (!lines) return;
       lines.forEach((line) => {
@@ -698,7 +729,7 @@ class LyricManager {
         // Check if the line matches ^\s*[\(（][^()（）]*[\)）]\s*$
         const isFullBracket = /^\s*[\(（][^()（）]*[\)）]\s*$/.test(fullText);
 
-        if (isFullBracket) {
+        if (isFullBracket && !isEnclosure) {
           // Remove first ( or （
           let foundStart = false;
           for (const word of line.words) {
@@ -727,64 +758,77 @@ class LyricManager {
             }
           }
         } else {
-          // Normal replacement: ( -> " - ", ) -> " - " or ""
+          // Normal replacement
           line.words.forEach((word, index) => {
-            word.word = word.word.replace(/[\(（]/g, " - ");
-            
-            // Replace ) with " - " OR "" depending on position
-            word.word = word.word.replace(/[\)）]/g, (_, offset, string) => {
-               // Check if this ) is effectively at the end of the word
-               const isAtEnd = offset === string.length - 1;
-               
-               if (isAtEnd) {
-                 // If at end of word, check if it is the last word
-                 if (index === line.words.length - 1) {
-                   return ""; // Last word's last char -> remove
-                 } else {
-                   return " - "; // Not last word -> separator
-                 }
-               } else {
-                 // Not at end of word -> separator
-                 return " - ";
-               }
-            });
-          });
+            word.word = word.word.replace(/[\(（]/g, startStr);
 
-          // Cleanup double dashes
-          line.words.forEach((word, index) => {
-            // Intra-word cleanup
-            word.word = word.word.replace(/(?:\s*-\s*){2,}/g, " - ");
+            if (isEnclosure) {
+              word.word = word.word.replace(/[\)）]/g, endStr);
+            } else {
+              // Replace ) with endStr OR "" depending on position
+              word.word = word.word.replace(/[\)）]/g, (_, offset, string) => {
+                // Check if this ) is effectively at the end of the word
+                const isAtEnd = offset === string.length - 1;
 
-            // Inter-word cleanup
-            if (index > 0) {
-              const prev = line.words[index - 1];
-              // Check if prev ends with dash and curr starts with dash
-              if (/-\s*$/.test(prev.word) && /^\s*-/.test(word.word)) {
-                // Remove trailing dash from prev
-                prev.word = prev.word.replace(/-\s*$/, "");
-                // Ensure curr starts with " - "
-                if (!/^\s*-\s+/.test(word.word)) {
-                  word.word = " - " + word.word.replace(/^\s*-\s*/, "");
+                if (isAtEnd) {
+                  // If at end of word, check if it is the last word
+                  if (index === line.words.length - 1) {
+                    return ""; // Last word's last char -> remove
+                  } else {
+                    return endStr; // Not last word -> separator
+                  }
+                } else {
+                  // Not at end of word -> separator
+                  return endStr;
                 }
-              }
+              });
             }
           });
+
+          // Cleanup double dashes (only for separator mode with dash)
+          if (!isEnclosure && startStr.includes("-")) {
+            line.words.forEach((word, index) => {
+              // Intra-word cleanup
+              word.word = word.word.replace(/(?:\s*-\s*){2,}/g, " - ");
+
+              // Inter-word cleanup
+              if (index > 0) {
+                const prev = line.words[index - 1];
+                // Check if prev ends with dash and curr starts with dash
+                if (/-\s*$/.test(prev.word) && /^\s*-/.test(word.word)) {
+                  // Remove trailing dash from prev
+                  prev.word = prev.word.replace(/-\s*$/, "");
+                  // Ensure curr starts with " - "
+                  if (!/^\s*-\s+/.test(word.word)) {
+                    word.word = " - " + word.word.replace(/^\s*-\s*/, "");
+                  }
+                }
+              }
+            });
+          }
         }
 
         // Process translations and romaji
         const processString = (str: string) => {
           if (!str) return str;
-          if (/^\s*[\(（][^()（）]*[\)）]\s*$/.test(str)) {
+          if (!isEnclosure && /^\s*[\(（][^()（）]*[\)）]\s*$/.test(str)) {
             return str
               .replace(/^\s*[\(（]/, "")
               .replace(/[\)）]\s*$/, "")
               .trim();
           } else {
-            return str
-              .replace(/[\(（]/g, " - ")
-              .replace(/[\)）](?=\s*$)/g, "") // Remove if at end
-              .replace(/[\)）]/g, " - ")      // Else replace with dash
-              .replace(/(?:\s*-\s*){2,}/g, " - "); // Cleanup double dashes
+            let res = str.replace(/[\(（]/g, startStr);
+            if (isEnclosure) {
+              res = res.replace(/[\)）]/g, endStr);
+            } else {
+              res = res
+                .replace(/[\)）](?=\s*$)/g, "") // Remove if at end
+                .replace(/[\)）]/g, endStr); // Else replace with separator
+              if (startStr.includes("-")) {
+                res = res.replace(/(?:\s*-\s*){2,}/g, " - "); // Cleanup double dashes
+              }
+            }
+            return res;
           }
         };
 

@@ -77,6 +77,10 @@ export interface SettingState {
   hideLyricBrackets: boolean;
   /** 替换歌词括号内容 */
   replaceLyricBrackets: boolean;
+  /** 歌词括号替换预设 */
+  bracketReplacementPreset: "dash" | "angleBrackets" | "cornerBrackets" | "custom";
+  /** 自定义歌词括号替换内容 */
+  customBracketReplacement: string;
   /** 下载路径 */
   downloadPath: string;
   /** 是否启用缓存 */
@@ -448,6 +452,8 @@ export const useSettingStore = defineStore("setting", {
     lyricAlignRight: false,
     hideLyricBrackets: false,
     replaceLyricBrackets: false,
+    bracketReplacementPreset: "dash",
+    customBracketReplacement: "-",
     enableExcludeLyrics: true,
     enableExcludeLyricsTTML: false,
     enableExcludeLyricsLocal: false,
