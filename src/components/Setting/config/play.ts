@@ -8,7 +8,8 @@ import { AI_AUDIO_LEVELS } from "@/utils/meta";
 import { openSongUnlockManager } from "@/utils/modal";
 import { NTooltip, SelectOption } from "naive-ui";
 import { uniqBy } from "lodash-es";
-import { isLogin, filterAuthorizedQualityOptions } from "@/utils/auth";
+import { filterAuthorizedQualityOptions } from "@/utils/auth";
+import { computed, ref, h, watch } from "vue";
 
 export const usePlaySettings = (): SettingConfig => {
   const settingStore = useSettingStore();
@@ -300,18 +301,11 @@ export const usePlaySettings = (): SettingConfig => {
     },
   );
 
-  // 时间格式选项
-  const timeFormatOptions = [
-    { label: "播放时间 / 总时长", value: "current-total" },
-    { label: "剩余时间 / 总时长", value: "remaining-total" },
-    { label: "播放时间 / 剩余时间", value: "current-remaining" },
-  ];
-
   return {
     onActivate,
     groups: [
       {
-        title: "歌曲播放",
+        title: "播放控制",
         items: [
           {
             key: "autoPlay",
@@ -343,6 +337,16 @@ export const usePlaySettings = (): SettingConfig => {
             value: computed({
               get: () => settingStore.memoryLastSeek,
               set: (v) => (settingStore.memoryLastSeek = v),
+            }),
+          },
+          {
+            key: "preventSleep",
+            label: "阻止系统息屏",
+            type: "switch",
+            description: "是否在播放界面阻止系统息屏",
+            value: computed({
+              get: () => settingStore.preventSleep,
+              set: (v) => (settingStore.preventSleep = v),
             }),
           },
           {
@@ -399,6 +403,25 @@ export const usePlaySettings = (): SettingConfig => {
               },
             ],
           },
+        ],
+      },
+      {
+        title: "音频设置",
+        items: [
+          {
+            key: "songLevel",
+            label: "在线歌曲音质",
+            type: "select",
+            description: () => songLevelData[settingStore.songLevel]?.tip,
+            options: songLevelOptions,
+            componentProps: {
+              renderOption,
+            },
+            value: computed({
+              get: () => settingStore.songLevel,
+              set: (v) => (settingStore.songLevel = v),
+            }),
+          },
           {
             key: "disableAiAudio",
             label: "Fuck AI Mode",
@@ -418,20 +441,6 @@ export const usePlaySettings = (): SettingConfig => {
             value: computed({
               get: () => settingStore.disableDjMode,
               set: (v) => (settingStore.disableDjMode = v),
-            }),
-          },
-          {
-            key: "songLevel",
-            label: "在线歌曲音质",
-            type: "select",
-            description: () => songLevelData[settingStore.songLevel]?.tip,
-            options: songLevelOptions,
-            componentProps: {
-              renderOption,
-            },
-            value: computed({
-              get: () => settingStore.songLevel,
-              set: (v) => (settingStore.songLevel = v),
             }),
           },
           {
@@ -519,252 +528,6 @@ export const usePlaySettings = (): SettingConfig => {
             buttonLabel: "配置",
             action: openSongUnlockManager,
             disabled: computed(() => !settingStore.useSongUnlock),
-          },
-        ],
-      },
-      {
-        title: "播放器",
-        items: [
-          {
-            key: "playerExpandAnimation",
-            label: "播放器展开动画",
-            type: "select",
-            description: "选择播放器展开时的动画效果",
-            options: [
-              { label: "上浮", value: "up" },
-              { label: "平滑", value: "smooth" },
-            ],
-            value: computed({
-              get: () => settingStore.playerExpandAnimation,
-              set: (v) => (settingStore.playerExpandAnimation = v),
-            }),
-          },
-          {
-            key: "playerType",
-            label: "播放器样式",
-            type: "select",
-            description: "播放器主体样式",
-            options: [
-              { label: "封面模式", value: "cover" },
-              { label: "唱片模式", value: "record" },
-              { label: "全屏封面", value: "fullscreen" },
-            ],
-            value: computed({
-              get: () => settingStore.playerType,
-              set: (v) => (settingStore.playerType = v),
-            }),
-            condition: () => true,
-            children: [
-              {
-                key: "playerStyleRatio",
-                label: "封面 / 歌词占比",
-                type: "slider",
-                description: "调整全屏播放器的封面与歌词的宽度比例",
-                min: 30,
-                max: 70,
-                step: 1,
-                marks: { 50: "默认" },
-                show: () => settingStore.playerType !== "fullscreen",
-                formatTooltip: (v) => `${v}%`,
-                value: computed({
-                  get: () => settingStore.playerStyleRatio,
-                  set: (v) => (settingStore.playerStyleRatio = v),
-                }),
-              },
-              {
-                key: "playerFullscreenGradient",
-                label: "封面过渡位置",
-                type: "slider",
-                description: "调整全屏封面右侧的渐变过渡位置",
-                show: () => settingStore.playerType === "fullscreen",
-                min: 0,
-                max: 100,
-                step: 1,
-                marks: { 15: "默认" },
-                formatTooltip: (v) => `${v}%`,
-                value: computed({
-                  get: () => settingStore.playerFullscreenGradient,
-                  set: (v) => (settingStore.playerFullscreenGradient = v),
-                }),
-              },
-            ],
-          },
-          {
-            key: "playerBackgroundType",
-            label: "播放器背景样式",
-            type: "select",
-            description: "切换播放器背景类型",
-            options: [
-              { label: "流体效果", value: "animation" },
-              { label: "封面模糊", value: "blur" },
-              { label: "封面主色", value: "color" },
-            ],
-            value: computed({
-              get: () => settingStore.playerBackgroundType,
-              set: (v) => (settingStore.playerBackgroundType = v),
-            }),
-            condition: () => settingStore.playerBackgroundType === "animation",
-            children: [
-              {
-                key: "playerBackgroundFps",
-                label: "背景动画帧率",
-                type: "input-number",
-                description: "单位 fps，最小 24，最大 240",
-                min: 24,
-                max: 256,
-                value: computed({
-                  get: () => settingStore.playerBackgroundFps,
-                  set: (v) => (settingStore.playerBackgroundFps = v),
-                }),
-              },
-              {
-                key: "playerBackgroundFlowSpeed",
-                label: "背景动画流动速度",
-                type: "input-number",
-                description: "单位 倍数，最小 0.1，最大 10",
-                min: 0.1,
-                max: 10,
-                value: computed({
-                  get: () => settingStore.playerBackgroundFlowSpeed,
-                  set: (v) => (settingStore.playerBackgroundFlowSpeed = v),
-                }),
-              },
-              {
-                key: "playerBackgroundRenderScale",
-                label: "背景渲染缩放比例",
-                type: "input-number",
-                description:
-                  "设置当前渲染缩放比例，默认 0.5。适当提高此值（如 1.0 或 1.5）可以减少分界线锯齿，让效果更好，但也会增加显卡压力",
-                min: 0.1,
-                max: 10,
-                value: computed({
-                  get: () => settingStore.playerBackgroundRenderScale,
-                  set: (v) => (settingStore.playerBackgroundRenderScale = v),
-                }),
-              },
-              {
-                key: "playerBackgroundPause",
-                label: "背景动画暂停时暂停",
-                type: "switch",
-                description: "在暂停时是否也暂停背景动画",
-                value: computed({
-                  get: () => settingStore.playerBackgroundPause,
-                  set: (v) => (settingStore.playerBackgroundPause = v),
-                }),
-              },
-              {
-                key: "playerBackgroundLowFreqVolume",
-                label: "背景跳动效果",
-                type: "switch",
-                description: "使流体背景根据音乐低频节拍产生脉动效果",
-                value: computed({
-                  get: () => settingStore.playerBackgroundLowFreqVolume,
-                  set: (v) => (settingStore.playerBackgroundLowFreqVolume = v),
-                }),
-              },
-            ],
-          },
-          {
-            key: "playerFollowCoverColor",
-            label: "播放器主色跟随封面",
-            type: "switch",
-            description: "播放器主颜色是否跟随封面主色，下一曲生效",
-            value: computed({
-              get: () => settingStore.playerFollowCoverColor,
-              set: (v) => (settingStore.playerFollowCoverColor = v),
-            }),
-          },
-          {
-            key: "countDownShow",
-            label: "显示前奏倒计时",
-            type: "switch",
-            description: "部分歌曲前奏可能存在显示错误",
-            value: computed({
-              get: () => settingStore.countDownShow,
-              set: (v) => (settingStore.countDownShow = v),
-            }),
-          },
-          {
-            key: "autoHidePlayerMeta",
-            label: "播放器元素自动隐藏",
-            type: "switch",
-            description: "鼠标静止一段时间或者离开播放器时自动隐藏控制元素",
-            value: computed({
-              get: () => settingStore.autoHidePlayerMeta,
-              set: (v) => (settingStore.autoHidePlayerMeta = v),
-            }),
-          },
-          {
-            key: "showPlayMeta",
-            label: "展示播放状态信息",
-            type: "switch",
-            description: "展示当前歌曲及歌词的状态信息",
-            value: computed({
-              get: () => settingStore.showPlayMeta,
-              set: (v) => (settingStore.showPlayMeta = v),
-            }),
-          },
-          {
-            key: "dynamicCover",
-            label: "动态封面",
-            type: "switch",
-            description: "可展示部分歌曲的动态封面，仅在封面模式有效",
-            disabled: () => isLogin() !== 1,
-            value: computed({
-              get: () => settingStore.dynamicCover,
-              set: (v) => (settingStore.dynamicCover = v),
-            }),
-          },
-          {
-            key: "showSpectrums",
-            label: "音乐频谱",
-            type: "switch",
-            show: isElectron,
-            description:
-              settingStore.playbackEngine === "mpv"
-                ? "MPV 引擎暂不支持显示音乐频谱"
-                : "开启音乐频谱会影响性能或增加内存占用，如遇问题请关闭",
-            disabled: () => settingStore.playbackEngine === "mpv",
-            value: computed({
-              get: () => settingStore.showSpectrums,
-              set: (v) => (settingStore.showSpectrums = v),
-            }),
-          },
-        ],
-      },
-      {
-        title: "全局播放器",
-        items: [
-          {
-            key: "timeFormat",
-            label: "时间显示格式",
-            type: "select",
-            description: "底栏右侧和播放页面底部的时间如何显示（单击时间可以快速切换）",
-            options: timeFormatOptions,
-            value: computed({
-              get: () => settingStore.timeFormat,
-              set: (v) => (settingStore.timeFormat = v),
-            }),
-          },
-          {
-            key: "showPlaylistCount",
-            label: "播放列表歌曲数量",
-            type: "switch",
-            description: "在右下角的播放列表按钮处显示播放列表的歌曲数量",
-            value: computed({
-              get: () => settingStore.showPlaylistCount,
-              set: (v) => (settingStore.showPlaylistCount = v),
-            }),
-          },
-          {
-            key: "barLyricShow",
-            label: "底栏歌词显示",
-            type: "switch",
-            description: "在播放时将歌手信息更改为歌词",
-            value: computed({
-              get: () => settingStore.barLyricShow,
-              set: (v) => (settingStore.barLyricShow = v),
-            }),
           },
         ],
       },

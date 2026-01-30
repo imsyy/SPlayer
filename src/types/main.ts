@@ -310,13 +310,12 @@ export type SongLevelDataType = {
 // setting
 export type SettingType =
   | "general"
+  | "appearance"
   | "play"
   | "lyrics"
   | "keyboard"
   | "local"
-  | "third"
-  | "streaming"
-  | "other"
+  | "network"
   | "about";
 
 // UpdateLog

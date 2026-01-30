@@ -1,14 +1,50 @@
 import { useSettingStore } from "@/stores";
 import { isElectron } from "@/utils/env";
 import { SettingConfig } from "@/types/settings";
+import { computed, ref, h, markRaw } from "vue";
+import { debounce } from "lodash-es";
 import { NA } from "naive-ui";
 import { disableDiscordRpc, enableDiscordRpc, updateDiscordConfig } from "@/core/player/PlayerIpc";
 import { getAuthToken, getAuthUrl, getSession } from "@/api/lastfm";
+import StreamingServerList from "../components/StreamingServerList.vue";
 
-export const useThirdSettings = (): SettingConfig => {
+export const useNetworkSettings = (): SettingConfig => {
   const settingStore = useSettingStore();
+  const testProxyLoading = ref<boolean>(false);
 
-  // 更新 Discord 配置
+  // --- Network Proxy Logic (from other.ts) ---
+  const proxyConfig = computed(() => ({
+    protocol: settingStore.proxyProtocol,
+    server: settingStore.proxyServe,
+    port: settingStore.proxyPort,
+  }));
+
+  const setProxy = debounce(() => {
+    if (
+      settingStore.proxyProtocol === "off" ||
+      !settingStore.proxyServe ||
+      !settingStore.proxyPort
+    ) {
+      window.electron.ipcRenderer.send("remove-proxy");
+      window.$message.success("成功关闭网络代理");
+      return;
+    }
+    window.electron.ipcRenderer.send("set-proxy", proxyConfig.value);
+    window.$message.success("网络代理配置完成，请重启软件");
+  }, 300);
+
+  const testProxy = async () => {
+    testProxyLoading.value = true;
+    const result = await window.electron.ipcRenderer.invoke("test-proxy", proxyConfig.value);
+    if (result) {
+      window.$message.success("该代理可正常使用");
+    } else {
+      window.$message.error("代理测试失败，请重试");
+    }
+    testProxyLoading.value = false;
+  };
+
+  // --- Discord RPC Logic (from third.ts) ---
   const handleDiscordConfigUpdate = () => {
     if (!settingStore.discordRpc.enabled) return;
     updateDiscordConfig({
@@ -17,7 +53,6 @@ export const useThirdSettings = (): SettingConfig => {
     });
   };
 
-  // 切换 Discord 启用状态
   const handleDiscordEnabledUpdate = (val: boolean) => {
     settingStore.discordRpc.enabled = val;
     if (val) {
@@ -28,13 +63,11 @@ export const useThirdSettings = (): SettingConfig => {
     }
   };
 
-  // --- WebSocket Logic ---
-  // socket
+  // --- WebSocket Logic (from third.ts) ---
   const socketPort = ref(25885);
   const socketEnabled = ref(false);
   const socketPortSaved = ref<number | null>(null);
 
-  // 初始化 socket 配置
   const initSocketConfig = async () => {
     if (!isElectron) return;
     const wsOptions = await window.api.store.get("websocket");
@@ -44,7 +77,6 @@ export const useThirdSettings = (): SettingConfig => {
     socketEnabled.value = wsOptions?.enabled ?? false;
   };
 
-  // 保存 socket 配置
   const saveSocketConfig = async () => {
     if (!isElectron) return;
     await window.api.store.set("websocket", {
@@ -53,7 +85,6 @@ export const useThirdSettings = (): SettingConfig => {
     });
   };
 
-  // 切换启用状态
   const handleSocketEnabledUpdate = async (value: boolean) => {
     if (!isElectron) {
       socketEnabled.value = value;
@@ -87,7 +118,6 @@ export const useThirdSettings = (): SettingConfig => {
     }
   };
 
-  // 测试 socket 端口
   const testSocketPort = async () => {
     if (!isElectron) return;
     if (!socketPort.value) {
@@ -108,12 +138,9 @@ export const useThirdSettings = (): SettingConfig => {
     }
   };
 
-  // --- Last.fm Logic ---
+  // --- Last.fm Logic (from third.ts) ---
   const lastfmAuthLoading = ref(false);
 
-  /**
-   * 连接 Last.fm 账号
-   */
   const connectLastfm = async () => {
     try {
       lastfmAuthLoading.value = true;
@@ -163,9 +190,6 @@ export const useThirdSettings = (): SettingConfig => {
     }
   };
 
-  /**
-   * 断开 Last.fm 账号
-   */
   const disconnectLastfm = () => {
     window.$dialog.warning({
       title: "断开连接",
@@ -188,7 +212,128 @@ export const useThirdSettings = (): SettingConfig => {
     onActivate,
     groups: [
       {
-        title: "系统集成",
+        title: "流媒体服务",
+        items: [
+          {
+            key: "streamingEnabled",
+            label: "启用流媒体",
+            type: "switch",
+            description: "开启后可使用并管理 Navidrome、Jellyfin 等流媒体服务",
+            value: computed({
+              get: () => settingStore.streamingEnabled,
+              set: (v) => (settingStore.streamingEnabled = v),
+            }),
+          },
+          {
+            key: "serverList",
+            label: "服务器管理",
+            type: "custom",
+            description: "在此添加和管理您的流媒体服务器",
+            noWrapper: true,
+            component: markRaw(StreamingServerList),
+          },
+        ],
+      },
+      {
+        title: "网络代理",
+        show: isElectron,
+        items: [
+          {
+            key: "proxyProtocol",
+            label: "网络代理",
+            type: "select",
+            description: "修改后请点击保存或重启软件以应用",
+            options: [
+              { label: "关闭代理", value: "off" },
+              { label: "HTTP 代理", value: "HTTP" },
+              { label: "HTTPS 代理", value: "HTTPS" },
+            ],
+            value: computed({
+              get: () => settingStore.proxyProtocol,
+              set: (v) => (settingStore.proxyProtocol = v),
+            }),
+            extraButton: {
+              label: "保存并应用",
+              action: setProxy,
+              type: "primary",
+              secondary: true,
+              strong: true,
+            },
+          },
+          {
+            key: "proxyServe",
+            label: "代理服务器地址",
+            type: "text-input",
+            description: "请填写代理服务器地址，如 127.0.0.1",
+            disabled: computed(() => settingStore.proxyProtocol === "off"),
+            prefix: computed(() =>
+              settingStore.proxyProtocol === "off" ? "-" : settingStore.proxyProtocol,
+            ),
+            componentProps: {
+              placeholder: "请填写代理服务器地址",
+            },
+            value: computed({
+              get: () => settingStore.proxyServe,
+              set: (v) => (settingStore.proxyServe = v),
+            }),
+          },
+          {
+            key: "proxyPort",
+            label: "代理服务器端口",
+            type: "input-number",
+            description: "请填写代理服务器端口，如 80",
+            disabled: computed(() => settingStore.proxyProtocol === "off"),
+            componentProps: {
+              min: 1,
+              max: 65535,
+              showButton: false,
+              placeholder: "请填写代理服务器端口",
+            },
+            value: computed({
+              get: () => settingStore.proxyPort,
+              set: (v) => (settingStore.proxyPort = v),
+            }),
+          },
+          {
+            key: "proxyTest",
+            label: "测试代理",
+            type: "button",
+            description: "测试代理配置是否可正常连通",
+            buttonLabel: "测试代理",
+            action: testProxy,
+            condition: () => settingStore.proxyProtocol !== "off",
+            componentProps: computed(() => ({
+              loading: testProxyLoading.value,
+              type: "primary",
+            })),
+          },
+          {
+            key: "useRealIP",
+            label: "使用真实 IP 地址",
+            type: "switch",
+            description: "在海外或部分地区可能会受到限制，可开启此处尝试解决",
+            value: computed({
+              get: () => settingStore.useRealIP,
+              set: (v) => (settingStore.useRealIP = v),
+            }),
+          },
+          {
+            key: "realIP",
+            label: "真实 IP 地址",
+            type: "text-input",
+            description: "可在此处输入国内 IP，不填写则为随机",
+            disabled: computed(() => !settingStore.useRealIP),
+            prefix: "IP",
+            componentProps: { placeholder: "127.0.0.1" },
+            value: computed({
+              get: () => settingStore.realIP,
+              set: (v) => (settingStore.realIP = v),
+            }),
+          },
+        ],
+      },
+      {
+        title: "第三方集成",
         items: [
           {
             key: "smtcOpen",
@@ -202,11 +347,6 @@ export const useThirdSettings = (): SettingConfig => {
               set: (v) => (settingStore.smtcOpen = v),
             }),
           },
-        ],
-      },
-      {
-        title: "Last.fm 集成",
-        items: [
           {
             key: "lastfm_enabled",
             label: "启用 Last.fm",

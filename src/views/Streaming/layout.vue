@@ -251,7 +251,7 @@ const moreOptions = computed<DropdownOption[]>(() => [
     label: "流媒体设置",
     key: "setting",
     props: {
-      onClick: () => openSetting("streaming"),
+      onClick: () => openSetting("network"),
     },
     icon: renderIcon("Settings"),
   },
