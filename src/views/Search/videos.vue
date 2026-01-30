@@ -8,6 +8,7 @@
         :loadMore="hasMore"
         cols="2 600:2 800:3 900:4 1200:5 1400:6"
         type="video"
+        :hiddenCover="settingStore.hiddenCovers.video"
         @loadMore="loadMore"
       />
       <n-empty
@@ -28,10 +29,13 @@
 import type { CoverType } from "@/types/main";
 import { searchResult } from "@/api/search";
 import { formatCoverList } from "@/utils/format";
+import { useSettingStore } from "@/stores";
 
 const props = defineProps<{
   keyword: string;
 }>();
+
+const settingStore = useSettingStore();
 
 // 搜索数据
 const hasMore = ref<boolean>(true);

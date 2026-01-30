@@ -5,7 +5,7 @@
         <div
           v-for="(item, index) in data"
           :key="index"
-          class="artist-item"
+          :class="['artist-item', { 'no-cover': hiddenCover }]"
           @click="
             router.push({
               name: 'artist',
@@ -14,7 +14,7 @@
           "
         >
           <!-- 封面 -->
-          <div class="cover">
+          <div v-if="!hiddenCover" class="cover">
             <s-image
               :src="item.coverSize?.m || item.cover"
               default-src="/images/artist.jpg?asset"
@@ -49,8 +49,8 @@
     </div>
     <div v-else-if="loading" class="artist-list">
       <div class="artist-grid">
-        <div v-for="item in 50" :key="item" class="artist-item">
-          <div class="cover">
+        <div v-for="item in 50" :key="item" :class="['artist-item', { 'no-cover': hiddenCover }]">
+          <div v-if="!hiddenCover" class="cover">
             <n-skeleton class="cover-img" />
           </div>
           <div class="cover-data">
@@ -73,6 +73,7 @@ defineProps<{
   loadMore?: boolean;
   loading?: boolean;
   loadingText?: string;
+  hiddenCover?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -190,6 +191,21 @@ const router = useRouter();
     }
     &:active {
       transform: scale(0.98);
+    }
+    &.no-cover {
+      background-color: var(--surface-container-hex);
+      border: 2px solid rgba(var(--primary), 0.12);
+      padding: 12px 0;
+      &:hover {
+        border-color: rgba(var(--primary), 0.58);
+      }
+      .cover-data {
+        height: 100%;
+        justify-content: center;
+        .name {
+          font-weight: bold;
+        }
+      }
     }
   }
   .load-more {

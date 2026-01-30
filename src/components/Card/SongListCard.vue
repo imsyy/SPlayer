@@ -7,7 +7,7 @@
     </n-flex>
     <div class="content">
       <!-- 封面 -->
-      <div class="cover">
+      <div v-if="!hiddenCover" class="cover">
         <n-image v-if="cover" :src="cover" preview-disabled lazy @load="coverLoaded">
           <template #placeholder>
             <div class="cover-loading">
@@ -65,6 +65,7 @@ const props = defineProps<{
   loading?: boolean;
   height?: number;
   cover?: string;
+  hiddenCover?: boolean;
 }>();
 
 // 列表前三首

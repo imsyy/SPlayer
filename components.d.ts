@@ -29,6 +29,7 @@ declare module 'vue' {
     copy: typeof import('./src/components/Global/Provider copy.vue')['default']
     CopyLyrics: typeof import('./src/components/Modal/CopyLyrics.vue')['default']
     CoverList: typeof import('./src/components/List/CoverList.vue')['default']
+    CoverManager: typeof import('./src/components/Modal/Setting/CoverManager.vue')['default']
     CoverMenu: typeof import('./src/components/Menu/CoverMenu.vue')['default']
     CreatePlaylist: typeof import('./src/components/Modal/CreatePlaylist.vue')['default']
     CustomCode: typeof import('./src/components/Modal/Setting/CustomCode.vue')['default']

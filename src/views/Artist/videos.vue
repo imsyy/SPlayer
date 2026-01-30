@@ -6,6 +6,7 @@
       :loadMore="hasMore"
       type="video"
       cols="2 600:2 800:3 900:4 1200:5 1400:6"
+      :hiddenCover="settingStore.hiddenCovers.video"
       @loadMore="loadMore"
     />
   </div>
@@ -15,10 +16,13 @@
 import type { CoverType } from "@/types/main";
 import { artistVideos } from "@/api/artist";
 import { formatCoverList } from "@/utils/format";
+import { useSettingStore } from "@/stores";
 
 const props = defineProps<{
   id: number;
 }>();
+
+const settingStore = useSettingStore();
 
 // 歌曲数据
 const loading = ref<boolean>(true);

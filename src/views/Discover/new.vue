@@ -35,12 +35,14 @@
         :loadMore="hasMore"
         @loadMore="loadMore"
         type="album"
+        :hiddenCover="settingStore.hiddenCovers.new"
       />
       <SongList
         v-else-if="newTypeChoose === 1"
         :data="newSongData"
         :loading="loading"
         disabledSort
+        :hiddenCover="settingStore.hiddenCovers.new"
       />
     </Transition>
   </div>
@@ -50,8 +52,10 @@
 import { newAlbumsAll, newSongs } from "@/api/rec";
 import type { CoverType, SongType } from "@/types/main";
 import { formatCoverList, formatSongsList } from "@/utils/format";
+import { useSettingStore } from "@/stores";
 
 const router = useRouter();
+const settingStore = useSettingStore();
 
 // 分类数据
 const newTypeNames = ["新碟上架", "新歌速递"];

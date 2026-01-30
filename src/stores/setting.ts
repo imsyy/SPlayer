@@ -219,6 +219,35 @@ export interface SettingState {
   localSeparators: string[];
   /** 显示本地封面 */
   showLocalCover: boolean;
+  /** 封面显示配置 */
+  hiddenCovers: {
+    /** 为我推荐 */
+    home: boolean;
+    /** 歌单广场 */
+    playlist: boolean;
+    /** 排行榜 */
+    toplist: boolean;
+    /** 歌手 */
+    artist: boolean;
+    /** 最新音乐 */
+    new: boolean;
+    /** 播放器 */
+    player: boolean;
+    /** 歌单详情/歌曲列表 */
+    list: boolean;
+    /** 私人FM */
+    personalFM: boolean;
+    /** 歌手详情 */
+    artistDetail: boolean;
+    /** 播客电台 */
+    radio: boolean;
+    /** 我的收藏 */
+    like: boolean;
+    /** 视频 */
+    video: boolean;
+    /** 视频详情页 */
+    videoDetail: boolean;
+  };
   /** 隐藏全部封面 */
   hideAllCovers: boolean;
   /** 隐藏迷你播放器封面 */
@@ -468,6 +497,21 @@ export const useSettingStore = defineStore("setting", {
     localFolderDisplayMode: "tab",
     localSeparators: ["/", "&"],
     showLocalCover: true,
+    hiddenCovers: {
+      home: false,
+      playlist: false,
+      toplist: false,
+      artist: false,
+      new: false,
+      player: false,
+      list: false,
+      personalFM: false,
+      artistDetail: false,
+      radio: false,
+      like: false,
+      video: false,
+      videoDetail: false,
+    },
     hideAllCovers: false,
     hideMiniPlayerCover: false,
     downloadPath: "",

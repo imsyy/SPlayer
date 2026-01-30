@@ -1,4 +1,4 @@
-import { useDataStore, useMusicStore, useSettingStore, useStatusStore } from "@/stores";
+import { useDataStore, useMusicStore, useSettingStore } from "@/stores";
 import { usePlayerController } from "@/core/player/PlayerController";
 import { isElectron } from "@/utils/env";
 import {
@@ -13,7 +13,6 @@ export const useGeneralSettings = (): SettingConfig => {
   const dataStore = useDataStore();
   const musicStore = useMusicStore();
   const settingStore = useSettingStore();
-  const statusStore = useStatusStore();
   const player = usePlayerController();
 
   const useOnlineService = ref(settingStore.useOnlineService);

@@ -28,7 +28,13 @@
         </n-tag>
       </n-flex>
     </div>
-    <ArtistList :data="artistsData" :loading="loading" :loadMore="hasMore" @loadMore="loadMore" />
+    <ArtistList
+      :data="artistsData"
+      :loading="loading"
+      :loadMore="hasMore"
+      :hiddenCover="settingStore.hiddenCovers.artist"
+      @loadMore="loadMore"
+    />
   </div>
 </template>
 
@@ -36,8 +42,10 @@
 import type { ArtistType } from "@/types/main";
 import { artistTypeList } from "@/api/artist";
 import { formatArtistsList } from "@/utils/format";
+import { useSettingStore } from "@/stores";
 
 const router = useRouter();
+const settingStore = useSettingStore();
 
 // 歌手标签数据
 const artistInitials = [

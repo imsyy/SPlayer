@@ -3,6 +3,7 @@
     <!-- 封面 -->
     <Transition name="fade" mode="out-in">
       <n-image
+        v-if="!settingStore.hiddenCovers.personalFM"
         :key="musicStore.personalFMSong?.id"
         :src="musicStore.personalFMSong?.coverSize?.m"
         class="cover"
@@ -19,7 +20,10 @@
     </Transition>
     <!-- 信息 -->
     <Transition name="fade" mode="out-in">
-      <div :key="musicStore.personalFMSong?.id" class="info">
+      <div
+        :key="musicStore.personalFMSong?.id"
+        :class="['info', { 'no-cover': settingStore.hiddenCovers.personalFM }]"
+      >
         <n-text class="name text-hidden">
           {{ musicStore.personalFMSong?.name || "未知曲目" }}
         </n-text>
@@ -37,6 +41,13 @@
         </div>
         <!-- 功能 -->
         <n-flex :wrap="false" class="menu" align="center">
+          <!-- 不喜欢 -->
+          <div
+            class="menu-icon"
+            v-debounce="() => songManager.personalFMTrash(musicStore.personalFMSong?.id)"
+          >
+            <SvgIcon class="icon" size="18" name="ThumbDown" />
+          </div>
           <!-- 播放暂停 -->
           <n-button
             :loading="statusStore.personalFmMode && statusStore.playLoading"
@@ -57,13 +68,6 @@
           <div class="menu-icon" @click.stop="fmPlayNext">
             <SvgIcon size="26" name="SkipNext" />
           </div>
-          <!-- 不喜欢 -->
-          <div
-            class="menu-icon"
-            v-debounce="() => songManager.personalFMTrash(musicStore.personalFMSong?.id)"
-          >
-            <SvgIcon class="icon" size="18" name="ThumbDown" />
-          </div>
         </n-flex>
         <!-- 图标 -->
         <div class="radio">
@@ -78,12 +82,13 @@
 <script setup lang="ts">
 import { usePlayerController } from "@/core/player/PlayerController";
 import { useSongManager } from "@/core/player/SongManager";
-import { useMusicStore, useStatusStore } from "@/stores";
+import { useMusicStore, useStatusStore, useSettingStore } from "@/stores";
 import { coverLoaded } from "@/utils/helper";
 import { debounce, isObject } from "lodash-es";
 
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
+const settingStore = useSettingStore();
 
 const player = usePlayerController();
 const songManager = useSongManager();
@@ -224,6 +229,38 @@ onMounted(() => songManager.initPersonalFM());
         }
         &:active {
           transform: scale(1);
+        }
+      }
+    }
+    &.no-cover {
+      width: 100%;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      .name {
+        font-size: 24px;
+        margin-bottom: 6px;
+      }
+      .artists {
+        margin-top: 0;
+        font-size: 15px;
+        opacity: 0.8;
+      }
+      .menu {
+        margin-top: 28px;
+        justify-content: center;
+        gap: 8px;
+        .menu-icon {
+          width: 42px;
+          height: 42px;
+          background-color: rgba(var(--primary), 0.06);
+          &:hover {
+            background-color: rgba(var(--primary), 0.12);
+          }
+        }
+        .play {
+          width: 52px;
+          height: 52px;
         }
       }
     }

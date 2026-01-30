@@ -2,7 +2,7 @@
   <div :key="artistId" :class="['artist', { small: listScrolling }]">
     <Transition name="fade" mode="out-in">
       <div v-if="artistDetailData" class="detail">
-        <div class="cover">
+        <div v-if="!settingStore.hiddenCovers.artistDetail" class="cover">
           <n-image
             :src="artistDetailData.coverSize?.m || artistDetailData.cover"
             :previewed-img-props="{ style: { borderRadius: '8px' } }"
@@ -110,7 +110,7 @@
         </div>
       </div>
       <div v-else class="detail">
-        <n-skeleton class="cover" />
+        <n-skeleton v-if="!settingStore.hiddenCovers.artistDetail" class="cover" />
         <div class="data">
           <n-skeleton :repeat="4" text />
         </div>

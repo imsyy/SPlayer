@@ -16,7 +16,7 @@
       <!-- 封面 -->
       <Transition name="fade" mode="out-in">
         <div
-          v-if="!settingStore.hideMiniPlayerCover"
+          v-if="!settingStore.hiddenCovers.player"
           :key="musicStore.playSong.cover"
           class="cover"
           @click.stop="statusStore.showFullPlayer = true"
@@ -54,7 +54,7 @@
               class="name"
               style="cursor: pointer"
               @click.stop="
-                settingStore.hideMiniPlayerCover && (statusStore.showFullPlayer = true)
+                settingStore.hiddenCovers.player && (statusStore.showFullPlayer = true)
               "
             />
             <!-- 倍速 -->

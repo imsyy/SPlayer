@@ -11,6 +11,7 @@
               :height="160"
               :description="item.updateTip"
               size="normal"
+              :hiddenCover="settingStore.hiddenCovers.toplist"
               @click="router.push({ name: 'playlist', query: { id: item.id } })"
             >
               <template #info>
@@ -41,7 +42,12 @@
       </div>
     </Transition>
     <n-divider style="margin-bottom: 0"> 精选榜 </n-divider>
-    <CoverList :data="topListData.selected" :loading="true" type="playlist" />
+    <CoverList
+      :data="topListData.selected"
+      :loading="true"
+      type="playlist"
+      :hiddenCover="settingStore.hiddenCovers.toplist"
+    />
   </div>
 </template>
 
@@ -49,8 +55,10 @@
 import { topPlaylist } from "@/api/playlist";
 import type { CoverType } from "@/types/main";
 import { formatCoverList } from "@/utils/format";
+import { useSettingStore } from "@/stores";
 
 const router = useRouter();
+const settingStore = useSettingStore();
 
 // 排行榜数据
 const topListData = ref<{

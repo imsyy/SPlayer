@@ -5,12 +5,12 @@
         <div
           v-for="(item, index) in data"
           :key="index"
-          class="cover-item"
+          :class="['cover-item', { 'no-cover': hiddenCover }]"
           @click="goDetail(item)"
           @contextmenu="coverMenuRef?.openDropdown($event, item, type)"
         >
           <!-- 封面 -->
-          <div class="cover">
+          <div v-if="!hiddenCover" class="cover">
             <s-image
               :key="item.cover"
               :src="
@@ -94,8 +94,8 @@
     </div>
     <div v-else-if="loading" :class="['cover-list', 'loading', type]">
       <div class="cover-grid">
-        <div v-for="item in loadingNum || 50" :key="item" class="cover-item">
-          <div class="cover">
+        <div v-for="item in loadingNum || 50" :key="item" :class="['cover-item', { 'no-cover': hiddenCover }]">
+          <div v-if="!hiddenCover" class="cover">
             <n-skeleton class="cover-img" />
           </div>
           <div class="cover-data">
@@ -133,6 +133,7 @@ const props = defineProps<{
   emptyDescription?: string;
   /** 是否为流媒体数据 */
   isStreaming?: boolean;
+  hiddenCover?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -405,6 +406,23 @@ const getListData = async (id: number | string): Promise<SongType[]> => {
         .play {
           transform: translateY(0);
           opacity: 1;
+        }
+      }
+    }
+    &.no-cover {
+      background-color: var(--surface-container-hex);
+      border: 2px solid rgba(var(--primary), 0.12);
+      padding: 0;
+      overflow: hidden;
+      &:hover {
+        border-color: rgba(var(--primary), 0.58);
+      }
+      .cover-data {
+        height: 100%;
+        justify-content: center;
+        .name {
+          font-size: 18px;
+          font-weight: bold;
         }
       }
     }

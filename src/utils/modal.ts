@@ -430,6 +430,22 @@ export const openSidebarHideManager = async () => {
   });
 };
 
+/** 打开封面隐藏配置弹窗 */
+export const openCoverManager = async () => {
+  const { default: CoverManager } =
+    await import("@/components/Modal/Setting/CoverManager.vue");
+  window.$modal.create({
+    preset: "card",
+    transformOrigin: "center",
+    autoFocus: false,
+    style: { width: "500px" },
+    title: "封面隐藏配置",
+    content: () => {
+      return h(CoverManager);
+    },
+  });
+};
+
 /** 打开首页栏目配置弹窗 */
 export const openHomePageSectionManager = async () => {
   const { default: HomePageSectionManager } =

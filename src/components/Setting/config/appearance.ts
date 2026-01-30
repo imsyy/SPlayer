@@ -7,6 +7,7 @@ import {
   openSidebarHideManager,
   openHomePageSectionManager,
   openPlaylistPageManager,
+  openCoverManager,
 } from "@/utils/modal";
 import { SettingConfig } from "@/types/settings";
 import { computed, ref } from "vue";
@@ -355,24 +356,12 @@ export const useAppearanceSettings = (): SettingConfig => {
         title: "界面元素显示",
         items: [
           {
-            key: "hideAllCovers",
-            label: "隐藏歌曲列表封面",
-            type: "switch",
-            description: "开启后将隐藏列表中所有歌曲的封面",
-            value: computed({
-              get: () => settingStore.hideAllCovers,
-              set: (v) => (settingStore.hideAllCovers = v),
-            }),
-          },
-          {
-            key: "hideMiniPlayerCover",
-            label: "隐藏迷你播放器封面",
-            type: "switch",
-            description: "开启后将隐藏底部迷你播放器的封面",
-            value: computed({
-              get: () => settingStore.hideMiniPlayerCover,
-              set: (v) => (settingStore.hideMiniPlayerCover = v),
-            }),
+            key: "coverManager",
+            label: "封面显示管理",
+            type: "button",
+            description: "配置各界面封面是否隐藏（如歌单广场、排行榜、播放器等）",
+            buttonLabel: "配置",
+            action: openCoverManager,
           },
           {
             key: "autoHidePlayerMeta",
