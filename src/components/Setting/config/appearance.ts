@@ -357,7 +357,7 @@ export const useAppearanceSettings = (): SettingConfig => {
         items: [
           {
             key: "coverManager",
-            label: "封面显示管理",
+            label: "封面隐藏管理",
             type: "button",
             description: "配置各界面封面是否隐藏（如歌单广场、排行榜、播放器等）",
             buttonLabel: "配置",
