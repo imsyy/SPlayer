@@ -210,15 +210,16 @@ export const useLyricSettings = (): SettingConfig => {
             }),
           },
           {
-            key: "hideLyricBrackets",
-            label: "隐藏歌词括号内容",
+            key: "replaceLyricBrackets",
+            label: "替换歌词括号内容",
             type: "switch",
-            description: "隐藏歌词中括号内的内容，如 (Live)、(伴奏) 等",
+            description: "将歌词中的括号内容替换为 - 形式，例如 abc（897） 替换成 abc - 897",
             value: computed({
-              get: () => settingStore.hideLyricBrackets,
-              set: (v) => (settingStore.hideLyricBrackets = v),
+              get: () => settingStore.replaceLyricBrackets,
+              set: (v) => (settingStore.replaceLyricBrackets = v),
             }),
           },
+
           {
             key: "lyricsScrollOffset",
             label: "歌词滚动位置",

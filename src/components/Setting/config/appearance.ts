@@ -479,6 +479,16 @@ export const useAppearanceSettings = (): SettingConfig => {
               set: (v) => (settingStore.showSongOriginalTag = v),
             }),
           },
+          {
+            key: "hideLyricBrackets",
+            label: "隐藏括号内容",
+            type: "switch",
+            description: "隐藏括号内的内容，如 (Live)、(伴奏) 等",
+            value: computed({
+              get: () => settingStore.hideLyricBrackets,
+              set: (v) => (settingStore.hideLyricBrackets = v),
+            }),
+          },
         ],
       },
     ],

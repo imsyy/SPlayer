@@ -677,6 +677,133 @@ class LyricManager {
   }
 
   /**
+   * 替换歌词括号内容
+   * @param lyricData 歌词数据
+   * @returns 替换后的歌词数据
+   */
+  private applyBracketReplacement(lyricData: SongLyric): SongLyric {
+    const settingStore = useSettingStore();
+    if (!settingStore.replaceLyricBrackets) {
+      return lyricData;
+    }
+
+    const newLyricData = cloneDeep(lyricData);
+
+    const processLines = (lines: LyricLine[] | undefined) => {
+      if (!lines) return;
+      lines.forEach((line) => {
+        // 1. Reconstruct full text to check for full bracket enclosure
+        const fullText = line.words.map((w) => w.word).join("");
+
+        // Check if the line matches ^\s*[\(（][^()（）]*[\)）]\s*$
+        const isFullBracket = /^\s*[\(（][^()（）]*[\)）]\s*$/.test(fullText);
+
+        if (isFullBracket) {
+          // Remove first ( or （
+          let foundStart = false;
+          for (const word of line.words) {
+            if (foundStart) break;
+            if (/[\(（]/.test(word.word)) {
+              word.word = word.word.replace(/[\(（]/, "");
+              foundStart = true;
+            }
+          }
+          // Remove last ) or ）
+          let foundEnd = false;
+          for (let i = line.words.length - 1; i >= 0; i--) {
+            if (foundEnd) break;
+            const word = line.words[i];
+            if (/[\)）]/.test(word.word)) {
+              const lastIndex = Math.max(
+                word.word.lastIndexOf(")"),
+                word.word.lastIndexOf("）"),
+              );
+              if (lastIndex !== -1) {
+                word.word =
+                  word.word.substring(0, lastIndex) +
+                  word.word.substring(lastIndex + 1);
+                foundEnd = true;
+              }
+            }
+          }
+        } else {
+          // Normal replacement: ( -> " - ", ) -> " - " or ""
+          line.words.forEach((word, index) => {
+            word.word = word.word.replace(/[\(（]/g, " - ");
+            
+            // Replace ) with " - " OR "" depending on position
+            word.word = word.word.replace(/[\)）]/g, (_, offset, string) => {
+               // Check if this ) is effectively at the end of the word
+               const isAtEnd = offset === string.length - 1;
+               
+               if (isAtEnd) {
+                 // If at end of word, check if it is the last word
+                 if (index === line.words.length - 1) {
+                   return ""; // Last word's last char -> remove
+                 } else {
+                   return " - "; // Not last word -> separator
+                 }
+               } else {
+                 // Not at end of word -> separator
+                 return " - ";
+               }
+            });
+          });
+
+          // Cleanup double dashes
+          line.words.forEach((word, index) => {
+            // Intra-word cleanup
+            word.word = word.word.replace(/(?:\s*-\s*){2,}/g, " - ");
+
+            // Inter-word cleanup
+            if (index > 0) {
+              const prev = line.words[index - 1];
+              // Check if prev ends with dash and curr starts with dash
+              if (/-\s*$/.test(prev.word) && /^\s*-/.test(word.word)) {
+                // Remove trailing dash from prev
+                prev.word = prev.word.replace(/-\s*$/, "");
+                // Ensure curr starts with " - "
+                if (!/^\s*-\s+/.test(word.word)) {
+                  word.word = " - " + word.word.replace(/^\s*-\s*/, "");
+                }
+              }
+            }
+          });
+        }
+
+        // Process translations and romaji
+        const processString = (str: string) => {
+          if (!str) return str;
+          if (/^\s*[\(（][^()（）]*[\)）]\s*$/.test(str)) {
+            return str
+              .replace(/^\s*[\(（]/, "")
+              .replace(/[\)）]\s*$/, "")
+              .trim();
+          } else {
+            return str
+              .replace(/[\(（]/g, " - ")
+              .replace(/[\)）](?=\s*$)/g, "") // Remove if at end
+              .replace(/[\)）]/g, " - ")      // Else replace with dash
+              .replace(/(?:\s*-\s*){2,}/g, " - "); // Cleanup double dashes
+          }
+        };
+
+        if (line.translatedLyric) {
+          line.translatedLyric = processString(line.translatedLyric);
+        }
+        if (line.romanLyric) {
+          line.romanLyric = processString(line.romanLyric);
+        }
+      });
+    };
+
+    processLines(newLyricData.lrcData);
+    processLines(newLyricData.yrcData);
+
+    return newLyricData;
+  }
+
+  /**
    * 比较歌词数据是否相同
    * @param oldData 旧歌词数据
    * @param newData 新歌词数据
@@ -738,6 +865,9 @@ class LyricManager {
     const statusStore = useStatusStore();
     // 若非本次
     if (this.activeLyricReq !== req) return;
+
+    // 应用括号替换
+    lyricData = this.applyBracketReplacement(lyricData);
 
     // 规范化时间
     this.normalizeLyricLines(lyricData.yrcData);
