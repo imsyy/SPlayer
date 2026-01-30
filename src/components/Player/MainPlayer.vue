@@ -54,7 +54,7 @@
               class="name"
               style="cursor: pointer"
               @click.stop="
-                settingStore.hideMiniPlayerCover ? (statusStore.showFullPlayer = true) : null
+                settingStore.hideMiniPlayerCover && (statusStore.showFullPlayer = true)
               "
             />
             <!-- 倍速 -->
