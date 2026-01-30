@@ -22,7 +22,11 @@
             />
           </div>
           <div class="data">
-            <n-h2 class="name text-hidden">{{ currentSong.name }}</n-h2>
+            <n-h2 class="name text-hidden">{{
+              settingStore.hideLyricBrackets
+                ? removeBrackets(currentSong.name)
+                : currentSong.name
+            }}</n-h2>
             <div class="meta">
               <div class="item">
                 <SvgIcon name="Person" :depth="3" />
@@ -47,9 +51,17 @@
                   class="text-hidden"
                   @click="$router.push({ name: 'album', query: { id: currentSong.album.id } })"
                 >
-                  {{ currentSong.album.name }}
+                  {{
+                    settingStore.hideLyricBrackets
+                      ? removeBrackets(currentSong.album.name)
+                      : currentSong.album.name
+                  }}
                 </n-text>
-                <n-text v-else class="text-hidden">{{ currentSong.album }}</n-text>
+                <n-text v-else class="text-hidden">{{
+                  settingStore.hideLyricBrackets
+                    ? removeBrackets(currentSong.album)
+                    : currentSong.album
+                }}</n-text>
               </div>
             </div>
             <div class="actions">
@@ -277,11 +289,13 @@ import {
   songSheetPreview,
   songFirstListenInfo,
 } from "@/api/song";
-import { formatSongsList } from "@/utils/format";
+import { formatSongsList, removeBrackets } from "@/utils/format";
+import { useSettingStore } from "@/stores";
 import dayjs from "dayjs";
 
 const route = useRoute();
 const player = usePlayerController();
+const settingStore = useSettingStore();
 
 const loading = ref(true);
 const currentSongId = ref<number>(0);

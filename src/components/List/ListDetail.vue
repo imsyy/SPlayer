@@ -3,7 +3,7 @@
   <div :class="['list-detail', { small: listScrolling }]">
     <Transition name="fade" mode="out-in">
       <div v-if="detailData" class="detail">
-        <div class="cover">
+        <div class="cover" v-if="!settingStore.hideAllCovers">
           <n-image
             :src="detailData.coverSize?.m || detailData.cover"
             :previewed-img-props="{ style: { borderRadius: '8px' } }"
@@ -210,6 +210,7 @@ import { coverLoaded, formatNumber } from "@/utils/helper";
 import { renderToolbar } from "@/utils/meta";
 import { formatTimestamp } from "@/utils/time";
 import { openDescModal, openJumpArtist } from "@/utils/modal";
+import { useSettingStore } from "@/stores";
 
 interface ListDetailConfig {
   // 标题类型
@@ -253,6 +254,7 @@ const emit = defineEmits<{
 }>();
 
 const router = useRouter();
+const settingStore = useSettingStore();
 
 // 当前 tab
 const currentTab = ref<"songs" | "comments">("songs");

@@ -213,6 +213,16 @@ export const useGeneralSettings = (): SettingConfig => {
             }),
           },
           {
+            key: "hideMiniPlayerCover",
+            label: "隐藏迷你播放器封面",
+            type: "switch",
+            description: "开启后将隐藏底部迷你播放器的封面",
+            value: computed({
+              get: () => settingStore.hideMiniPlayerCover,
+              set: (v) => (settingStore.hideMiniPlayerCover = v),
+            }),
+          },
+          {
             key: "menuShowCover",
             label: "侧边栏显示封面",
             type: "switch",

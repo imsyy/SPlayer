@@ -215,6 +215,8 @@ export interface SettingState {
   showLocalCover: boolean;
   /** 隐藏全部封面 */
   hideAllCovers: boolean;
+  /** 隐藏迷你播放器封面 */
+  hideMiniPlayerCover: boolean;
   /** 路由动画 */
   routeAnimation: "none" | "fade" | "zoom" | "slide" | "up";
   /** 播放器展开动画 */
@@ -450,6 +452,7 @@ export const useSettingStore = defineStore("setting", {
     localSeparators: ["/", "&"],
     showLocalCover: true,
     hideAllCovers: false,
+    hideMiniPlayerCover: false,
     downloadPath: "",
     cacheEnabled: true,
     songCacheEnabled: true,
