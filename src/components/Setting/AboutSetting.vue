@@ -291,17 +291,18 @@ const getUpdateData = async () => (updateData.value = await getUpdateLog());
 // 打开开发者模式
 const openDeveloperMode = useThrottleFn(() => {
   developerModeClickCount.value++;
+  const isEnabled = statusStore.developerMode;
   if (developerModeClickCount.value >= 5 && developerModeClickCount.value < 8) {
-    if (statusStore.developerMode) {
-      window.$message.info("已处于开发者模式！");
-      developerModeClickCount.value = 0;
-      return;
-    }
-    window.$message.info(`再点击${8 - developerModeClickCount.value}次以开启开发者模式`);
+    const action = isEnabled ? "关闭" : "开启";
+    window.$message.info(`再点击${8 - developerModeClickCount.value}次以${action}开发者模式`);
   } else if (developerModeClickCount.value >= 8) {
     developerModeClickCount.value = 0;
-    statusStore.developerMode = true;
-    window.$message.warning("开发者模式已开启，请谨慎使用！");
+    statusStore.developerMode = !isEnabled;
+    if (!isEnabled) {
+      window.$message.warning("开发者模式已开启，请谨慎使用！");
+    } else {
+      window.$message.success("开发者模式已关闭");
+    }
   }
 }, 100);
 
