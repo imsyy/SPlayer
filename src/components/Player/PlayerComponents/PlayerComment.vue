@@ -17,7 +17,7 @@
       </n-image>
       <n-flex :size="2" class="song-info" vertical>
         <span class="title text-hidden">{{
-          settingStore.hideLyricBrackets
+          settingStore.hideBracketedContent
             ? removeBrackets(musicStore.playSong.name)
             : musicStore.playSong.name
         }}</span>

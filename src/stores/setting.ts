@@ -74,7 +74,7 @@ export interface SettingState {
   /** 歌词默认靠右（对唱互换） */
   lyricAlignRight: boolean;
   /** 隐藏歌词括号内容和别名 */
-  hideLyricBrackets: boolean;
+  hideBracketedContent: boolean;
   /** 替换歌词括号内容 */
   replaceLyricBrackets: boolean;
   /** 歌词括号替换预设 */
@@ -479,7 +479,7 @@ export const useSettingStore = defineStore("setting", {
     lyricsScrollOffset: 0.25,
     lyricHorizontalOffset: 10,
     lyricAlignRight: false,
-    hideLyricBrackets: false,
+    hideBracketedContent: false,
     replaceLyricBrackets: false,
     bracketReplacementPreset: "dash",
     customBracketReplacement: "-",

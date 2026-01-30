@@ -469,13 +469,13 @@ export const useAppearanceSettings = (): SettingConfig => {
             }),
           },
           {
-            key: "hideLyricBrackets",
+            key: "hideBracketedContent",
             label: "隐藏括号内容",
             type: "switch",
             description: "隐藏括号内的内容，如 (Live)、(伴奏) 等",
             value: computed({
-              get: () => settingStore.hideLyricBrackets,
-              set: (v) => (settingStore.hideLyricBrackets = v),
+              get: () => settingStore.hideBracketedContent,
+              set: (v) => (settingStore.hideBracketedContent = v),
             }),
           },
         ],

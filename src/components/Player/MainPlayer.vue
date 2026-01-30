@@ -46,7 +46,7 @@
             <TextContainer
               :key="musicStore.playSong.name"
               :text="
-                settingStore.hideLyricBrackets
+                settingStore.hideBracketedContent
                   ? removeBrackets(musicStore.playSong.name)
                   : musicStore.playSong.name
               "

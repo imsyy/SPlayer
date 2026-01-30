@@ -279,13 +279,13 @@ export const useGeneralSettings = (): SettingConfig => {
             }),
           },
           {
-            key: "hideLyricBrackets",
+            key: "hideBracketedContent",
             label: "隐藏括号与别名",
             type: "switch",
             description: "隐藏歌曲名与专辑名中的括号内容和别名",
             value: computed({
-              get: () => settingStore.hideLyricBrackets,
-              set: (v) => (settingStore.hideLyricBrackets = v),
+              get: () => settingStore.hideBracketedContent,
+              set: (v) => (settingStore.hideBracketedContent = v),
             }),
           },
           {

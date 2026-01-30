@@ -3,7 +3,7 @@
   <div :class="['list-detail', { small: listScrolling }]">
     <Transition name="fade" mode="out-in">
       <div v-if="detailData" class="detail">
-        <div class="cover" v-if="!settingStore.hideAllCovers">
+        <div class="cover" v-if="!settingStore.hiddenCovers.list">
           <n-image
             :src="detailData.coverSize?.m || detailData.cover"
             :previewed-img-props="{ style: { borderRadius: '8px' } }"

@@ -23,7 +23,7 @@
           </div>
           <div class="data">
             <n-h2 class="name text-hidden">{{
-              settingStore.hideLyricBrackets
+              settingStore.hideBracketedContent
                 ? removeBrackets(currentSong.name)
                 : currentSong.name
             }}</n-h2>
@@ -52,13 +52,13 @@
                   @click="$router.push({ name: 'album', query: { id: currentSong.album.id } })"
                 >
                   {{
-                    settingStore.hideLyricBrackets
+                    settingStore.hideBracketedContent
                       ? removeBrackets(currentSong.album.name)
                       : currentSong.album.name
                   }}
                 </n-text>
                 <n-text v-else class="text-hidden">{{
-                  settingStore.hideLyricBrackets
+                  settingStore.hideBracketedContent
                     ? removeBrackets(currentSong.album)
                     : currentSong.album
                 }}</n-text>

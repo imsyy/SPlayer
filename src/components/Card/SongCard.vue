@@ -40,12 +40,12 @@
               class="name-text"
             >
               {{
-                settingStore.hideLyricBrackets
+                settingStore.hideBracketedContent
                   ? removeBrackets(song?.name)
                   : song?.name || "未知曲目"
               }}
               <n-text
-                v-if="song.alia?.length && !settingStore.hideLyricBrackets"
+                v-if="song.alia?.length && !settingStore.hideBracketedContent"
                 class="alia"
                 depth="3"
               >
@@ -236,7 +236,7 @@ const qualityColor = computed(() => {
 const albumName = computed(() => {
   const album = song.value.album;
   const name = isObject(album) ? album.name : album;
-  return (settingStore.hideLyricBrackets ? removeBrackets(name) : name) || "未知专辑";
+  return (settingStore.hideBracketedContent ? removeBrackets(name) : name) || "未知专辑";
 });
 
 // 加载本地歌曲封面
