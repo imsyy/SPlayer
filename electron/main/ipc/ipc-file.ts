@@ -156,12 +156,6 @@ const initFileIpc = (): void => {
               size: (size / (1024 * 1024)).toFixed(2),
               path: fullPath,
               quality: format.bitrate ?? 0,
-              replayGain: {
-                trackGain: common.replaygain_track_gain?.ratio,
-                trackPeak: common.replaygain_track_peak?.ratio,
-                albumGain: common.replaygain_album_gain?.ratio,
-                albumPeak: common.replaygain_album_peak?.ratio,
-              },
             };
           } catch (err) {
             ipcLog.warn(`⚠️ Failed to parse file: ${fullPath}`, err);
@@ -199,12 +193,6 @@ const initFileIpc = (): void => {
         format,
         // md5
         md5: await getFileMD5(filePath),
-        replayGain: {
-          trackGain: common.replaygain_track_gain?.ratio,
-          trackPeak: common.replaygain_track_peak?.ratio,
-          albumGain: common.replaygain_album_gain?.ratio,
-          albumPeak: common.replaygain_album_peak?.ratio,
-        },
       };
     } catch (error) {
       ipcLog.error("❌ Error fetching music metadata:", error);
@@ -648,26 +636,9 @@ const initFileIpc = (): void => {
         Id3v2Settings.defaultVersion = 3;
 
         songFile.tag.title = songData?.name || "未知曲目";
-        songFile.tag.album =
-          (typeof songData?.album === "string" ? songData.album : songData?.album?.name) || "未知专辑";
-        // 处理歌手信息（兼容字符串和数组格式）
-        const getArtistNames = (artists: any): string[] => {
-          if (Array.isArray(artists)) {
-            return artists
-              .map((ar: any) => (typeof ar === "string" ? ar : ar?.name || ""))
-              .filter((name) => name && name.trim().length > 0);
-          }
-          if (typeof artists === "string" && artists.trim().length > 0) {
-            return [artists];
-          }
-          return [];
-        };
-
-        const artistNames = getArtistNames(songData?.artists);
-        const finalArtists = artistNames.length > 0 ? artistNames : ["未知艺术家"];
-
-        songFile.tag.performers = finalArtists;
-        songFile.tag.albumArtists = finalArtists;
+        songFile.tag.album = songData?.album?.name || "未知专辑";
+        songFile.tag.performers = songData?.artists?.map((ar: any) => ar.name) || ["未知艺术家"];
+        songFile.tag.albumArtists = songData?.artists?.map((ar: any) => ar.name) || ["未知艺术家"];
         if (lyric && downloadLyric) songFile.tag.lyrics = lyric;
         if (songCover && downloadCover) songFile.tag.pictures = [songCover];
         // 保存元信息

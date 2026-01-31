@@ -210,50 +210,15 @@ export const useLyricSettings = (): SettingConfig => {
             }),
           },
           {
-            key: "replaceLyricBrackets",
-            label: "替换歌词括号内容",
+            key: "hideLyricBrackets",
+            label: "隐藏歌词括号内容",
             type: "switch",
-            description: "将歌词中的括号内容替换为指定格式",
+            description: "隐藏歌词中括号内的内容，如 (Live)、(伴奏) 等",
             value: computed({
-              get: () => settingStore.replaceLyricBrackets,
-              set: (v) => (settingStore.replaceLyricBrackets = v),
+              get: () => settingStore.hideLyricBrackets,
+              set: (v) => (settingStore.hideLyricBrackets = v),
             }),
           },
-          {
-            key: "bracketReplacementPreset",
-            label: "括号替换样式",
-            type: "select",
-            description: "选择替换后的括号样式",
-            disabled: computed(() => !settingStore.replaceLyricBrackets),
-            options: [
-              { label: "连字符 ( - )", value: "dash" },
-              { label: "六角括号 (〔 〕)", value: "angleBrackets" },
-              { label: "直角引号 (「 」)", value: "cornerBrackets" },
-              { label: "自定义", value: "custom" },
-            ],
-            value: computed({
-              get: () => settingStore.bracketReplacementPreset,
-              set: (v) => (settingStore.bracketReplacementPreset = v),
-            }),
-          },
-          {
-            key: "customBracketReplacement",
-            label: "自定义替换内容",
-            type: "text-input",
-            description: "输入自定义的替换字符。支持单个分隔符（如 - ）或成对符号（如 () ）",
-            disabled: computed(() => !settingStore.replaceLyricBrackets || settingStore.bracketReplacementPreset !== "custom"),
-            value: computed({
-              get: () => settingStore.customBracketReplacement,
-              set: (v) => {
-                if (v.trim().length > 5) {
-                  window.$message.warning("自定义替换内容不能超过5个字符");
-                  return;
-                }
-                settingStore.customBracketReplacement = v;
-              },
-            }),
-          },
-
           {
             key: "lyricsScrollOffset",
             label: "歌词滚动位置",

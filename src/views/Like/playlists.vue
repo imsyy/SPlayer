@@ -14,22 +14,15 @@
       </n-tag>
     </n-flex>
     <Transition name="fade" mode="out-in">
-      <CoverList
-        :key="plTypeChoose"
-        :data="listData"
-        :loading="true"
-        type="playlist"
-        :hiddenCover="settingStore.hiddenCovers.like"
-      />
+      <CoverList :key="plTypeChoose" :data="listData" :loading="true" type="playlist" />
     </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useDataStore, useSettingStore } from "@/stores";
+import { useDataStore } from "@/stores";
 
 const dataStore = useDataStore();
-const settingStore = useSettingStore();
 
 // 歌单分类
 const plTypeChoose = ref(0);

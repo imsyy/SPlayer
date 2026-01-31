@@ -7,7 +7,7 @@
     <div class="name">
       <span class="name-text text-hidden">
         {{
-          settingStore.hideBracketedContent
+          settingStore.hideLyricBrackets
             ? removeBrackets(musicStore.playSong.name)
             : musicStore.playSong.name || "未知曲目"
         }}
@@ -38,7 +38,7 @@
     </div>
     <!-- 别名 -->
     <span
-      v-if="musicStore.playSong.alia && !settingStore.hideBracketedContent"
+      v-if="musicStore.playSong.alia && !settingStore.hideLyricBrackets"
       class="alia text-hidden"
     >
       {{ musicStore.playSong.alia }}
@@ -72,17 +72,11 @@
             class="ar"
             @click="jumpPage({ name: 'artist', query: { id: ar.id } })"
           >
-            {{
-              settingStore.hideBracketedContent ? removeBrackets(ar.name) : ar.name
-            }}
+            {{ ar.name }}
           </span>
         </div>
         <div v-else class="ar-list">
-          <span class="ar">{{
-            settingStore.hideBracketedContent
-              ? removeBrackets(musicStore.playSong.artists)
-              : musicStore.playSong.artists || "未知艺术家"
-          }}</span>
+          <span class="ar">{{ musicStore.playSong.artists || "未知艺术家" }}</span>
         </div>
       </div>
       <div v-else class="artists">
@@ -100,14 +94,14 @@
           @click="jumpPage({ name: 'album', query: { id: musicStore.playSong.album.id } })"
         >
           {{
-            (settingStore.hideBracketedContent
+            (settingStore.hideLyricBrackets
               ? removeBrackets(musicStore.playSong.album?.name)
               : musicStore.playSong.album?.name) || "未知专辑"
           }}
         </span>
         <span v-else class="name-text text-hidden">
           {{
-            (settingStore.hideBracketedContent
+            (settingStore.hideLyricBrackets
               ? removeBrackets(musicStore.playSong.album)
               : musicStore.playSong.album) || "未知专辑"
           }}

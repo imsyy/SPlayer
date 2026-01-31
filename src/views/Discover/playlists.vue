@@ -39,7 +39,6 @@
       :loading="loading"
       :loadMore="hasMore"
       type="playlist"
-      :hiddenCover="settingStore.hiddenCovers.playlist"
       @loadMore="loadMore"
     />
     <!-- 分类选择 -->
@@ -95,13 +94,12 @@
 
 <script setup lang="ts">
 import type { CoverType } from "@/types/main";
-import { useDataStore, useSettingStore } from "@/stores";
+import { useDataStore } from "@/stores";
 import { allCatlistPlaylist } from "@/api/playlist";
 import { formatCoverList } from "@/utils/format";
 
 const router = useRouter();
 const dataStore = useDataStore();
-const settingStore = useSettingStore();
 
 const catChangeShow = ref<boolean>(false);
 

@@ -1,18 +1,22 @@
-import { useDataStore, useMusicStore, useSettingStore } from "@/stores";
+import { useDataStore, useMusicStore, useSettingStore, useStatusStore } from "@/stores";
 import { usePlayerController } from "@/core/player/PlayerController";
 import { isElectron } from "@/utils/env";
 import {
+  openSidebarHideManager,
+  openHomePageSectionManager,
+  openFontManager,
+  openCustomCode,
+  openThemeConfig,
   openExcludeComment,
 } from "@/utils/modal";
 import { sendRegisterProtocol } from "@/utils/protocol";
 import { SettingConfig } from "@/types/settings";
-import { ref, computed, h } from "vue";
-import { NAlert } from "naive-ui";
 
 export const useGeneralSettings = (): SettingConfig => {
   const dataStore = useDataStore();
   const musicStore = useMusicStore();
   const settingStore = useSettingStore();
+  const statusStore = useStatusStore();
   const player = usePlayerController();
 
   const useOnlineService = ref(settingStore.useOnlineService);
@@ -67,6 +71,17 @@ export const useGeneralSettings = (): SettingConfig => {
     }
   };
 
+  const useBorderless = ref(true);
+
+  const handleBorderlessChange = async (val: boolean) => {
+    if (!isElectron) return;
+    const windowConfig = await window.api.store.get("window");
+    window.api.store.set("window", {
+      ...windowConfig,
+      useBorderless: val,
+    });
+    window.$message.warning("设置已保存，重启软件后生效");
+  };
   // 任务栏进度
   const closeTaskbarProgress = (val: boolean) => {
     if (!isElectron) return;
@@ -77,100 +92,233 @@ export const useGeneralSettings = (): SettingConfig => {
     sendRegisterProtocol("orpheus", isRegistry);
   };
 
-  // --- Backup & Restore Logic (from other.ts) ---
-  const exportSettings = async () => {
-    try {
-      const rendererData = {
-        "setting-store": localStorage.getItem("setting-store"),
-        "shortcut-store": localStorage.getItem("shortcut-store"),
-      };
-      const result = await window.api.store.export(rendererData);
-      if (result) {
-        window.$message.success("设置导出成功");
-      } else {
-        window.$message.error("设置导出失败");
-      }
-    } catch (error) {
-      window.$message.error("设置导出出错");
+  const onActivate = async () => {
+    if (isElectron) {
+      // 获取无边框窗口配置
+      const windowConfig = await window.api.store.get("window");
+      useBorderless.value = windowConfig?.useBorderless ?? true;
     }
   };
 
-  const importSettings = async () => {
-    window.$dialog.warning({
-      title: "导入设置",
-      content: () =>
-        h("div", null, [
-          h(
-            NAlert,
-            { type: "warning", showIcon: true, style: { marginBottom: "12px" } },
-            { default: () => "目前备份数据功能属于测试阶段，不保证可用性" },
-          ),
-          h("div", null, "导入设置将覆盖当前所有配置并重启软件，是否继续？"),
-        ]),
-      positiveText: "确定",
-      negativeText: "取消",
-      onPositiveClick: async () => {
-        try {
-          const data = await window.api.store.import();
-          if (data) {
-            if (data.renderer) {
-              if (data.renderer["setting-store"])
-                localStorage.setItem("setting-store", data.renderer["setting-store"]);
-              if (data.renderer["shortcut-store"])
-                localStorage.setItem("shortcut-store", data.renderer["shortcut-store"]);
-            }
-            window.$message.success("设置导入成功，即将重启");
-            setTimeout(() => {
-              window.location.reload();
-            }, 1000);
-          } else {
-            window.$message.error("设置导入失败或已取消");
-          }
-        } catch (error) {
-          window.$message.error("设置导入出错");
-        }
-      },
-    });
-  };
-
-  // --- Reset Logic (from other.ts) ---
-  const resetSetting = () => {
-    window.$dialog.warning({
-      title: "警告",
-      content: "此操作将重置所有设置，是否继续?",
-      positiveText: "确定",
-      negativeText: "取消",
-      onPositiveClick: () => {
-        settingStore.$reset();
-        if (isElectron) window.electron.ipcRenderer.send("reset-setting");
-        window.$message.success("设置重置完成");
-      },
-    });
-  };
-
-  const clearAllData = () => {
-    window.$dialog.warning({
-      title: "高危操作",
-      content: "此操作将重置所有设置并清除全部数据，同时将退出登录状态，是否继续?",
-      positiveText: "确定",
-      negativeText: "取消",
-      onPositiveClick: async () => {
-        window.localStorage.clear();
-        window.sessionStorage.clear();
-        await dataStore.deleteDB();
-        if (isElectron) window.electron.ipcRenderer.send("reset-setting");
-        window.$message.loading("数据清除完成，软件即将热重载", {
-          duration: 3000,
-          onAfterLeave: () => window.location.reload(),
-        });
-      },
-    });
-  };
-
   return {
+    onActivate,
     groups: [
       {
-        title: "系统行为",
+        title: "全局设置",
+        items: [
+          {
+            key: "themeMode",
+            label: "主题模式",
+            type: "select",
+            description: () =>
+              statusStore.themeBackgroundMode === "image"
+                ? "请关闭自定义背景图后调节"
+                : "调整全局主题明暗模式",
+            disabled: computed(() => statusStore.themeBackgroundMode === "image"),
+            options: [
+              { label: "跟随系统", value: "auto" },
+              { label: "浅色模式", value: "light" },
+              { label: "深色模式", value: "dark" },
+            ],
+            value: computed({
+              get: () => settingStore.themeMode,
+              set: (v) => (settingStore.themeMode = v),
+            }),
+          },
+          {
+            key: "themeConfig",
+            label: "主题配置",
+            type: "button",
+            description: "更改主题色或自定义图片",
+            buttonLabel: "配置",
+            action: openThemeConfig,
+          },
+          {
+            key: "fontConfig",
+            label: "字体设置",
+            type: "button",
+            description: "统一配置全局及歌词区域的字体",
+            buttonLabel: "配置",
+            action: openFontManager,
+          },
+          {
+            key: "customCode",
+            label: "自定义代码注入",
+            type: "button",
+            description: "注入自定义 CSS 和 JavaScript 代码",
+            buttonLabel: "配置",
+            action: openCustomCode,
+            show: statusStore.isDeveloperMode,
+          },
+        ],
+      },
+      {
+        title: "杂项设置",
+        items: [
+          {
+            key: "showSearchHistory",
+            label: "显示搜索历史",
+            type: "switch",
+            value: computed({
+              get: () => settingStore.showSearchHistory,
+              set: (v) => (settingStore.showSearchHistory = v),
+            }),
+          },
+          {
+            key: "enableSearchKeyword",
+            label: "搜索关键词建议",
+            type: "switch",
+            description: "是否启用搜索关键词建议",
+            value: computed({
+              get: () => settingStore.enableSearchKeyword,
+              set: (v) => (settingStore.enableSearchKeyword = v),
+            }),
+          },
+          {
+            key: "clearSearchOnBlur",
+            label: "失焦自动清空搜索框",
+            type: "switch",
+            description: "搜索框失去焦点后自动清空内容",
+            value: computed({
+              get: () => settingStore.clearSearchOnBlur,
+              set: (v) => (settingStore.clearSearchOnBlur = v),
+            }),
+          },
+          {
+            key: "hideLyricBrackets",
+            label: "隐藏括号与别名",
+            type: "switch",
+            description: "隐藏歌曲名与专辑名中的括号内容和别名",
+            value: computed({
+              get: () => settingStore.hideLyricBrackets,
+              set: (v) => (settingStore.hideLyricBrackets = v),
+            }),
+          },
+          {
+            key: "configExcludeComment",
+            label: "评论排除配置",
+            type: "button",
+            description: "配置排除评论的规则（关键词或正则表达式）",
+            buttonLabel: "配置",
+            action: openExcludeComment,
+          },
+          {
+            key: "hideAllCovers",
+            label: "隐藏歌曲封面",
+            type: "switch",
+            description: "开启后将隐藏列表中所有歌曲的封面",
+            value: computed({
+              get: () => settingStore.hideAllCovers,
+              set: (v) => (settingStore.hideAllCovers = v),
+            }),
+          },
+          {
+            key: "menuShowCover",
+            label: "侧边栏显示封面",
+            type: "switch",
+            description: "是否显示歌单的封面，如果有",
+            value: computed({
+              get: () => settingStore.menuShowCover,
+              set: (v) => (settingStore.menuShowCover = v),
+            }),
+          },
+          {
+            key: "sidebarHide",
+            label: "侧边栏隐藏",
+            type: "button",
+            description: "配置需要在侧边栏隐藏的菜单项",
+            buttonLabel: "配置",
+            action: openSidebarHideManager,
+          },
+          {
+            key: "homePageSection",
+            label: "首页栏目配置",
+            type: "button",
+            description: "调整首页各栏目的显示顺序或隐藏不需要的栏目",
+            buttonLabel: "配置",
+            action: openHomePageSectionManager,
+          },
+          {
+            key: "showSongQuality",
+            label: "显示歌曲音质",
+            type: "switch",
+            description: "是否列表中显示歌曲音质",
+            value: computed({
+              get: () => settingStore.showSongQuality,
+              set: (v) => (settingStore.showSongQuality = v),
+            }),
+          },
+          {
+            key: "showPlayerQuality",
+            label: "显示播放器切换音质按钮",
+            type: "switch",
+            description: "是否在播放器显示切换音质按钮",
+            value: computed({
+              get: () => settingStore.showPlayerQuality,
+              set: (v) => (settingStore.showPlayerQuality = v),
+            }),
+          },
+          {
+            key: "showSongPrivilegeTag",
+            label: "显示特权标签",
+            type: "switch",
+            description: "是否显示如 VIP、EP 等特权标签",
+            value: computed({
+              get: () => settingStore.showSongPrivilegeTag,
+              set: (v) => (settingStore.showSongPrivilegeTag = v),
+            }),
+          },
+          {
+            key: "showSongExplicitTag",
+            label: "显示脏标",
+            type: "switch",
+            description: "是否显示歌曲脏标（🅴）",
+            value: computed({
+              get: () => settingStore.showSongExplicitTag,
+              set: (v) => (settingStore.showSongExplicitTag = v),
+            }),
+          },
+          {
+            key: "showSongOriginalTag",
+            label: "显示原唱翻唱标签",
+            type: "switch",
+            description: "是否显示歌曲原唱翻唱标签",
+            value: computed({
+              get: () => settingStore.showSongOriginalTag,
+              set: (v) => (settingStore.showSongOriginalTag = v),
+            }),
+          },
+          {
+            key: "useKeepAlive",
+            label: "开启页面缓存",
+            type: "switch",
+            description: "是否开启部分页面的缓存，这将会增加内存占用",
+            value: computed({
+              get: () => settingStore.useKeepAlive,
+              set: (v) => (settingStore.useKeepAlive = v),
+            }),
+          },
+          {
+            key: "routeAnimation",
+            label: "页面切换动画",
+            type: "select",
+            description: "选择页面切换时的动画效果",
+            options: [
+              { label: "无动画", value: "none" },
+              { label: "淡入淡出", value: "fade" },
+              { label: "缩放", value: "zoom" },
+              { label: "滑动", value: "slide" },
+              { label: "上浮", value: "up" },
+            ],
+            value: computed({
+              get: () => settingStore.routeAnimation,
+              set: (v) => (settingStore.routeAnimation = v),
+            }),
+          },
+        ],
+      },
+      {
+        title: "系统设置",
         show: isElectron,
         items: [
           {
@@ -221,6 +369,29 @@ export const useGeneralSettings = (): SettingConfig => {
             }),
           },
           {
+            key: "preventSleep",
+            label: "阻止系统息屏",
+            type: "switch",
+            description: "是否在播放界面阻止系统息屏",
+            value: computed({
+              get: () => settingStore.preventSleep,
+              set: (v) => (settingStore.preventSleep = v),
+            }),
+          },
+          {
+            key: "useBorderless",
+            label: "无边框窗口模式",
+            type: "switch",
+            description: "是否开启无边框窗口模式，关闭后将使用系统原生边框（需重启）",
+            value: computed({
+              get: () => useBorderless.value,
+              set: (v) => {
+                useBorderless.value = v;
+                handleBorderlessChange(v);
+              },
+            }),
+          },
+          {
             key: "orpheusProtocol",
             label: "通过 Orpheus 协议唤起本应用",
             type: "switch",
@@ -243,106 +414,6 @@ export const useGeneralSettings = (): SettingConfig => {
               get: () => settingStore.checkUpdateOnStart,
               set: (v) => (settingStore.checkUpdateOnStart = v),
             }),
-          },
-        ],
-      },
-      {
-        title: "搜索设置",
-        items: [
-          {
-            key: "showSearchHistory",
-            label: "显示搜索历史",
-            type: "switch",
-            value: computed({
-              get: () => settingStore.showSearchHistory,
-              set: (v) => (settingStore.showSearchHistory = v),
-            }),
-          },
-          {
-            key: "enableSearchKeyword",
-            label: "搜索关键词建议",
-            type: "switch",
-            description: "是否启用搜索关键词建议",
-            value: computed({
-              get: () => settingStore.enableSearchKeyword,
-              set: (v) => (settingStore.enableSearchKeyword = v),
-            }),
-          },
-          {
-            key: "clearSearchOnBlur",
-            label: "失焦自动清空搜索框",
-            type: "switch",
-            description: "搜索框失去焦点后自动清空内容",
-            value: computed({
-              get: () => settingStore.clearSearchOnBlur,
-              set: (v) => (settingStore.clearSearchOnBlur = v),
-            }),
-          },
-          {
-            key: "hideBracketedContent",
-            label: "隐藏括号与别名",
-            type: "switch",
-            description: "隐藏歌曲名与专辑名中的括号内容和别名",
-            value: computed({
-              get: () => settingStore.hideBracketedContent,
-              set: (v) => (settingStore.hideBracketedContent = v),
-            }),
-          },
-          {
-            key: "configExcludeComment",
-            label: "评论排除配置",
-            type: "button",
-            description: "配置排除评论的规则（关键词或正则表达式）",
-            buttonLabel: "配置",
-            action: openExcludeComment,
-          },
-        ],
-      },
-      {
-        title: "备份与恢复",
-        tags: [{ text: "Beta", type: "warning" }],
-        show: isElectron,
-        items: [
-          {
-            key: "exportSettings",
-            label: "导出设置",
-            type: "button",
-            description: "将当前所有设置导出为 JSON 文件",
-            buttonLabel: "导出设置",
-            action: exportSettings,
-            componentProps: { type: "primary" },
-          },
-          {
-            key: "importSettings",
-            label: "导入设置",
-            type: "button",
-            description: "从 JSON 文件恢复设置（导入后将自动重启）",
-            buttonLabel: "导入设置",
-            action: importSettings,
-            componentProps: { type: "primary" },
-          },
-        ],
-      },
-      {
-        title: "重置",
-        items: [
-          {
-            key: "resetSetting",
-            label: "重置所有设置",
-            type: "button",
-            description: "重置所有设置，恢复软件默认值",
-            buttonLabel: "重置设置",
-            action: resetSetting,
-            componentProps: { type: "warning" },
-          },
-          {
-            key: "clearAllData",
-            label: "清除全部数据",
-            type: "button",
-            description: "重置所有设置，清除全部数据",
-            buttonLabel: "清除全部",
-            action: clearAllData,
-            componentProps: { type: "error" },
           },
         ],
       },

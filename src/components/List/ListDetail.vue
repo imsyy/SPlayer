@@ -3,7 +3,7 @@
   <div :class="['list-detail', { small: listScrolling }]">
     <Transition name="fade" mode="out-in">
       <div v-if="detailData" class="detail">
-        <div class="cover" v-if="!settingStore.hiddenCovers.list">
+        <div class="cover">
           <n-image
             :src="detailData.coverSize?.m || detailData.cover"
             :previewed-img-props="{ style: { borderRadius: '8px' } }"
@@ -56,7 +56,7 @@
           <n-collapse-transition :show="!listScrolling" class="collapse">
             <!-- 简介 -->
             <n-text
-              v-if="detailData.description && settingStore.playlistPageElements.description"
+              v-if="detailData.description"
               class="description text-hidden"
               @click="handleDescriptionClick"
             >
@@ -65,13 +65,7 @@
             <!-- 信息 -->
             <n-flex class="meta">
               <!-- 艺术家/创建者 -->
-              <div
-                v-if="
-                  (config.showArtist || config.showCreator) &&
-                  settingStore.playlistPageElements.creator
-                "
-                class="item"
-              >
+              <div v-if="config.showArtist || config.showCreator" class="item">
                 <SvgIcon name="Person" :depth="3" />
                 <div
                   v-if="config.showArtist && Array.isArray(detailData.artists)"
@@ -83,11 +77,7 @@
                     class="ar"
                     @click="openJumpArtist(detailData.artists, ar.id)"
                   >
-                    {{
-                      settingStore.hideBracketedContent
-                        ? removeBrackets(ar.name)
-                        : ar.name || "未知艺术家"
-                    }}
+                    {{ ar.name || "未知艺术家" }}
                   </n-text>
                 </div>
                 <div
@@ -95,15 +85,7 @@
                   class="artists text-hidden"
                   @click="openJumpArtist(detailData.artists || '')"
                 >
-                  <n-text class="ar">
-                    {{
-                      settingStore.hideBracketedContent
-                        ? removeBrackets(
-                            typeof detailData.artists === 'string' ? detailData.artists : undefined,
-                          )
-                        : detailData.artists || "未知艺术家"
-                    }}
-                  </n-text>
+                  <n-text class="ar"> {{ detailData.artists || "未知艺术家" }} </n-text>
                 </div>
                 <n-text v-else-if="config.showCreator">
                   {{ detailData.creator?.name || "未知用户名" }}
@@ -115,26 +97,17 @@
                 <n-text>{{ detailData.count }}</n-text>
               </div>
               <!-- 更新时间 -->
-              <div
-                v-if="detailData.updateTime && settingStore.playlistPageElements.time"
-                class="item"
-              >
+              <div v-if="detailData.updateTime" class="item">
                 <SvgIcon name="Update" :depth="3" />
                 <n-text>{{ formatTimestamp(detailData.updateTime) }}</n-text>
               </div>
               <!-- 创建时间 -->
-              <div
-                v-else-if="detailData.createTime && settingStore.playlistPageElements.time"
-                class="item"
-              >
+              <div v-else-if="detailData.createTime" class="item">
                 <SvgIcon name="Time" :depth="3" />
                 <n-text>{{ formatTimestamp(detailData.createTime) }}</n-text>
               </div>
               <!-- 标签 -->
-              <div
-                v-if="detailData.tags?.length && settingStore.playlistPageElements.tags"
-                class="item hidden"
-              >
+              <div v-if="detailData.tags?.length" class="item hidden">
                 <SvgIcon name="Tag" :depth="3" />
                 <n-flex class="tags">
                   <n-tag
@@ -234,11 +207,9 @@
 import type { CoverType, SongType } from "@/types/main";
 import type { DropdownOption } from "naive-ui";
 import { coverLoaded, formatNumber } from "@/utils/helper";
-import { removeBrackets } from "@/utils/format";
 import { renderToolbar } from "@/utils/meta";
 import { formatTimestamp } from "@/utils/time";
 import { openDescModal, openJumpArtist } from "@/utils/modal";
-import { useSettingStore } from "@/stores";
 
 interface ListDetailConfig {
   // 标题类型
@@ -282,7 +253,6 @@ const emit = defineEmits<{
 }>();
 
 const router = useRouter();
-const settingStore = useSettingStore();
 
 // 当前 tab
 const currentTab = ref<"songs" | "comments">("songs");

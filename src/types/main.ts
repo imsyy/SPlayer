@@ -113,16 +113,7 @@ export type SongType = {
   source?: "streaming";
   /** 标记 */
   mark?: number;
-  /** ReplayGain 信息 */
-  replayGain?: ReplayGainType;
 };
-
-export interface ReplayGainType {
-  trackGain?: number;
-  trackPeak?: number;
-  albumGain?: number;
-  albumPeak?: number;
-}
 
 // Cover
 export type CoverType = {
@@ -319,12 +310,13 @@ export type SongLevelDataType = {
 // setting
 export type SettingType =
   | "general"
-  | "appearance"
   | "play"
   | "lyrics"
   | "keyboard"
   | "local"
-  | "network"
+  | "third"
+  | "streaming"
+  | "other"
   | "about";
 
 // UpdateLog

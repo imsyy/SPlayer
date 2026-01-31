@@ -5,12 +5,12 @@
         <div
           v-for="(item, index) in data"
           :key="index"
-          :class="['cover-item', { 'no-cover': hiddenCover }]"
+          class="cover-item"
           @click="goDetail(item)"
           @contextmenu="coverMenuRef?.openDropdown($event, item, type)"
         >
           <!-- 封面 -->
-          <div v-if="!hiddenCover" class="cover">
+          <div class="cover">
             <s-image
               :key="item.cover"
               :src="
@@ -73,21 +73,11 @@
             <template v-if="type === 'video' && item.artists">
               <div v-if="Array.isArray(item.artists)" class="artists text-hidden">
                 <n-text v-for="(ar, arIndex) in item.artists" :key="arIndex" class="ar">
-                  {{
-                    settingStore.hideBracketedContent
-                      ? removeBrackets(ar.name)
-                      : ar.name || "未知艺术家"
-                  }}
+                  {{ ar.name || "未知艺术家" }}
                 </n-text>
               </div>
               <div v-else class="artists text-hidden">
-                <n-text class="ar">
-                  {{
-                    settingStore.hideBracketedContent
-                      ? removeBrackets(item.artists)
-                      : item.artists || "未知艺术家"
-                  }}
-                </n-text>
+                <n-text class="ar"> {{ item.artists || "未知艺术家" }} </n-text>
               </div>
             </template>
           </div>
@@ -104,11 +94,11 @@
     </div>
     <div v-else-if="loading" :class="['cover-list', 'loading', type]">
       <div class="cover-grid">
-        <div v-for="item in loadingNum || 50" :key="item" :class="['cover-item', { 'no-cover': hiddenCover }]">
-          <div v-if="!hiddenCover" class="cover">
+        <div v-for="item in loadingNum || 50" :key="item" class="cover-item">
+          <div class="cover">
             <n-skeleton class="cover-img" />
           </div>
-          <div class="cover-data" :style="hiddenCover ? { width: '100%', padding: '0 12px' } : {}">
+          <div class="cover-data">
             <n-skeleton text round :repeat="2" />
           </div>
         </div>
@@ -123,9 +113,9 @@
 import type { CoverType, SongType } from "@/types/main";
 import { albumDetail } from "@/api/album";
 import { formatNumber } from "@/utils/helper";
-import { useMusicStore, useStatusStore, useLocalStore, useSettingStore } from "@/stores";
+import { useMusicStore, useStatusStore, useLocalStore } from "@/stores";
 import { debounce } from "lodash-es";
-import { formatSongsList, removeBrackets } from "@/utils/format";
+import { formatSongsList } from "@/utils/format";
 import { songDetail } from "@/api/song";
 import { playlistAllSongs } from "@/api/playlist";
 import { radioAllProgram } from "@/api/radio";
@@ -143,7 +133,6 @@ const props = defineProps<{
   emptyDescription?: string;
   /** 是否为流媒体数据 */
   isStreaming?: boolean;
-  hiddenCover?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -155,7 +144,6 @@ const router = useRouter();
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
 const localStore = useLocalStore();
-const settingStore = useSettingStore();
 const player = usePlayerController();
 
 // 右键菜单
@@ -420,23 +408,6 @@ const getListData = async (id: number | string): Promise<SongType[]> => {
         }
       }
     }
-    &.no-cover {
-      background-color: var(--surface-container-hex);
-      border: 2px solid rgba(var(--primary), 0.12);
-      padding: 0;
-      overflow: hidden;
-      &:hover {
-        border-color: rgba(var(--primary), 0.58);
-      }
-      .cover-data {
-        height: 100%;
-        justify-content: center;
-        .name {
-          font-size: 18px;
-          font-weight: bold;
-        }
-      }
-    }
   }
   .load-more {
     margin: 20px 0;
@@ -454,15 +425,6 @@ const getListData = async (id: number | string): Promise<SongType[]> => {
   &.loading {
     .cover {
       box-shadow: none;
-    }
-    .cover-item.no-cover {
-      height: 80px;
-      .cover-data {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-      }
     }
   }
 }

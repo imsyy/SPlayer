@@ -129,7 +129,7 @@
           <div class="lyric-info">
             <div class="name text-hidden">
               {{
-                settingStore.hideBracketedContent
+                settingStore.hideLyricBrackets
                   ? removeBrackets(musicStore.playSong.name)
                   : musicStore.playSong.name
               }}

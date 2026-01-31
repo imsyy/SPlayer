@@ -14,11 +14,7 @@
           @click="jumpArtist(item.id)"
         >
           <n-avatar :src="item.cover || '/images/artist.jpg?asset'" class="cover" round />
-          <n-text class="name">
-            {{
-              settingStore.hideBracketedContent ? removeBrackets(item.name) : item.name
-            }}
-          </n-text>
+          <n-text class="name">{{ item.name }}</n-text>
         </n-card>
       </div>
       <div v-else class="ar-list">
@@ -33,7 +29,6 @@ import type { SongType, MetaData } from "@/types/main";
 import { useSettingStore } from "@/stores";
 import { searchArtist, artistDetail } from "@/api/artist";
 import { uniq } from "lodash-es";
-import { removeBrackets } from "@/utils/format";
 
 const props = defineProps<{
   artist: SongType["artists"];

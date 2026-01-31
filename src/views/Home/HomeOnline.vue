@@ -11,7 +11,6 @@
             :height="90"
             description="根据你的音乐口味 · 每日更新"
             size="small"
-            :hiddenCover="settingStore.hiddenCovers.home"
             @click="router.push({ name: 'daily-songs' })"
           />
           <!-- 我喜欢的音乐 -->
@@ -21,7 +20,6 @@
             title="我喜欢的音乐"
             description="发现你独特的音乐品味"
             size="small"
-            :hiddenCover="settingStore.hiddenCovers.home"
             @click="router.push({ name: 'like-songs' })"
           />
         </n-flex>
@@ -43,8 +41,8 @@
         </n-h3>
       </n-flex>
       <!-- 列表 -->
-      <ArtistList v-if="item.type === 'artist'" :data="item.list" :loading="true" :hiddenCover="settingStore.hiddenCovers.home" />
-      <CoverList v-else :data="item.list" :type="item.type" :loading="true" :hiddenCover="settingStore.hiddenCovers.home" />
+      <ArtistList v-if="item.type === 'artist'" :data="item.list" :loading="true" />
+      <CoverList v-else :data="item.list" :type="item.type" :loading="true" />
     </div>
   </div>
 </template>

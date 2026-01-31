@@ -303,7 +303,7 @@ export const useLocalSettings = (): SettingConfig => {
       },
       {
         title: "下载配置",
-        show: computed(() => statusStore.isDeveloperMode),
+        show: statusStore.isDeveloperMode,
         items: [
           {
             key: "downloadPath",

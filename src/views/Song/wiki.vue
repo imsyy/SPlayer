@@ -22,11 +22,7 @@
             />
           </div>
           <div class="data">
-            <n-h2 class="name text-hidden">{{
-              settingStore.hideBracketedContent
-                ? removeBrackets(currentSong.name)
-                : currentSong.name
-            }}</n-h2>
+            <n-h2 class="name text-hidden">{{ currentSong.name }}</n-h2>
             <div class="meta">
               <div class="item">
                 <SvgIcon name="Person" :depth="3" />
@@ -37,19 +33,11 @@
                       :key="ar.id"
                       @click="$router.push({ name: 'artist', query: { id: ar.id } })"
                     >
-                      {{
-                        settingStore.hideBracketedContent
-                          ? removeBrackets(ar.name)
-                          : ar.name
-                      }}
+                      {{ ar.name }}
                       <span v-if="index < currentSong.artists.length - 1"> / </span>
                     </n-text>
                   </template>
-                  <n-text v-else>{{
-                    settingStore.hideBracketedContent
-                      ? removeBrackets(currentSong.artists)
-                      : currentSong.artists
-                  }}</n-text>
+                  <n-text v-else>{{ currentSong.artists }}</n-text>
                 </div>
               </div>
               <div class="item" v-if="currentSong.album">
@@ -59,17 +47,9 @@
                   class="text-hidden"
                   @click="$router.push({ name: 'album', query: { id: currentSong.album.id } })"
                 >
-                  {{
-                    settingStore.hideBracketedContent
-                      ? removeBrackets(currentSong.album.name)
-                      : currentSong.album.name
-                  }}
+                  {{ currentSong.album.name }}
                 </n-text>
-                <n-text v-else class="text-hidden">{{
-                  settingStore.hideBracketedContent
-                    ? removeBrackets(currentSong.album)
-                    : currentSong.album
-                }}</n-text>
+                <n-text v-else class="text-hidden">{{ currentSong.album }}</n-text>
               </div>
             </div>
             <div class="actions">
@@ -297,13 +277,11 @@ import {
   songSheetPreview,
   songFirstListenInfo,
 } from "@/api/song";
-import { formatSongsList, removeBrackets } from "@/utils/format";
-import { useSettingStore } from "@/stores";
+import { formatSongsList } from "@/utils/format";
 import dayjs from "dayjs";
 
 const route = useRoute();
 const player = usePlayerController();
-const settingStore = useSettingStore();
 
 const loading = ref(true);
 const currentSongId = ref<number>(0);

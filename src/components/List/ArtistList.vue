@@ -5,7 +5,7 @@
         <div
           v-for="(item, index) in data"
           :key="index"
-          :class="['artist-item', { 'no-cover': hiddenCover }]"
+          class="artist-item"
           @click="
             router.push({
               name: 'artist',
@@ -14,7 +14,7 @@
           "
         >
           <!-- 封面 -->
-          <div v-if="!hiddenCover" class="cover">
+          <div class="cover">
             <s-image
               :src="item.coverSize?.m || item.cover"
               default-src="/images/artist.jpg?asset"
@@ -31,9 +31,7 @@
           </div>
           <!-- 信息 -->
           <div class="cover-data">
-            <n-text class="name text-hidden">{{
-              settingStore.hideBracketedContent ? removeBrackets(item.name) : item.name
-            }}</n-text>
+            <n-text class="name text-hidden">{{ item.name }}</n-text>
             <!-- 数量 -->
             <div v-if="item.musicSize" class="num">
               <SvgIcon name="Music" :depth="3" />
@@ -51,8 +49,8 @@
     </div>
     <div v-else-if="loading" class="artist-list">
       <div class="artist-grid">
-        <div v-for="item in 50" :key="item" :class="['artist-item', { 'no-cover': hiddenCover }]">
-          <div v-if="!hiddenCover" class="cover">
+        <div v-for="item in 50" :key="item" class="artist-item">
+          <div class="cover">
             <n-skeleton class="cover-img" />
           </div>
           <div class="cover-data">
@@ -68,8 +66,6 @@
 
 <script setup lang="ts">
 import type { ArtistType } from "@/types/main";
-import { removeBrackets } from "@/utils/format";
-import { useSettingStore } from "@/stores";
 
 defineProps<{
   data: ArtistType[];
@@ -77,7 +73,6 @@ defineProps<{
   loadMore?: boolean;
   loading?: boolean;
   loadingText?: string;
-  hiddenCover?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -86,7 +81,6 @@ const emit = defineEmits<{
 }>();
 
 const router = useRouter();
-const settingStore = useSettingStore();
 </script>
 
 <style lang="scss" scoped>
@@ -196,21 +190,6 @@ const settingStore = useSettingStore();
     }
     &:active {
       transform: scale(0.98);
-    }
-    &.no-cover {
-      background-color: var(--surface-container-hex);
-      border: 2px solid rgba(var(--primary), 0.12);
-      padding: 12px 0;
-      &:hover {
-        border-color: rgba(var(--primary), 0.58);
-      }
-      .cover-data {
-        height: 100%;
-        justify-content: center;
-        .name {
-          font-weight: bold;
-        }
-      }
     }
   }
   .load-more {

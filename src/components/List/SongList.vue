@@ -88,7 +88,7 @@
                 v-if="item.type === 'song'"
                 :song="item.data"
                 :index="index"
-                :hiddenCover="hiddenCover || settingStore.hiddenCovers.list"
+                :hiddenCover="hiddenCover || settingStore.hideAllCovers"
                 :hiddenAlbum="hiddenAlbum"
                 :hiddenSize="hiddenSize"
                 @click.stop="handleSongClick(item.data)"

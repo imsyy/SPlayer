@@ -52,62 +52,7 @@ class PlayerController {
       audioManager.setSinkId(settingStore.playDevice).catch(console.warn);
     }
 
-    // 监听设置变化以更新 ReplayGain
-    settingStore.$subscribe((mutation) => {
-      if (
-        mutation.events &&
-        (mutation.events as any).key &&
-        ["enableReplayGain", "replayGainMode"].includes((mutation.events as any).key)
-      ) {
-        this.applyReplayGain();
-      }
-    });
-
     this.bindAudioEvents();
-  }
-
-  /**
-   * 应用 ReplayGain (音量平衡)
-   */
-  private applyReplayGain() {
-    const musicStore = useMusicStore();
-    const settingStore = useSettingStore();
-    const audioManager = useAudioManager();
-
-    if (!settingStore.enableReplayGain) {
-      audioManager.setReplayGain(1);
-      return;
-    }
-
-    const song = musicStore.playSong;
-    if (!song || !song.replayGain) {
-      audioManager.setReplayGain(1);
-      return;
-    }
-
-    const { trackGain, albumGain, trackPeak, albumPeak } = song.replayGain;
-    let targetGain = 1;
-
-    // 优先使用指定模式的增益，如果不存在则回退到另一种
-    // 注意：music-metadata 提取的 gain 通常是 dB 值，需要转换，但我们在 ipc-file.ts 中使用了 .ratio
-    // 如果 .ratio 存在，则直接使用线性值
-    if (settingStore.replayGainMode === "album") {
-      targetGain = albumGain ?? trackGain ?? 1;
-    } else {
-      targetGain = trackGain ?? albumGain ?? 1;
-    }
-
-    // 简单的防削波保护 (如果有峰值信息)
-    // 目标: gain * peak <= 1.0
-    const peak = settingStore.replayGainMode === "album" ? (albumPeak ?? trackPeak) : (trackPeak ?? albumPeak);
-    if (peak && peak > 0) {
-      if (targetGain * peak > 1.0) {
-        targetGain = 1.0 / peak;
-      }
-    }
-
-    console.log(`🔊 [ReplayGain] Applied: ${targetGain.toFixed(4)} (Mode: ${settingStore.replayGainMode})`);
-    audioManager.setReplayGain(targetGain);
   }
 
   /**
@@ -258,9 +203,6 @@ class PlayerController {
     if (audioManager.capabilities.supportsRate) {
       audioManager.setRate(statusStore.playRate);
     }
-
-    // 应用 ReplayGain
-    this.applyReplayGain();
 
     // 切换输出设备（非 MPV 引擎且未开启频谱时）
     if (audioManager.engineType !== "mpv" && !settingStore.showSpectrums) {

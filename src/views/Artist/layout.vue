@@ -2,7 +2,7 @@
   <div :key="artistId" :class="['artist', { small: listScrolling }]">
     <Transition name="fade" mode="out-in">
       <div v-if="artistDetailData" class="detail">
-        <div v-if="!settingStore.hiddenCovers.artistDetail" class="cover">
+        <div class="cover">
           <n-image
             :src="artistDetailData.coverSize?.m || artistDetailData.cover"
             :previewed-img-props="{ style: { borderRadius: '8px' } }"
@@ -27,11 +27,7 @@
         </div>
         <div class="data">
           <div class="name text-hidden">
-            <n-text class="name-text">{{
-              settingStore.hideBracketedContent
-                ? removeBrackets(artistDetailData.name)
-                : artistDetailData.name || "未知艺术家"
-            }}</n-text>
+            <n-text class="name-text">{{ artistDetailData.name || "未知艺术家" }}</n-text>
             <n-text v-if="artistDetailData?.alia" class="name-alias" depth="3">
               {{ artistDetailData.alia || "未知艺术家" }}
             </n-text>
@@ -114,7 +110,7 @@
         </div>
       </div>
       <div v-else class="detail">
-        <n-skeleton v-if="!settingStore.hiddenCovers.artistDetail" class="cover" />
+        <n-skeleton class="cover" />
         <div class="data">
           <n-skeleton :repeat="4" text />
         </div>
@@ -158,7 +154,7 @@ import { coverLoaded, renderIcon, copyData } from "@/utils/helper";
 import { renderToolbar } from "@/utils/meta";
 import { openDescModal, openBatchList } from "@/utils/modal";
 import { artistDetail } from "@/api/artist";
-import { formatArtistsList, removeBrackets } from "@/utils/format";
+import { formatArtistsList } from "@/utils/format";
 import { useDataStore, useSettingStore } from "@/stores";
 import { toLikeArtist } from "@/utils/auth";
 import ArtistSongs from "./songs.vue";

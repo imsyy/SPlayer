@@ -73,12 +73,6 @@
             :groups="generalConfig.groups"
             :highlight-key="highlightKey"
           />
-          <!-- 外观 -->
-          <UniversalSetting
-            v-else-if="activeKey === 'appearance'"
-            :groups="appearanceConfig.groups"
-            :highlight-key="highlightKey"
-          />
           <!-- 播放 -->
           <UniversalSetting
             v-else-if="activeKey === 'play'"
@@ -103,10 +97,22 @@
             :groups="localConfig.groups"
             :highlight-key="highlightKey"
           />
-          <!-- 网络 -->
+          <!-- 第三方 -->
           <UniversalSetting
-            v-else-if="activeKey === 'network'"
-            :groups="networkConfig.groups"
+            v-else-if="activeKey === 'third'"
+            :groups="thirdConfig.groups"
+            :highlight-key="highlightKey"
+          />
+          <!-- 流媒体 -->
+          <UniversalSetting
+            v-else-if="activeKey === 'streaming'"
+            :groups="streamingConfig.groups"
+            :highlight-key="highlightKey"
+          />
+          <!-- 其他 -->
+          <UniversalSetting
+            v-else-if="activeKey === 'other'"
+            :groups="otherConfig.groups"
             :highlight-key="highlightKey"
           />
           <!-- 关于 -->
@@ -130,43 +136,47 @@ import { useStatusStore } from "@/stores";
 import packageJson from "@/../package.json";
 import { usePlaySettings } from "./config/play";
 import { useGeneralSettings } from "./config/general";
-import { useAppearanceSettings } from "./config/appearance";
 import { useLyricSettings } from "./config/lyric";
 import { useKeyboardSettings } from "./config/keyboard";
 import { useLocalSettings } from "./config/local";
-import { useNetworkSettings } from "./config/network";
+import { useThirdSettings } from "./config/third";
+import { useStreamingSettings } from "./config/streaming";
+import { useOtherSettings } from "./config/other";
 
 const props = defineProps<{ type: SettingType; scrollTo?: string }>();
 
 const playConfig = usePlaySettings();
 const generalConfig = useGeneralSettings();
-const appearanceConfig = useAppearanceSettings();
 const lyricConfig = useLyricSettings();
 const keyboardConfig = useKeyboardSettings();
 const localConfig = useLocalSettings();
-const networkConfig = useNetworkSettings();
+const thirdConfig = useThirdSettings();
+const streamingConfig = useStreamingSettings();
+const otherConfig = useOtherSettings();
 
 // 配置映射表
 const configs: Record<string, any> = {
   play: playConfig,
   general: generalConfig,
-  appearance: appearanceConfig,
   lyrics: lyricConfig,
   keyboard: keyboardConfig,
   local: localConfig,
-  network: networkConfig,
+  third: thirdConfig,
+  streaming: streamingConfig,
+  other: otherConfig,
 };
 
 // 聚合所有设置
 const allSettingGroups = computed(() => {
   return [
     { key: "general", groups: generalConfig.groups },
-    { key: "appearance", groups: appearanceConfig.groups },
     { key: "play", groups: playConfig.groups },
     { key: "lyrics", groups: lyricConfig.groups },
     { key: "keyboard", groups: keyboardConfig.groups },
     { key: "local", groups: localConfig.groups },
-    { key: "network", groups: networkConfig.groups },
+    { key: "third", groups: thirdConfig.groups },
+    { key: "streaming", groups: streamingConfig.groups },
+    { key: "other", groups: otherConfig.groups },
   ];
 });
 
@@ -295,11 +305,6 @@ const menuOptions: MenuOption[] = [
     icon: renderIcon("SettingsLine"),
   },
   {
-    key: "appearance",
-    label: "外观设置",
-    icon: renderIcon("Palette"),
-  },
-  {
     key: "play",
     label: "播放设置",
     icon: renderIcon("Music"),
@@ -310,21 +315,31 @@ const menuOptions: MenuOption[] = [
     icon: renderIcon("Lyrics"),
   },
   {
-    key: "local",
-    label: "本地与缓存",
-    show: isElectron,
-    icon: renderIcon("Storage"),
-  },
-  {
     key: "keyboard",
     label: "快捷键设置",
     show: isElectron,
     icon: renderIcon("Keyboard"),
   },
   {
-    key: "network",
-    label: "网络与连接",
-    icon: renderIcon("Link"),
+    key: "local",
+    label: "本地与缓存",
+    show: isElectron,
+    icon: renderIcon("Storage"),
+  },
+  {
+    key: "third",
+    label: "连接与集成",
+    icon: renderIcon("Extension"),
+  },
+  {
+    key: "streaming",
+    label: "流媒体设置",
+    icon: renderIcon("Stream"),
+  },
+  {
+    key: "other",
+    label: "其他设置",
+    icon: renderIcon("SettingsOther"),
   },
   {
     key: "about",

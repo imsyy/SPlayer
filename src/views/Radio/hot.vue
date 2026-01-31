@@ -45,24 +45,14 @@
       <n-h3 class="title" prefix="bar">
         <n-text class="name">热门推荐</n-text>
       </n-h3>
-      <CoverList
-        :data="radioHotData"
-        :loading="true"
-        type="radio"
-        :hiddenCover="settingStore.hiddenCovers.radio"
-      />
+      <CoverList :data="radioHotData" :loading="true" type="radio" />
       <!-- 分类推荐 -->
       <template v-for="(item, index) in radioCatRecData" :key="index">
         <n-h3 class="title" prefix="bar">
           <n-text class="name">{{ item.name }}</n-text>
           <SvgIcon :size="26" name="Right" />
         </n-h3>
-        <CoverList
-          :data="item.radio || []"
-          :loading="true"
-          type="radio"
-          :hiddenCover="settingStore.hiddenCovers.radio"
-        />
+        <CoverList :data="item.radio || []" :loading="true" type="radio" />
       </template>
     </div>
   </div>
@@ -73,7 +63,6 @@ import type { CoverType } from "@/types/main";
 import { radioCatList, radioToplist, radioTypes } from "@/api/radio";
 import { getCacheData } from "@/utils/cache";
 import { formatCoverList } from "@/utils/format";
-import { useSettingStore } from "@/stores";
 
 interface RadioType {
   id: number;
@@ -82,7 +71,6 @@ interface RadioType {
 }
 
 const router = useRouter();
-const settingStore = useSettingStore();
 
 // 栅格折叠
 const gridCollapsed = ref<boolean>(true);

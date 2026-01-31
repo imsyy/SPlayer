@@ -2,13 +2,13 @@
   <Transition name="fade" mode="out-in">
     <n-flex v-if="data.length > 0" :size="20" :class="['comment-list', { transparent }]" vertical>
       <n-flex
-      v-for="(item, index) in data"
-      :key="index"
-      :size="0"
-      class="comments"
-      @dblclick="handleDoubleClick(item)"
-    >
-        <div v-if="!transparent && !hiddenCover" class="user">
+        v-for="(item, index) in data"
+        :key="index"
+        :size="20"
+        class="comments"
+        @dblclick="handleDoubleClick(item)"
+      >
+        <div v-if="!transparent" class="user">
           <div class="avatar">
             <n-image
               :src="
@@ -116,7 +116,6 @@ const props = defineProps<{
   transparent?: boolean;
   // 资源 ID
   resId: number;
-  hiddenCover?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -229,7 +228,6 @@ const handleDoubleClick = debounce(async (item: CommentType) => {
       align-items: center;
       min-width: 60px;
       width: 60px;
-      margin-right: 12px;
       .avatar {
         position: relative;
         display: flex;
