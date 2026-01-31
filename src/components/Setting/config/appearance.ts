@@ -12,6 +12,7 @@ import {
 import { SettingConfig } from "@/types/settings";
 import { computed, ref } from "vue";
 import { isLogin } from "@/utils/auth";
+import { forceDisplaySettingIf } from "@/utils/setting";
 
 export const useAppearanceSettings = (): SettingConfig => {
   const settingStore = useSettingStore();
@@ -47,19 +48,20 @@ export const useAppearanceSettings = (): SettingConfig => {
             key: "themeMode",
             label: "主题模式",
             type: "select",
-            description: () =>
-              statusStore.themeBackgroundMode === "image"
-                ? "请关闭自定义背景图后调节"
-                : "调整全局主题明暗模式",
-            disabled: computed(() => statusStore.themeBackgroundMode === "image"),
             options: [
               { label: "跟随系统", value: "auto" },
               { label: "浅色模式", value: "light" },
               { label: "深色模式", value: "dark" },
             ],
-            value: computed({
-              get: () => settingStore.themeMode,
-              set: (v) => (settingStore.themeMode = v),
+            ...forceDisplaySettingIf({
+              condition: () => statusStore.themeBackgroundMode === "image",
+              displayValue: "auto" as const,
+              value: {
+                get: () => settingStore.themeMode,
+                set: (v) => (settingStore.themeMode = v),
+              },
+              description: "调整全局主题明暗模式",
+              descriptionDisabled: "请关闭自定义背景图后调节",
             }),
           },
           {
@@ -238,6 +240,7 @@ export const useAppearanceSettings = (): SettingConfig => {
               get: () => settingStore.playerBackgroundType,
               set: (v) => (settingStore.playerBackgroundType = v),
             }),
+            condition: () => settingStore.playerBackgroundType === "animation",
             children: [
               {
                 key: "playerBackgroundFps",
@@ -332,10 +335,14 @@ export const useAppearanceSettings = (): SettingConfig => {
             label: "动态封面",
             type: "switch",
             description: "可展示部分歌曲的动态封面，仅在封面模式有效",
-            disabled: () => isLogin() !== 1,
-            value: computed({
-              get: () => settingStore.dynamicCover,
-              set: (v) => (settingStore.dynamicCover = v),
+            ...forceDisplaySettingIf({
+              condition: () => isLogin() !== 1,
+              displayValue: false,
+              value: {
+                get: () => settingStore.dynamicCover,
+                set: (v) => (settingStore.dynamicCover = v),
+              },
+              titleDisabled: "正常登录账号后才能开启"
             }),
           },
           {
@@ -343,14 +350,15 @@ export const useAppearanceSettings = (): SettingConfig => {
             label: "音乐频谱",
             type: "switch",
             show: isElectron,
-            description:
-              settingStore.playbackEngine === "mpv"
-                ? "MPV 引擎暂不支持显示音乐频谱"
-                : "开启音乐频谱会影响性能或增加内存占用，如遇问题请关闭",
-            disabled: () => settingStore.playbackEngine === "mpv",
-            value: computed({
-              get: () => settingStore.showSpectrums,
-              set: (v) => (settingStore.showSpectrums = v),
+            description: "开启音乐频谱会影响性能或增加内存占用，如遇问题请关闭",
+            ...forceDisplaySettingIf({
+              condition: () => settingStore.playbackEngine === "mpv",
+              displayValue: false,
+              value: {
+                get: () => settingStore.showSpectrums,
+                set: (v) => (settingStore.showSpectrums = v),
+              },
+              titleDisabled: "MPV 引擎暂不支持显示音乐频谱"
             }),
           },
         ],

@@ -7,23 +7,12 @@ import { cloneDeep, isEqual } from "lodash-es";
 import defaultDesktopLyricConfig from "@/assets/data/lyricConfig";
 import { SettingConfig } from "@/types/settings";
 import LyricPreview from "../components/LyricPreview.vue";
+import { descMultiline, forceDisplaySettingIf } from "@/utils/setting";
 
 export const useLyricSettings = (): SettingConfig => {
   const player = usePlayerController();
   const statusStore = useStatusStore();
   const settingStore = useSettingStore();
-
-  const fontSizeComputed = (key: string) =>
-    computed({
-      get: () =>
-        settingStore.useAMLyrics
-          ? Math.max(0.5 * settingStore.lyricFontSize, 10)
-          : settingStore[key],
-      set: (value) => (settingStore[key] = value),
-    });
-
-  const tranFontSize = fontSizeComputed("lyricTranFontSize");
-  const romaFontSize = fontSizeComputed("lyricRomaFontSize");
 
   // 桌面歌词配置
   const desktopLyricConfig = reactive<LyricConfig>({ ...defaultDesktopLyricConfig });
@@ -123,13 +112,16 @@ export const useLyricSettings = (): SettingConfig => {
             min: 5,
             max: 40,
             suffix: "px",
-            disabled: computed(() => settingStore.useAMLyrics),
-            title: computed(() => (settingStore.useAMLyrics ? "由 AMLL 自动控制" : "")),
-            value: computed({
-              get: () => tranFontSize.value,
-              set: (v) => (tranFontSize.value = v || 22),
-            }),
             defaultValue: 22,
+            ...forceDisplaySettingIf({
+              condition: () => settingStore.useAMLyrics,
+              displayValue: () => Math.max(0.5 * settingStore.lyricFontSize, 10),
+              value: {
+                get: () => settingStore.lyricTranFontSize,
+                set: (v) => (settingStore.lyricTranFontSize = v || 22),
+              },
+              titleDisabled: "由 AMLL 自动控制",
+            }),
           },
           {
             key: "lyricRomaFontSize",
@@ -139,13 +131,16 @@ export const useLyricSettings = (): SettingConfig => {
             min: 5,
             max: 40,
             suffix: "px",
-            disabled: computed(() => settingStore.useAMLyrics),
-            title: computed(() => (settingStore.useAMLyrics ? "由 AMLL 自动控制" : "")),
-            value: computed({
-              get: () => romaFontSize.value,
-              set: (v) => (romaFontSize.value = v || 18),
-            }),
             defaultValue: 18,
+            ...forceDisplaySettingIf({
+              condition: () => settingStore.useAMLyrics,
+              displayValue: () => Math.max(0.5 * settingStore.lyricFontSize, 10),
+              value: {
+                get: () => settingStore.lyricRomaFontSize,
+                set: (v) => (settingStore.lyricRomaFontSize = v || 18),
+              },
+              titleDisabled: "由 AMLL 自动控制",
+            }),
           },
           {
             key: "fontConfig",
@@ -172,16 +167,20 @@ export const useLyricSettings = (): SettingConfig => {
             key: "lyricsPosition",
             label: "歌词位置",
             type: "select",
-            description: "歌词的默认垂直位置",
-            disabled: computed(() => settingStore.useAMLyrics),
             options: [
               { label: "居左", value: "flex-start" },
               { label: "居中", value: "center" },
               { label: "居右", value: "flex-end" },
             ],
-            value: computed({
-              get: () => settingStore.lyricsPosition,
-              set: (v) => (settingStore.lyricsPosition = v),
+            ...forceDisplaySettingIf({
+              condition: () => settingStore.useAMLyrics,
+              displayValue: "flex-start" as const,
+              value: {
+                get: () => settingStore.lyricsPosition,
+                set: (v) => (settingStore.lyricsPosition = v),
+              },
+              description: "歌词的默认垂直位置",
+              descriptionDisabled: "歌词的默认垂直位置，AMLL 默认只可居左",
             }),
           },
           {
@@ -209,51 +208,6 @@ export const useLyricSettings = (): SettingConfig => {
               set: (v) => (settingStore.lyricAlignRight = v),
             }),
           },
-          {
-            key: "replaceLyricBrackets",
-            label: "替换歌词括号内容",
-            type: "switch",
-            description: "将歌词中的括号内容替换为指定格式",
-            value: computed({
-              get: () => settingStore.replaceLyricBrackets,
-              set: (v) => (settingStore.replaceLyricBrackets = v),
-            }),
-          },
-          {
-            key: "bracketReplacementPreset",
-            label: "括号替换样式",
-            type: "select",
-            description: "选择替换后的括号样式",
-            disabled: computed(() => !settingStore.replaceLyricBrackets),
-            options: [
-              { label: "连字符 ( - )", value: "dash" },
-              { label: "六角括号 (〔 〕)", value: "angleBrackets" },
-              { label: "直角引号 (「 」)", value: "cornerBrackets" },
-              { label: "自定义", value: "custom" },
-            ],
-            value: computed({
-              get: () => settingStore.bracketReplacementPreset,
-              set: (v) => (settingStore.bracketReplacementPreset = v),
-            }),
-          },
-          {
-            key: "customBracketReplacement",
-            label: "自定义替换内容",
-            type: "text-input",
-            description: "输入自定义的替换字符。支持单个分隔符（如 - ）或成对符号（如 () ）",
-            disabled: computed(() => !settingStore.replaceLyricBrackets || settingStore.bracketReplacementPreset !== "custom"),
-            value: computed({
-              get: () => settingStore.customBracketReplacement,
-              set: (v) => {
-                if (v.trim().length > 5) {
-                  window.$message.warning("自定义替换内容不能超过5个字符");
-                  return;
-                }
-                settingStore.customBracketReplacement = v;
-              },
-            }),
-          },
-
           {
             key: "lyricsScrollOffset",
             label: "歌词滚动位置",
@@ -326,10 +280,13 @@ export const useLyricSettings = (): SettingConfig => {
             label: "调换翻译与音译位置",
             type: "switch",
             description: "开启后音译显示在翻译上方",
-            disabled: computed(() => !settingStore.showTran || !settingStore.showRoma),
-            value: computed({
-              get: () => settingStore.swapTranRoma,
-              set: (v) => (settingStore.swapTranRoma = v),
+            ...forceDisplaySettingIf({
+              condition: () => !settingStore.showTran || !settingStore.showRoma,
+              displayValue: false,
+              value: computed({
+                get: () => settingStore.swapTranRoma,
+                set: (v) => (settingStore.swapTranRoma = v),
+              }),
             }),
           },
           {
@@ -412,6 +369,53 @@ export const useLyricSettings = (): SettingConfig => {
             ],
           },
           {
+            key: "replaceLyricBrackets",
+            label: "替换歌词括号内容",
+            type: "switch",
+            description: "将歌词中的括号内容替换为指定格式",
+            value: computed({
+              get: () => settingStore.replaceLyricBrackets,
+              set: (v) => (settingStore.replaceLyricBrackets = v),
+            }),
+            children: [
+              {
+                key: "bracketReplacementPreset",
+                label: "括号替换样式",
+                type: "select",
+                description: "选择替换后的括号样式",
+                options: [
+                  { label: "连字符 ( - )", value: "dash" },
+                  { label: "六角括号 (〔 〕)", value: "angleBrackets" },
+                  { label: "直角引号 (「 」)", value: "cornerBrackets" },
+                  { label: "自定义", value: "custom" },
+                ],
+                value: computed({
+                  get: () => settingStore.bracketReplacementPreset,
+                  set: (v) => (settingStore.bracketReplacementPreset = v),
+                }),
+                condition: () => settingStore.bracketReplacementPreset === "custom",
+                children: [
+                  {
+                    key: "customBracketReplacement",
+                    label: "自定义替换内容",
+                    type: "text-input",
+                    description: "输入自定义的替换字符。支持单个分隔符（如 - ）或成对符号（如 () ）",
+                    value: computed({
+                      get: () => settingStore.customBracketReplacement,
+                      set: (v) => {
+                        if (v.trim().length > 5) {
+                          window.$message.warning("自定义替换内容不能超过5个字符");
+                          return;
+                        }
+                        settingStore.customBracketReplacement = v;
+                      },
+                    }),
+                  },
+                ],
+              },
+            ],
+          },
+          {
             key: "configExcludeLyric",
             label: "歌词排除配置",
             type: "button",
@@ -459,8 +463,13 @@ export const useLyricSettings = (): SettingConfig => {
                 key: "wordFadeWidth",
                 label: "文字动画的渐变宽度",
                 type: "input-number",
-                description:
-                  "单位以歌词行的主文字字体大小的倍数为单位 <br /> 默认为 0.5，即一个全角字符的一半宽度 <br /> 若模拟 Apple Music for Android 的效果，可以设为 1 <br /> 若模拟 Apple Music for iPad 的效果，可以设为 0.5 <br /> 若需近乎禁用渐变，可设为非常接近 0 的小数，如 0.01",
+                description: descMultiline`
+                  单位以歌词行的主文字字体大小的倍数为单位
+                  默认为 0.5，即一个全角字符的一半宽度
+                  若模拟 Apple Music for Android 的效果，可以设为 1
+                  若模拟 Apple Music for iPad 的效果，可以设为 0.5
+                  若需近乎禁用渐变，可设为非常接近 0 的小数，如 0.01
+                `,
                 min: 0.01,
                 max: 1,
                 step: 0.01,

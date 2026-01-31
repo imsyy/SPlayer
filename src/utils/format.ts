@@ -366,3 +366,27 @@ export const getPlayerInfo = (song?: SongType, sep: string = "/"): string | null
   if (!info) return null;
   return `${info.name} - ${info.artist}`;
 };
+
+/**
+ * 检测所有输入行的共同最小缩进，将其从每一行中删除，如果第一行和最后一行是空白行，也将其删除
+ * @param string 字符串
+ * @param newline 换行符
+ * @returns 去除缩进后的字符串
+ */
+export const trimIndentString = (string: string, newline: string = "\n"): string => {
+  if (!string) return "";
+  const lines = string.split(newline);
+  // 删除第一行和最后一行的空白行
+  const relevantLines = lines.filter(
+    (line, index) => (index !== 0 && index !== lines.length - 1) || line.trim() !== "",
+  );
+  // 移除每行的最小缩进
+  const minIndent = relevantLines
+    .filter((line) => line.trim() !== "")
+    .map((line) => line.match(/^\s*/)?.[0].length ?? 0)
+    .reduce((min, indent) => Math.min(min, indent), Infinity);
+  const trimmedLines = relevantLines.map((line) => {
+    return line.slice(minIndent);
+  });
+  return trimmedLines.join(newline);
+};
