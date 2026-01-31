@@ -29,11 +29,17 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useSettingStore } from "@/stores";
+import type { SettingState } from "@/stores/setting";
 import { NScrollbar, NButton } from "naive-ui";
 
 const settingStore = useSettingStore();
 
-const coverItems = [
+type CoverItem = {
+  key: keyof SettingState["hiddenCovers"];
+  name: string;
+};
+
+const coverItems: CoverItem[] = [
   { key: "home", name: "为我推荐" },
   { key: "playlist", name: "歌单广场" },
   { key: "toplist", name: "排行榜" },
@@ -47,7 +53,7 @@ const coverItems = [
   { key: "like", name: "我的收藏" },
   { key: "video", name: "视频" },
   { key: "videoDetail", name: "视频详情页" },
-] as const;
+];
 
 const isAllHidden = computed(() => {
   return coverItems.every((item) => settingStore.hiddenCovers[item.key]);
