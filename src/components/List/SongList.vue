@@ -129,7 +129,30 @@
     </div>
     <!-- 列表加载 - 骨架屏 -->
     <div v-else-if="loading" class="song-list loading">
-      <n-skeleton :repeat="10" text />
+      <div v-for="i in 15" :key="i" class="song-card-skeleton">
+        <div class="num">
+          <n-skeleton text width="20px" />
+        </div>
+        <div class="title">
+          <n-skeleton
+            v-if="!hiddenCover && !settingStore.hiddenCovers.list"
+            class="cover"
+            height="40px"
+            width="40px"
+            :sharp="false"
+          />
+          <div class="info">
+            <n-skeleton text width="140px" />
+            <n-skeleton text width="80px" style="margin-top: 6px" />
+          </div>
+        </div>
+        <div v-if="!hiddenAlbum" class="album">
+          <n-skeleton text width="120px" />
+        </div>
+        <div class="meta">
+          <n-skeleton text width="40px" />
+        </div>
+      </div>
     </div>
     <!-- 空列表 -->
     <n-empty v-else description="列表光秃秃的，啥都没有哦" size="large" class="song-list empty" />
@@ -571,11 +594,43 @@ onBeforeUnmount(() => {
   }
   // 加载
   &.loading {
-    margin-top: 20px;
-    :deep(.n-skeleton) {
-      height: 72px;
-      margin-bottom: 12px;
-      border-radius: 12px;
+    padding: 0 20px;
+    gap: 0;
+    overflow: hidden;
+  }
+  .song-card-skeleton {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    .num {
+      width: 50px;
+      display: flex;
+      justify-content: center;
+      margin-right: 12px;
+    }
+    .title {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      .cover {
+        margin-right: 12px;
+        border-radius: 4px;
+        flex-shrink: 0;
+      }
+      .info {
+        display: flex;
+        flex-direction: column;
+      }
+    }
+    .album {
+      flex: 0.4;
+      display: flex;
+      align-items: center;
+    }
+    .meta {
+      width: 100px;
+      display: flex;
+      justify-content: flex-end;
     }
   }
   // 空列表
