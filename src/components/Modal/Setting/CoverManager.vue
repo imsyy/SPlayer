@@ -1,26 +1,35 @@
 <template>
   <div class="cover-manager">
-    <div class="list">
-      <n-card
-        v-for="item in coverItems"
-        :key="item.key"
-        :content-style="{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '16px',
-        }"
-        class="item"
-      >
-        <n-text class="name">{{ item.name }}</n-text>
-        <n-switch v-model:value="settingStore.hiddenCovers[item.key]" :round="false" />
-      </n-card>
+    <n-scrollbar style="max-height: 400px">
+      <div class="list">
+        <n-card
+          v-for="item in coverItems"
+          :key="item.key"
+          :content-style="{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '16px',
+          }"
+          class="item"
+        >
+          <n-text class="name">{{ item.name }}</n-text>
+          <n-switch v-model:value="settingStore.hiddenCovers[item.key]" :round="false" />
+        </n-card>
+      </div>
+    </n-scrollbar>
+    <div class="footer">
+      <n-button @click="toggleAll">
+        {{ isAllHidden ? "显示全部" : "隐藏全部" }}
+      </n-button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { useSettingStore } from "@/stores";
+import { NScrollbar, NButton } from "naive-ui";
 
 const settingStore = useSettingStore();
 
@@ -39,14 +48,28 @@ const coverItems = [
   { key: "video", name: "视频" },
   { key: "videoDetail", name: "视频详情页" },
 ] as const;
+
+const isAllHidden = computed(() => {
+  return coverItems.every((item) => settingStore.hiddenCovers[item.key]);
+});
+
+const toggleAll = () => {
+  const target = !isAllHidden.value;
+  coverItems.forEach((item) => {
+    settingStore.hiddenCovers[item.key] = target;
+  });
+};
 </script>
 
 <style scoped lang="scss">
 .cover-manager {
+  display: flex;
+  flex-direction: column;
   .list {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    padding-right: 12px;
     .item {
       border-radius: 8px;
       .name {
@@ -57,6 +80,11 @@ const coverItems = [
         margin-left: auto;
       }
     }
+  }
+  .footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
   }
 }
 </style>
