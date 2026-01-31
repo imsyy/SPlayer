@@ -143,6 +143,10 @@ export interface SettingState {
   songVolumeFade: boolean;
   /** 渐入渐出时间 */
   songVolumeFadeTime: number;
+  /** 是否启用 ReplayGain (音量平衡) */
+  enableReplayGain: boolean;
+  /** ReplayGain 模式: 轨道增益 (track) 或 专辑增益 (album) */
+  replayGainMode: "track" | "album";
   /** 是否使用解灰 */
   useSongUnlock: boolean;
   /** 歌曲解锁音源 */
@@ -429,6 +433,8 @@ export const useSettingStore = defineStore("setting", {
     useNextPrefetch: true,
     songVolumeFade: true,
     songVolumeFadeTime: 300,
+    enableReplayGain: false,
+    replayGainMode: "track",
     useSongUnlock: true,
     songUnlockServer: [
       { key: SongUnlockServer.BODIAN, enabled: true },

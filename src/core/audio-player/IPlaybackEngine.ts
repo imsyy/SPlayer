@@ -148,6 +148,12 @@ export interface IPlaybackEngine {
   getLowFrequencyVolume?(): number;
 
   /**
+   * 设置 ReplayGain 增益
+   * @param gain 线性增益值 (1.0 为原始音量)
+   */
+  setReplayGain?(gain: number): void;
+
+  /**
    * 获取最后一次错误码
    */
   getErrorCode(): number;

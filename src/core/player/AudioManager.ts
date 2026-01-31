@@ -136,6 +136,14 @@ class AudioManager extends TypedEventTarget<AudioEventMap> implements IPlaybackE
   }
 
   /**
+   * 设置 ReplayGain 增益
+   * @param gain 线性增益值
+   */
+  public setReplayGain(gain: number): void {
+    this.engine.setReplayGain?.(gain);
+  }
+
+  /**
    * 设置音量
    * @param value 音量值 (0.0 - 1.0)
    */

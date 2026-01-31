@@ -503,6 +503,32 @@ export const usePlaySettings = (): SettingConfig => {
               set: (v) => playDeviceChange(v),
             }),
           },
+          {
+            key: "enableReplayGain",
+            label: "音量平衡",
+            type: "switch",
+            description: "平衡不同音频内容之间的音量大小（需要本地歌曲标签中有 replayGain 数据才会生效）",
+            value: computed({
+              get: () => settingStore.enableReplayGain,
+              set: (v) => (settingStore.enableReplayGain = v),
+            }),
+            children: [
+              {
+                key: "replayGainMode",
+                label: "平衡模式",
+                type: "select",
+                description: "选择音量平衡的计算基准",
+                options: [
+                  { label: "单曲 (Track)", value: "track" },
+                  { label: "专辑 (Album)", value: "album" },
+                ],
+                value: computed({
+                  get: () => settingStore.replayGainMode,
+                  set: (v) => (settingStore.replayGainMode = v),
+                }),
+              },
+            ],
+          },
         ],
       },
       {

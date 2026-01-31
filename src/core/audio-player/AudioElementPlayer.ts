@@ -17,6 +17,10 @@ export class AudioElementPlayer extends BaseAudioPlayer {
   private audioElement: HTMLAudioElement;
   /** MediaElementAudioSourceNode 用于连接 Web Audio API */
   private sourceNode: MediaElementAudioSourceNode | null = null;
+  /** ReplayGain 增益节点 */
+  private replayGainNode: GainNode | null = null;
+  /** 缓存的 ReplayGain 值 */
+  private currentReplayGain = 1;
 
   /** Seek 锁，用于在 seek 过程中返回稳定的 currentTime */
   private isInternalSeeking = false;
@@ -52,7 +56,13 @@ export class AudioElementPlayer extends BaseAudioPlayer {
     try {
       this.sourceNode = this.audioCtx.createMediaElementSource(this.audioElement);
 
-      this.sourceNode.connect(this.inputNode);
+      // 创建 ReplayGain 节点
+      this.replayGainNode = this.audioCtx.createGain();
+      this.replayGainNode.gain.value = this.currentReplayGain;
+
+      // 连接: Source -> ReplayGain -> Input
+      this.sourceNode.connect(this.replayGainNode);
+      this.replayGainNode.connect(this.inputNode);
     } catch (error) {
       console.error("[AudioElementPlayer] SourceNode 创建失败", error);
     }
@@ -101,6 +111,19 @@ export class AudioElementPlayer extends BaseAudioPlayer {
   protected doSeek(time: number): void {
     if (Number.isFinite(time)) {
       this.audioElement.currentTime = time;
+    }
+  }
+
+  /**
+   * 设置 ReplayGain 增益
+   * @param gain 线性增益值
+   */
+  public setReplayGain(gain: number): void {
+    this.currentReplayGain = gain;
+    if (this.replayGainNode && this.audioCtx) {
+      const currentTime = this.audioCtx.currentTime;
+      this.replayGainNode.gain.cancelScheduledValues(currentTime);
+      this.replayGainNode.gain.setTargetAtTime(gain, currentTime, 0.1);
     }
   }
 

@@ -156,6 +156,12 @@ const initFileIpc = (): void => {
               size: (size / (1024 * 1024)).toFixed(2),
               path: fullPath,
               quality: format.bitrate ?? 0,
+              replayGain: {
+                trackGain: common.replaygain_track_gain?.ratio,
+                trackPeak: common.replaygain_track_peak?.ratio,
+                albumGain: common.replaygain_album_gain?.ratio,
+                albumPeak: common.replaygain_album_peak?.ratio,
+              },
             };
           } catch (err) {
             ipcLog.warn(`⚠️ Failed to parse file: ${fullPath}`, err);
@@ -193,6 +199,12 @@ const initFileIpc = (): void => {
         format,
         // md5
         md5: await getFileMD5(filePath),
+        replayGain: {
+          trackGain: common.replaygain_track_gain?.ratio,
+          trackPeak: common.replaygain_track_peak?.ratio,
+          albumGain: common.replaygain_album_gain?.ratio,
+          albumPeak: common.replaygain_album_peak?.ratio,
+        },
       };
     } catch (error) {
       ipcLog.error("❌ Error fetching music metadata:", error);
