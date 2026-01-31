@@ -72,11 +72,17 @@
             class="ar"
             @click="jumpPage({ name: 'artist', query: { id: ar.id } })"
           >
-            {{ ar.name }}
+            {{
+              settingStore.hideBracketedContent ? removeBrackets(ar.name) : ar.name
+            }}
           </span>
         </div>
         <div v-else class="ar-list">
-          <span class="ar">{{ musicStore.playSong.artists || "未知艺术家" }}</span>
+          <span class="ar">{{
+            settingStore.hideBracketedContent
+              ? removeBrackets(musicStore.playSong.artists)
+              : musicStore.playSong.artists || "未知艺术家"
+          }}</span>
         </div>
       </div>
       <div v-else class="artists">

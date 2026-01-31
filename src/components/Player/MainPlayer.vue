@@ -102,11 +102,21 @@
                   class="ar-item"
                   @click="openJumpArtist(musicStore.playSong.artists, item.id)"
                 >
-                  {{ item.name }}
+                  {{
+                    settingStore.hideBracketedContent ? removeBrackets(item.name) : item.name
+                  }}
                 </n-text>
               </template>
-              <n-text v-else class="ar-item" @click="openJumpArtist(musicStore.playSong.artists)">
-                {{ musicStore.playSong.artists || "未知艺术家" }}
+              <n-text
+                v-else
+                class="ar-item"
+                @click="openJumpArtist(musicStore.playSong.artists)"
+              >
+                {{
+                  settingStore.hideBracketedContent
+                    ? removeBrackets(musicStore.playSong.artists)
+                    : musicStore.playSong.artists || "未知艺术家"
+                }}
               </n-text>
             </div>
           </Transition>

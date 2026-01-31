@@ -73,11 +73,21 @@
             <template v-if="type === 'video' && item.artists">
               <div v-if="Array.isArray(item.artists)" class="artists text-hidden">
                 <n-text v-for="(ar, arIndex) in item.artists" :key="arIndex" class="ar">
-                  {{ ar.name || "未知艺术家" }}
+                  {{
+                    settingStore.hideBracketedContent
+                      ? removeBrackets(ar.name)
+                      : ar.name || "未知艺术家"
+                  }}
                 </n-text>
               </div>
               <div v-else class="artists text-hidden">
-                <n-text class="ar"> {{ item.artists || "未知艺术家" }} </n-text>
+                <n-text class="ar">
+                  {{
+                    settingStore.hideBracketedContent
+                      ? removeBrackets(item.artists)
+                      : item.artists || "未知艺术家"
+                  }}
+                </n-text>
               </div>
             </template>
           </div>
@@ -113,9 +123,9 @@
 import type { CoverType, SongType } from "@/types/main";
 import { albumDetail } from "@/api/album";
 import { formatNumber } from "@/utils/helper";
-import { useMusicStore, useStatusStore, useLocalStore } from "@/stores";
+import { useMusicStore, useStatusStore, useLocalStore, useSettingStore } from "@/stores";
 import { debounce } from "lodash-es";
-import { formatSongsList } from "@/utils/format";
+import { formatSongsList, removeBrackets } from "@/utils/format";
 import { songDetail } from "@/api/song";
 import { playlistAllSongs } from "@/api/playlist";
 import { radioAllProgram } from "@/api/radio";
@@ -145,6 +155,7 @@ const router = useRouter();
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
 const localStore = useLocalStore();
+const settingStore = useSettingStore();
 const player = usePlayerController();
 
 // 右键菜单

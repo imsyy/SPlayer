@@ -53,15 +53,30 @@
               <div class="data">
                 <n-text class="name text-hidden">{{ songData.name || "未知曲目" }}</n-text>
                 <div v-if="Array.isArray(songData?.artists)" class="artists">
-                  <n-text v-for="ar in songData.artists" :key="ar.id" depth="3" class="ar">
-                    {{ ar.name }}
+                  <n-text
+                    v-for="ar in songData.artists"
+                    :key="ar.id"
+                    depth="3"
+                    class="ar"
+                  >
+                    {{
+                      settingStore.hideBracketedContent
+                        ? removeBrackets(ar.name)
+                        : ar.name
+                    }}
                   </n-text>
                 </div>
                 <div v-else-if="songData.type === 'radio'" class="artists">
                   <n-text class="ar" depth="3"> 播客电台 </n-text>
                 </div>
                 <div v-else class="artists">
-                  <n-text class="ar" depth="3"> {{ songData?.artists || "未知艺术家" }} </n-text>
+                  <n-text class="ar" depth="3">
+                    {{
+                      settingStore.hideBracketedContent
+                        ? removeBrackets(songData?.artists)
+                        : songData?.artists || "未知艺术家"
+                    }}
+                  </n-text>
                 </div>
               </div>
               <!-- 移除 -->
@@ -110,12 +125,14 @@
 </template>
 
 <script setup lang="ts">
-import { useStatusStore, useDataStore } from "@/stores";
+import { useStatusStore, useDataStore, useSettingStore } from "@/stores";
 import VirtualScroll from "@/components/UI/VirtualScroll.vue";
 import { usePlayerController } from "@/core/player/PlayerController";
+import { removeBrackets } from "@/utils/format";
 
 const dataStore = useDataStore();
 const statusStore = useStatusStore();
+const settingStore = useSettingStore();
 const player = usePlayerController();
 
 const playListRef = ref<InstanceType<typeof VirtualScroll> | null>(null);

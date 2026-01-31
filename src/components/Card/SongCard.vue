@@ -120,14 +120,22 @@
                 class="ar"
                 @click="openJumpArtist(song.artists, ar.id)"
               >
-                {{ ar.name }}
+                {{
+                  settingStore.hideBracketedContent ? removeBrackets(ar.name) : ar.name
+                }}
               </n-text>
             </div>
             <div v-else-if="song.type === 'radio'" class="artists">
               <n-text class="ar"> 电台节目 </n-text>
             </div>
             <div v-else class="artists" @click="openJumpArtist(song.artists)">
-              <n-text class="ar"> {{ song.artists || "未知艺术家" }} </n-text>
+              <n-text class="ar">
+                {{
+                  settingStore.hideBracketedContent
+                    ? removeBrackets(song.artists)
+                    : song.artists || "未知艺术家"
+                }}
+              </n-text>
             </div>
           </n-flex>
         </n-flex>

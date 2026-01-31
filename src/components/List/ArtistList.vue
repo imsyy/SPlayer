@@ -31,7 +31,9 @@
           </div>
           <!-- 信息 -->
           <div class="cover-data">
-            <n-text class="name text-hidden">{{ item.name }}</n-text>
+            <n-text class="name text-hidden">{{
+              settingStore.hideBracketedContent ? removeBrackets(item.name) : item.name
+            }}</n-text>
             <!-- 数量 -->
             <div v-if="item.musicSize" class="num">
               <SvgIcon name="Music" :depth="3" />
@@ -66,6 +68,8 @@
 
 <script setup lang="ts">
 import type { ArtistType } from "@/types/main";
+import { removeBrackets } from "@/utils/format";
+import { useSettingStore } from "@/stores";
 
 defineProps<{
   data: ArtistType[];
@@ -82,6 +86,7 @@ const emit = defineEmits<{
 }>();
 
 const router = useRouter();
+const settingStore = useSettingStore();
 </script>
 
 <style lang="scss" scoped>

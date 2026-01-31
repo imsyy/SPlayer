@@ -83,7 +83,11 @@
                     class="ar"
                     @click="openJumpArtist(detailData.artists, ar.id)"
                   >
-                    {{ ar.name || "未知艺术家" }}
+                    {{
+                      settingStore.hideBracketedContent
+                        ? removeBrackets(ar.name)
+                        : ar.name || "未知艺术家"
+                    }}
                   </n-text>
                 </div>
                 <div
@@ -91,7 +95,15 @@
                   class="artists text-hidden"
                   @click="openJumpArtist(detailData.artists || '')"
                 >
-                  <n-text class="ar"> {{ detailData.artists || "未知艺术家" }} </n-text>
+                  <n-text class="ar">
+                    {{
+                      settingStore.hideBracketedContent
+                        ? removeBrackets(
+                            typeof detailData.artists === 'string' ? detailData.artists : undefined,
+                          )
+                        : detailData.artists || "未知艺术家"
+                    }}
+                  </n-text>
                 </div>
                 <n-text v-else-if="config.showCreator">
                   {{ detailData.creator?.name || "未知用户名" }}
@@ -222,6 +234,7 @@
 import type { CoverType, SongType } from "@/types/main";
 import type { DropdownOption } from "naive-ui";
 import { coverLoaded, formatNumber } from "@/utils/helper";
+import { removeBrackets } from "@/utils/format";
 import { renderToolbar } from "@/utils/meta";
 import { formatTimestamp } from "@/utils/time";
 import { openDescModal, openJumpArtist } from "@/utils/modal";
