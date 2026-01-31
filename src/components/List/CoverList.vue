@@ -108,7 +108,7 @@
           <div v-if="!hiddenCover" class="cover">
             <n-skeleton class="cover-img" />
           </div>
-          <div class="cover-data">
+          <div class="cover-data" :style="hiddenCover ? { width: '100%', padding: '0 12px' } : {}">
             <n-skeleton text round :repeat="2" />
           </div>
         </div>
@@ -454,6 +454,15 @@ const getListData = async (id: number | string): Promise<SongType[]> => {
   &.loading {
     .cover {
       box-shadow: none;
+    }
+    .cover-item.no-cover {
+      height: 80px;
+      .cover-data {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
     }
   }
 }

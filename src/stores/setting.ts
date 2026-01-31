@@ -253,9 +253,9 @@ export interface SettingState {
   /** 隐藏迷你播放器封面 */
   hideMiniPlayerCover: boolean;
   /** 路由动画 */
-  routeAnimation: "none" | "fade" | "zoom" | "slide" | "up";
+  routeAnimation: "none" | "fade" | "zoom" | "slide" | "up" | "flow" | "mask-left" | "mask-top";
   /** 播放器展开动画 */
-  playerExpandAnimation: "up" | "smooth";
+  playerExpandAnimation: "up" | "flow";
   /** 是否使用真实 IP */
   useRealIP: boolean;
   /** 真实 IP 地址 */

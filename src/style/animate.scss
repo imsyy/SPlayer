@@ -49,6 +49,62 @@
   opacity: 0;
 }
 
+// flow
+.router-flow-enter-active,
+.router-flow-leave-active {
+  transition:
+    opacity 0.4s cubic-bezier(0.2, 0, 0.2, 1),
+    transform 0.4s cubic-bezier(0.2, 0, 0.2, 1);
+}
+.router-flow-enter-from {
+  opacity: 0;
+  transform: translateY(10px) scale(0.99);
+}
+.router-flow-leave-to {
+  opacity: 0;
+  transform: translateY(-5px) scale(0.99);
+}
+
+// mask-left
+.router-mask-left-enter-active {
+  transition: clip-path 0.6s cubic-bezier(0, 0, 0.2, 1);
+}
+.router-mask-left-leave-active {
+  transition: clip-path 0.25s ease-in;
+}
+.router-mask-left-enter-from {
+  clip-path: inset(0 100% 0 0);
+}
+.router-mask-left-enter-to {
+  clip-path: inset(0 0 0 0);
+}
+.router-mask-left-leave-from {
+  clip-path: inset(0 0 0 0);
+}
+.router-mask-left-leave-to {
+  clip-path: inset(0 0 0 100%);
+}
+
+// mask-top
+.router-mask-top-enter-active {
+  transition: clip-path 0.6s cubic-bezier(0, 0, 0.2, 1);
+}
+.router-mask-top-leave-active {
+  transition: clip-path 0.25s ease-in;
+}
+.router-mask-top-enter-from {
+  clip-path: inset(0 0 100% 0);
+}
+.router-mask-top-enter-to {
+  clip-path: inset(0 0 0 0);
+}
+.router-mask-top-leave-from {
+  clip-path: inset(0 0 0 0);
+}
+.router-mask-top-leave-to {
+  clip-path: inset(100% 0 0 0);
+}
+
 // fade
 .fade-enter-active,
 .fade-leave-active {
@@ -155,6 +211,21 @@
 .smooth-leave-to {
   opacity: 0;
   transform: translateY(20px) scale(0.96);
+}
+
+// flow (player)
+.flow-enter-active,
+.flow-leave-active {
+  transition:
+    opacity 0.5s cubic-bezier(0.2, 0, 0.2, 1),
+    transform 0.5s cubic-bezier(0.2, 0, 0.2, 1),
+    filter 0.5s cubic-bezier(0.2, 0, 0.2, 1);
+}
+.flow-enter-from,
+.flow-leave-to {
+  opacity: 0;
+  transform: scale(0.92) translateY(30px);
+  filter: blur(10px);
 }
 
 // 侧边栏滑入动画

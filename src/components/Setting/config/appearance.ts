@@ -161,6 +161,9 @@ export const useAppearanceSettings = (): SettingConfig => {
               { label: "缩放", value: "zoom" },
               { label: "滑动", value: "slide" },
               { label: "上浮", value: "up" },
+              { label: "流体", value: "flow" },
+              { label: "左右遮罩", value: "mask-left" },
+              { label: "上下遮罩", value: "mask-top" },
             ],
             value: computed({
               get: () => settingStore.routeAnimation,
@@ -307,7 +310,7 @@ export const useAppearanceSettings = (): SettingConfig => {
             description: "选择播放器展开时的动画效果",
             options: [
               { label: "上浮", value: "up" },
-              { label: "平滑", value: "smooth" },
+              { label: "流体", value: "flow" },
             ],
             value: computed({
               get: () => settingStore.playerExpandAnimation,
