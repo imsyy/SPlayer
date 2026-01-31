@@ -56,8 +56,7 @@
             <n-skeleton class="cover-img" />
           </div>
           <div class="cover-data">
-            <n-skeleton v-if="hiddenCover" text round style="width: 60%; height: 20px" />
-            <n-skeleton v-else text round :repeat="2" />
+            <n-skeleton text round :repeat="2" />
           </div>
         </div>
       </div>

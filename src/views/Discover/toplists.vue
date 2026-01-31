@@ -32,15 +32,9 @@
         <n-grid cols="1 600:2 1000:3" x-gap="20" y-gap="20">
           <n-gi v-for="item in 4" :key="item">
             <n-card class="loading">
-              <div class="header">
-                <n-skeleton text style="width: 100px; height: 20px" />
-                <n-skeleton text style="width: 60px; height: 14px" />
-              </div>
-              <div class="content">
-                <n-skeleton v-if="!settingStore.hiddenCovers.toplist" class="cover" />
-                <div class="desc">
-                  <n-skeleton text round :repeat="3" />
-                </div>
+              <n-skeleton class="cover" />
+              <div class="desc">
+                <n-skeleton text round :repeat="3" />
               </div>
             </n-card>
           </n-gi>
@@ -103,19 +97,8 @@ onMounted(getTopPlaylistData);
     cursor: pointer;
     :deep(.n-card__content) {
       display: flex;
-      flex-direction: column;
       height: 100%;
       padding: 16px;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-    .content {
-      display: flex;
-      flex: 1;
-      height: 0;
     }
     .cover {
       height: 100%;
@@ -128,7 +111,7 @@ onMounted(getTopPlaylistData);
       display: flex;
       flex-direction: column;
       justify-content: space-evenly;
-      flex: 1;
+      width: 100%;
       :deep(.n-skeleton) {
         height: 20px;
       }
