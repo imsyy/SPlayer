@@ -245,10 +245,11 @@ export const useLyricSettings = (): SettingConfig => {
             value: computed({
               get: () => settingStore.customBracketReplacement,
               set: (v) => {
-                const trimmed = v.trim();
-                if (v.length === 0 || (trimmed.length > 0 && trimmed.length <= 5)) {
-                  settingStore.customBracketReplacement = v;
+                if (v.trim().length > 5) {
+                  window.$message.warning("自定义替换内容不能超过5个字符");
+                  return;
                 }
+                settingStore.customBracketReplacement = v;
               },
             }),
           },
