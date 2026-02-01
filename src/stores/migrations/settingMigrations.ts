@@ -6,7 +6,7 @@ import type { SettingState } from "../setting";
 /**
  * 当前设置 Schema 版本号
  */
-export const CURRENT_SETTING_SCHEMA_VERSION = 9;
+export const CURRENT_SETTING_SCHEMA_VERSION = 8;
 
 /**
  * 迁移函数类型
@@ -165,42 +165,6 @@ export const settingMigrations: Record<number, MigrationFunction> = {
       enableExcludeLyricsLocal: oldState.enableExcludeLocalLyrics,
       excludeLyricsUserKeywords: oldState.excludeUserKeywords,
       excludeLyricsUserRegexes: oldState.excludeUserRegexes,
-    };
-  },
-  9: () => {
-    return {
-      showSongAlbum: true,
-      showSongDuration: true,
-      showSongOperations: true,
-      showSongArtist: true,
-      fullscreenPlayerElements: {
-        like: true,
-        addToPlaylist: true,
-        download: true,
-        comments: true,
-        desktopLyric: true,
-        moreSettings: true,
-        copyLyric: true,
-        lyricOffset: true,
-        lyricSettings: true,
-      },
-      contextMenuOptions: {
-        play: true,
-        playNext: true,
-        addToPlaylist: true,
-        mv: true,
-        dislike: true,
-        more: true,
-        cloudImport: true,
-        deleteFromPlaylist: true,
-        deleteFromCloud: true,
-        deleteFromLocal: true,
-        openFolder: true,
-        cloudMatch: true,
-        wiki: true,
-        search: true,
-        download: true,
-      },
     };
   },
 };

@@ -83,7 +83,15 @@
       class="color-section"
       :class="{ disabled: settingStore.themeFollowCover }"
     >
-      <n-text class="section-title" :depth="2">选择主题色</n-text>
+      <div class="section-header">
+        <n-text class="section-title" :depth="2">选择主题色</n-text>
+        <n-button size="tiny" secondary strong class="random-btn" @click="randomizeTheme">
+          <template #icon>
+            <SvgIcon name="Shuffle" />
+          </template>
+          全部随机
+        </n-button>
+      </div>
       <div class="color-grid">
         <div
           v-for="(colorData, key) in themeColors"
@@ -299,6 +307,23 @@ const selectColor = (key: ThemeColorType) => {
   settingStore.themeColorType = key;
 };
 
+// 随机主题
+const randomizeTheme = () => {
+  settingStore.themeFollowCover = false;
+  // 随机全局着色 (50% 概率)
+  settingStore.themeGlobalColor = Math.random() > 0.5;
+  // 随机变体
+  const randomVariant = variantOptions[Math.floor(Math.random() * variantOptions.length)];
+  settingStore.themeVariant = randomVariant.value as typeof settingStore.themeVariant;
+  // 随机颜色 (生成随机 Hex 并应用到自定义)
+  const randomHex = `#${Math.floor(Math.random() * 16777215)
+    .toString(16)
+    .padStart(6, "0")}`;
+  settingStore.themeCustomColor = randomHex;
+  settingStore.themeColorType = "custom";
+  themeGlobalColorChange(true);
+};
+
 // 全局着色更改
 const themeGlobalColorChange = (val: boolean) => {
   if (val) getCoverColor(musicStore.songCover);
@@ -419,6 +444,15 @@ const clearBackgroundImage = async () => {
   &.disabled {
     opacity: 0.4;
     pointer-events: none;
+  }
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    .section-title {
+      margin-bottom: 0;
+    }
   }
   .section-title {
     display: block;

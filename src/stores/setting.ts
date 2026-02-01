@@ -109,6 +109,8 @@ export interface SettingState {
   useUnlockForDownload: boolean;
   /** 内嵌暂逐字歌词 (beta) */
   downloadMakeYrc: boolean;
+  /** 下载后另存为 ASS 格式 */
+  downloadSaveAsAss: boolean;
   /** 下载歌词转繁体 */
   downloadLyricToTraditional: boolean;
   /** 下载歌词文件编码 */
@@ -571,6 +573,7 @@ export const useSettingStore = defineStore("setting", {
     usePlaybackForDownload: false,
     useUnlockForDownload: false,
     downloadMakeYrc: false,
+    downloadSaveAsAss: false,
     downloadLyricToTraditional: false,
     downloadLyricEncoding: "utf-8",
     saveMetaFile: false,

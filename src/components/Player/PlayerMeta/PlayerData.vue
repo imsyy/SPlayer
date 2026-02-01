@@ -67,7 +67,18 @@
         </n-popselect>
         <span v-else class="meta-item">{{ lyricMode }}</span>
         <!-- 是否在线 -->
-        <span class="meta-item">
+        <n-popselect
+          v-if="audioSourceOptions.length > 1"
+          trigger="click"
+          :value="statusStore.audioSource"
+          :options="audioSourceOptions"
+          @update:value="handleAudioSourceChange"
+        >
+          <span class="meta-item clickable">
+            {{ audioSourceText }}
+          </span>
+        </n-popselect>
+        <span v-else class="meta-item">
           {{ audioSourceText }}
         </span>
       </n-flex>
@@ -142,6 +153,7 @@ import { debounce, isObject } from "lodash-es";
 import { removeBrackets } from "@/utils/format";
 import { SongUnlockServer } from "@/core/player/SongManager";
 import { useLyricManager } from "@/core/player/LyricManager";
+import { usePlayerController } from "@/core/player/PlayerController";
 
 const props = defineProps<{
   /** 数据居中 */
@@ -155,6 +167,7 @@ const musicStore = useMusicStore();
 const statusStore = useStatusStore();
 const settingStore = useSettingStore();
 const lyricManager = useLyricManager();
+const player = usePlayerController();
 
 // 当前歌词模式
 const lyricMode = computed(() => {
@@ -204,13 +217,24 @@ const sourceMap: Record<string, string> = {
   [SongUnlockServer.GEQUBAO]: "Gequbao",
 };
 
+const audioSourceOptions = computed(() => {
+  return statusStore.availableAudioSources.map((source) => ({
+    label: sourceMap[source] || source.toUpperCase(),
+    value: source,
+  }));
+});
+
+const handleAudioSourceChange = (val: string) => {
+  player.switchAudioSource(val);
+};
+
 const audioSourceText = computed(() => {
   if (musicStore.playSong.path) return "LOCAL";
   if (musicStore.playSong.type === "streaming") return "STREAMING";
   if (statusStore.audioSource) {
     return sourceMap[statusStore.audioSource] || statusStore.audioSource.toUpperCase();
   }
-  return "ONLINE";
+  return "Netease";
 });
 
 const jumpPage = debounce(

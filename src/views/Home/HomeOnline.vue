@@ -93,6 +93,7 @@ const settingStore = useSettingStore();
 
 // 日推标题
 const dailySongsTitle = computed(() => {
+  if (settingStore.hiddenCovers.home) return "每日推荐";
   const day = new Date().getDate();
   return h("div", { class: "date" }, [
     h("div", { class: "date-icon" }, [

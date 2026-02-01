@@ -170,7 +170,7 @@ export const useNetworkSettings = (): SettingConfig => {
               window.$message.success(`已成功连接到 Last.fm 账号: ${sessionResponse.session.name}`);
               lastfmAuthLoading.value = false;
             }
-          } catch (error) {
+          } catch {
             // 用户还未授权，继续等待
           }
         }, 2000);
@@ -236,11 +236,11 @@ export const useNetworkSettings = (): SettingConfig => {
       },
       {
         title: "网络代理",
-        show: isElectron,
         items: [
           {
             key: "proxyProtocol",
             label: "网络代理",
+            show: isElectron,
             type: "select",
             description: "修改后请点击保存或重启软件以应用",
             options: [
@@ -263,6 +263,7 @@ export const useNetworkSettings = (): SettingConfig => {
           {
             key: "proxyServe",
             label: "代理服务器地址",
+            show: isElectron,
             type: "text-input",
             description: "请填写代理服务器地址，如 127.0.0.1",
             disabled: computed(() => settingStore.proxyProtocol === "off"),
@@ -280,6 +281,7 @@ export const useNetworkSettings = (): SettingConfig => {
           {
             key: "proxyPort",
             label: "代理服务器端口",
+            show: isElectron,
             type: "input-number",
             description: "请填写代理服务器端口，如 80",
             disabled: computed(() => settingStore.proxyProtocol === "off"),
@@ -297,6 +299,7 @@ export const useNetworkSettings = (): SettingConfig => {
           {
             key: "proxyTest",
             label: "测试代理",
+            show: isElectron,
             type: "button",
             description: "测试代理配置是否可正常连通",
             buttonLabel: "测试代理",

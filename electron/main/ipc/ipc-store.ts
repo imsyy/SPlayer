@@ -95,17 +95,17 @@ const initStoreIpc = (): void => {
       if (filePaths && filePaths.length > 0) {
         console.log("[IPC] Importing from:", filePaths[0]);
         const fileContent = await readFile(filePaths[0], "utf-8");
-        
+
         let settings;
         try {
           settings = JSON.parse(fileContent);
-        } catch (e) {
+        } catch {
           return { success: false, error: "invalid_json" };
         }
 
         // 基础结构验证
         if (!settings || typeof settings !== "object") {
-           return { success: false, error: "invalid_format" };
+          return { success: false, error: "invalid_format" };
         }
 
         // 恢复 Electron Store 配置

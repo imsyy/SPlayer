@@ -9,7 +9,9 @@ import { qqMusicMatch } from "@/api/qqmusic";
 import { songLevelData } from "@/utils/meta";
 import { getPlayerInfoObj } from "@/utils/format";
 import { getConverter, type ConverterMode } from "@/utils/opencc";
-import { lyricLinesToTTML, parseQRCLyric } from "@/utils/lyricParser";
+import { lyricLinesToTTML, parseQRCLyric, parseSmartLrc } from "@/utils/lyricParser";
+import { generateASS } from "@/utils/assGenerator";
+import { parseTTML, parseYrc, type LyricLine } from "@applemusic-like-lyrics/lyric";
 
 interface DownloadTask {
   song: SongType;
@@ -374,8 +376,14 @@ class DownloadManager {
       }
 
       if (isElectron) {
-        const { downloadMeta, downloadCover, downloadLyric, saveMetaFile, downloadMakeYrc } =
-          settingStore;
+        const {
+          downloadMeta,
+          downloadCover,
+          downloadLyric,
+          saveMetaFile,
+          downloadMakeYrc,
+          downloadSaveAsAss,
+        } = settingStore;
         let lyric = "";
         let yrcLyric = "";
         let ttmlLyric = "";
@@ -385,7 +393,7 @@ class DownloadManager {
           lyric = await this.processLyric(lyricResult);
 
           // 获取逐字歌词内容用于另存
-          if (downloadMakeYrc) {
+          if (downloadMakeYrc || downloadSaveAsAss) {
             console.log(`[Download] Fetching verbatim lyrics for ${song.name} (${song.id})...`);
             try {
               const ttmlRes = await songLyricTTML(song.id);
@@ -492,6 +500,60 @@ class DownloadManager {
             }
           } else {
             console.log("[Download] No verbatim lyrics found to save.");
+          }
+        }
+
+        if (result.status !== "cancelled" && result.status !== "error" && downloadSaveAsAss) {
+          try {
+            let lines: LyricLine[] = [];
+            // Try TTML
+            if (ttmlLyric) {
+              const parsed = parseTTML(ttmlLyric);
+              if (parsed?.lines) lines = parsed.lines;
+            }
+            // Try YRC (QRC)
+            else if (yrcLyric) {
+              // yrcLyric might be QRC XML
+              if (yrcLyric.trim().startsWith("<") || yrcLyric.includes("<QrcInfos>")) {
+                lines = parseQRCLyric(yrcLyric);
+              } else {
+                lines = parseYrc(yrcLyric) || [];
+              }
+            }
+            // Fallback to LRC (embedded lyric)
+            else if (lyric) {
+              const parsed = parseSmartLrc(lyric);
+              if (parsed?.lines) lines = parsed.lines;
+            }
+
+            if (lines.length > 0) {
+              let assContent = generateASS(lines, {
+                title: song.name,
+                artist: rawArtist,
+              });
+
+              // 繁体转换
+              assContent = await this._convertToTraditionalIfNeeded(assContent);
+
+              const fileName = `${safeFileName}.ass`;
+              const encoding = settingStore.downloadLyricEncoding || "utf-8";
+
+              console.log(`[Download] Saving ASS file: ${fileName}`);
+              const saveRes = await window.electron.ipcRenderer.invoke("save-file-content", {
+                path: targetPath,
+                fileName,
+                content: assContent,
+                encoding,
+              });
+
+              if (saveRes.success) {
+                console.log(`[Download] Saved ASS file successfully: ${fileName}`);
+              } else {
+                console.error(`[Download] Failed to save ASS file: ${saveRes.message}`);
+              }
+            }
+          } catch (e) {
+            console.error("[Download] Failed to save ASS file exception", e);
           }
         }
 

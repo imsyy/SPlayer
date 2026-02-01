@@ -443,6 +443,17 @@ export const useLocalSettings = (): SettingConfig => {
             }),
           },
           {
+            key: "downloadSaveAsAss",
+            label: "下载时另存为 ASS 文件",
+            type: "switch",
+            description: "生成 ASS 字幕文件以支持第三方播放器识别（源文件仍内嵌 LRC）",
+            disabled: computed(() => !settingStore.downloadMeta || !settingStore.downloadLyric),
+            value: computed({
+              get: () => settingStore.downloadSaveAsAss,
+              set: (v) => (settingStore.downloadSaveAsAss = v),
+            }),
+          },
+          {
             key: "downloadLyricToTraditional",
             label: "下载歌词转繁体",
             type: "switch",

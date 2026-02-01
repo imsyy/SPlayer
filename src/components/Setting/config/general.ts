@@ -1,9 +1,7 @@
 import { useDataStore, useMusicStore, useSettingStore } from "@/stores";
 import { usePlayerController } from "@/core/player/PlayerController";
 import { isElectron } from "@/utils/env";
-import {
-  openExcludeComment,
-} from "@/utils/modal";
+import { openExcludeComment } from "@/utils/modal";
 import { sendRegisterProtocol } from "@/utils/protocol";
 import { SettingConfig } from "@/types/settings";
 import { ref, computed, h } from "vue";
@@ -95,7 +93,7 @@ export const useGeneralSettings = (): SettingConfig => {
           window.$message.error(errorMsg);
         }
       }
-    } catch (error) {
+    } catch {
       window.$message.error("设置导出出错");
     }
   };
@@ -108,7 +106,10 @@ export const useGeneralSettings = (): SettingConfig => {
           h(
             NAlert,
             { type: "warning", showIcon: true, style: { marginBottom: "12px" } },
-            { default: () => "导入设置将覆盖当前所有配置（包括主题、快捷键、音效设置等）并重启软件。" },
+            {
+              default: () =>
+                "导入设置将覆盖当前所有配置（包括主题、快捷键、音效设置等）并重启软件。",
+            },
           ),
           h("div", null, "是否继续？"),
         ]),
@@ -127,26 +128,26 @@ export const useGeneralSettings = (): SettingConfig => {
                 // "status-store",
                 // "music-store",
               ];
-              
-              storesToRestore.forEach(key => {
+
+              storesToRestore.forEach((key) => {
                 if (data.renderer[key]) {
                   localStorage.setItem(key, data.renderer[key]);
                   restoredCount++;
                 }
               });
             }
-            
+
             if (restoredCount > 0 || data.electron) {
-               window.$message.success("设置导入成功，即将重启");
-               setTimeout(() => {
-                 window.location.reload();
-               }, 1000);
+              window.$message.success("设置导入成功，即将重启");
+              setTimeout(() => {
+                window.location.reload();
+              }, 1000);
             } else {
-               window.$message.warning("未找到可恢复的设置数据");
+              window.$message.warning("未找到可恢复的设置数据");
             }
           } else {
             if (result?.error !== "cancelled") {
-               window.$message.error("设置导入失败: " + (result?.error || "未知错误"));
+              window.$message.error("设置导入失败: " + (result?.error || "未知错误"));
             }
           }
         } catch (error) {

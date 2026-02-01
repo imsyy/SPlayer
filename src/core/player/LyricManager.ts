@@ -71,9 +71,9 @@ class LyricManager {
   public async switchLyricSource(source: string) {
     const statusStore = useStatusStore();
     const musicStore = useMusicStore();
-    
+
     if (statusStore.preferredLyricSource === source) return;
-    
+
     statusStore.preferredLyricSource = source;
     // 保存并强制重新加载歌词
     if (musicStore.playSong) {
@@ -416,7 +416,11 @@ class LyricManager {
       if (neteaseData?.lrc?.lyric) {
         lrcLines = parseLrc(neteaseData.lrc.lyric) || [];
         if (neteaseData?.tlyric?.lyric)
-          lrcLines = this.alignLyrics(lrcLines, parseLrc(neteaseData.tlyric.lyric), "translatedLyric");
+          lrcLines = this.alignLyrics(
+            lrcLines,
+            parseLrc(neteaseData.tlyric.lyric),
+            "translatedLyric",
+          );
         if (neteaseData?.romalrc?.lyric)
           lrcLines = this.alignLyrics(lrcLines, parseLrc(neteaseData.romalrc.lyric), "romanLyric");
       }
@@ -425,7 +429,11 @@ class LyricManager {
       if (neteaseData?.yrc?.lyric) {
         yrcLines = parseYrc(neteaseData.yrc.lyric) || [];
         if (neteaseData?.ytlrc?.lyric)
-          yrcLines = this.alignLyrics(yrcLines, parseLrc(neteaseData.ytlrc.lyric), "translatedLyric");
+          yrcLines = this.alignLyrics(
+            yrcLines,
+            parseLrc(neteaseData.ytlrc.lyric),
+            "translatedLyric",
+          );
         if (neteaseData?.yromalrc?.lyric)
           yrcLines = this.alignLyrics(yrcLines, parseLrc(neteaseData.yromalrc.lyric), "romanLyric");
       }
@@ -445,7 +453,7 @@ class LyricManager {
 
     // 3. 选择源
     let selected = statusStore.preferredLyricSource;
-    
+
     // 如果没有偏好或偏好不可用，使用默认优先级
     if (!selected || !candidates[selected]) {
       // 默认优先级: TTML > QM > YRC > LRC
@@ -457,14 +465,14 @@ class LyricManager {
 
     // 4. 应用结果
     const finalData = (selected && candidates[selected]) || { lrcData: [], yrcData: [] };
-    
+
     statusStore.usingTTMLLyric = selected === "TTML";
     statusStore.usingQRCLyric = selected === "QM";
 
     // 排除过滤 & 简繁转换
     let processedData = this.handleLyricExclude(finalData);
     processedData = await this.applyChineseVariant(processedData);
-    
+
     // 设置最终歌词
     this.setFinalLyric(processedData, req);
 
@@ -886,23 +894,21 @@ class LyricManager {
       if (!str) return str;
 
       // If the entire string is enclosed in brackets (e.g. "(Chorus)"), remove them if not in enclosure mode
-      if (!isEnclosure && /^\s*[\(（][^()（）]*[\)）]\s*$/.test(str)) {
+      if (!isEnclosure && /^\s*[(（][^()（）]*[)）]\s*$/.test(str)) {
         return str
-          .replace(/^\s*[\(（]/, "")
-          .replace(/[\)）]\s*$/, "")
+          .replace(/^\s*[(（]/, "")
+          .replace(/[)）]\s*$/, "")
           .trim();
       }
 
-      let res = str.replace(/[\(（]/g, startStr);
+      let res = str.replace(/[(（]/g, startStr);
       if (isEnclosure) {
-        res = res.replace(/[\)）]/g, endStr);
+        res = res.replace(/[)）]/g, endStr);
       } else {
         // Separator mode:
         // 1. Remove ) if it's at the end of the string (effectively just a closing marker)
         // 2. Otherwise replace ) with endStr (usually space)
-        res = res
-          .replace(/[\)）](?=\s*$)/g, "")
-          .replace(/[\)）]/g, endStr);
+        res = res.replace(/[)）](?=\s*$)/g, "").replace(/[)）]/g, endStr);
 
         // Cleanup double dashes if the separator contains a dash
         if (startStr.includes("-")) {
@@ -918,15 +924,15 @@ class LyricManager {
       // If the whole line is in brackets and we are NOT in enclosure mode (e.g. dash mode),
       // we likely want to strip the brackets entirely instead of replacing them with dashes.
       const fullText = line.words.map((w) => w.word).join("");
-      const isFullBracket = /^\s*[\(（][^()（）]*[\)）]\s*$/.test(fullText);
+      const isFullBracket = /^\s*[(（][^()（）]*[)）]\s*$/.test(fullText);
 
       if (isFullBracket && !isEnclosure) {
         // Remove the first opening bracket found in the words
         let foundStart = false;
         for (const word of line.words) {
           if (foundStart) break;
-          if (/[\(（]/.test(word.word)) {
-            word.word = word.word.replace(/[\(（]/, "");
+          if (/[(（]/.test(word.word)) {
+            word.word = word.word.replace(/[(（]/, "");
             foundStart = true;
           }
         }
@@ -935,12 +941,11 @@ class LyricManager {
         for (let i = line.words.length - 1; i >= 0; i--) {
           if (foundEnd) break;
           const word = line.words[i];
-          if (/[\)）]/.test(word.word)) {
+          if (/[)）]/.test(word.word)) {
             // Find the last occurrence of ) or ）
             const lastIndex = Math.max(word.word.lastIndexOf(")"), word.word.lastIndexOf("）"));
             if (lastIndex !== -1) {
-              word.word =
-                word.word.substring(0, lastIndex) + word.word.substring(lastIndex + 1);
+              word.word = word.word.substring(0, lastIndex) + word.word.substring(lastIndex + 1);
               foundEnd = true;
             }
           }
@@ -949,14 +954,14 @@ class LyricManager {
         // Normal replacement logic
         line.words.forEach((word, index) => {
           // Replace opening brackets
-          word.word = word.word.replace(/[\(（]/g, startStr);
+          word.word = word.word.replace(/[(（]/g, startStr);
 
           if (isEnclosure) {
             // Enclosure mode: simply replace closing brackets with endStr
-            word.word = word.word.replace(/[\)）]/g, endStr);
+            word.word = word.word.replace(/[)）]/g, endStr);
           } else {
             // Separator mode: logic to handle closing brackets nicely
-            word.word = word.word.replace(/[\)）]/g, (_, offset, string) => {
+            word.word = word.word.replace(/[)）]/g, (_, offset, string) => {
               const isAtEnd = offset === string.length - 1;
               // If ) is at the end of the word...
               if (isAtEnd) {
@@ -1167,15 +1172,15 @@ class LyricManager {
   public async handleLyric(song: SongType) {
     const settingStore = useSettingStore();
     const statusStore = useStatusStore();
-    
+
     // 标记当前歌词请求（避免旧请求覆盖新请求）
     const req = ++this.lyricReqSeq;
     this.activeLyricReq = req;
-    
+
     // 加载歌词源偏好
     const pref = await this.getLyricPreference(song.id);
     statusStore.preferredLyricSource = pref;
-    
+
     const isStreaming = song?.type === "streaming";
     try {
       let lyricData: SongLyric = { lrcData: [], yrcData: [] };
