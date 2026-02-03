@@ -3,9 +3,10 @@ import { songLyric, songLyricTTML } from "@/api/song";
 import { keywords as defaultKeywords, regexes as defaultRegexes } from "@/assets/data/exclude";
 import { useCacheManager } from "@/core/resource/CacheManager";
 import { useMusicStore, useSettingStore, useStatusStore, useStreamingStore } from "@/stores";
-import { type SongLyric, type LyricPriority } from "@/types/lyric";
-import { SongType } from "@/types/main";
+import type { LyricPriority, SongLyric } from "@/types/lyric";
+import type { SongType } from "@/types/main";
 import { isElectron } from "@/utils/env";
+import { applyBracketReplacement } from "@/utils/lyric/lyricFormat";
 import {
   alignLyrics,
   isWordLevelFormat,
@@ -13,9 +14,9 @@ import {
   parseSmartLrc,
 } from "@/utils/lyric/lyricParser";
 import { stripLyricMetadata } from "@/utils/lyric/lyricStripper";
-import { applyBracketReplacement } from "@/utils/lyric/lyricFormat";
 import { getConverter } from "@/utils/opencc";
-import { type LyricLine, parseLrc, parseTTML, parseYrc } from "@applemusic-like-lyrics/lyric";
+import { parseLrc } from "@/utils/parseLrc";
+import { type LyricLine, parseTTML, parseYrc } from "@applemusic-like-lyrics/lyric";
 import { cloneDeep, escapeRegExp, isEmpty } from "lodash-es";
 
 class LyricManager {

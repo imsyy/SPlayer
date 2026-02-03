@@ -1,4 +1,5 @@
-import { type LyricLine, parseLrc } from "@applemusic-like-lyrics/lyric";
+import type { LyricLine } from "@applemusic-like-lyrics/lyric";
+import { parseLrc } from "../parseLrc";
 
 /**
  * LRC 格式类型
