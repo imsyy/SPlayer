@@ -27,11 +27,10 @@ export function parseLrc(lrcContent: string): LyricLine[] {
     for (const match of matches) {
       const minutes = parseInt(match[1], 10);
       const seconds = parseInt(match[2], 10);
-      const fractionStr = match[3] ? `0.${match[3]}` : "0";
-      const fraction = parseFloat(fractionStr);
+      const fractionStr = match[3] || "0";
+      const milliseconds = parseInt(fractionStr.padEnd(3, "0"), 10);
 
-      const totalSeconds = minutes * 60 + seconds + fraction;
-      const totalMilliseconds = Math.round(totalSeconds * 1000);
+      const totalMilliseconds = minutes * 60 * 1000 + seconds * 1000 + milliseconds;
 
       parsedEvents.push({
         time: totalMilliseconds,
@@ -56,7 +55,7 @@ export function parseLrc(lrcContent: string): LyricLine[] {
     }
 
     const nextEvent = i < parsedEvents.length ? parsedEvents[i] : null;
-    const endTime = nextEvent ? nextEvent.time : currentTime + 10000; // 最后一行只加10秒，以便可以在频谱图上调整而不会要拉到后面很远
+    const endTime = nextEvent ? nextEvent.time : currentTime + 10000;
 
     const textEvents = group.filter((e) => e.text.length > 0);
 
@@ -64,17 +63,7 @@ export function parseLrc(lrcContent: string): LyricLine[] {
       continue;
     }
 
-    const mainEvent = textEvents[0];
-    const mainLine = newLyricLine();
-    const mainWord = newLyricWord();
-
-    mainWord.word = mainEvent.text;
-    mainWord.startTime = currentTime;
-    mainWord.endTime = endTime;
-
-    mainLine.words = [mainWord];
-    mainLine.startTime = currentTime;
-    mainLine.endTime = endTime;
+    const mainLine = createBasicLyricLine(textEvents[0].text, currentTime, endTime);
 
     // 第二行作为翻译
     if (textEvents.length > 1) {
@@ -90,24 +79,28 @@ export function parseLrc(lrcContent: string): LyricLine[] {
 
     if (textEvents.length > 3) {
       for (let k = 3; k < textEvents.length; k++) {
-        const extraEvent = textEvents[k];
-        const extraLine = newLyricLine();
-        const extraWord = newLyricWord();
-
-        extraWord.word = extraEvent.text;
-        extraWord.startTime = currentTime;
-        extraWord.endTime = endTime;
-
-        extraLine.words = [extraWord];
-        extraLine.startTime = currentTime;
-        extraLine.endTime = endTime;
-
+        const extraLine = createBasicLyricLine(textEvents[k].text, currentTime, endTime);
         validLyricLines.push(extraLine);
       }
     }
   }
 
   return validLyricLines;
+}
+
+function createBasicLyricLine(text: string, startTime: number, endTime: number): LyricLine {
+  const line = newLyricLine();
+  const word = newLyricWord();
+
+  word.word = text;
+  word.startTime = startTime;
+  word.endTime = endTime;
+
+  line.words = [word];
+  line.startTime = startTime;
+  line.endTime = endTime;
+
+  return line;
 }
 
 const newLyricLine = (): LyricLine => ({
