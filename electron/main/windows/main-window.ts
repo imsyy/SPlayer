@@ -140,7 +140,7 @@ class MainWindow {
     // 监听 Explorer 重启
     if (isWin && tools && this.win) {
       try {
-        const msgId = (tools as toolModule & { getTaskbarCreatedMessageId: () => number }).getTaskbarCreatedMessageId();
+        const msgId = tools.getTaskbarCreatedMessageId();
         if (msgId > 0) {
           this.win.hookWindowMessage(msgId, () => {
             processLog.info("[MainWindow] 监听到资源管理器重启");

@@ -1,21 +1,11 @@
 import { existsSync } from "fs";
-import { unlink, rename, stat } from "fs/promises";
-import { CacheService } from "./CacheService";
+import { rename, stat, unlink } from "fs/promises";
 import { cacheLog } from "../logger";
 import { loadNativeModule } from "../utils/native-loader";
+import { CacheService } from "./CacheService";
 
-interface ToolsModule {
-  downloadFile(
-    id: number,
-    url: string,
-    filePath: string,
-    metadata: any,
-    threadCount: number,
-    onProgress: (err: any, progressJson: string) => void
-  ): Promise<void>;
-}
-
-const tools = loadNativeModule("tools.node", "tools") as ToolsModule;
+type toolModule = typeof import("@native/tools");
+const tools: toolModule = loadNativeModule("tools.node", "tools");
 
 export class MusicCacheService {
   private static instance: MusicCacheService;
@@ -102,14 +92,14 @@ export class MusicCacheService {
       // 使用 Rust 下载器
       // 这里的 id 仅用于进度或取消，缓存下载暂时传入 0 或尝试转换
       const numericId = typeof id === "number" ? id : 0;
-      
+
       await tools.downloadFile(
-        numericId, 
-        url, 
-        tempPath, 
+        numericId,
+        url,
+        tempPath,
         null, // No metadata for cache
-        4,    // Thread count
-        () => {} // No progress callback needed for cache currently
+        4, // Thread count
+        () => {}, // No progress callback needed for cache currently
       );
 
       // 检查临时文件是否存在

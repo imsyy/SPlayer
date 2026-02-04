@@ -15,8 +15,8 @@ use std::{
 
 use anyhow::Result;
 use crossbeam_channel::{
-    Receiver,
     bounded,
+    Receiver,
 };
 use jwalk::WalkDir;
 use lofty::{
