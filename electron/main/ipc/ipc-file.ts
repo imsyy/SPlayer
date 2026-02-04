@@ -1,3 +1,4 @@
+import type { SongMetadata } from "@native/tools";
 import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
 import FastGlob from "fast-glob";
 import type { Options as GlobOptions } from "fast-glob/out/settings";
