@@ -317,6 +317,7 @@ export type SortField =
   | "title"
   | "artist"
   | "album"
+  | "filename"
   | "duration"
   | "size"
   | "createTime"
