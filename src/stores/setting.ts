@@ -236,8 +236,9 @@ export interface SettingState {
   enableOnlineTTMLLyric: boolean;
   /** 启用 QM 歌词 */
   enableQQMusicLyric: boolean;
-  /** 歌词源优先级 */
-  /** 歌词源优先级 */
+  /** 提前预载下一首歌词 */
+  preloadNextLyric: boolean;
+  /** 歌词语种优先级 */
   lyricPriority: LyricPriority;
   /** 本地歌曲使用 QM 歌词匹配 */
   localLyricQQMusicMatch: boolean;
@@ -560,6 +561,7 @@ export const useSettingStore = defineStore("setting", {
     lyricOffsetStep: 500,
     enableOnlineTTMLLyric: false,
     enableQQMusicLyric: false,
+    preloadNextLyric: false,
     lyricPriority: "auto",
     localLyricQQMusicMatch: false,
     amllDbServer: defaultAMLLDbServer,

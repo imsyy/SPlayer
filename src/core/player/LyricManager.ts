@@ -2,7 +2,7 @@ import { qqMusicMatch } from "@/api/qqmusic";
 import { songLyric, songLyricTTML } from "@/api/song";
 import { keywords as defaultKeywords, regexes as defaultRegexes } from "@/assets/data/exclude";
 import { useCacheManager } from "@/core/resource/CacheManager";
-import { useMusicStore, useSettingStore, useStatusStore, useStreamingStore } from "@/stores";
+import { useDataStore, useMusicStore, useSettingStore, useStatusStore, useStreamingStore } from "@/stores";
 import type { LyricPriority, SongLyric } from "@/types/lyric";
 import type { SongType } from "@/types/main";
 import { isElectron } from "@/utils/env";
@@ -272,36 +272,63 @@ class LyricManager {
   }
 
   /**
-   * 处理在线歌词
-   * @param id 歌曲 ID
-   * @returns 歌词数据
+   * 预加载下一首歌词
    */
-  private async handleOnlineLyric(id: number | string): Promise<SongLyric> {
-    const musicStore = useMusicStore();
-    const statusStore = useStatusStore();
+  private async preloadNextLyric() {
     const settingStore = useSettingStore();
-    // 请求序列
-    const req = this.activeLyricReq;
-    // 最终结果
+    const dataStore = useDataStore();
+    const statusStore = useStatusStore();
+    if (!settingStore.preloadNextLyric) return;
+
+    // 获取播放列表
+    const list = dataStore.playList;
+    if (!list.length) return;
+
+    // 计算下一首索引
+    let nextIndex = statusStore.playIndex + 1;
+    if (nextIndex >= list.length) {
+      if (statusStore.repeatMode === "off") return; // 不循环
+      nextIndex = 0; // 列表循环
+    }
+
+    const nextSong = list[nextIndex];
+    if (!nextSong || !nextSong.id) return;
+
+    // 如果是本地歌曲，跳过
+    if (nextSong.path) return;
+
+    console.log(`正在预加载下一首歌曲歌词: ${nextSong.name}`);
+    try {
+      await this.fetchOnlineLyricData(nextSong);
+    } catch (e) {
+      console.warn("预加载歌词失败", e);
+    }
+  }
+
+  /**
+   * 获取在线歌词数据（核心逻辑，不含状态检查）
+   * @param song 歌曲对象
+   * @returns 歌词数据及状态标记
+   */
+  private async fetchOnlineLyricData(song: SongType): Promise<{
+    lyric: SongLyric;
+    ttmlAdopted: boolean;
+    qqMusicAdopted: boolean;
+  }> {
+    const settingStore = useSettingStore();
+    const id = song.id;
     const result: SongLyric = { lrcData: [], yrcData: [] };
-    // 是否采用了 TTML
+
     let ttmlAdopted = false;
-    // 是否采用了 QQ 音乐歌词
     let qqMusicAdopted = false;
-    // 过期判断
-    const isStale = () => this.activeLyricReq !== req || musicStore.playSong?.id !== id;
 
     // 处理 QQ 音乐歌词
     const adoptQQMusic = async () => {
-      // 检查开关 (如果显式选了 QM 优先, 则忽略开关限制? 不, UI上限制了)
       if (!settingStore.enableQQMusicLyric && settingStore.lyricPriority !== "qm") return;
 
-      const song = musicStore.playSong;
-      if (!song) return;
       const qqLyric = await this.fetchQQMusicLyric(song);
-      if (isStale()) return;
       if (!qqLyric) return;
-      // 设置结果
+
       if (qqLyric.yrcData.length > 0) {
         result.yrcData = qqLyric.yrcData;
         qqMusicAdopted = true;
@@ -310,13 +337,13 @@ class LyricManager {
         result.lrcData = qqLyric.lrcData;
         if (!qqMusicAdopted) qqMusicAdopted = true;
       }
-
     };
 
     // 处理 TTML 歌词
     const adoptTTML = async () => {
       if (!settingStore.enableOnlineTTMLLyric && settingStore.lyricPriority !== "ttml") return;
       if (typeof id !== "number") return;
+
       let ttmlContent: string | null = await this.getRawLyricCache(id, "ttml");
       if (!ttmlContent) {
         ttmlContent = await songLyricTTML(id);
@@ -324,14 +351,13 @@ class LyricManager {
           this.saveRawLyricCache(id, "ttml", ttmlContent);
         }
       }
-      if (isStale()) return;
       if (!ttmlContent || typeof ttmlContent !== "string") return;
+
       const sorted = this.cleanTTMLTranslations(ttmlContent);
       const parsed = parseTTML(sorted);
       const lines = parsed?.lines || [];
       if (!lines.length) return;
 
-      // 只有当没有 YRC 数据或优先级为 TTML 或 自动模式(TTML > QM) 时才覆盖
       if (
         !result.yrcData.length ||
         settingStore.lyricPriority === "ttml" ||
@@ -346,6 +372,7 @@ class LyricManager {
     const adoptLRC = async () => {
       if (qqMusicAdopted) return;
       if (typeof id !== "number") return;
+
       let data: any = null;
       const cached = await this.getRawLyricCache(id, "lrc");
       if (cached) {
@@ -361,47 +388,40 @@ class LyricManager {
           this.saveRawLyricCache(id, "lrc", JSON.stringify(data));
         }
       }
-      if (isStale()) return;
       if (!data || data.code !== 200) return;
+
       let lrcLines: LyricLine[] = [];
       let yrcLines: LyricLine[] = [];
-      // 普通歌词
+
       if (data?.lrc?.lyric) {
         lrcLines = parseLrc(data.lrc.lyric) || [];
-        // 普通歌词翻译
         if (data?.tlyric?.lyric)
           lrcLines = this.alignLyrics(lrcLines, parseLrc(data.tlyric.lyric), "translatedLyric");
-        // 普通歌词音译
         if (data?.romalrc?.lyric)
           lrcLines = this.alignLyrics(lrcLines, parseLrc(data.romalrc.lyric), "romanLyric");
       }
-      // 逐字歌词
+
       if (data?.yrc?.lyric) {
         yrcLines = parseYrc(data.yrc.lyric) || [];
-        // 逐字歌词翻译
         if (data?.ytlrc?.lyric)
           yrcLines = this.alignLyrics(yrcLines, parseLrc(data.ytlrc.lyric), "translatedLyric");
-        // 逐字歌词音译
         if (data?.yromalrc?.lyric)
           yrcLines = this.alignLyrics(yrcLines, parseLrc(data.yromalrc.lyric), "romanLyric");
       }
+
       if (lrcLines.length) result.lrcData = lrcLines;
-      // 如果没有 TTML 且没有 QM YRC，则采用 网易云 YRC
       if (!result.yrcData.length && yrcLines.length) {
-        // 再次确认优先级，如果是 TTML 优先但 TTML 没结果，这里可以用 YRC
         result.yrcData = yrcLines;
       }
     };
-    // 执行优先策略
+
     const priority = settingStore.lyricPriority;
     if (priority === "qm") {
       await adoptQQMusic();
-      // 如果 QM 没结果，回退到 Default
       if (!qqMusicAdopted) {
         await Promise.all([adoptTTML(), adoptLRC()]);
       }
     } else if (priority === "official") {
-      // 仅使用官方源
       await adoptLRC();
     } else if (priority === "ttml") {
       await adoptTTML();
@@ -415,11 +435,39 @@ class LyricManager {
       }
       await Promise.all([adoptTTML(), adoptLRC()]);
     }
-    // 优先使用 TTML (状态标记)
+
+    return { lyric: result, ttmlAdopted, qqMusicAdopted };
+  }
+
+  /**
+   * 处理在线歌词
+   * @param id 歌曲 ID
+   * @returns 歌词数据
+   */
+  private async handleOnlineLyric(id: number | string): Promise<SongLyric> {
+    const musicStore = useMusicStore();
+    const statusStore = useStatusStore();
+
+    // 检查是否为当前歌曲
+    const song = musicStore.playSong;
+    if (song.id !== id) return { lrcData: [], yrcData: [] };
+
+    // 请求序列
+    const req = this.activeLyricReq;
+
+    // 获取数据
+    const { lyric, ttmlAdopted, qqMusicAdopted } = await this.fetchOnlineLyricData(song);
+
+    // 过期判断
+    if (this.activeLyricReq !== req || musicStore.playSong?.id !== id) {
+      return { lrcData: [], yrcData: [] };
+    }
+
+    // 更新状态
     statusStore.usingTTMLLyric = ttmlAdopted;
-    // 设置是否使用 QRC 歌词（来自 QQ 音乐，且未被 TTML 覆盖）
     statusStore.usingQRCLyric = qqMusicAdopted && !ttmlAdopted;
-    return await this.applyChineseVariant(this.handleLyricExclude(result));
+
+    return await this.applyChineseVariant(this.handleLyricExclude(lyric));
   }
 
   /**
@@ -869,6 +917,8 @@ class LyricManager {
         lyricData = this.handleLyricExclude(lyricData);
         lyricData = await this.applyChineseVariant(lyricData);
         this.setFinalLyric(lyricData, req);
+        // 预加载下一首
+        this.preloadNextLyric();
         return;
       }
       // 检查歌词覆盖
@@ -892,6 +942,8 @@ class LyricManager {
       }
       console.log("最终歌词数据", lyricData);
       this.setFinalLyric(lyricData, req);
+      // 预加载下一首
+      this.preloadNextLyric();
     } catch (error) {
       console.error("❌ 处理歌词失败:", error);
       // 重置歌词

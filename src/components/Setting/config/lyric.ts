@@ -262,7 +262,17 @@ export const useLyricSettings = (): SettingConfig => {
                 }),
               },
               {
-                key: "localLyricQQMusicMatch",
+            key: "preloadNextLyric",
+            label: "预加载下一首歌词",
+            type: "switch",
+            description: "在当前歌曲播放时，提前下载并缓存下一首歌曲的歌词",
+            value: computed({
+              get: () => settingStore.preloadNextLyric,
+              set: (v) => (settingStore.preloadNextLyric = v),
+            }),
+          },
+          {
+            key: "localLyricQQMusicMatch",
                 label: "本地歌曲使用 QM 歌词",
                 type: "switch",
                 disabled: computed(() => !settingStore.enableQQMusicLyric),
