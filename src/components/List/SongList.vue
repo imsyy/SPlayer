@@ -308,13 +308,8 @@ const listData = computed<SongType[]>(() => {
         break;
       }
       case "filename": {
-        // 从路径中提取文件名
-        const getFileName = (path?: string) => {
-          if (!path) return "";
-          return path.split(/[\\/]/).pop() || "";
-        };
-        const fileNameA = getFileName(a.path);
-        const fileNameB = getFileName(b.path);
+        const fileNameA = a.path?.split(/[\\/]/).pop() || "";
+        const fileNameB = b.path?.split(/[\\/]/).pop() || "";
         result = fileNameA.localeCompare(fileNameB, "zh-CN");
         break;
       }
