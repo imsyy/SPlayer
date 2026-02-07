@@ -127,6 +127,8 @@ import { useBlobURLManager } from "@/core/resource/BlobURLManager";
 import { isElectron } from "@/utils/env";
 import { useMobile } from "@/composables/useMobile";
 import { useInit } from "@/composables/useInit";
+import { songDynamicCover } from "@/api/song";
+import { isEmpty } from "lodash-es";
 
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
@@ -158,6 +160,34 @@ const loadBackgroundImage = async () => {
     }
   }
 };
+
+watch(
+  () => [musicStore.playSong.id, settingStore.dynamicCover],
+  async () => {
+    // 动态封面处理
+    // 如果设置关闭，清空动态封面
+    if (!settingStore.dynamicCover) {
+      if (musicStore.dynamicCover) musicStore.setDynamicCover("");
+      return;
+    }
+    // 如果没有歌曲ID，返回
+    if (!musicStore.playSong.id) return;
+
+    try {
+      // 获取动态封面
+      const result = await songDynamicCover(musicStore.playSong.id);
+      if (!isEmpty(result.data) && result?.data?.videoPlayUrl) {
+        musicStore.setDynamicCover(result.data.videoPlayUrl);
+      } else {
+        musicStore.setDynamicCover("");
+      }
+    } catch (e) {
+      console.error("Failed to fetch dynamic cover", e);
+      musicStore.setDynamicCover("");
+    }
+  },
+  { immediate: true },
+);
 
 watchEffect(() => {
   statusStore.mainContentHeight = contentHeight.value;

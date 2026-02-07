@@ -6,9 +6,19 @@
     @mouseenter="isHovering = true"
     @mouseleave="isHovering = false"
   >
-    <div class="cover-wrapper" v-if="state.cover && settingStore.taskbarLyricShowCover">
+    <div class="cover-wrapper" v-if="(state.cover || state.dynamicCover) && settingStore.taskbarLyricShowCover">
       <Transition name="cross-fade">
-        <img :key="state.cover" :src="state.cover" class="cover" alt="cover" />
+        <video
+          v-if="state.dynamicCover"
+          :key="state.dynamicCover"
+          :src="state.dynamicCover"
+          class="cover dynamic"
+          autoplay
+          loop
+          muted
+          disablePictureInPicture
+        />
+        <img v-else :key="state.cover" :src="state.cover" class="cover" alt="cover" />
       </Transition>
     </div>
 
@@ -94,6 +104,7 @@ const state = reactive({
   title: "",
   artist: "",
   cover: "",
+  dynamicCover: "",
   opacity: 1,
   isPlaying: false,
   currentTime: 0,
@@ -417,10 +428,11 @@ onMounted(() => {
   const ipc = window.electron?.ipcRenderer;
   if (!ipc) return;
 
-  ipc.on("taskbar:update-metadata", (_, { title, artist, cover }: TaskbarMetadataPayload) => {
+  ipc.on("taskbar:update-metadata", (_, { title, artist, cover, dynamicCover }: TaskbarMetadataPayload) => {
     if (title !== undefined) state.title = title;
     if (artist !== undefined) state.artist = artist;
     state.cover = cover || "";
+    state.dynamicCover = dynamicCover || "";
     state.lyricIndex = -1;
     jumpCount.value = 0;
     state.currentTime = 0;

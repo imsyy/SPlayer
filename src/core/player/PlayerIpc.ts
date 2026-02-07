@@ -107,6 +107,7 @@ export interface TaskbarMetadataPayload {
   title: string;
   artist: string;
   cover: string;
+  dynamicCover?: string;
 }
 
 export const sendTaskbarMetadata = (payload: TaskbarMetadataPayload) => {

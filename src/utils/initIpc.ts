@@ -110,11 +110,13 @@ const initIpc = () => {
       const settingStore = useSettingStore();
       const { name, artist } = getPlayerInfoObj() || {};
       const cover = musicStore.playSong?.cover || "";
+      const dynamicCover = musicStore.dynamicCover || "";
 
       playerIpc.sendTaskbarMetadata({
         title: name || "",
         artist: artist || "",
         cover,
+        dynamicCover,
       });
       playerIpc.sendTaskbarState({
         isPlaying: statusStore.playStatus,

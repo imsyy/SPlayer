@@ -3,12 +3,13 @@ import type { SongType } from "@/types/main";
 import { isElectron } from "@/utils/env";
 import { cloneDeep } from "lodash-es";
 import { SongLyric } from "@/types/lyric";
-import { sendTaskbarLyrics } from "@/core/player/PlayerIpc";
+import { sendTaskbarLyrics, sendTaskbarMetadata } from "@/core/player/PlayerIpc";
 
 interface MusicState {
   playSong: SongType;
   playPlaylistId: number;
   songLyric: SongLyric;
+  dynamicCover: string;
   personalFM: {
     playIndex: number;
     list: SongType[];
@@ -43,6 +44,8 @@ export const useMusicStore = defineStore("music", {
       lrcData: [], // 普通歌词
       yrcData: [], // 逐字歌词
     },
+    // 动态封面
+    dynamicCover: "",
     // 私人FM数据
     personalFM: {
       playIndex: 0,
@@ -83,6 +86,7 @@ export const useMusicStore = defineStore("music", {
     resetMusicData() {
       this.playSong = { ...defaultMusicData };
       this.playPlaylistId = 0;
+      this.dynamicCover = "";
       this.setSongLyric({ lrcData: [], yrcData: [] }, true);
       if (isElectron) {
         window.electron.ipcRenderer.send("play-song-change", null);
@@ -119,6 +123,24 @@ export const useMusicStore = defineStore("music", {
         );
         // 状态栏歌词
         sendTaskbarLyrics(this.songLyric);
+      }
+    },
+    /**
+     * 设置动态封面
+     * @param url 动态封面 URL
+     */
+    setDynamicCover(url: string) {
+      this.dynamicCover = url;
+      // 更新任务栏元数据
+      if (isElectron) {
+        const { name, artists } = this.playSong;
+        const artist = Array.isArray(artists) ? artists.map((a) => a.name).join("/") : artists;
+        sendTaskbarMetadata({
+          title: name,
+          artist: String(artist),
+          cover: this.songCover,
+          dynamicCover: url,
+        });
       }
     },
     // 获取歌曲封面
