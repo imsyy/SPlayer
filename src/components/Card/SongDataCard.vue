@@ -19,9 +19,7 @@
         <div v-if="Array.isArray(data.artists)" class="artists text-hidden">
           <SvgIcon name="Artist" :depth="3" />
           <n-text v-for="ar in data.artists" :key="ar.id" class="ar">
-            {{
-              settingStore.hideBracketedContent ? removeBrackets(ar.name) : ar.name
-            }}
+            {{ settingStore.hideBracketedContent ? removeBrackets(ar.name) : ar.name }}
           </n-text>
         </div>
         <div v-else class="artists text-hidden">

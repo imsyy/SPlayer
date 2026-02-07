@@ -25,6 +25,7 @@
           <n-flex align="center">
             <n-checkbox value="translation" label="翻译" />
             <n-checkbox value="romaji" label="音译" />
+            <n-checkbox value="emptyLine" label="空行" title="在每行歌词之间加入空行分隔" />
           </n-flex>
         </n-checkbox-group>
       </n-flex>
@@ -46,7 +47,7 @@ const props = defineProps<{ onClose: () => void }>();
 
 const musicStore = useMusicStore();
 
-const selectedFilters = ref<string[]>(["translation", "romaji"]);
+const selectedFilters = ref<string[]>(["translation", "romaji", "emptyLine"]);
 const selectedLines = ref<number[]>([]);
 
 const rawLyrics = computed(() => {
@@ -93,7 +94,7 @@ const handleCopy = async () => {
       return parts.join("\n");
     })
     .filter((s) => s)
-    .join("\n\n");
+    .join(selectedFilters.value.includes("emptyLine") ? "\n\n" : "\n");
 
   if (linesToCopy) {
     await copyData(linesToCopy);

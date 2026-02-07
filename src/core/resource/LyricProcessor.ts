@@ -32,11 +32,11 @@ export const LyricProcessor = {
    */
   async processBasic(
     lyricResult: LyricResult | null,
-    options: LyricProcessorOptions = {}
+    options: LyricProcessorOptions = {},
   ): Promise<string> {
     if (!lyricResult) return "";
     const lrc = lyricResult.lrc?.lyric || "";
-    
+
     // 检查是否需要合并翻译或罗马音
     const tlyric = options.downloadLyricTranslation ? lyricResult?.tlyric?.lyric : null;
     const romalrc = options.downloadLyricRomaji ? lyricResult?.romalrc?.lyric : null;
@@ -46,14 +46,14 @@ export const LyricProcessor = {
         const parsedLrc = parseSmartLrc(lrc);
         if (parsedLrc?.lines?.length) {
           let lines = parsedLrc.lines;
-          
+
           if (tlyric) {
             const transParsed = parseSmartLrc(tlyric);
             if (transParsed?.lines?.length) {
               lines = alignLyrics(lines, transParsed.lines, "translatedLyric");
             }
           }
-          
+
           if (romalrc) {
             const romaParsed = parseSmartLrc(romalrc);
             if (romaParsed?.lines?.length) {
@@ -76,7 +76,10 @@ export const LyricProcessor = {
    * 将 LyricLine 数组转换为 LRC 格式字符串
    * 支持包含翻译和罗马音（双行显示）
    */
-  async convertLyricLinesToLrc(lines: LyricLine[], toTraditional: boolean = false): Promise<string> {
+  async convertLyricLinesToLrc(
+    lines: LyricLine[],
+    toTraditional: boolean = false,
+  ): Promise<string> {
     const formatTime = (ms: number): string => {
       const totalSeconds = ms / 1000;
       const minutes = Math.floor(totalSeconds / 60);
@@ -89,17 +92,17 @@ export const LyricProcessor = {
     for (const line of lines) {
       const timeTag = formatTime(line.startTime);
       let text = line.words.map((w) => w.word).join("");
-      
+
       // 繁简转换
       text = await this.convertToTraditionalIfNeeded(text, toTraditional);
-      
+
       result += `${timeTag}${text}\n`;
 
       if (line.translatedLyric) {
         const trans = await this.convertToTraditionalIfNeeded(line.translatedLyric, toTraditional);
         result += `${timeTag}${trans}\n`;
       }
-      
+
       if (line.romanLyric) {
         result += `${timeTag}${line.romanLyric}\n`;
       }
@@ -114,7 +117,7 @@ export const LyricProcessor = {
   parseVerbatim(
     ttmlLyric: string,
     yrcLyric: string,
-    qmResult?: { qrc: string; trans: string; roma: string }
+    qmResult?: { qrc: string; trans: string; roma: string },
   ): { ttml: string; yrc: string } {
     let finalTtml = ttmlLyric;
     let finalYrc = yrcLyric;
@@ -157,7 +160,7 @@ export const LyricProcessor = {
     ttml: string,
     yrc: string,
     lyricResult: LyricResult | null,
-    options: LyricProcessorOptions = {}
+    options: LyricProcessorOptions = {},
   ): Promise<{ content: string; ext: string; encoding: string } | null> {
     let content = ttml || yrc;
     let merged = false;
@@ -197,7 +200,10 @@ export const LyricProcessor = {
         }
       }
 
-      content = await this.convertToTraditionalIfNeeded(content, options.downloadLyricToTraditional);
+      content = await this.convertToTraditionalIfNeeded(
+        content,
+        options.downloadLyricToTraditional,
+      );
       const ext = ttml || lines.length > 0 ? "ttml" : "yrc";
       const encoding = options.downloadLyricEncoding || "utf-8";
 
@@ -220,7 +226,7 @@ export const LyricProcessor = {
     lyricResult: LyricResult | null,
     title: string,
     artist: string,
-    options: LyricProcessorOptions = {}
+    options: LyricProcessorOptions = {},
   ): Promise<{ content: string; encoding: string } | null> {
     let lines: LyricLine[] = [];
 

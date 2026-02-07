@@ -136,17 +136,6 @@ export interface ReplayGainType {
   albumPeak?: number;
 }
 
-export type CustomDownloadType = {
-  type: "custom";
-  id: string;
-  name: string;
-  url: string;
-  referer?: string;
-  artists: Array<{ id: number; name: string }>;
-  album: { id: number; name: string };
-  cover: string;
-};
-
 // Cover
 export type CoverType = {
   id: number | string;

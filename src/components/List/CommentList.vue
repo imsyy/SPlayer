@@ -2,12 +2,12 @@
   <Transition name="fade" mode="out-in">
     <n-flex v-if="data.length > 0" :size="20" :class="['comment-list', { transparent }]" vertical>
       <n-flex
-      v-for="(item, index) in data"
-      :key="index"
-      :size="0"
-      class="comments"
-      @dblclick="handleDoubleClick(item)"
-    >
+        v-for="(item, index) in data"
+        :key="index"
+        :size="0"
+        class="comments"
+        @dblclick="handleDoubleClick(item)"
+      >
         <div v-if="!transparent && !hiddenCover" class="user">
           <div class="avatar">
             <n-image

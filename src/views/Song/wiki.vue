@@ -37,11 +37,7 @@
                       :key="ar.id"
                       @click="$router.push({ name: 'artist', query: { id: ar.id } })"
                     >
-                      {{
-                        settingStore.hideBracketedContent
-                          ? removeBrackets(ar.name)
-                          : ar.name
-                      }}
+                      {{ settingStore.hideBracketedContent ? removeBrackets(ar.name) : ar.name }}
                       <span v-if="index < currentSong.artists.length - 1"> / </span>
                     </n-text>
                   </template>

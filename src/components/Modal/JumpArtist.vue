@@ -15,9 +15,7 @@
         >
           <n-avatar :src="item.cover || '/images/artist.jpg?asset'" class="cover" round />
           <n-text class="name">
-            {{
-              settingStore.hideBracketedContent ? removeBrackets(item.name) : item.name
-            }}
+            {{ settingStore.hideBracketedContent ? removeBrackets(item.name) : item.name }}
           </n-text>
         </n-card>
       </div>

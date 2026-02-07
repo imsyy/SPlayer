@@ -121,9 +121,7 @@
                   class="ar"
                   @click="openJumpArtist(song.artists, ar.id)"
                 >
-                  {{
-                    settingStore.hideBracketedContent ? removeBrackets(ar.name) : ar.name
-                  }}
+                  {{ settingStore.hideBracketedContent ? removeBrackets(ar.name) : ar.name }}
                 </n-text>
               </div>
               <div v-else-if="song.type === 'radio'" class="artists">
@@ -144,12 +142,7 @@
       </div>
       <!-- 专辑 -->
       <div
-        v-if="
-          song.type !== 'radio' &&
-          !hiddenAlbum &&
-          !isSmallScreen &&
-          settingStore.showSongAlbum
-        "
+        v-if="song.type !== 'radio' && !hiddenAlbum && !isSmallScreen && settingStore.showSongAlbum"
         class="album text-hidden"
       >
         <n-text
@@ -195,11 +188,7 @@
         {{ formatNumber(song.playCount || 0) }}
       </n-text>
       <!-- 时长 -->
-      <n-text
-        v-if="!isSmallScreen && settingStore.showSongDuration"
-        class="meta"
-        depth="3"
-      >
+      <n-text v-if="!isSmallScreen && settingStore.showSongDuration" class="meta" depth="3">
         {{ msToTime(song.duration) }}
       </n-text>
       <!-- 大小 -->

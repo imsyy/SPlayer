@@ -64,19 +64,13 @@
             <n-text v-else class="title">标题</n-text>
             <n-text
               v-if="
-                type !== 'radio' &&
-                !hiddenAlbum &&
-                !isSmallScreen &&
-                settingStore.showSongAlbum
+                type !== 'radio' && !hiddenAlbum && !isSmallScreen && settingStore.showSongAlbum
               "
               class="album"
             >
               专辑
             </n-text>
-            <n-text
-              v-if="type !== 'radio' && settingStore.showSongOperations"
-              class="actions"
-            >
+            <n-text v-if="type !== 'radio' && settingStore.showSongOperations" class="actions">
               操作
             </n-text>
             <n-text v-if="type === 'radio' && !isSmallScreen" class="meta date">更新日期</n-text>

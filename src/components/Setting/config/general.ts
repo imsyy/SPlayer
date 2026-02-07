@@ -287,7 +287,6 @@ export const useGeneralSettings = (): SettingConfig => {
               },
             }),
           },
-
         ],
       },
       {

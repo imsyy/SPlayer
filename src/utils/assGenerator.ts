@@ -6,7 +6,7 @@ import { type LyricLine } from "@applemusic-like-lyrics/lyric";
 const formatTime = (ms: number): string => {
   const totalSeconds = Math.floor(ms / 1000);
   const centiseconds = Math.floor((ms % 1000) / 10); // ASS uses centiseconds (0-99)
-  
+
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
@@ -26,7 +26,7 @@ export const generateASS = (
   options: {
     tlyric?: boolean;
     romalrc?: boolean;
-  } = {}
+  } = {},
 ): string => {
   const { title = "Unknown Title", artist = "Unknown Artist" } = metadata;
   const { tlyric = true, romalrc = false } = options;
@@ -53,7 +53,10 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
   const events = lines
     .map((line) => {
       // 忽略空行
-      const text = line.words.map((w) => w.word).join("").trim();
+      const text = line.words
+        .map((w) => w.word)
+        .join("")
+        .trim();
       if (!text) return null;
 
       const startTime = formatTime(line.startTime);

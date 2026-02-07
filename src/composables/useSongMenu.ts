@@ -1,6 +1,12 @@
 import { DropdownOption } from "naive-ui";
 import { SongType } from "@/types/main";
-import { useStatusStore, useDataStore, useMusicStore, useSettingStore, useLocalStore } from "@/stores";
+import {
+  useStatusStore,
+  useDataStore,
+  useMusicStore,
+  useSettingStore,
+  useLocalStore,
+} from "@/stores";
 import { useDownloadManager } from "@/core/resource/DownloadManager";
 import { usePlayerController } from "@/core/player/PlayerController";
 import { renderIcon, copyData } from "@/utils/helper";
@@ -176,10 +182,7 @@ export const useSongMenu = () => {
       {
         key: "play-next",
         label: "下一首播放",
-        show:
-          settingStore.contextMenuOptions.playNext &&
-          !isCurrent &&
-          !statusStore.personalFmMode,
+        show: settingStore.contextMenuOptions.playNext && !isCurrent && !statusStore.personalFmMode,
         props: {
           onClick: () => player.addNextSong(song, false),
         },
@@ -379,9 +382,7 @@ export const useSongMenu = () => {
         key: "retry-download",
         label: "重试下载",
         show:
-          settingStore.contextMenuOptions.download &&
-          statusStore.isDeveloperMode &&
-          isDownloading,
+          settingStore.contextMenuOptions.download && statusStore.isDeveloperMode && isDownloading,
         props: { onClick: () => downloadManager.retryDownload(song.id) },
         icon: renderIcon("Refresh"),
       },

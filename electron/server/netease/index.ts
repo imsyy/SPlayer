@@ -25,7 +25,8 @@ export const initNcmAPI = async (fastify: FastifyInstance) => {
     // 将 path-case 转回 camelCase 或直接匹配下划线路由
     const routerName = Object.keys(NeteaseCloudMusicApi).find((key) => {
       // 跳过非函数属性
-      if (typeof (NeteaseCloudMusicApi as Record<string, unknown>)[key] !== "function") return false;
+      if (typeof (NeteaseCloudMusicApi as Record<string, unknown>)[key] !== "function")
+        return false;
       // 匹配 path-case 格式
       return pathCase(key) === requestPath || key === requestPath;
     });
@@ -34,10 +35,9 @@ export const initNcmAPI = async (fastify: FastifyInstance) => {
       return reply.status(404).send({ error: "API not found" });
     }
 
-    const neteaseApi = (NeteaseCloudMusicApi as unknown as Record<
-      string,
-      (params: unknown) => Promise<any>
-    >)[routerName];
+    const neteaseApi = (
+      NeteaseCloudMusicApi as unknown as Record<string, (params: unknown) => Promise<any>>
+    )[routerName];
     serverLog.log("🌐 Request NcmAPI:", requestPath);
 
     try {
@@ -49,7 +49,7 @@ export const initNcmAPI = async (fastify: FastifyInstance) => {
       return reply.send(result.body);
     } catch (error: unknown) {
       serverLog.error("❌ NcmAPI Error:", error);
-      if (typeof error === 'object' && error) {
+      if (typeof error === "object" && error) {
         const err = error as { status: number; body: unknown; message?: string };
         if ([400, 301].includes(err.status)) {
           return reply.status(err.status).send(err.body);

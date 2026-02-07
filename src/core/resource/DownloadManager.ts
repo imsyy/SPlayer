@@ -1,4 +1,4 @@
-import type { SongType, SongLevelType, CustomDownloadType } from "@/types/main";
+import type { SongType, SongLevelType } from "@/types/main";
 import { useDataStore, useSettingStore } from "@/stores";
 import { isElectron } from "@/utils/env";
 import { saveAs } from "file-saver";
@@ -19,7 +19,7 @@ interface DownloadConfig {
   downloadCover: boolean;
   downloadLyric: boolean;
   saveMetaFile: boolean;
-  songData: SongType | CustomDownloadType;
+  songData: SongType;
   lyric: string;
   skipIfExist: boolean;
   threadCount: number;
@@ -28,9 +28,9 @@ interface DownloadConfig {
 }
 
 interface DownloadStrategy {
-  readonly id: number | string;
+  readonly id: number;
   readonly name: string;
-  readonly song: SongType | CustomDownloadType;
+  readonly song: SongType;
   readonly downloadUrl: string;
 
   // 准备阶段：获取链接，获取歌词，处理元数据
@@ -169,7 +169,7 @@ class SongDownloadStrategy implements DownloadStrategy {
         this.ttmlLyric,
         this.yrcLyric,
         this.lyricResult,
-        options
+        options,
       );
       if (result && window.electron?.ipcRenderer) {
         await window.electron.ipcRenderer.invoke("save-file", {
@@ -190,7 +190,7 @@ class SongDownloadStrategy implements DownloadStrategy {
         this.lyricResult,
         this.song.name,
         artist,
-        options
+        options,
       );
 
       if (result && window.electron?.ipcRenderer) {
@@ -312,54 +312,11 @@ class SongDownloadStrategy implements DownloadStrategy {
   }
 }
 
-class CustomDownloadStrategy implements DownloadStrategy {
-  private settingStore = useSettingStore();
-
-  constructor(public readonly song: CustomDownloadType) {}
-
-  get id() {
-    return this.song.id;
-  }
-  get name() {
-    return this.song.name;
-  }
-  get downloadUrl() {
-    return this.song.url;
-  }
-
-  async prepare(): Promise<void> {
-    if (!this.song.url) throw new Error("无效的自定义下载链接");
-  }
-
-  getDownloadConfig(): DownloadConfig {
-    const fileName = this.song.name.replace(/[/:*?"<>|]/g, "&");
-    return {
-      fileName,
-      fileType: "", // 后续自动检测
-      path: this.settingStore.downloadPath,
-      downloadMeta: false,
-      downloadCover: false,
-      downloadLyric: false,
-      saveMetaFile: false,
-      songData: cloneDeep(this.song),
-      lyric: "",
-      skipIfExist: true,
-      threadCount: this.settingStore.downloadThreadCount,
-      referer: this.song.referer,
-      enableDownloadHttp2: this.settingStore.enableDownloadHttp2,
-    };
-  }
-
-  async postProcess(): Promise<void> {
-    // 自定义下载无需处理歌词或ASS
-  }
-}
-
 // 下载管理器核心类
 
 class DownloadManager {
   private queue: DownloadStrategy[] = [];
-  private activeDownloads: Set<number | string> = new Set();
+  private activeDownloads: Set<number> = new Set();
   private maxConcurrent: number = 1;
   private initialized: boolean = false;
 
@@ -388,14 +345,8 @@ class DownloadManager {
         const isQueued = this.queue.some((s) => s.id === item.song.id);
         const isActive = this.activeDownloads.has(item.song.id);
         if (!isQueued && !isActive) {
-          // 区分任务类型，使用 discriminated union
-          if (item.song.type === "custom") {
-            // 自定义下载
-            this.queue.push(new CustomDownloadStrategy(item.song as CustomDownloadType));
-          } else {
-            // 常规歌曲下载
-            this.queue.push(new SongDownloadStrategy(item.song as SongType, item.quality));
-          }
+          // 常规歌曲下载
+          this.queue.push(new SongDownloadStrategy(item.song as SongType, item.quality));
         }
       }
     });
@@ -442,41 +393,30 @@ class DownloadManager {
     this.processQueue();
   }
 
-  public async addCustomDownload(url: string, fileName: string, referer?: string) {
-    this.init();
+  // 移除正在下载的歌曲（取消下载）
+  public removeDownload(id: number) {
     const dataStore = useDataStore();
+    // 1. 从 dataStore 中移除
+    dataStore.removeDownloadingSong(id);
 
-    // 生成唯一字符串ID
-    const id = `custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    // 2. 如果在队列中，移除
+    this.queue = this.queue.filter((item) => item.id !== id);
 
-    const customItem: CustomDownloadType = {
-      type: "custom", // 明确标识为自定义下载
-      id,
-      name: fileName,
-      url,
-      referer,
-      artists: [{ id: 0, name: "自定义下载" }],
-      album: { id: 0, name: "" },
-      cover: "",
-    };
-
-    dataStore.addDownloadingSong(customItem, "l"); // 自定义下载不区分音质
-    const strategy = new CustomDownloadStrategy(customItem);
-    this.queue.push(strategy);
-    this.processQueue();
+    // 3. 如果正在下载，尝试取消 (目前 Electron 端没有暴露取消接口，但移除后后续处理会忽略)
+    if (this.activeDownloads.has(id)) {
+      this.activeDownloads.delete(id);
+      // 触发一次队列处理，填补空位
+      this.processQueue();
+    }
   }
 
-  public retryDownload(id: number | string) {
+  public retryDownload(id: number) {
     const dataStore = useDataStore();
     const task = dataStore.downloadingSongs.find((s) => s.song.id === id);
     if (task) {
       dataStore.updateDownloadStatus(id, "waiting");
       // 重新加入队列
-      if ((task.song as CustomDownloadType).type === "custom") {
-        this.queue.push(new CustomDownloadStrategy(task.song as CustomDownloadType));
-      } else {
-        this.queue.push(new SongDownloadStrategy(task.song as SongType, task.quality));
-      }
+      this.queue.push(new SongDownloadStrategy(task.song as SongType, task.quality));
       this.processQueue();
     }
   }
@@ -490,7 +430,7 @@ class DownloadManager {
     failedSongs.forEach((id) => this.retryDownload(id));
   }
 
-  private checkExisting(id: number | string): boolean {
+  private checkExisting(id: number): boolean {
     const dataStore = useDataStore();
     const existing = dataStore.downloadingSongs.find((item) => item.song.id === id);
 
@@ -558,7 +498,7 @@ class DownloadManager {
     } catch (error: any) {
       console.error(`Error processing task ${strategy.name} (ID: ${strategy.id}):`, error);
       if (error?.message) console.error("Error message:", error.message);
-      
+
       dataStore.markDownloadFailed(strategy.id);
       window.$message.error(error.message || "下载出错");
     } finally {

@@ -99,7 +99,7 @@
                     {{
                       settingStore.hideBracketedContent
                         ? removeBrackets(
-                            typeof detailData.artists === 'string' ? detailData.artists : undefined,
+                            typeof detailData.artists === "string" ? detailData.artists : undefined,
                           )
                         : detailData.artists || "未知艺术家"
                     }}

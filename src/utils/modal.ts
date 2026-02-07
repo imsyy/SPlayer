@@ -487,8 +487,7 @@ export const openSidebarHideManager = async () => {
 
 /** 打开封面隐藏配置弹窗 */
 export const openCoverManager = async () => {
-  const { default: CoverManager } =
-    await import("@/components/Modal/Setting/CoverManager.vue");
+  const { default: CoverManager } = await import("@/components/Modal/Setting/CoverManager.vue");
   window.$modal.create({
     preset: "card",
     transformOrigin: "center",

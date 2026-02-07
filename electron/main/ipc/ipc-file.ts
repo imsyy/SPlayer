@@ -46,18 +46,21 @@ const initFileIpc = (): void => {
   });
 
   // 保存文件
-  ipcMain.handle("save-file", async (_, args: { path: string; content: string; encoding?: BufferEncoding }) => {
-    try {
-      const { path, content, encoding } = args;
-      const dir = dirname(path);
-      await mkdir(dir, { recursive: true });
-      await writeFile(path, content, { encoding: encoding || "utf-8" });
-      return { success: true };
-    } catch (err) {
-      ipcLog.error("Failed to save file:", err);
-      throw err;
-    }
-  });
+  ipcMain.handle(
+    "save-file",
+    async (_, args: { path: string; content: string; encoding?: BufferEncoding }) => {
+      try {
+        const { path, content, encoding } = args;
+        const dir = dirname(path);
+        await mkdir(dir, { recursive: true });
+        await writeFile(path, content, { encoding: encoding || "utf-8" });
+        return { success: true };
+      } catch (err) {
+        ipcLog.error("Failed to save file:", err);
+        throw err;
+      }
+    },
+  );
 
   // 默认文件夹
   ipcMain.handle(

@@ -53,18 +53,6 @@
             <SvgIcon name="Refresh" />
           </template>
         </n-button>
-        <n-button
-          :focusable="false"
-          class="more"
-          strong
-          secondary
-          circle
-          @click="showCustomDownloadModal = true"
-        >
-          <template #icon>
-            <SvgIcon name="Add" />
-          </template>
-        </n-button>
       </n-flex>
       <n-flex class="right" justify="end">
         <n-tabs
@@ -84,48 +72,6 @@
         <component :is="Component" :data="listData" :loading="loading" class="router-view" />
       </Transition>
     </RouterView>
-
-    <n-modal
-      v-model:show="showCustomDownloadModal"
-      preset="card"
-      title="新建下载任务"
-      style="width: 500px"
-    >
-      <n-form
-        :model="customDownloadForm"
-        label-placement="left"
-        label-width="80"
-        require-mark-placement="right-hanging"
-      >
-        <n-form-item label="链接" path="url">
-          <n-input
-            v-model:value="customDownloadForm.url"
-            placeholder="请输入下载链接"
-            @keydown.enter.prevent
-          />
-        </n-form-item>
-        <n-form-item label="文件名" path="fileName">
-          <n-input
-            v-model:value="customDownloadForm.fileName"
-            placeholder="可选，不填则尝试从链接获取"
-            @keydown.enter="handleCreateCustomDownload"
-          />
-        </n-form-item>
-        <n-form-item label="Referer" path="referer">
-          <n-input
-            v-model:value="customDownloadForm.referer"
-            placeholder="可选：自定义Referer"
-            @keydown.enter="handleCreateCustomDownload"
-          />
-        </n-form-item>
-      </n-form>
-      <template #footer>
-        <n-flex justify="end">
-          <n-button @click="showCustomDownloadModal = false">取消</n-button>
-          <n-button type="primary" @click="handleCreateCustomDownload">确定</n-button>
-        </n-flex>
-      </template>
-    </n-modal>
   </div>
 </template>
 
@@ -145,54 +91,12 @@ const settingStore = useSettingStore();
 const player = usePlayerController();
 const downloadManager = useDownloadManager();
 
-const showCustomDownloadModal = ref(false);
-const customDownloadForm = reactive({
-  url: "",
-  fileName: "",
-  referer: "",
-});
-
-const handleCreateCustomDownload = () => {
-  if (!customDownloadForm.url) {
-    window.$message.error("请输入下载链接");
-    return;
-  }
-  let fileName = customDownloadForm.fileName;
-  if (!fileName) {
-    // 简单尝试从 URL 获取文件名
-    try {
-      const urlObj = new URL(customDownloadForm.url);
-      const path = urlObj.pathname;
-      const lastSegment = path.substring(path.lastIndexOf('/') + 1);
-      if (lastSegment) {
-        fileName = decodeURIComponent(lastSegment);
-      } else {
-        fileName = `download_${Date.now()}`;
-      }
-    } catch (e) {
-      fileName = `download_${Date.now()}`;
-    }
-  }
-
-  downloadManager.addCustomDownload(customDownloadForm.url, fileName, customDownloadForm.referer);
-  showCustomDownloadModal.value = false;
-  customDownloadForm.url = "";
-  customDownloadForm.fileName = "";
-  customDownloadForm.referer = "";
-  window.$message.success("已添加下载任务");
-  
-  // 切换到下载中标签页
-  currentTab.value = "download-downloading";
-  handleTabChange("download-downloading");
-};
-
 const loading = ref<boolean>(false);
 const loadingMsg = ref<MessageReactive | null>(null);
 const listData = ref<SongType[]>([]);
 
 const currentTab = ref<string>((route.name as string) || "download-downloaded");
 
-// 当前标签页的歌曲列表
 const currentListData = computed(() => {
   if (currentTab.value === "download-downloading") {
     return dataStore.downloadingSongs.map((item) => item.song);

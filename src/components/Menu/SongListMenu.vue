@@ -78,7 +78,11 @@ const openDropdown = (
                   },
                   {
                     default: () => [
-                      h(NText, { class: "text-hidden", depth: 1 }, { default: () => songData?.name }),
+                      h(
+                        NText,
+                        { class: "text-hidden", depth: 1 },
+                        { default: () => songData?.name },
+                      ),
                       h(
                         NText,
                         { depth: 3, class: "text-hidden", style: { fontSize: "12px" } },

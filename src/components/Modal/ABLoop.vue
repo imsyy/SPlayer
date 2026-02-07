@@ -7,11 +7,7 @@
           <SvgIcon name="Repeat" size="22" />
           <n-text>AB 循环模式</n-text>
         </n-flex>
-        <n-switch
-          v-model:value="statusStore.abLoop.enable"
-          :disabled="!canEnable"
-          :round="false"
-        />
+        <n-switch v-model:value="statusStore.abLoop.enable" :disabled="!canEnable" :round="false" />
       </n-flex>
     </n-card>
 
