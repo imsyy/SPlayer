@@ -313,6 +313,7 @@ async fn run_mpris_loop(mut rx: UnboundedReceiver<MprisCommand>) -> Result<()> {
         .can_control(true)
         .playback_status(MprisPlaybackStatus::Stopped)
         .identity("SPlayer")
+        .desktop_entry("SPlayer")
         .build()
         .await
         .map_err(|e| anyhow::anyhow!("MPRIS Player 初始化失败: {e}"))?;
