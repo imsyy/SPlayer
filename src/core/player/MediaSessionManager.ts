@@ -25,7 +25,7 @@ class MediaSessionManager {
 
   private throttledSendTimeline = throttle((currentTime: number, duration: number) => {
     sendMediaTimeline(currentTime, duration);
-  }, 1000);
+  }, 200);
 
   /**
    * 是否使用原生媒体集成
