@@ -310,12 +310,7 @@ class LyricManager {
         result.lrcData = qqLyric.lrcData;
         if (!qqMusicAdopted) qqMusicAdopted = true;
       }
-      // 如果采用了, 立即应用
-      if (qqMusicAdopted) {
-        let lyricData = this.handleLyricExclude(result);
-        lyricData = await this.applyChineseVariant(lyricData);
-        this.setFinalLyric(lyricData, req);
-      }
+
     };
 
     // 处理 TTML 歌词
@@ -396,10 +391,6 @@ class LyricManager {
         // 再次确认优先级，如果是 TTML 优先但 TTML 没结果，这里可以用 YRC
         result.yrcData = yrcLines;
       }
-      // 先返回一次
-      let lyricData = this.handleLyricExclude(result);
-      lyricData = await this.applyChineseVariant(lyricData);
-      this.setFinalLyric(lyricData, req);
     };
     // 执行优先策略
     const priority = settingStore.lyricPriority;
@@ -898,8 +889,6 @@ class LyricManager {
         }
       } else {
         lyricData = await this.handleOnlineLyric(song.id);
-        // 排除内容
-        lyricData = this.handleLyricExclude(lyricData);
       }
       console.log("最终歌词数据", lyricData);
       this.setFinalLyric(lyricData, req);
