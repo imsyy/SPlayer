@@ -307,6 +307,9 @@ const listData = computed<SongType[]>(() => {
         result = albumA.localeCompare(albumB, "zh-CN");
         break;
       }
+      case "trackNumber":
+        result = (a.trackNumber || 0) - (b.trackNumber || 0);
+        break;
       case "filename": {
         const fileNameA = a.path?.split(/[\\/]/).pop() || "";
         const fileNameB = b.path?.split(/[\\/]/).pop() || "";

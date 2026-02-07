@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { readFile, rename } from "node:fs/promises";
 
 /** 当前本地音乐库 DB 版本，用于控制缓存结构升级 */
-const CURRENT_DB_VERSION = 2;
+const CURRENT_DB_VERSION = 3;
 
 /** 音乐数据接口 */
 export interface MusicTrack {
@@ -27,6 +27,8 @@ export interface MusicTrack {
   size: number;
   /** 文件码率（bps） */
   bitrate?: number;
+  /** 曲目序号 */
+  track_number?: number;
 }
 
 /** 旧版 JSON DB 接口 */
@@ -63,7 +65,8 @@ export class LocalMusicDB {
           cover TEXT,
           mtime REAL,
           size INTEGER,
-          bitrate REAL
+          bitrate REAL,
+          track_number INTEGER
         );
         CREATE TABLE IF NOT EXISTS meta (
           key TEXT PRIMARY KEY,
@@ -134,8 +137,8 @@ export class LocalMusicDB {
     if (!this.db || tracks.length === 0) return;
 
     const insertStmt = this.db.prepare(`
-      INSERT OR REPLACE INTO tracks (id, path, title, artist, album, duration, cover, mtime, size, bitrate)
-      VALUES (@id, @path, @title, @artist, @album, @duration, @cover, @mtime, @size, @bitrate)
+      INSERT OR REPLACE INTO tracks (id, path, title, artist, album, duration, cover, mtime, size, bitrate, track_number)
+      VALUES (@id, @path, @title, @artist, @album, @duration, @cover, @mtime, @size, @bitrate, @track_number)
     `);
 
     const transaction = this.db.transaction((tracks: MusicTrack[]) => {

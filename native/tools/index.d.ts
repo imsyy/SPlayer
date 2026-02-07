@@ -25,6 +25,7 @@ export interface MusicTrack {
   mtime: number
   size: number
   bitrate: number
+  trackNumber?: number
 }
 
 export interface ScanEvent {
