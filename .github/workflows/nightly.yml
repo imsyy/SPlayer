@@ -105,6 +105,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      # 复制环境变量文件
+      - name: Copy .env file on Windows
+        if: runner.os == 'Windows'
+        run: |
+          if (-not (Test-Path .env)) {
+            Copy-Item .env.example .env
+          } else {
+            Write-Host ".env file already exists. Skipping the copy step."
+          }
+      - name: Copy .env file on macOS & Linux
+        if: runner.os == 'macOS' || runner.os == 'Linux'
+        run: |
+          if [ ! -f .env ]; then
+            cp .env.example .env
+          else
+            echo ".env file already exists. Skipping the copy step."
+          fi
+
       - name: Generate Nightly Version
         id: version
         shell: bash
