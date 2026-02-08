@@ -23,6 +23,12 @@ const initTaskbarIpc = () => {
 
     tray?.setTaskbarLyricShow(show);
 
+    const mainWin = mainWindow.getWin(); // 获取主窗口实例
+    if (mainWin && !mainWin.isDestroyed()) {
+      // 发送更新给渲染进程，同步 Pinia store
+      mainWin.webContents.send("setting:update-taskbar-lyric-enabled", show);
+    }
+
     if (show) {
       taskbarLyricWindow.create();
     } else {

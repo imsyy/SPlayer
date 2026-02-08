@@ -78,25 +78,30 @@ const updateMacStatusBarLyric = (store: ReturnType<typeof useStore>) => {
 export const initMacStatusBarIpc = () => {
   const store = useStore();
 
-  const envEnabled = store.get("taskbar.enabled");
+  // 初始化时读取新的 macOS 专属设置
+  const isMacosLyricEnabled = store.get("macos.statusBarLyric.enabled") ?? false;
   const tray = getMainTray();
-  tray?.setMacStatusBarLyricShow(envEnabled);
+  tray?.setMacStatusBarLyricShow(isMacosLyricEnabled); // 根据新设置初始化显示状态
 
-  ipcMain.on("taskbar:toggle", (_event, show: boolean) => {
-    store.set("taskbar.enabled", show);
+  // 新增 macOS 专属设置切换监听
+  ipcMain.on("macos-lyric:toggle", (_event, show: boolean) => {
+    store.set("macos.statusBarLyric.enabled", show); // 更新 store
     const tray = getMainTray();
-    
-    // 通过发送事件来同步状态
+
+    // 触发 "mac-toggle-statusbar-lyric" 事件，让 ipc-tray 响应
     ipcMain.emit("mac-toggle-statusbar-lyric", null, show);
 
-    if (show) {
-      const mainWin = mainWindow.getWin();
-      if (mainWin && !mainWin.isDestroyed()) {
-        mainWin.webContents.send("taskbar:request-data");
+    const mainWin = mainWindow.getWin(); // 获取主窗口实例
+    if (mainWin && !mainWin.isDestroyed()) {
+      // 发送更新给渲染进程，同步 Pinia store
+      mainWin.webContents.send("setting:update-macos-lyric-enabled", show);
+      if (show) {
+        mainWin.webContents.send("taskbar:request-data"); // 开启时请求数据
+      } else {
+        tray?.setMacStatusBarLyricTitle(""); // 关闭时清空歌词
       }
-    } else {
-        // 关闭时清空歌词
-        tray?.setMacStatusBarLyricTitle('');
+    } else if (!show) { // 如果主窗口不可用且正在关闭，也清空歌词
+      tray?.setMacStatusBarLyricTitle("");
     }
   });
 

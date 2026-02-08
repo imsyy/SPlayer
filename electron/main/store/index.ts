@@ -73,6 +73,14 @@ export interface StoreType {
   downloadThreadCount?: number;
   /** 启用HTTP2下载 */
   enableDownloadHttp2?: boolean;
+  /** macOS 专属设置 */
+  macos: {
+    /** 状态栏歌词 */
+    statusBarLyric: {
+      /** 是否启用 */
+      enabled: boolean;
+    };
+  };
 }
 
 /**
@@ -103,6 +111,11 @@ export const useStore = () => {
         position: "automatic",
         showWhenPaused: true,
         autoShrink: false,
+      },
+      macos: {
+        statusBarLyric: {
+          enabled: false,
+        },
       },
       proxy: "",
       amllDbServer: defaultAMLLDbServer,

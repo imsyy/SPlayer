@@ -6,7 +6,7 @@ import { handleProtocolUrl } from "@/utils/protocol";
 import { cloneDeep } from "lodash-es";
 import { toRaw } from "vue";
 import { toLikeSong } from "./auth";
-import { isElectron } from "./env";
+import { isElectron, isMac } from "./env";
 import { getPlayerInfoObj } from "./format";
 import { openSetting, openUpdateApp } from "./modal";
 
@@ -54,7 +54,44 @@ const initIpc = () => {
     // 显式关闭桌面歌词
     window.electron.ipcRenderer.on("close-desktop-lyric", () => player.setDesktopLyricShow(false));
     // 任务栏歌词开关
-    window.electron.ipcRenderer.on("toggle-taskbar-lyric", () => player.toggleTaskbarLyric());
+    window.electron.ipcRenderer.on("toggle-taskbar-lyric", async () => {
+      let message = "";
+      if (isMac) {
+        const currentMacLyricEnabled = await window.electron.ipcRenderer.invoke(
+          "store-get",
+          "macos.statusBarLyric.enabled",
+        );
+        const newState = !currentMacLyricEnabled;
+        window.electron.ipcRenderer.send("macos-lyric:toggle", newState);
+        message = `${newState ? "已开启" : "已关闭"}状态栏歌词`;
+      } else {
+        const currentTaskbarEnabled = await window.electron.ipcRenderer.invoke(
+          "store-get",
+          "taskbar.enabled",
+        );
+        const newState = !currentTaskbarEnabled;
+        window.electron.ipcRenderer.send("taskbar:toggle", newState);
+        message = `${newState ? "已开启" : "已关闭"}任务栏歌词`;
+      }
+      window.$message.success(message);
+    });
+
+    // 监听主进程发来的 macOS 状态栏歌词启用状态更新
+    window.electron.ipcRenderer.on(
+      "setting:update-macos-lyric-enabled",
+      (_event, enabled: boolean) => {
+        const settingStore = useSettingStore();
+        settingStore.macos.statusBarLyric.enabled = enabled;
+      },
+    );
+
+    // 监听主进程发来的任务栏歌词启用状态更新
+    window.electron.ipcRenderer.on(
+      "setting:update-taskbar-lyric-enabled",
+      (_event, enabled: boolean) => {
+        player.setTaskbarLyricShow(enabled);
+      },
+    );
     // 给任务栏歌词初始数据
     window.electron.ipcRenderer.on("taskbar:request-data", () => {
       const musicStore = useMusicStore();

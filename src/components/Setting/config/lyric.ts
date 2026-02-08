@@ -4,7 +4,7 @@ import { usePlayerController } from "@/core/player/PlayerController";
 import { useSettingStore, useStatusStore } from "@/stores";
 import type { LyricConfig } from "@/types/desktop-lyric";
 import type { SettingConfig } from "@/types/settings";
-import { isElectron, isWin } from "@/utils/env";
+import { isElectron, isWin, isMac } from "@/utils/env";
 import { descMultiline } from "@/utils/format";
 import { openAMLLServer, openExcludeLyric, openFontManager } from "@/utils/modal";
 import { cloneDeep, isEqual } from "lodash-es";
@@ -880,6 +880,26 @@ export const useLyricSettings = (): SettingConfig => {
             max: 900,
             step: 100,
             value: toRef(settingStore, "taskbarLyricFontWeight"),
+          },
+        ],
+      },
+      {
+        title: "macOS 状态栏歌词",
+        show: isElectron && isMac,
+        items: [
+          {
+            key: "macStatusBarLyricEnabled",
+            label: "启用状态栏歌词",
+            type: "switch",
+            description: "开启后将在 macOS 状态栏显示歌词",
+            value: computed({
+              get: () => settingStore.macos.statusBarLyric.enabled,
+              set: (v) => {
+                settingStore.macos.statusBarLyric.enabled = v;
+                window.electron.ipcRenderer.send("macos-lyric:toggle", v);
+                window.$message.success(`${v ? "已开启" : "已关闭"}状态栏歌词`);
+              },
+            }),
           },
         ],
       },

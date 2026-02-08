@@ -471,6 +471,14 @@ export interface SettingState {
   disableDjMode: boolean;
   /** 启用全局错误弹窗 */
   enableGlobalErrorDialog: boolean;
+  /** macOS 专属设置 */
+  macos: {
+    /** 状态栏歌词 */
+    statusBarLyric: {
+      /** 是否启用 */
+      enabled: boolean;
+    };
+  };
 }
 
 export const useSettingStore = defineStore("setting", {
@@ -734,6 +742,11 @@ export const useSettingStore = defineStore("setting", {
     disableAiAudio: false,
     disableDjMode: false,
     enableGlobalErrorDialog: true,
+    macos: {
+      statusBarLyric: {
+        enabled: false,
+      },
+    },
   }),
   getters: {
     /**
