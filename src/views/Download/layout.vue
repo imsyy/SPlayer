@@ -26,7 +26,7 @@
           strong
           secondary
           round
-          @click="player.updatePlayList(currentListData)"
+          @click="handlePlayAll"
         >
           <template #icon>
             <SvgIcon name="Play" />
@@ -97,12 +97,11 @@ const listData = ref<SongType[]>([]);
 
 const currentTab = ref<string>((route.name as string) || "download-downloaded");
 
-const currentListData = computed(() => {
-  if (currentTab.value === "download-downloading") {
-    return dataStore.downloadingSongs.map((item) => item.song);
+const handlePlayAll = () => {
+  if (currentTab.value === "download-downloaded") {
+    player.updatePlayList(listData.value);
   }
-  return listData.value;
-});
+};
 
 // 当前标签页的歌曲数量
 const currentCount = computed(() => {

@@ -99,7 +99,7 @@ const commentScroll = ref<InstanceType<typeof NScrollbar> | null>(null);
 const isShowComment = computed<boolean>(() => statusStore.showPlayerComment);
 
 // 歌曲 id
-const songId = computed<number>(() => musicStore.playSong.id);
+const songId = computed<number | string>(() => musicStore.playSong.id);
 
 // 歌曲类型
 const songType = computed<0 | 1 | 7 | 2 | 3 | 4 | 5 | 6>(() =>
@@ -147,7 +147,8 @@ const filteredCommentHotData = computed(() => filterComments(commentHotData.valu
 
 // 获取热门评论
 const getHotCommentData = async () => {
-  if (!songId.value) return;
+  // 本地歌曲无法获取评论
+  if (!songId.value || typeof songId.value !== "number") return;
   // 获取评论
   const result = await getHotComment(songId.value);
   // 处理数据
@@ -159,7 +160,8 @@ const getHotCommentData = async () => {
 
 // 获取歌曲评论
 const getAllComment = async () => {
-  if (!songId.value) return;
+  // 本地歌曲无法获取评论
+  if (!songId.value || typeof songId.value !== "number") return;
   commentLoading.value = true;
   // 分页参数
   const cursor =

@@ -2,11 +2,7 @@
   <div
     class="taskbar-lyric"
     :class="{ dark: state.isDark, 'layout-reverse': !state.isCenter }"
-    :style="{
-      opacity: isVisible ? state.opacity : 0,
-      filter: state.opacity === 0 || !isVisible ? 'blur(10px)' : 'blur(0px)',
-      pointerEvents: isVisible ? 'auto' : 'none',
-    }"
+    :style="rootStyle"
     @mouseenter="isHovering = true"
     @mouseleave="isHovering = false"
   >
@@ -114,9 +110,24 @@ const state = reactive({
   isCenter: false,
   lyricType: "line" as "line" | "word",
   showWhenPaused: true,
+  themeColor: null as { light: string; dark: string } | null,
 });
 
 const isVisible = computed(() => state.isPlaying || state.showWhenPaused);
+
+const rootStyle = computed<CSSProperties>(() => {
+  const style: CSSProperties = {
+    opacity: isVisible.value ? state.opacity : 0,
+    filter: state.opacity === 0 || !isVisible.value ? "blur(10px)" : "blur(0px)",
+    pointerEvents: isVisible.value ? "auto" : "none",
+  };
+
+  if (state.themeColor) {
+    style.color = state.isDark ? state.themeColor.dark : state.themeColor.light;
+  }
+
+  return style;
+});
 
 const lyricFontFamily = computed(() => {
   const font =
@@ -198,9 +209,9 @@ const displayItems = computed<DisplayItem[]>(() => {
       .trim() || "";
 
   let subText = "";
-  if (currentLine.translatedLyric) {
+  if (settingStore.showTran && currentLine.translatedLyric) {
     subText = currentLine.translatedLyric;
-  } else if (currentLine.romanLyric) {
+  } else if (settingStore.showRoma && currentLine.romanLyric) {
     subText = currentLine.romanLyric;
   }
 
@@ -434,6 +445,10 @@ onMounted(() => {
     state.isDark = isDark;
   });
 
+  ipc.on("taskbar:update-theme-color", (_, color: { light: string; dark: string } | null) => {
+    state.themeColor = color;
+  });
+
   ipc.on("taskbar:update-layout", (_, { isCenter }: { isCenter: boolean }) => {
     state.isCenter = isCenter;
   });
@@ -466,6 +481,12 @@ onMounted(() => {
     }
     if (settings.showWhenPaused !== undefined) {
       state.showWhenPaused = settings.showWhenPaused;
+    }
+    if (settings.showTran !== undefined) {
+      settingStore.showTran = settings.showTran;
+    }
+    if (settings.showRoma !== undefined) {
+      settingStore.showRoma = settings.showRoma;
     }
   });
 

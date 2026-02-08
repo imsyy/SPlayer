@@ -793,6 +793,13 @@ export const useLyricSettings = (): SettingConfig => {
             value: toRef(settingStore, "taskbarLyricShowWhenPaused"),
           },
           {
+            key: "taskbarLyricUseThemeColor",
+            label: "跟随主题色",
+            type: "switch",
+            description: "开启后任务栏歌词颜色将跟随应用主题，下一曲生效",
+            value: toRef(settingStore, "taskbarLyricUseThemeColor"),
+          },
+          {
             key: "taskbarLyricShowCover",
             label: "显示封面",
             type: "switch",

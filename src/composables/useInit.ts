@@ -116,6 +116,8 @@ export const useInit = () => {
           settingStore.LyricFont,
           settingStore.globalFont,
           settingStore.taskbarLyricFontWeight,
+          settingStore.showTran,
+          settingStore.showRoma,
         ],
         () => {
           window.electron.ipcRenderer.send("taskbar:broadcast-settings", {
@@ -124,6 +126,8 @@ export const useInit = () => {
             lyricFont: settingStore.LyricFont,
             globalFont: settingStore.globalFont,
             fontWeight: settingStore.taskbarLyricFontWeight,
+            showTran: settingStore.showTran,
+            showRoma: settingStore.showRoma,
           });
         },
         { deep: true },

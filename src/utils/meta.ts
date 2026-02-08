@@ -118,6 +118,8 @@ export const sortFieldOptions = {
   title: { name: "标题" },
   artist: { name: "歌手" },
   album: { name: "专辑" },
+  trackNumber: { name: "曲目序号" },
+  filename: { name: "文件名" },
   duration: { name: "时长" },
   size: { name: "大小" },
   createTime: { name: "添加时间" },

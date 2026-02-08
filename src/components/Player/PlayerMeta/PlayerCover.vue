@@ -6,7 +6,7 @@
     :style="{ '--gradient-percent': settingStore.playerFullscreenGradient + '%' }"
   >
     <s-image
-      :src="musicStore.getSongCover('xl')"
+      :src="getCoverUrl('xl')"
       :alt="musicStore.playSong.name"
       :title="musicStore.playSong.name"
       :lazy="false"
@@ -28,8 +28,8 @@
     />
     <!-- 专辑图片 -->
     <s-image
-      :key="musicStore.getSongCover()"
-      :src="musicStore.getSongCover('l')"
+      :key="getCoverUrl('l')"
+      :src="getCoverUrl('l')"
       :observe-visibility="false"
       object-fit="cover"
       class="cover-img"
@@ -55,6 +55,7 @@ import { songDynamicCover } from "@/api/song";
 import { useMobile } from "@/composables/useMobile";
 import { useSettingStore, useStatusStore, useMusicStore } from "@/stores";
 import { isLogin } from "@/utils/auth";
+import { isElectron } from "@/utils/env";
 import { isEmpty } from "lodash-es";
 
 const musicStore = useMusicStore();
@@ -63,12 +64,20 @@ const settingStore = useSettingStore();
 
 const { isTablet } = useMobile();
 
+// 本地歌曲高清封面（Data URL）
+const localCoverDataUrl = ref<string>("");
+
 // 动态封面
 const dynamicCover = ref<string>("");
 const dynamicCoverLoaded = ref<boolean>(false);
 
 // 视频元素
 const videoRef = ref<HTMLVideoElement | null>(null);
+
+// 清理本地封面资源
+const cleanupLocalCover = () => {
+  localCoverDataUrl.value = "";
+};
 
 // 清理动态封面资源
 const cleanupDynamicCover = () => {
@@ -90,6 +99,38 @@ const { start: dynamicCoverStart, stop: dynamicCoverStop } = useTimeoutFn(
   2000,
   { immediate: false },
 );
+
+// 获取本地歌曲高清封面
+const getLocalCover = async () => {
+  // 非本地歌曲或非 Electron 环境，清理并返回
+  if (!isElectron || !musicStore.playSong.path || musicStore.playSong.type === "streaming") {
+    cleanupLocalCover();
+    return;
+  }
+  try {
+    const coverData = await window.electron.ipcRenderer.invoke(
+      "get-music-cover",
+      musicStore.playSong.path,
+    );
+    if (coverData) {
+      // 使用 Data URL，确保跨窗口可用
+      const blob = new Blob([coverData.data], { type: coverData.format });
+      const reader = new FileReader();
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.onabort = reject;
+        reader.readAsDataURL(blob);
+      });
+      localCoverDataUrl.value = dataUrl;
+    } else {
+      localCoverDataUrl.value = "";
+    }
+  } catch (error) {
+    console.error("获取本地封面失败:", error);
+    localCoverDataUrl.value = "";
+  }
+};
 
 // 获取动态封面
 const getDynamicCover = async () => {
@@ -117,18 +158,38 @@ const dynamicCoverEnded = () => {
   dynamicCoverStart();
 };
 
+// 获取封面 URL
+const getCoverUrl = (size: "s" | "m" | "l" | "xl" = "l") => {
+  if (localCoverDataUrl.value) {
+    return localCoverDataUrl.value;
+  }
+  return musicStore.getSongCover(size);
+};
+
 watch(
   () => [musicStore.playSong.id, settingStore.dynamicCover, settingStore.playerType],
   () => getDynamicCover(),
 );
 
-onMounted(getDynamicCover);
+// 监听歌曲切换，获取/清理本地封面
+watch(
+  () => musicStore.playSong.path,
+  () => getLocalCover(),
+  { immediate: true },
+);
+
+onMounted(() => {
+  getDynamicCover();
+  getLocalCover();
+});
 
 onBeforeUnmount(() => {
   // 停止定时器
   dynamicCoverStop();
   // 清理动态封面资源
   cleanupDynamicCover();
+  // 清理本地封面资源
+  cleanupLocalCover();
 });
 </script>
 

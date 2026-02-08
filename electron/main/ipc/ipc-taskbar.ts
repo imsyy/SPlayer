@@ -161,6 +161,10 @@ const initTaskbarIpc = () => {
     taskbarLyricWindow.updateLayout(true);
   });
 
+  ipcMain.on("taskbar:set-theme-color", (_event, color: { light: string; dark: string } | null) => {
+    taskbarLyricWindow.send("taskbar:update-theme-color", color);
+  });
+
   ipcMain.on("taskbar:broadcast-settings", (_event, settings: unknown) => {
     taskbarLyricWindow.send("taskbar:update-settings", settings);
   });

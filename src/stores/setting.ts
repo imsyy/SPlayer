@@ -58,6 +58,8 @@ export interface SettingState {
   taskbarLyricAnimationMode: "slide-blur" | "left-sm";
   /** 任务栏歌词单行模式 */
   taskbarLyricSingleLineMode: boolean;
+  /** 任务栏歌词跟随主题色 */
+  taskbarLyricUseThemeColor: boolean;
   /** 任务栏歌词字重 */
   taskbarLyricFontWeight: number;
   /** 是否使用在线服务 */
@@ -505,6 +507,7 @@ export const useSettingStore = defineStore("setting", {
     taskbarLyricShowWhenPaused: true,
     taskbarLyricAnimationMode: "slide-blur",
     taskbarLyricSingleLineMode: false,
+    taskbarLyricUseThemeColor: false,
     taskbarLyricFontWeight: 400,
     checkUpdateOnStart: true,
     updateChannel: "stable",

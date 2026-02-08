@@ -238,6 +238,10 @@ watch(lyricPlayerRef, (player) => {
     }
   }
 
+  :deep(.am-lyric div[class*="lyricMainLine"] span) {
+    text-align: start;
+  }
+
   :lang(ja) {
     font-family: var(--ja-font-family);
   }

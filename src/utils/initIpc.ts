@@ -21,6 +21,7 @@ const initIpc = () => {
   try {
     if (!isElectron) return;
     const player = usePlayerController();
+
     // 播放
     window.electron.ipcRenderer.on("play", () => player.play());
     // 暂停
@@ -60,7 +61,7 @@ const initIpc = () => {
       const statusStore = useStatusStore();
       const settingStore = useSettingStore();
       const { name, artist } = getPlayerInfoObj() || {};
-      const cover = musicStore.playSong?.cover || "";
+      const cover = musicStore.getSongCover("s") || "";
 
       playerIpc.sendTaskbarMetadata({
         title: name || "",
@@ -95,6 +96,8 @@ const initIpc = () => {
         lyricFont: settingStore.LyricFont,
         globalFont: settingStore.globalFont,
         fontWeight: settingStore.taskbarLyricFontWeight,
+        showTran: settingStore.showTran,
+        showRoma: settingStore.showRoma,
       });
 
       playerIpc.sendTaskbarProgressData({

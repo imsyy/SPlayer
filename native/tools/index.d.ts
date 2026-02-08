@@ -23,16 +23,17 @@ export interface DownloadProgress {
 export declare function getTaskbarCreatedMessageId(): number;
 
 export interface MusicTrack {
-  id: string;
-  path: string;
-  title: string;
-  artist: string;
-  album: string;
-  duration: number;
-  cover?: string;
-  mtime: number;
-  size: number;
-  bitrate: number;
+  id: string
+  path: string
+  title: string
+  artist: string
+  album: string
+  duration: number
+  cover?: string
+  mtime: number
+  size: number
+  bitrate: number
+  trackNumber?: number
 }
 
 export interface ScanEvent {

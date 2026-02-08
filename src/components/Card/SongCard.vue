@@ -25,7 +25,6 @@
           :key="song.cover"
           :src="song.path ? song.cover : song.coverSize?.s || song.cover"
           class="cover"
-          @update:show="localCover"
         />
         <!-- 信息 -->
         <n-flex size="small" class="info" vertical>
@@ -209,8 +208,6 @@ import { toLikeSong } from "@/utils/auth";
 import { isObject } from "lodash-es";
 import { formatTimestamp, msToTime } from "@/utils/time";
 import { usePlayerController } from "@/core/player/PlayerController";
-import { isElectron } from "@/utils/env";
-import { useBlobURLManager } from "@/core/resource/BlobURLManager";
 import { useMobile } from "@/composables/useMobile";
 import { EXPLICIT_CONTENT_MARK } from "@/utils/meta";
 
@@ -237,7 +234,6 @@ const statusStore = useStatusStore();
 const settingStore = useSettingStore();
 
 const player = usePlayerController();
-const blobURLManager = useBlobURLManager();
 
 // 歌曲数据
 const song = toRef(props, "song");
@@ -256,36 +252,6 @@ const albumName = computed(() => {
   const name = isObject(album) ? album.name : album;
   return (settingStore.hideBracketedContent ? removeBrackets(name) : name) || "未知专辑";
 });
-
-// 加载本地歌曲封面
-const localCover = async (show: boolean) => {
-  if (!isElectron || !show) return;
-  // 本地路径
-  const path = song.value.path;
-  if (!path || song.value.type === "streaming") return;
-  // 当前封面
-  const currentCover = song.value.cover;
-  // 直接复用
-  if (
-    currentCover &&
-    currentCover !== "/images/song.jpg?asset" &&
-    !currentCover.startsWith("blob:")
-  ) {
-    return;
-  }
-  // 缓存生效
-  if (blobURLManager.hasBlobURL(path)) return;
-  // 请求路径
-  const requestPath = path;
-  // 获取封面
-  const coverData = await window.electron.ipcRenderer.invoke("get-music-cover", requestPath);
-  if (song.value.path !== requestPath || !coverData) return;
-  const { data, format } = coverData;
-  const blobURL = blobURLManager.createBlobURL(data, format, requestPath);
-  if (blobURL && song.value.path === requestPath) {
-    song.value.cover = blobURL;
-  }
-};
 </script>
 
 <style lang="scss" scoped>

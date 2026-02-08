@@ -90,7 +90,6 @@ impl IUIAutomationStructureChangedEventHandler_Impl for TaskbarEventHandler_Impl
 
 pub struct NativeUiaWatcher {
     thread_id: Option<u32>,
-    thread_handle: Option<thread::JoinHandle<()>>,
 }
 
 impl NativeUiaWatcher {
@@ -98,7 +97,7 @@ impl NativeUiaWatcher {
         let (tx, rx) = mpsc::channel::<u32>();
         let callback_arc = Arc::new(callback);
 
-        let handle = thread::spawn(move || unsafe {
+        thread::spawn(move || unsafe {
             let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
 
             let thread_id = GetCurrentThreadId();
@@ -156,7 +155,6 @@ impl NativeUiaWatcher {
 
         Ok(Self {
             thread_id: Some(thread_id),
-            thread_handle: Some(handle),
         })
     }
 
@@ -166,10 +164,6 @@ impl NativeUiaWatcher {
                 let _ = PostThreadMessageW(tid, WM_QUIT, WPARAM(0), LPARAM(0));
             }
             self.thread_id = None;
-        }
-
-        if let Some(handle) = self.thread_handle.take() {
-            let _ = handle.join();
         }
     }
 }

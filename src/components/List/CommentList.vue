@@ -115,7 +115,7 @@ const props = defineProps<{
   // 透明
   transparent?: boolean;
   // 资源 ID
-  resId: number;
+  resId: number | string;
   hiddenCover?: boolean;
 }>();
 
@@ -169,10 +169,11 @@ const handleDoubleClick = debounce(async (item: CommentType) => {
     openUserLogin();
     return;
   }
+  // 本地歌曲不支持抱一抱
+  if (typeof props.resId !== "number") return;
   try {
     const result = await hugComment(userStore.userData.userId, item.id, props.resId);
     if (result.code === 200) {
-      // 获取抱一抱列表以得到总数
       // 获取抱一抱列表以得到总数
       try {
         const listResult = await getCommentHugList(

@@ -133,6 +133,15 @@ export const sendTaskbarLyrics = (lyrics: SongLyric) => {
   window.electron.ipcRenderer.send("taskbar:update-lyrics", payload);
 };
 
+/**
+ * 发送任务栏歌词主题色
+ * @param color 主题色
+ */
+export const sendTaskbarThemeColor = (color: { light: string; dark: string } | null) => {
+  if (!isElectron) return;
+  window.electron.ipcRenderer.send("taskbar:set-theme-color", color);
+};
+
 export interface TaskbarProgressPayload {
   currentTime: number;
   duration: number;

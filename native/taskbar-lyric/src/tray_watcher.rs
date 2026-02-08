@@ -56,7 +56,6 @@ unsafe extern "system" fn win_event_proc(
 
 pub struct NativeTrayWatcher {
     thread_id: Option<u32>,
-    thread_handle: Option<thread::JoinHandle<()>>,
 }
 
 impl NativeTrayWatcher {
@@ -69,7 +68,7 @@ impl NativeTrayWatcher {
 
         let (tx, rx) = std::sync::mpsc::channel();
 
-        let handle = thread::spawn(move || unsafe {
+        thread::spawn(move || unsafe {
             let current_tid = GetCurrentThreadId();
             let _ = tx.send(current_tid);
 
@@ -111,7 +110,6 @@ impl NativeTrayWatcher {
 
         Ok(Self {
             thread_id: Some(thread_id),
-            thread_handle: Some(handle),
         })
     }
 
@@ -122,10 +120,12 @@ impl NativeTrayWatcher {
             }
             self.thread_id = None;
         }
+    }
+}
 
-        if let Some(handle) = self.thread_handle.take() {
-            let _ = handle.join();
-        }
+impl Drop for NativeTrayWatcher {
+    fn drop(&mut self) {
+        self.stop();
     }
 }
 

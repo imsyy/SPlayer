@@ -393,21 +393,20 @@ class DownloadManager {
     this.processQueue();
   }
 
-  // 移除正在下载的歌曲（取消下载）
   public removeDownload(id: number) {
     const dataStore = useDataStore();
-    // 1. 从 dataStore 中移除
-    dataStore.removeDownloadingSong(id);
-
-    // 2. 如果在队列中，移除
-    this.queue = this.queue.filter((item) => item.id !== id);
-
-    // 3. 如果正在下载，尝试取消 (目前 Electron 端没有暴露取消接口，但移除后后续处理会忽略)
+    // 如果正在下载，尝试取消（目前仅移除任务）
     if (this.activeDownloads.has(id)) {
+      // TODO: 实现取消正在进行的下载任务
+      // 暂时先从活动集合中移除，以释放下载槽位
       this.activeDownloads.delete(id);
-      // 触发一次队列处理，填补空位
-      this.processQueue();
     }
+    // 从队列中移除
+    this.queue = this.queue.filter((task) => task.id !== id);
+    // 从 store 移除
+    dataStore.removeDownloadingSong(id);
+    // 尝试处理下一个任务
+    this.processQueue();
   }
 
   public retryDownload(id: number) {

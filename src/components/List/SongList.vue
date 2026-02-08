@@ -298,7 +298,16 @@ const listData = computed<SongType[]>(() => {
       case "album": {
         const albumA = typeof a.album === "string" ? a.album : a.album?.name || "";
         const albumB = typeof b.album === "string" ? b.album : b.album?.name || "";
-        result = albumA.localeCompare(albumB, "zh-CN");
+        result = albumA.localeCompare(albumB, "zh-CN", { numeric: true });
+        break;
+      }
+      case "trackNumber":
+        result = (a.trackNumber || 0) - (b.trackNumber || 0);
+        break;
+      case "filename": {
+        const fileNameA = a.path?.split(/[\\/]/).pop() || "";
+        const fileNameB = b.path?.split(/[\\/]/).pop() || "";
+        result = fileNameA.localeCompare(fileNameB, "zh-CN");
         break;
       }
       case "duration":

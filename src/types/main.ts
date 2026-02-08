@@ -98,6 +98,8 @@ export type SongType = {
   pc?: boolean;
   /** 大小 */
   size?: number;
+  /** 曲目序号 */
+  trackNumber?: number;
   /** 音质 */
   quality?: QualityType;
   /** 创建时间 */
@@ -306,6 +308,8 @@ export type SortField =
   | "title"
   | "artist"
   | "album"
+  | "trackNumber"
+  | "filename"
   | "duration"
   | "size"
   | "createTime"

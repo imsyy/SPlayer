@@ -69,7 +69,7 @@
         class="set-content"
         :content-style="{ overflow: 'hidden', padding: '40px 0' }"
       >
-        <Transition name="fade" mode="out-in" @after-leave="setScrollbar?.scrollTo({ top: 0 })">
+        <Transition name="fade" mode="out-in" :duration="70" @after-leave="setScrollbar?.scrollTo({ top: 0 })">
           <!-- 常规 -->
           <UniversalSetting
             v-if="activeKey === 'general'"

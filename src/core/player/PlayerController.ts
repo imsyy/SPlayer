@@ -1,5 +1,4 @@
 import { AudioErrorCode } from "@/core/audio-player/BaseAudioPlayer";
-import { useBlobURLManager } from "@/core/resource/BlobURLManager";
 import { useDataStore, useMusicStore, useSettingStore, useStatusStore } from "@/stores";
 import type { SongType } from "@/types/main";
 import type { RepeatModeType, ShuffleModeType } from "@/types/shared";
@@ -188,7 +187,7 @@ class PlayerController {
       }
       // 更新任务栏歌词窗口的元数据
       const { name, artist } = getPlayerInfoObj() || {};
-      const coverUrl = playSongData.cover || "";
+      const coverUrl = playSongData.coverSize?.s || playSongData.cover || "";
       playerIpc.sendTaskbarMetadata({
         title: name || "",
         artist: artist || "",
@@ -401,23 +400,6 @@ class PlayerController {
       const musicStore = useMusicStore();
       if (musicStore.playSong.type === "streaming") return;
       const statusStore = useStatusStore();
-      const blobURLManager = useBlobURLManager();
-
-      // Blob URL 清理
-      const oldCover = musicStore.playSong.cover;
-      if (oldCover && oldCover.startsWith("blob:")) {
-        blobURLManager.revokeBlobURL(musicStore.playSong.path || "");
-      }
-
-      // 获取封面数据
-      const coverData = await window.electron.ipcRenderer.invoke("get-music-cover", path);
-      if (coverData) {
-        const blobURL = blobURLManager.createBlobURL(coverData.data, coverData.format, path);
-        if (blobURL) musicStore.playSong.cover = blobURL;
-      } else {
-        musicStore.playSong.cover = "/images/song.jpg?asset";
-      }
-
       // 获取元数据
       const infoData = await window.electron.ipcRenderer.invoke("get-music-metadata", path);
       statusStore.songQuality = handleSongQuality(infoData.format?.bitrate ?? 0, "local");

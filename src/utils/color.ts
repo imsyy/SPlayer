@@ -11,6 +11,7 @@ import { rgbToHex } from "@imsyy/color-utils";
 import { useSettingStore, useStatusStore } from "@/stores";
 import { argbToRgb } from "./helper";
 import { chunk } from "lodash-es";
+import { sendTaskbarThemeColor } from "@/core/player/PlayerIpc";
 
 // 单调主题（纯色模式）
 export const MONOTONOUS_THEME = {
@@ -67,7 +68,10 @@ const getThemeSchema = (theme: Theme, variant: keyof Theme["palettes"] = "second
  * @param color 颜色 Hex
  * @param variant 变体名称
  */
-const getThemeFromColor = (color: string, variant: keyof Theme["palettes"] = "secondary") => {
+export const getThemeFromColor = (
+  color: string,
+  variant: keyof Theme["palettes"] = "secondary",
+) => {
   const argb = argbFromHex(color);
   const theme = themeFromSourceColor(argb);
   return getThemeSchema(theme, variant);
@@ -179,7 +183,32 @@ export const getCoverColor = async (coverUrl: string) => {
     if (!settingStore.playerFollowCoverColor) {
       statusStore.songCoverTheme.main = { r: 239, g: 239, b: 239 };
     }
+    // 获取任务栏主题色
+    getTaskbarThemeColor(coverColorData);
     // 移除元素
     image.remove();
   };
+};
+
+/**
+ * 获取任务栏主题色
+ * @param coverColorData 封面主题色数据
+ */
+const getTaskbarThemeColor = (coverColorData: CoverColors | null) => {
+  const settingStore = useSettingStore();
+  if (!settingStore.taskbarLyricUseThemeColor) {
+    sendTaskbarThemeColor(null);
+    return;
+  }
+  // 无封面主题色则不发送
+  if (!coverColorData) return;
+  // 检查亮暗模式数据是否存在
+  if (!coverColorData.dark?.primary || !coverColorData.light?.primary) return;
+  // 获取亮暗模式的主色
+  const darkPrimary = coverColorData.dark.primary;
+  const lightPrimary = coverColorData.light.primary;
+  sendTaskbarThemeColor({
+    dark: rgbToHex(darkPrimary.r, darkPrimary.g, darkPrimary.b),
+    light: rgbToHex(lightPrimary.r, lightPrimary.g, lightPrimary.b),
+  });
 };

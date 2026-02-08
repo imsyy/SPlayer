@@ -6,7 +6,7 @@
         v-if="node.type === 'group'"
         class="slide-in-item group-title"
         :class="{ 'first-group': !!node.isFirst }"
-        :style="{ '--delay': highlightKey ? '0s' : `${Math.min(index, 15) * 0.05}s` }"
+        :style="{ '--delay': highlightKey ? '0s' : `${Math.min(index, 15) * 0.03}s` }"
       >
         <n-h3 prefix="bar">
           {{ node.data.title }}
@@ -29,7 +29,7 @@
         :item="node.data"
         class="slide-in-item"
         :highlighted="node.data.key === highlightKey"
-        :style="{ '--delay': highlightKey ? '0s' : `${Math.min(index, 15) * 0.05}s` }"
+        :style="{ '--delay': highlightKey ? '0s' : `${Math.min(index, 15) * 0.03}s` }"
       />
     </template>
   </div>
@@ -106,7 +106,7 @@ const displayList = computed(() => {
   }
 }
 .slide-in-item {
-  animation: slide-up-fade-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) backwards;
+  animation: slide-up-fade-in 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) backwards;
   animation-delay: var(--delay, 0s);
 }
 </style>
