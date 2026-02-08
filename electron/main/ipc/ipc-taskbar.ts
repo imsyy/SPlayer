@@ -38,24 +38,6 @@ const findCurrentLyricIndex = (currentTime: number, lyrics: MacLyricLine[], offs
 };
 
 /**
- * 根据当前时间查找对应的歌词
- */
-const findCurrentLyric = (currentTime: number, lyrics: MacLyricLine[], offset: number = 0): string => {
-  const targetTime = currentTime - offset;
-  let result = "";
-
-  for (let i = lyrics.length - 1; i >= 0; i--) {
-    const line = lyrics[i];
-    if (line.startTime <= targetTime) {
-      result = line.words.map((w) => w.word ?? "").join("").trim();
-      break;
-    }
-  }
-
-  return result;
-};
-
-/**
  * 更新 macOS 状态栏歌词（只在新行时才更新）
  */
 const updateMacStatusBarLyric = (store: ReturnType<typeof useStore>) => {
@@ -71,7 +53,10 @@ const updateMacStatusBarLyric = (store: ReturnType<typeof useStore>) => {
   if (currentLyricIndex === macLastLyricIndex) return;
   macLastLyricIndex = currentLyricIndex;
 
-  const currentLyric = findCurrentLyric(macCurrentTime, macLyricLines, macOffset);
+  const currentLyric =
+    currentLyricIndex !== -1
+      ? macLyricLines[currentLyricIndex].words.map((w) => w.word ?? "").join("").trim()
+      : "";
 
   // 清除之前的定时器
   if (macUpdateTimer) {
@@ -92,16 +77,13 @@ const updateMacStatusBarLyric = (store: ReturnType<typeof useStore>) => {
 const initTaskbarIpc = () => {
   // 在函数内部获取 store，确保在 app ready 事件之后
   const store = useStore();
+  const envEnabled = store.get("taskbar.enabled");
+  const tray = getMainTray();
 
   // macOS 使用状态栏歌词，不使用任务栏歌词窗口
   if (isMac) {
-    const envEnabled = store.get("taskbar.enabled");
-    const tray = getMainTray();
     tray?.setMacStatusBarLyricShow(envEnabled);
   } else {
-    const envEnabled = store.get("taskbar.enabled");
-
-    const tray = getMainTray();
     tray?.setTaskbarLyricShow(envEnabled);
 
     if (envEnabled) {

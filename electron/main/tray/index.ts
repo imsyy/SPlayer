@@ -44,7 +44,7 @@ export interface MainTray {
   setDesktopLyricShow(show: boolean): void;
   setDesktopLyricLock(lock: boolean): void;
   setTaskbarLyricShow(show: boolean): void;
-  setMacStatusBarLyricShow(show: boolean): void;
+  setMacStatusBarLyricShow(show: boolean, songTitle?: string): void;
   setMacStatusBarLyricTitle(title: string): void;
   destroyTray(): void;
 }
@@ -266,7 +266,6 @@ class CreateTray implements MainTray {
   private _tray: Tray;
   private _menu: MenuItemConstructorOptions[];
   private _contextMenu: Menu;
-  private _checkInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor(win: BrowserWindow) {
     this._win = win;
@@ -371,9 +370,6 @@ class CreateTray implements MainTray {
   }
 
   destroyTray() {
-    if (this._checkInterval) {
-      clearInterval(this._checkInterval);
-    }
     this._tray.destroy();
   }
 }

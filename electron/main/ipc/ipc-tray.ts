@@ -59,11 +59,7 @@ const initTrayIpc = (): void => {
   ipcMain.on("mac-toggle-statusbar-lyric", (_, show: boolean) => {
     if (!isMac) return;
     macStatusBarLyricEnabled = show;
-    tray?.setMacStatusBarLyricShow(show);
-    // 如果关闭，恢复显示歌曲标题
-    if (!show) {
-      tray?.setTitle(currentSongTitle);
-    }
+    tray?.setMacStatusBarLyricShow(show, currentSongTitle);
   });
 
   // macOS 状态栏歌词内容更新
