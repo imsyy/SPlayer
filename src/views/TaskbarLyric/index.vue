@@ -146,9 +146,8 @@ const onCoverError = () => {
 
 const rootStyle = computed<CSSProperties>(() => {
   const style: CSSProperties = {
-    opacity: state.opacity,
-    filter: `blur(${state.blurVal}px)`,
-    transition: "opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s ease",
+    "--dynamic-opacity": state.opacity,
+    "--dynamic-blur": `${state.blurVal}px`,
   };
 
   if (state.themeColor) {
@@ -603,6 +602,8 @@ $radius: 4px;
   align-items: center;
   justify-content: flex-start;
   overflow: hidden;
+  opacity: var(--dynamic-opacity, 1);
+  filter: blur(var(--dynamic-blur, 0px));
 
   color: $base-color;
   border-radius: $radius;
@@ -613,8 +614,8 @@ $radius: 4px;
   will-change: opacity, filter;
   transition:
     background-color 0.15s,
-    opacity 0.3s ease,
-    filter 0.3s ease;
+    opacity 0.4s ease,
+    filter 0.4s ease;
 
   --lyric-ease: cubic-bezier(0.4, 0, 0.2, 1);
 
