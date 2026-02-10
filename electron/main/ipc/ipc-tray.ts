@@ -1,4 +1,4 @@
-import { PlayModePayload } from "@shared";
+import type { PlayModePayload } from "@shared";
 import { ipcMain } from "electron";
 import { getMainTray } from "../tray";
 import { appName, isMac } from "../utils/config";

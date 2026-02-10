@@ -1,7 +1,7 @@
 import { AudioErrorCode } from "@/core/audio-player/BaseAudioPlayer";
 import { useDataStore, useMusicStore, useSettingStore, useStatusStore } from "@/stores";
 import type { SongType } from "@/types/main";
-import type { RepeatModeType, ShuffleModeType } from "@/types/shared";
+import type { RepeatModeType, ShuffleModeType } from "@/types/shared/play-mode";
 import { calculateLyricIndex } from "@/utils/calc";
 import { getCoverColor } from "@/utils/color";
 import { isElectron, isMac } from "@/utils/env";
@@ -12,13 +12,13 @@ import { DJ_MODE_KEYWORDS } from "@/utils/meta";
 import { calculateProgress } from "@/utils/time";
 import type { LyricLine } from "@applemusic-like-lyrics/lyric";
 import { type DebouncedFunc, throttle } from "lodash-es";
+import { useBlobURLManager } from "../resource/BlobURLManager";
 import { useAudioManager } from "./AudioManager";
 import { useLyricManager } from "./LyricManager";
 import { mediaSessionManager } from "./MediaSessionManager";
+import * as playerIpc from "./PlayerIpc";
 import { PlayModeManager } from "./PlayModeManager";
 import { useSongManager } from "./SongManager";
-import { useBlobURLManager } from "../resource/BlobURLManager";
-import * as playerIpc from "./PlayerIpc";
 
 /**
  * 播放器核心类
@@ -1360,7 +1360,7 @@ class PlayerController {
     const statusStore = useStatusStore();
     if (statusStore.showTaskbarLyric === show) return;
     statusStore.showTaskbarLyric = show;
-    playerIpc.toggleTaskbarLyric(show);
+    playerIpc.updateTaskbarConfig({ enabled: show });
     window.$message.success(`${show ? "已开启" : "已关闭"}任务栏歌词`);
   }
 

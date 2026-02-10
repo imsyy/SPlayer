@@ -1,14 +1,14 @@
 import { heartRateList } from "@/api/playlist";
 import { useDataStore, useMusicStore, useStatusStore } from "@/stores";
-import { type SongType } from "@/types/main";
-import { RepeatModeType, ShuffleModeType } from "@/types/shared";
+import type { SongType } from "@/types/main";
+import type { RepeatModeType, ShuffleModeType } from "@/types/shared/play-mode";
 import { isLogin } from "@/utils/auth";
 import { isElectron } from "@/utils/env";
 import { formatSongsList } from "@/utils/format";
 import { shuffleArray } from "@/utils/helper";
 import { openUserLogin } from "@/utils/modal";
 import axios from "axios";
-import { MessageReactive } from "naive-ui";
+import type { MessageReactive } from "naive-ui";
 import * as playerIpc from "./PlayerIpc";
 
 /**

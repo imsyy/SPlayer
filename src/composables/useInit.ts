@@ -1,13 +1,14 @@
-import { useDataStore, useSettingStore, useShortcutStore, useStatusStore } from "@/stores";
-import { useEventListener } from "@vueuse/core";
-import { watch, onMounted } from "vue";
-import { openUserAgreement } from "@/utils/modal";
-import { debounce } from "lodash-es";
-import { isElectron, isMac } from "@/utils/env";
-import { usePlayerController } from "@/core/player/PlayerController";
 import { mediaSessionManager } from "@/core/player/MediaSessionManager";
+import { usePlayerController } from "@/core/player/PlayerController";
+import { updateTaskbarConfig } from "@/core/player/PlayerIpc";
 import { useDownloadManager } from "@/core/resource/DownloadManager";
+import { useDataStore, useSettingStore, useShortcutStore, useStatusStore } from "@/stores";
+import { isElectron, isMac } from "@/utils/env";
 import { printVersion } from "@/utils/log";
+import { openUserAgreement } from "@/utils/modal";
+import { useEventListener } from "@vueuse/core";
+import { debounce } from "lodash-es";
+import { onMounted, watch } from "vue";
 
 /**
  * 应用初始化时需要执行的操作
@@ -79,62 +80,45 @@ export const useInit = () => {
 
       // 监听任务栏歌词设置
       watch(
-        () => settingStore.taskbarLyricMaxWidth,
-        (val) => {
-          window.electron.ipcRenderer.send("taskbar:set-max-width", val);
-        },
-      );
-
-      watch(
-        () => settingStore.taskbarLyricShowCover,
-        (val) => {
-          window.electron.ipcRenderer.send("taskbar:set-show-cover", val);
-        },
-      );
-
-      watch(
-        () => settingStore.taskbarLyricPosition,
-        (val) => {
-          window.electron.ipcRenderer.send("taskbar:set-position", val);
-        },
-      );
-
-      watch(
-        () => settingStore.taskbarLyricShowWhenPaused,
-        (val) => {
-          window.electron.ipcRenderer.send("taskbar:set-show-when-paused", val);
-        },
-      );
-
-      watch(
-        () => settingStore.taskbarLyricAutoShrink,
-        (val) => {
-          window.electron.ipcRenderer.send("taskbar:set-auto-shrink", val);
+        () => [
+          settingStore.taskbarLyricMaxWidth,
+          settingStore.taskbarLyricPosition,
+          settingStore.taskbarLyricAutoShrink,
+        ],
+        () => {
+          updateTaskbarConfig({
+            maxWidth: settingStore.taskbarLyricMaxWidth,
+            position: settingStore.taskbarLyricPosition,
+            autoShrink: settingStore.taskbarLyricAutoShrink,
+          });
         },
       );
 
       watch(
         () => [
-          settingStore.taskbarLyricAnimationMode,
-          settingStore.taskbarLyricSingleLineMode,
+          settingStore.taskbarLyricShowCover,
           settingStore.LyricFont,
           settingStore.globalFont,
           settingStore.taskbarLyricFontWeight,
+          settingStore.taskbarLyricAnimationMode,
+          settingStore.taskbarLyricSingleLineMode,
           settingStore.showTran,
           settingStore.showRoma,
+          settingStore.taskbarLyricShowWhenPaused,
         ],
         () => {
-          window.electron.ipcRenderer.send("taskbar:broadcast-settings", {
-            animationMode: settingStore.taskbarLyricAnimationMode,
-            singleLineMode: settingStore.taskbarLyricSingleLineMode,
-            lyricFont: settingStore.LyricFont,
+          updateTaskbarConfig({
+            showCover: settingStore.taskbarLyricShowCover,
+            fontFamily: settingStore.LyricFont,
             globalFont: settingStore.globalFont,
             fontWeight: settingStore.taskbarLyricFontWeight,
-            showTran: settingStore.showTran,
-            showRoma: settingStore.showRoma,
+            animationMode: settingStore.taskbarLyricAnimationMode,
+            singleLineMode: settingStore.taskbarLyricSingleLineMode,
+            showTranslation: settingStore.showTran,
+            showRomaji: settingStore.showRoma,
+            showWhenPaused: settingStore.taskbarLyricShowWhenPaused,
           });
         },
-        { deep: true },
       );
     }
   });

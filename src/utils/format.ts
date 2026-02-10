@@ -1,8 +1,8 @@
-import { SongType, CoverType, ArtistType, CommentType, MetaData, CatType } from "@/types/main";
-import { msToTime } from "./time";
+import { useDataStore, useMusicStore, useStatusStore } from "@/stores";
+import type { ArtistType, CatType, CommentType, CoverType, MetaData, SongType } from "@/types/main";
 import { flatMap, isArray, uniqBy } from "lodash-es";
 import { handleSongQuality } from "./helper";
-import { useDataStore, useMusicStore, useStatusStore } from "@/stores";
+import { msToTime } from "./time";
 
 /**
  * 移除文本中的括号内容（支持中英文括号）
@@ -330,7 +330,9 @@ export const getPlayerInfoObj = (
   song?: SongType,
   sep: string = "/",
 ): { name: string; artist: string; album: string } | null => {
-  const playSongData = song || getPlaySongData();
+  const musicStore = useMusicStore();
+  const playSongData = song || getPlaySongData() || musicStore.playSong;
+
   if (!playSongData) return null;
 
   // 标题

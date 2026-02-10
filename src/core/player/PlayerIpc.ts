@@ -1,9 +1,14 @@
 import { useSettingStore } from "@/stores/setting";
-import { SongLyric } from "@/types/lyric";
-import type { PlayModePayload, RepeatModeType, ShuffleModeType } from "@/types/shared";
+import type { SongLyric } from "@/types/lyric";
+import {
+  TASKBAR_IPC_CHANNELS,
+  type SyncStatePayload,
+  type SyncTickPayload,
+  type TaskbarConfig,
+} from "@/types/shared";
+import type { PlayModePayload, RepeatModeType, ShuffleModeType } from "@/types/shared/play-mode";
 import { isElectron } from "@/utils/env";
 import { getPlaySongData } from "@/utils/format";
-import type { LyricLine } from "@applemusic-like-lyrics/lyric";
 import type { DiscordConfigPayload, MetadataParam, PlaybackStatus, RepeatMode } from "@emi";
 import { throttle } from "lodash-es";
 
@@ -99,8 +104,19 @@ export const toggleDesktopLyric = (show: boolean) => {
   if (isElectron) window.electron.ipcRenderer.send("desktop-lyric:toggle", show);
 };
 
-export const toggleTaskbarLyric = (show: boolean) => {
-  if (isElectron) window.electron.ipcRenderer.send("taskbar:toggle", show);
+export const updateTaskbarConfig = (config: Partial<TaskbarConfig>) => {
+  if (!isElectron) return;
+  window.electron.ipcRenderer.send(TASKBAR_IPC_CHANNELS.UPDATE_CONFIG, config);
+};
+
+export const broadcastTaskbarState = (payload: SyncStatePayload) => {
+  if (!isElectron) return;
+  window.electron.ipcRenderer.send(TASKBAR_IPC_CHANNELS.SYNC_STATE, payload);
+};
+
+export const broadcastTaskbarTick = (payload: SyncTickPayload) => {
+  if (!isElectron) return;
+  window.electron.ipcRenderer.send(TASKBAR_IPC_CHANNELS.SYNC_TICK, payload);
 };
 
 export interface TaskbarMetadataPayload {
@@ -110,36 +126,43 @@ export interface TaskbarMetadataPayload {
 }
 
 export const sendTaskbarMetadata = (payload: TaskbarMetadataPayload) => {
-  if (isElectron) window.electron.ipcRenderer.send("taskbar:update-metadata", payload);
+  broadcastTaskbarState({
+    type: "track-change",
+    data: {
+      title: payload.title,
+      artist: payload.artist,
+      cover: payload.cover,
+    },
+  });
 };
 
-export interface TaskbarLyricsPayload {
-  lines: LyricLine[];
-  type: "line" | "word";
-}
-
-/**
- * 发送任务栏歌词
- * @param lyrics 歌词数据
- */
 export const sendTaskbarLyrics = (lyrics: SongLyric) => {
   if (!isElectron) return;
-  // 处理结构
-  const taskbarLyrics = (lyrics.yrcData.length > 0 ? lyrics.yrcData : lyrics.lrcData) ?? [];
-  const payload: TaskbarLyricsPayload = {
-    lines: toRaw(taskbarLyrics),
-    type: lyrics.yrcData.length > 0 ? "word" : "line",
-  };
-  window.electron.ipcRenderer.send("taskbar:update-lyrics", payload);
+
+  const yrcData = lyrics.yrcData ?? [];
+  const lrcData = lyrics.lrcData ?? [];
+  const hasYrc = yrcData.length > 0;
+
+  const taskbarLyrics = hasYrc ? yrcData : lrcData;
+
+  broadcastTaskbarState({
+    type: "lyrics-loaded",
+    data: {
+      lines: toRaw(taskbarLyrics),
+      type: hasYrc ? "word" : "line",
+    },
+  });
 };
 
-/**
- * 发送任务栏歌词主题色
- * @param color 主题色
- */
-export const sendTaskbarThemeColor = (color: { light: string; dark: string } | null) => {
-  if (!isElectron) return;
-  window.electron.ipcRenderer.send("taskbar:set-theme-color", color);
+export interface TaskbarStatePayload {
+  isPlaying: boolean;
+}
+
+export const sendTaskbarState = (payload: TaskbarStatePayload) => {
+  broadcastTaskbarState({
+    type: "playback-state",
+    data: payload,
+  });
 };
 
 export interface TaskbarProgressPayload {
@@ -149,15 +172,16 @@ export interface TaskbarProgressPayload {
 }
 
 export const sendTaskbarProgressData = (payload: TaskbarProgressPayload) => {
-  if (isElectron) window.electron.ipcRenderer.send("taskbar:update-progress", payload);
+  broadcastTaskbarTick([payload.currentTime, payload.duration, payload.offset]);
 };
 
-export interface TaskbarStatePayload {
-  isPlaying: boolean;
-}
+export const sendTaskbarThemeColor = (color: { light: string; dark: string } | null) => {
+  if (!isElectron) return;
 
-export const sendTaskbarState = (payload: TaskbarStatePayload) => {
-  if (isElectron) window.electron.ipcRenderer.send("taskbar:update-state", payload);
+  broadcastTaskbarState({
+    type: "theme-color",
+    data: color,
+  });
 };
 
 /**

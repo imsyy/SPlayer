@@ -1,12 +1,14 @@
-import type { ColorScheme, RGB, UpdateInfoType } from "@/types/main";
-import {
+import type {
+  AudioSourceType,
+  ColorScheme,
   QualityType,
-  type SongLevelDataType,
-  type SortField,
-  type SortOrder,
-  type AudioSourceType,
+  RGB,
+  SongLevelDataType,
+  SortField,
+  SortOrder,
+  UpdateInfoType,
 } from "@/types/main";
-import { RepeatModeType, ShuffleModeType } from "@/types/shared";
+import type { RepeatModeType, ShuffleModeType } from "@/types/shared/play-mode";
 import { isDevBuild } from "@/utils/env";
 import { defineStore } from "pinia";
 

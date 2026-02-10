@@ -1,9 +1,9 @@
-import { RepeatModeType, ShuffleModeType } from "@shared";
+import type { RepeatModeType, ShuffleModeType } from "@shared";
 import {
   app,
-  BrowserWindow,
+  type BrowserWindow,
   Menu,
-  MenuItemConstructorOptions,
+  type MenuItemConstructorOptions,
   nativeImage,
   NativeImage,
   nativeTheme,

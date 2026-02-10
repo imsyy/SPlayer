@@ -49,6 +49,7 @@ class TaskbarLyricWindow {
   private isNativeDisposed = false;
   private contentWidth = 300;
   private maxWidthPercent = 30;
+  private isFadingOut = false;
 
   private debouncedUpdateLayout = debounce(() => {
     this.updateLayout(true);
@@ -424,6 +425,35 @@ class TaskbarLyricWindow {
         this.win.setBounds(target);
       }
     }, interval);
+  }
+
+  public setVisibility(shouldShow: boolean) {
+    if (!this.win || this.win.isDestroyed()) return;
+
+    if (shouldShow) {
+      this.isFadingOut = false;
+
+      if (!this.win.isVisible()) {
+        this.win.show();
+        if (this.win && !this.win.isDestroyed()) {
+          this.win.webContents.send("taskbar:fade-in");
+        }
+      } else {
+        this.win.webContents.send("taskbar:fade-in");
+      }
+    } else {
+      if (this.win.isVisible() && !this.isFadingOut) {
+        this.isFadingOut = true;
+        this.win.webContents.send("taskbar:fade-out");
+      }
+    }
+  }
+
+  public handleFadeDone() {
+    if (this.isFadingOut && this.win && !this.win.isDestroyed()) {
+      this.win.hide();
+      this.isFadingOut = false;
+    }
   }
 
   public destroy() {

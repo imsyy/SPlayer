@@ -2,12 +2,13 @@ import { usePlayerController } from "@/core/player/PlayerController";
 import * as playerIpc from "@/core/player/PlayerIpc";
 import { useDataStore, useMusicStore, useSettingStore, useStatusStore } from "@/stores";
 import type { SettingType } from "@/types/main";
+import type { TaskbarConfig } from "@/types/shared";
 import { handleProtocolUrl } from "@/utils/protocol";
 import { cloneDeep } from "lodash-es";
 import { toRaw } from "vue";
 import { toLikeSong } from "./auth";
-import { isElectron, isMac } from "./env";
 import { sendTaskbarCoverColor } from "./color";
+import { isElectron, isMac } from "./env";
 import { getPlayerInfoObj } from "./format";
 import { openSetting, openUpdateApp } from "./modal";
 
@@ -60,6 +61,7 @@ const initIpc = () => {
     window.electron.ipcRenderer.on("desktop-lyric:close", () => player.setDesktopLyricShow(false));
     // 任务栏歌词开关
     window.electron.ipcRenderer.on("toggle-taskbar-lyric", async () => {
+      player.toggleTaskbarLyric();
       let message = "";
       if (isMac) {
         const currentMacLyricEnabled = await window.electron.ipcRenderer.invoke(
@@ -102,46 +104,59 @@ const initIpc = () => {
       const musicStore = useMusicStore();
       const statusStore = useStatusStore();
       const settingStore = useSettingStore();
+
       const { name, artist } = getPlayerInfoObj() || {};
       const cover = musicStore.getSongCover("s") || "";
-      playerIpc.sendTaskbarMetadata({
-        title: name || "",
-        artist: artist || "",
-        cover,
-      });
-      playerIpc.sendTaskbarState({
-        isPlaying: statusStore.playStatus,
-      });
-      // 发送歌词数据
-      playerIpc.sendTaskbarLyrics(musicStore.songLyric);
-      // 发送设置
-      window.electron.ipcRenderer.send(
-        "taskbar:set-show-cover",
-        settingStore.taskbarLyricShowCover,
-      );
-      window.electron.ipcRenderer.send("taskbar:set-max-width", settingStore.taskbarLyricMaxWidth);
-      window.electron.ipcRenderer.send("taskbar:set-position", settingStore.taskbarLyricPosition);
-      window.electron.ipcRenderer.send(
-        "taskbar:set-show-when-paused",
-        settingStore.taskbarLyricShowWhenPaused,
-      );
-      window.electron.ipcRenderer.send(
-        "taskbar:set-auto-shrink",
-        settingStore.taskbarLyricAutoShrink,
-      );
-      window.electron.ipcRenderer.send("taskbar:broadcast-settings", {
-        animationMode: settingStore.taskbarLyricAnimationMode,
-        singleLineMode: settingStore.taskbarLyricSingleLineMode,
-        lyricFont: settingStore.LyricFont,
+
+      const configPayload: TaskbarConfig = {
+        // 布局
+        maxWidth: settingStore.taskbarLyricMaxWidth,
+        position: settingStore.taskbarLyricPosition,
+        autoShrink: settingStore.taskbarLyricAutoShrink,
+
+        // 行为
+        enabled: statusStore.showTaskbarLyric,
+        showWhenPaused: settingStore.taskbarLyricShowWhenPaused,
+
+        // 外观
+        showCover: settingStore.taskbarLyricShowCover,
+        themeMode: "auto", // TODO:
+        fontFamily: settingStore.LyricFont,
         globalFont: settingStore.globalFont,
         fontWeight: settingStore.taskbarLyricFontWeight,
-        showTran: settingStore.showTran,
-        showRoma: settingStore.showRoma,
-      });
-      playerIpc.sendTaskbarProgressData({
-        currentTime: statusStore.currentTime * 1000,
-        duration: statusStore.duration * 1000,
-        offset: statusStore.getSongOffset(musicStore.playSong?.id),
+        animationMode: settingStore.taskbarLyricAnimationMode,
+        singleLineMode: settingStore.taskbarLyricSingleLineMode,
+        showTranslation: settingStore.showTran,
+        showRomaji: settingStore.showRoma,
+      };
+
+      const hasYrc = (musicStore.songLyric.yrcData?.length ?? 0) > 0;
+      const lyricsPayload = {
+        lines: toRaw(hasYrc ? musicStore.songLyric.yrcData : musicStore.songLyric.lrcData) ?? [],
+        type: (hasYrc ? "word" : "line") as "line" | "word",
+      };
+
+      playerIpc.broadcastTaskbarState({
+        type: "full-hydration",
+        data: {
+          track: {
+            title: name || "",
+            artist: artist || "",
+            cover: cover,
+          },
+          lyrics: lyricsPayload,
+          lyricLoading: statusStore.lyricLoading,
+          playback: {
+            isPlaying: statusStore.playStatus,
+            tick: [
+              statusStore.currentTime,
+              statusStore.duration,
+              statusStore.getSongOffset(musicStore.playSong?.id),
+            ],
+          },
+          config: configPayload,
+          themeColor: null, // TODO:
+        },
       });
 
       // macOS 状态栏歌词进度数据
