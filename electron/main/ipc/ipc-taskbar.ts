@@ -29,9 +29,13 @@ const getTaskbarConfig = (): TaskbarConfig => {
 };
 
 const updateWindowVisibility = (config: TaskbarConfig) => {
-  taskbarLyricWindow.create();
+  const tray = getMainTray();
 
-  const shouldBeVisible = cachedIsPlaying || config.showWhenPaused;
+  if (tray) {
+    tray.setTaskbarLyricShow(config.enabled);
+  }
+
+  const shouldBeVisible = config.enabled && (cachedIsPlaying || config.showWhenPaused);
 
   taskbarLyricWindow.setVisibility(shouldBeVisible);
 };
@@ -73,6 +77,10 @@ const initTaskbarIpc = () => {
       });
 
       const newConfig = getTaskbarConfig();
+
+      if (newConfig.enabled && !oldConfig.enabled) {
+        taskbarLyricWindow.create();
+      }
 
       if (
         newConfig.enabled !== oldConfig.enabled ||
