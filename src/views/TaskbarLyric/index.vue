@@ -565,7 +565,7 @@ onMounted(() => {
 
     setTimeout(() => {
       ipc.send("taskbar:fade-done");
-    }, 300);
+    }, 500);
   });
 
   ipc.on("taskbar:fade-in", () => {
