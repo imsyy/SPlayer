@@ -435,12 +435,9 @@ class TaskbarLyricWindow {
 
       if (!this.win.isVisible()) {
         this.win.show();
-        if (this.win && !this.win.isDestroyed()) {
-          this.win.webContents.send("taskbar:fade-in");
-        }
-      } else {
-        this.win.webContents.send("taskbar:fade-in");
       }
+
+      this.win.webContents.send("taskbar:fade-in");
     } else {
       if (this.win.isVisible() && !this.isFadingOut) {
         this.isFadingOut = true;
