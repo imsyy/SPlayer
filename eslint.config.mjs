@@ -1,10 +1,10 @@
-import typescriptEslint from "@typescript-eslint/eslint-plugin";
-import { fileURLToPath } from "node:url";
 import { FlatCompat } from "@eslint/eslintrc";
-import vue from "eslint-plugin-vue";
 import js from "@eslint/js";
+import typescriptEslint from "@typescript-eslint/eslint-plugin";
+import vue from "eslint-plugin-vue";
 import globals from "globals";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import autoEslint from "./auto-eslint.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -25,6 +25,7 @@ export default [
       "**/docs",
       "**/auto-imports.d.ts",
       "**/components.d.ts",
+      "native/**/index.d.ts",
     ],
   },
   ...compat.extends("eslint:recommended", "plugin:@typescript-eslint/recommended"),

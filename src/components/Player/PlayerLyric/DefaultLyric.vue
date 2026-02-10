@@ -2,9 +2,9 @@
   <div
     :key="`lyric-${musicStore.playSong.id}`"
     :style="{
-      '--lrc-size': settingStore.lyricFontSize + 'px',
-      '--lrc-tran-size': settingStore.lyricTranFontSize + 'px',
-      '--lrc-roma-size': settingStore.lyricRomaFontSize + 'px',
+      '--lrc-size': getFontSize(settingStore.lyricFontSize, settingStore.lyricFontSizeMode),
+      '--lrc-tran-size': getFontSize(settingStore.lyricTranFontSize, settingStore.lyricFontSizeMode),
+      '--lrc-roma-size': getFontSize(settingStore.lyricRomaFontSize, settingStore.lyricFontSizeMode),
       '--lrc-bold': settingStore.lyricFontWeight,
       '--lrc-left-padding': `${settingStore.lyricHorizontalOffset}px`,
       'font-family': settingStore.LyricFont !== 'follow' ? settingStore.LyricFont : '',
@@ -60,9 +60,9 @@
             <!-- 歌词行 -->
             <div
               v-else
-              :id="`lrc-${item.originalIndex}`"
-              :class="getLyricLineClass(item)"
-              :style="getLyricLineStyle(item)"
+              :id="`lrc-${index}`"
+              :class="getLyricLineClass(item, index)"
+              :style="getLyricLineStyle(item, index)"
               @click="jumpSeek(item.data.startTime)"
             >
               <!-- 逐字歌词 -->
@@ -75,7 +75,7 @@
                       'content-text': true,
                       'end-with-space': text.word.endsWith(' ') || text.startTime === 0,
                     }"
-                    :style="getYrcVars(text, item.originalIndex)"
+                    :style="getYrcVars(text, index)"
                   >
                     <span class="yrc-word" :lang="getLyricLanguage(text.word)">
                       {{ text.word }}
@@ -133,6 +133,7 @@ import { usePlayerController } from "@/core/player/PlayerController";
 import { getLyricLanguage } from "@/utils/format";
 import { isElectron } from "@/utils/env";
 import { lyricLangFontStyle } from "@/utils/lyric/lyricFontConfig";
+import { getFontSize } from "@/utils/style";
 
 const props = defineProps({
   currentTime: {
@@ -212,88 +213,40 @@ const isCountdownVisible = (item: ProcessedLyricItem): boolean => {
   return props.currentTime + 500 < item.startTime + item.duration;
 };
 
-/** 判断当前是否处于倒计时期间 */
-const isInCountdown = computed(() => {
-  const currentSeek = props.currentTime;
-  for (const item of processedLyrics.value) {
-    if (item.type === "countdown") {
-      // 在倒计时时间范围内
-      if (currentSeek >= item.startTime && currentSeek < item.startTime + item.duration) {
-        return true;
-      }
-    }
-  }
-  return false;
-});
-
 /** 计算当前活跃的歌词行索引列表 */
 const activeLineIndices = computed<number[]>(() => {
-  if (isInCountdown.value) return [];
-  const lyrics = currentLyricData.value;
+  const lyrics = processedLyrics.value;
   if (!lyrics || lyrics.length === 0) return [];
   const currentSeek = props.currentTime;
   const activeCandidates: number[] = [];
-  // 逐字歌词模式
-  if (isYrcMode.value) {
-    for (let i = 0; i < lyrics.length; i++) {
-      const line = lyrics[i];
-      const start = line.startTime || 0;
-      const end = line.endTime ?? Infinity;
-      // 检查当前时间是否在该行的时间范围内
-      if (currentSeek >= start && currentSeek < end) {
-        activeCandidates.push(i);
-      }
-    }
-    // 最多保留3行
-    if (activeCandidates.length > 3) {
-      return activeCandidates.slice(-3);
-    }
-    // 如果没有活跃行，找最近的上一行（用于间奏等情况）
-    if (activeCandidates.length === 0 && currentSeek > 0) {
-      const next = lyrics.findIndex((v) => (v.startTime || 0) > currentSeek);
-      if (next === -1) return [lyrics.length - 1];
-      if (next > 0) return [next - 1];
-    }
-    return activeCandidates;
-  }
-  // 普通歌词模式：找到下一行之前的行
-  const playSeek = currentSeek + 300; // 提前量
-  const idx = lyrics.findIndex((v) => (v.startTime || 0) > playSeek);
-  if (idx === -1) return [lyrics.length - 1];
-  if (idx > 0) return [idx - 1];
-  return [];
-});
 
-/** 计算滚动目标索引 */
-const scrollTargetIndex = computed<number>(() => {
-  const lyrics = currentLyricData.value;
-  if (!lyrics || lyrics.length === 0) return -1;
-  const currentSeek = props.currentTime;
-  // 逐字歌词模式
-  if (isYrcMode.value) {
-    // 找当前时间范围内的行
-    for (let i = 0; i < lyrics.length; i++) {
-      const line = lyrics[i];
-      const start = line.startTime || 0;
-      const end = line.endTime ?? Infinity;
-      if (currentSeek >= start && currentSeek < end) {
-        return i;
-      }
+  for (let i = 0; i < lyrics.length; i++) {
+    const item = lyrics[i];
+    let start = 0;
+    let end = Infinity;
+    if (item.type === "lyric") {
+      start = item.data.startTime || 0;
+      end = item.data.endTime ?? Infinity;
+    } else {
+      start = item.startTime;
+      end = item.startTime + item.duration;
     }
-    // 没有活跃行，找最近的上一行
-    if (currentSeek > 0) {
-      const next = lyrics.findIndex((v) => (v.startTime || 0) > currentSeek);
-      if (next === -1) return lyrics.length - 1;
-      if (next > 0) return next - 1;
+
+    if (currentSeek >= start && currentSeek < end) {
+      activeCandidates.push(i);
     }
-    return -1;
   }
-  // 普通歌词模式
-  const playSeek = currentSeek + 300;
-  const idx = lyrics.findIndex((v) => (v.startTime || 0) > playSeek);
-  if (idx === -1) return lyrics.length - 1;
-  if (idx > 0) return idx - 1;
-  return -1;
+  // 如果没有活跃行，找最近的上一行
+  if (activeCandidates.length === 0 && currentSeek > 0) {
+    // 找到第一个开始时间大于当前时间的行
+    const nextIndex = lyrics.findIndex((item) => {
+      const start = item.type === "lyric" ? item.data.startTime : item.startTime;
+      return (start || 0) > currentSeek;
+    });
+    if (nextIndex === -1) return [lyrics.length - 1]; // 都在后面，取最后一行
+    if (nextIndex > 0) return [nextIndex - 1]; // 取前一行
+  }
+  return activeCandidates;
 });
 
 /** 首个高亮行索引 */
@@ -344,7 +297,7 @@ const handleUserScroll = () => {
   userScrollTimeoutId = setTimeout(() => {
     userScrolling.value = false;
     userScrollTimeoutId = null;
-    lyricsScroll(scrollTargetIndex.value);
+    lyricsScroll(firstActiveIndex.value);
   }, USER_SCROLL_TIMEOUT);
 };
 
@@ -420,7 +373,7 @@ const lrcAllLeave = () => {
     clearTimeout(userScrollTimeoutId);
     userScrollTimeoutId = null;
   }
-  lyricsScroll(scrollTargetIndex.value);
+  lyricsScroll(firstActiveIndex.value);
 };
 
 type CssVars = Record<`--${string}`, string>;
@@ -455,32 +408,46 @@ const getYrcVars = (wordData: LyricWord, lyricIndex: number): CssVars => {
   const currentSeek = props.currentTime;
   const fadeFactor = getYrcFadeFactor(lyricIndex);
   // 判断是否显示
-  const currentLine = musicStore.songLyric.yrcData[lyricIndex];
-  if (!isYrcLineOn(currentLine, lyricIndex)) return {};
+  const currentLineItem = processedLyrics.value[lyricIndex];
+  if (!currentLineItem || currentLineItem.type !== "lyric") return {};
+
+  if (!isYrcLineOn(lyricIndex)) return {};
   // 计算进度
   const duration = wordData.endTime - wordData.startTime;
   const safeDuration = Math.max(duration, 1);
   const rawProgress = (currentSeek - wordData.startTime) / safeDuration;
-  const progress = Math.min(Math.max(rawProgress, 0), 1);
-  const maskX = `${(1 - progress) * 100}%`;
+  const progress = Math.min(Math.max(rawProgress, 0), 1); // Allow > 1 for latching
+  const maskX = `${(1 - Math.min(progress, 1)) * 100}%`;
   // 计算透明度
   const hasStarted = currentSeek >= wordData.startTime;
   const brightAlpha = hasStarted ? YRC_DIM_ALPHA + (1 - YRC_DIM_ALPHA) * fadeFactor : YRC_DIM_ALPHA;
   const darkAlpha = YRC_DIM_ALPHA;
+
+  // 计算每个字的动态变换效果
+  // Calculate dynamic transform for each word
+  let transform = "scale(1)";
+  if (progress > 0) {
+    // 随着播放进度逐渐放大并上浮
+    // Gradually scale up and float up with playback progress
+    const scale = 1 + 0.08 * progress;
+    const y = -2 * progress;
+    transform = `scale(${scale}) translateY(${y}px)`;
+  }
+
   return {
     "--yrc-mask-x": maskX,
     "--yrc-opacity": "1",
     "--yrc-bright-alpha": `${brightAlpha}`,
     "--yrc-dark-alpha": `${darkAlpha}`,
+    "--yrc-transform": transform,
   };
 };
 
 /**
  * 判断逐字歌词是否显示
- * @param _line 逐字歌词行
  * @param index 歌词行索引
  */
-const isYrcLineOn = (_line: { startTime: number; endTime: number }, index: number): boolean => {
+const isYrcLineOn = (index: number): boolean => {
   const isActive = isLineActive(index);
   const isFading = yrcFadingLineIndex.value === index && Date.now() < yrcFadingUntilAt.value;
   return isActive || isFading;
@@ -488,13 +455,14 @@ const isYrcLineOn = (_line: { startTime: number; endTime: number }, index: numbe
 
 /**
  * 获取歌词行 class
+ * @param item 预处理后的歌词项
+ * @param index 在列表中的索引
  */
-const getLyricLineClass = (item: ProcessedLyricItem) => {
+const getLyricLineClass = (item: ProcessedLyricItem, index: number) => {
   if (item.type !== "lyric") return [];
   const lyricData = item.data;
-  const index = item.originalIndex;
   // 判断是否显示
-  const isOn = isYrcMode.value ? isYrcLineOn(lyricData, index) : isLineActive(index);
+  const isOn = isYrcMode.value ? isYrcLineOn(index) : isLineActive(index);
   return [
     "lrc-line",
     isYrcMode.value ? "is-yrc" : "is-lrc",
@@ -508,10 +476,12 @@ const getLyricLineClass = (item: ProcessedLyricItem) => {
 
 /**
  * 获取歌词行 style
+ * @param item 预处理后的歌词项
+ * @param index 在列表中的索引
  */
-const getLyricLineStyle = (item: ProcessedLyricItem) => {
+const getLyricLineStyle = (item: ProcessedLyricItem, index: number) => {
   if (item.type !== "lyric") return {};
-  const index = item.originalIndex;
+
   if (!settingStore.lyricsBlur) return { filter: "blur(0)" };
   // 计算模糊程度
   const activeIdx = firstActiveIndex.value;
@@ -538,7 +508,7 @@ const jumpSeek = (time: number) => {
 };
 
 // 监听歌词滚动
-watch(scrollTargetIndex, (val, oldVal) => {
+watch(firstActiveIndex, (val, oldVal) => {
   lyricsScroll(val);
   if (typeof oldVal === "number" && oldVal >= 0 && oldVal !== val) {
     yrcFadingLineIndex.value = oldVal;
@@ -548,10 +518,10 @@ watch(scrollTargetIndex, (val, oldVal) => {
 
 onMounted(() => {
   nextTick().then(() => {
-    lyricsScroll(scrollTargetIndex.value);
+    lyricsScroll(firstActiveIndex.value);
   });
   if (isElectron) {
-    window.electron.ipcRenderer.on("lyricsScroll", () => lyricsScroll(scrollTargetIndex.value));
+    window.electron.ipcRenderer.on("lyricsScroll", () => lyricsScroll(firstActiveIndex.value));
   }
 });
 
@@ -794,15 +764,17 @@ onBeforeUnmount(() => {
         opacity 0.35s ease;
       pointer-events: none;
     }
-    @media (hover: hover) and (pointer: fine) {
-      .lyric.meta-show &:hover {
+  }
+  @media (hover: hover) and (pointer: fine) {
+    &.meta-show {
+      .lrc-line:hover {
         opacity: 1;
         &::before {
           transform: scale(1);
           opacity: 1;
         }
       }
-      .lyric.meta-show &:active {
+      .lrc-line:active {
         &::before {
           transform: scale(0.95);
         }

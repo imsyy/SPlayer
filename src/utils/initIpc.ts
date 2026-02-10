@@ -36,6 +36,9 @@ const initIpc = () => {
     window.electron.ipcRenderer.on("volumeUp", () => player.setVolume("up"));
     // 音量减
     window.electron.ipcRenderer.on("volumeDown", () => player.setVolume("down"));
+    // 快进 / 快退
+    window.electron.ipcRenderer.on("seekForward", () => player.seekBy(5000));
+    window.electron.ipcRenderer.on("seekBackward", () => player.seekBy(-5000));
     // 播放模式切换
     window.electron.ipcRenderer.on("changeRepeat", (_, mode) => player.toggleRepeat(mode));
     window.electron.ipcRenderer.on("toggleShuffle", (_, mode) => player.toggleShuffle(mode));
@@ -50,9 +53,9 @@ const initIpc = () => {
       openSetting(type, scrollTo),
     );
     // 桌面歌词开关
-    window.electron.ipcRenderer.on("toggle-desktop-lyric", () => player.toggleDesktopLyric());
+    window.electron.ipcRenderer.on("desktop-lyric:toggle", () => player.toggleDesktopLyric());
     // 显式关闭桌面歌词
-    window.electron.ipcRenderer.on("close-desktop-lyric", () => player.setDesktopLyricShow(false));
+    window.electron.ipcRenderer.on("desktop-lyric:close", () => player.setDesktopLyricShow(false));
     // 任务栏歌词开关
     window.electron.ipcRenderer.on("toggle-taskbar-lyric", async () => {
       let message = "";
@@ -152,13 +155,13 @@ const initIpc = () => {
     });
 
     // 请求歌词数据
-    window.electron.ipcRenderer.on("request-desktop-lyric-data", () => {
+    window.electron.ipcRenderer.on("desktop-lyric:request-data", () => {
       const musicStore = useMusicStore();
       const statusStore = useStatusStore();
       if (player) {
         const { name, artist } = getPlayerInfoObj() || {};
         window.electron.ipcRenderer.send(
-          "update-desktop-lyric-data",
+          "desktop-lyric:update-data",
           cloneDeep({
             playStatus: statusStore.playStatus,
             playName: name,

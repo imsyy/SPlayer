@@ -68,7 +68,7 @@ export const useInit = () => {
       // 同步任务栏歌词状态
       window.electron.ipcRenderer.send("taskbar:toggle", statusStore.showTaskbarLyric);
       // 显示桌面歌词
-      window.electron.ipcRenderer.send("toggle-desktop-lyric", statusStore.showDesktopLyric);
+      window.electron.ipcRenderer.send("desktop-lyric:toggle", statusStore.showDesktopLyric);
       // 检查更新
       if (settingStore.checkUpdateOnStart)
         window.electron.ipcRenderer.send("check-update", false, settingStore.updateChannel);
@@ -197,6 +197,12 @@ const keyDownEvent = debounce((event: KeyboardEvent) => {
           break;
         case "playNext":
           player.nextOrPrev("next");
+          break;
+        case "seekForward":
+          player.seekBy(5000);
+          break;
+        case "seekBackward":
+          player.seekBy(-5000);
           break;
         case "volumeUp":
           player.setVolume("up");

@@ -39,7 +39,7 @@
         :wordFadeWidth="settingStore.wordFadeWidth"
         :style="{
           '--display-count-down-show': settingStore.countDownShow ? 'flex' : 'none',
-          '--amll-lp-font-size': settingStore.lyricFontSize + 'px',
+          '--amll-lp-font-size': getFontSize(settingStore.lyricFontSize, settingStore.lyricFontSizeMode),
           'font-weight': settingStore.lyricFontWeight,
           'font-family': settingStore.LyricFont !== 'follow' ? settingStore.LyricFont : '',
           ...lyricLangFontStyle(settingStore),
@@ -58,6 +58,7 @@ import { getLyricLanguage } from "@/utils/format";
 import { usePlayerController } from "@/core/player/PlayerController";
 import { cloneDeep } from "lodash-es";
 import { lyricLangFontStyle } from "@/utils/lyric/lyricFontConfig";
+import { getFontSize } from "@/utils/style";
 
 defineProps({
   currentTime: {
@@ -167,8 +168,15 @@ watch(lyricPlayerRef, (player) => {
         display: var(--display-count-down-show);
       }
     }
-    @media (max-width: 500px) {
+    @media (max-width: 990px) {
+      padding: 0;
       margin-left: 0;
+      .amll-lyric-player {
+        > div {
+          padding-left: 20px;
+          padding-right: 20px;
+        }
+      }
     }
   }
 

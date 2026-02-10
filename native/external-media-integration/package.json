@@ -10,6 +10,6 @@
   },
   "scripts": {
     "build": "napi build --release --no-const-enum",
-    "build:debug": "napi build"
+    "build:debug": "napi build --no-const-enum"
   }
 }

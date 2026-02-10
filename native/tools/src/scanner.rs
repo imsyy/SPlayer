@@ -234,6 +234,7 @@ fn spawn_reporter(
     })
 }
 
+#[allow(clippy::cast_possible_wrap)]
 fn process_single_track(
     path_buf: &Path,
     snapshot: &HashMap<String, TrackSnapshot>,

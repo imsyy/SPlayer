@@ -53,6 +53,7 @@
 <script setup lang="ts">
 import { songDynamicCover } from "@/api/song";
 import { useMobile } from "@/composables/useMobile";
+import { useBlobURLManager } from "@/core/resource/BlobURLManager";
 import { useSettingStore, useStatusStore, useMusicStore } from "@/stores";
 import { isLogin } from "@/utils/auth";
 import { isElectron } from "@/utils/env";
@@ -102,9 +103,15 @@ const { start: dynamicCoverStart, stop: dynamicCoverStop } = useTimeoutFn(
 
 // 获取本地歌曲高清封面
 const getLocalCover = async () => {
-  // 非本地歌曲或非 Electron 环境，清理并返回
   if (!isElectron || !musicStore.playSong.path || musicStore.playSong.type === "streaming") {
     cleanupLocalCover();
+    return;
+  }
+  // 先检查blob中是否存在
+  const blobURLManager = useBlobURLManager();
+  const blobURL = blobURLManager.getBlobURL(musicStore.playSong.path);
+  if (blobURL) {
+    localCoverDataUrl.value = blobURL;
     return;
   }
   try {
@@ -232,14 +239,15 @@ onBeforeUnmount(() => {
   }
   &.record {
     position: relative;
-    width: 50vh;
+    max-width: 46vh;
+    margin-bottom: 4%;
     .pointer {
       position: absolute;
-      width: 14vh;
-      left: calc(50% - 1.8vh);
-      top: -11.5vh;
+      width: 30%;
+      left: 46%;
+      top: -22%;
       transform: rotate(-20deg);
-      transform-origin: 1.8vh 1.8vh;
+      transform-origin: 10% 10%;
       z-index: 2;
       transition: transform 0.3s;
     }
@@ -315,9 +323,11 @@ onBeforeUnmount(() => {
           #555
         );
       background-clip: content-box;
-      width: 46vh;
-      height: 46vh;
-      min-width: 46vh;
+      // width: 46vh;
+      // height: 46vh;
+      // min-width: 46vh;
+      width: 100%;
+      height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -349,7 +359,7 @@ onBeforeUnmount(() => {
   }
   &.playing {
     .pointer {
-      transform: rotate(0);
+      transform: rotate(-8deg);
     }
     .cover-img {
       animation-play-state: running;

@@ -208,7 +208,7 @@ const createTrayMenu = (win: BrowserWindow): MenuItemConstructorOptions[] => {
       id: "toggle-desktop-lyric",
       label: `${desktopLyricShow ? "关闭" : "开启"}桌面歌词`,
       icon: getMenuIcon("lyric"),
-      click: () => win.webContents.send("toggle-desktop-lyric"),
+      click: () => win.webContents.send("desktop-lyric:toggle"),
     },
     {
       id: "toggle-desktop-lyric-lock",
@@ -221,7 +221,7 @@ const createTrayMenu = (win: BrowserWindow): MenuItemConstructorOptions[] => {
         const config = store.get("lyric.config");
         const lyricWin = lyricWindow.getWin();
         if (!lyricWin) return;
-        lyricWin.webContents.send("update-desktop-lyric-option", config);
+        lyricWin.webContents.send("desktop-lyric:update-option", config);
       },
     },
     {

@@ -25,7 +25,7 @@
     "typecheck": "pnpm typecheck:node && pnpm typecheck:web",
     "build:native": "tsx scripts/build-native.ts",
     "start": "electron-vite preview",
-    "dev": "pnpm build:native && tsx scripts/dev.ts",
+    "dev": "pnpm build:native -- --dev && tsx scripts/dev.ts",
     "build": "rimraf dist && pnpm build:native && pnpm typecheck && electron-vite build",
     "postinstall": "electron-builder install-app-deps",
     "build:web": "pnpm build",

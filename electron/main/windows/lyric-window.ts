@@ -38,7 +38,7 @@ class LyricWindow {
       this.win = null;
       const mainWin = mainWindow?.getWin();
       if (mainWin) {
-        mainWin?.webContents.send("close-desktop-lyric");
+        mainWin?.webContents.send("desktop-lyric:close");
       }
     });
   }

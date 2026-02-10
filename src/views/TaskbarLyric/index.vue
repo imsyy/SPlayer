@@ -6,9 +6,9 @@
     @mouseenter="isHovering = true"
     @mouseleave="isHovering = false"
   >
-    <div class="cover-wrapper" v-if="state.cover && settingStore.taskbarLyricShowCover">
+    <div class="cover-wrapper" v-if="coverSrc && settingStore.taskbarLyricShowCover">
       <Transition name="cross-fade">
-        <img :key="state.cover" :src="state.cover" class="cover" alt="cover" />
+        <img :key="coverSrc" :src="coverSrc" class="cover" alt="cover" @error="onCoverError" />
       </Transition>
     </div>
 
@@ -78,10 +78,18 @@ import type {
 } from "@/core/player/PlayerIpc";
 import { useSettingStore } from "@/stores";
 import type { LyricLine } from "@applemusic-like-lyrics/lyric";
-import { type CSSProperties } from "vue";
+import type { CSSProperties } from "vue";
 import LyricScroll from "./LyricScroll.vue";
 
 const settingStore = useSettingStore();
+
+/**
+ * 只有当 IPC 时间与本地时间误差超过 100ms 时，才同步 IPC 的时间
+ *
+ * IPC 传来的时间有约 50ms 的延迟，可能导致 rAF 的时间抢跑了 50ms
+ * 显示到了下一行歌词，而 IPC 传的时间又把歌词拉回到上一句
+ */
+const SYNC_THRESHOLD_MS = 100;
 
 interface DisplayItem {
   key: string | number;
@@ -114,6 +122,25 @@ const state = reactive({
 });
 
 const isVisible = computed(() => state.isPlaying || state.showWhenPaused);
+
+// 默认封面图片
+const DEFAULT_COVER = "/images/song.jpg?asset";
+
+// 封面加载失败标记
+const coverLoadFailed = ref(false);
+
+// 计算实际显示的封面 URL
+const coverSrc = computed(() => {
+  if (coverLoadFailed.value || !state.cover) {
+    return DEFAULT_COVER;
+  }
+  return state.cover;
+});
+
+// 封面加载失败处理
+const onCoverError = () => {
+  coverLoadFailed.value = true;
+};
 
 const rootStyle = computed<CSSProperties>(() => {
   const style: CSSProperties = {
@@ -410,6 +437,8 @@ onMounted(() => {
   ipc.on("taskbar:update-metadata", (_, { title, artist, cover }: TaskbarMetadataPayload) => {
     if (title !== undefined) state.title = title;
     if (artist !== undefined) state.artist = artist;
+    // 重置封面加载失败标记
+    coverLoadFailed.value = false;
     state.cover = cover || "";
     state.lyricIndex = -1;
     jumpCount.value = 0;
@@ -428,9 +457,16 @@ onMounted(() => {
   ipc.on(
     "taskbar:update-progress",
     (_, { currentTime, duration, offset }: TaskbarProgressPayload) => {
-      state.currentTime = currentTime;
       state.duration = duration;
       state.offset = offset || 0;
+
+      const diff = Math.abs(currentTime - state.currentTime);
+
+      if (diff <= SYNC_THRESHOLD_MS && state.isPlaying) {
+        return;
+      }
+
+      state.currentTime = currentTime;
       lastTimestamp = performance.now();
       updateLyric();
     },

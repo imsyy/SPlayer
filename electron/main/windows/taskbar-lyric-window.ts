@@ -9,10 +9,10 @@ import { app, type BrowserWindow, ipcMain, nativeTheme, screen } from "electron"
 import { debounce } from "lodash-es";
 import { join } from "node:path";
 import { processLog } from "../logger";
+import { useStore } from "../store";
 import { isDev, port } from "../utils/config";
 import { loadNativeModule } from "../utils/native-loader";
 import { createWindow } from "./index";
-import { useStore } from "../store";
 
 type taskbarLyricModule = typeof import("@native/taskbar-lyric");
 
@@ -112,6 +112,19 @@ class TaskbarLyricWindow {
     if (!this.win) return null;
 
     this.win.loadURL(taskbarLyricUrl);
+
+    // 因为任务栏窗口非常小，默认嵌入的开发者工具完全无法使用，
+    // 所以监听 F12 并按分离模式打开开发者工具
+    this.win.webContents.on("before-input-event", (event, input) => {
+      if (input.key === "F12" && input.type === "keyDown") {
+        if (this.win?.webContents.isDevToolsOpened()) {
+          this.win?.webContents.closeDevTools();
+        } else {
+          this.win?.webContents.openDevTools({ mode: "detach" });
+        }
+        event.preventDefault();
+      }
+    });
 
     const sendTheme = () => {
       if (this.win && !this.win.isDestroyed()) {

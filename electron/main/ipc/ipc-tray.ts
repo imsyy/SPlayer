@@ -46,13 +46,13 @@ const initTrayIpc = (): void => {
   });
 
   // 桌面歌词开关
-  ipcMain.on("toggle-desktop-lyric", (_, val: boolean) => {
+  ipcMain.on("desktop-lyric:toggle", (_, val: boolean) => {
     tray?.setDesktopLyricShow(val);
   });
 
   // 锁定/解锁桌面歌词
-  ipcMain.on("toggle-desktop-lyric-lock", (_, isLock: boolean) => {
-    tray?.setDesktopLyricLock(isLock);
+  ipcMain.on("desktop-lyric:toggle-lock", (_, { lock }: { lock: boolean }) => {
+    tray?.setDesktopLyricLock(lock);
   });
 
   // macOS 状态栏歌词开关

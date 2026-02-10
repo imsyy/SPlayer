@@ -130,8 +130,9 @@ class MediaSessionManager {
 
   /**
    * 更新元数据
+   * @param coverBuffer 封面数据（可选，避免重复下载）
    */
-  public async updateMetadata() {
+  public async updateMetadata(coverBuffer?: Uint8Array) {
     if (!("mediaSession" in navigator) && !isElectron) return;
 
     const musicStore = useMusicStore();
@@ -152,19 +153,24 @@ class MediaSessionManager {
     // 原生插件
     if (this.shouldUseNativeMedia() && settingStore.smtcOpen) {
       try {
-        let coverBuffer: Uint8Array | undefined;
-
         // 获取封面数据
         if (
+          !coverBuffer &&
           metadata.coverUrl &&
           (metadata.coverUrl.startsWith("http") || metadata.coverUrl.startsWith("blob:"))
         ) {
           try {
-            const resp = await axios.get(metadata.coverUrl, {
-              responseType: "arraybuffer",
-              signal,
-            });
-            coverBuffer = new Uint8Array(resp.data);
+            if (metadata.coverUrl.startsWith("blob:")) {
+              const resp = await fetch(metadata.coverUrl, { signal });
+              const buf = await resp.arrayBuffer();
+              coverBuffer = new Uint8Array(buf);
+            } else {
+              const resp = await axios.get(metadata.coverUrl, {
+                responseType: "arraybuffer",
+                signal,
+              });
+              coverBuffer = new Uint8Array(resp.data);
+            }
           } catch {
             // 忽略下载失败
           }

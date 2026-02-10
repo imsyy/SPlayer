@@ -2,8 +2,37 @@ import Database from "better-sqlite3";
 import { existsSync } from "node:fs";
 import { readFile, rename } from "node:fs/promises";
 
-/** 当前本地音乐库 DB 版本，用于控制缓存结构升级 */
-const CURRENT_DB_VERSION = 3;
+/** 列定义接口 */
+interface ColumnDef {
+  /** 列类型（如 TEXT、INTEGER、REAL） */
+  type: string;
+  /** 列约束（如 PRIMARY KEY、NOT NULL、UNIQUE） */
+  constraints?: string;
+  /** 默认值（用于 ALTER TABLE 添加 NOT NULL 列） */
+  default?: string | number | null;
+}
+
+/** 声明式表结构定义 */
+const TRACKS_SCHEMA: Record<string, ColumnDef> = {
+  id: { type: "TEXT", constraints: "PRIMARY KEY" },
+  path: { type: "TEXT", constraints: "NOT NULL UNIQUE" },
+  title: { type: "TEXT" },
+  artist: { type: "TEXT" },
+  album: { type: "TEXT" },
+  duration: { type: "REAL" },
+  cover: { type: "TEXT" },
+  mtime: { type: "REAL" },
+  size: { type: "INTEGER" },
+  bitrate: { type: "REAL" },
+  track_number: { type: "INTEGER" },
+};
+
+/** 索引定义 - 自动创建常用查询字段的索引 */
+const INDEXES: Record<string, string[]> = {
+  // path 已有 UNIQUE 约束，无需额外索引
+  idx_tracks_artist: ["artist"],
+  idx_tracks_album: ["album"],
+};
 
 /** 音乐数据接口 */
 export interface MusicTrack {
@@ -53,38 +82,70 @@ export class LocalMusicDB {
     try {
       this.db = new Database(this.dbPath);
       this.db.pragma("journal_mode = WAL");
+      this.db.pragma("synchronous = NORMAL");
+
+      // 使用声明式 schema 创建表
+      const columnsSQL = Object.entries(TRACKS_SCHEMA)
+        .map(([name, def]) => {
+          const parts = [name, def.type];
+          if (def.constraints) parts.push(def.constraints);
+          return parts.join(" ");
+        })
+        .join(", ");
 
       this.db.exec(`
-        CREATE TABLE IF NOT EXISTS tracks (
-          id TEXT PRIMARY KEY,
-          path TEXT NOT NULL UNIQUE,
-          title TEXT,
-          artist TEXT,
-          album TEXT,
-          duration REAL,
-          cover TEXT,
-          mtime REAL,
-          size INTEGER,
-          bitrate REAL,
-          track_number INTEGER
-        );
-        CREATE TABLE IF NOT EXISTS meta (
-          key TEXT PRIMARY KEY,
-          value TEXT
-        );
+        CREATE TABLE IF NOT EXISTS tracks (${columnsSQL});
+        CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);
       `);
 
-      // 检查版本
-      const versionStmt = this.db.prepare("SELECT value FROM meta WHERE key = ?");
-      const versionRow = versionStmt.get("version") as { value: string } | undefined;
-      if (!versionRow) {
-        this.db
-          .prepare("INSERT INTO meta (key, value) VALUES (?, ?)")
-          .run("version", CURRENT_DB_VERSION.toString());
-      }
+      // 自动同步缺失的列和索引
+      this.syncSchema();
+      this.syncIndexes();
     } catch (e) {
       console.error("Failed to initialize SQLite DB:", e);
       throw e;
+    }
+  }
+
+  /** 自动同步表结构 - 检测并添加缺失的列 */
+  private syncSchema() {
+    if (!this.db) return;
+
+    // 获取现有列信息
+    const columns = this.db.prepare("PRAGMA table_info(tracks)").all() as { name: string }[];
+    const existingColumns = new Set(columns.map((col) => col.name));
+
+    // 检测并添加缺失的列
+    for (const [columnName, def] of Object.entries(TRACKS_SCHEMA)) {
+      if (!existingColumns.has(columnName)) {
+        // NOT NULL 列必须有默认值，否则迁移会失败
+        const hasNotNull = def.constraints?.includes("NOT NULL");
+        if (hasNotNull && def.default === undefined) {
+          throw new Error(
+            `[LocalMusicDB] Cannot add NOT NULL column '${columnName}' without a default value`,
+          );
+        }
+
+        // 构建 ALTER TABLE 语句
+        let sql = `ALTER TABLE tracks ADD COLUMN ${columnName} ${def.type}`;
+        if (def.default !== undefined) {
+          const defaultVal = typeof def.default === "string" ? `'${def.default}'` : def.default;
+          sql += ` DEFAULT ${defaultVal}`;
+        }
+        console.log(`[LocalMusicDB] Adding missing column: ${columnName}`);
+        this.db.exec(sql);
+      }
+    }
+  }
+
+  /** 自动同步索引 */
+  private syncIndexes() {
+    if (!this.db) return;
+
+    for (const [indexName, columns] of Object.entries(INDEXES)) {
+      // CREATE INDEX IF NOT EXISTS 是安全的
+      const sql = `CREATE INDEX IF NOT EXISTS ${indexName} ON tracks (${columns.join(", ")})`;
+      this.db.exec(sql);
     }
   }
 
@@ -136,18 +197,24 @@ export class LocalMusicDB {
   public addTracks(tracks: MusicTrack[]) {
     if (!this.db || tracks.length === 0) return;
 
+    // 动态生成 INSERT 语句
+    const columns = Object.keys(TRACKS_SCHEMA);
+    const columnsList = columns.join(", ");
+    const valuesList = columns.map((c) => `@${c}`).join(", ");
+
     const insertStmt = this.db.prepare(`
-      INSERT OR REPLACE INTO tracks (id, path, title, artist, album, duration, cover, mtime, size, bitrate, track_number)
-      VALUES (@id, @path, @title, @artist, @album, @duration, @cover, @mtime, @size, @bitrate, @track_number)
+      INSERT OR REPLACE INTO tracks (${columnsList})
+      VALUES (${valuesList})
     `);
 
     const transaction = this.db.transaction((tracks: MusicTrack[]) => {
       for (const track of tracks) {
-        insertStmt.run({
-          ...track,
-          // rust 模块的 cover 是 option，需要特殊处理一下
-          cover: track.cover ?? null,
-        });
+        // 确保所有列都有值，缺失的使用 null
+        const params: Record<string, unknown> = {};
+        for (const col of columns) {
+          params[col] = (track as unknown as Record<string, unknown>)[col] ?? null;
+        }
+        insertStmt.run(params);
       }
     });
 
@@ -173,6 +240,8 @@ export class LocalMusicDB {
   public clearTracks() {
     if (!this.db) return;
     this.db.prepare("DELETE FROM tracks").run();
+    // 回收磁盘空间，防止数据库文件膨胀
+    this.db.exec("VACUUM");
   }
 
   /** 获取所有歌曲路径 */

@@ -317,7 +317,7 @@ const fontArrayToFamily = (fontArray: string[]): string => {
 // 获取桌面歌词配置
 const getDesktopLyricConfig = async () => {
   if (!isElectron) return;
-  const config = await window.electron.ipcRenderer.invoke("request-desktop-lyric-option");
+  const config = await window.electron.ipcRenderer.invoke("desktop-lyric:get-option");
   if (config) Object.assign(desktopLyricConfig, config);
 };
 
@@ -333,7 +333,7 @@ const saveDesktopLyricConfig = (val?: string) => {
     if (!isElectron) return;
     if (val) desktopLyricConfig.fontFamily = val;
     window.electron.ipcRenderer.send(
-      "update-desktop-lyric-option",
+      "desktop-lyric:set-option",
       cloneDeep(desktopLyricConfig),
       true,
     );
@@ -348,12 +348,12 @@ const saveDesktopLyricConfig = (val?: string) => {
 onMounted(() => {
   getAllSystemFonts();
   getDesktopLyricConfig();
-  window.electron.ipcRenderer.on("update-desktop-lyric-option", onLyricConfigUpdate);
+  window.electron.ipcRenderer.on("desktop-lyric:update-option", onLyricConfigUpdate);
 });
 
 onUnmounted(() => {
   if (isElectron) {
-    window.electron.ipcRenderer.removeListener("update-desktop-lyric-option", onLyricConfigUpdate);
+    window.electron.ipcRenderer.removeListener("desktop-lyric:update-option", onLyricConfigUpdate);
   }
 });
 </script>

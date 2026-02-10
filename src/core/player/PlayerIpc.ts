@@ -27,7 +27,7 @@ export const sendSongChange = (title: string, name: string, artist: string, albu
   // 获取歌曲时长
   const duration = getPlaySongData()?.duration ?? 0;
   window.electron.ipcRenderer.send("play-song-change", { title, name, artist, album, duration });
-  window.electron.ipcRenderer.send("update-desktop-lyric-data", {
+  window.electron.ipcRenderer.send("desktop-lyric:update-data", {
     playName: name,
     artistName: artist,
   });
@@ -96,7 +96,7 @@ export const sendLikeStatus = (isLiked: boolean) => {
  * @param show 是否显示
  */
 export const toggleDesktopLyric = (show: boolean) => {
-  if (isElectron) window.electron.ipcRenderer.send("toggle-desktop-lyric", show);
+  if (isElectron) window.electron.ipcRenderer.send("desktop-lyric:toggle", show);
 };
 
 export const toggleTaskbarLyric = (show: boolean) => {

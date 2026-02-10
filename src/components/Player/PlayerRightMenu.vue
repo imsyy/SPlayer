@@ -43,6 +43,7 @@
       v-if="isElectron && settingStore.fullscreenPlayerElements.desktopLyric"
       value="ON"
       :show="statusStore.showDesktopLyric"
+      class="hidden"
     >
       <div class="menu-icon hidden" @click.stop="player.toggleDesktopLyric()">
         <SvgIcon name="DesktopLyric2" :depth="statusStore.showDesktopLyric ? 1 : 3" />

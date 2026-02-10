@@ -1,7 +1,7 @@
 import { cloneDeep } from "lodash-es";
 import type { LyricLine } from "@applemusic-like-lyrics/lyric";
 import { extractLyricContent } from "./qrc-parser";
-import { parseLrc } from "../parseLrc";
+import { parseLrc } from "./parseLrc";
 
 /**
  * LRC 格式类型
@@ -104,7 +104,7 @@ export const parseWordByWordLrc = (content: string): LyricLine[] => {
 
     const words: LyricWord[] = [];
     let lineStartTime = Infinity;
-    
+
     let prevWord: LyricWord | null = null;
 
     const matches = line.matchAll(WORD_BY_WORD_PATTERN);
@@ -131,21 +131,21 @@ export const parseWordByWordLrc = (content: string): LyricLine[] => {
 
     // 处理行内最后一个字
     if (prevWord) {
-        prevWord.endTime = prevWord.startTime + DEFAULT_WORD_DURATION;
+      prevWord.endTime = prevWord.startTime + DEFAULT_WORD_DURATION;
     }
 
     if (words.length > 0) {
       const lineObj = createLine(words, lineStartTime === Infinity ? 0 : lineStartTime);
       // 设置行结束时间为最后一个字的结束时间
       lineObj.endTime = words[words.length - 1].endTime;
-      
+
       // 修正上一行的结束时间 (Single Pass)
       if (prevLine) {
         const prevLastWord = prevLine.words[prevLine.words.length - 1];
         // 只有当当前行开始时间晚于上一行最后一个字的开始时间时，才进行截断
         if (lineObj.startTime > prevLastWord.startTime) {
-            prevLastWord.endTime = Math.min(prevLastWord.endTime, lineObj.startTime);
-            prevLine.endTime = prevLastWord.endTime;
+          prevLastWord.endTime = Math.min(prevLastWord.endTime, lineObj.startTime);
+          prevLine.endTime = prevLastWord.endTime;
         }
       }
 
@@ -153,7 +153,7 @@ export const parseWordByWordLrc = (content: string): LyricLine[] => {
       prevLine = lineObj;
     }
   }
-  
+
   return result;
 };
 
@@ -176,11 +176,11 @@ export const parseEnhancedLrc = (content: string): LyricLine[] => {
     const contentAfterTime = line.slice(lineTimeMatch[0].length);
 
     const words: LyricWord[] = [];
-    
+
     // 检查是否有增强型标记
     if (ENHANCED_TIME_TAG_REGEX.test(contentAfterTime)) {
       let prevWord: LyricWord | null = null;
-      
+
       const matches = contentAfterTime.matchAll(ENHANCED_WORD_PATTERN);
 
       for (const match of matches) {
@@ -188,7 +188,7 @@ export const parseEnhancedLrc = (content: string): LyricLine[] => {
         const wordText = match[4];
 
         if (prevWord) {
-            prevWord.endTime = startTime;
+          prevWord.endTime = startTime;
         }
 
         if (wordText) {
@@ -197,11 +197,10 @@ export const parseEnhancedLrc = (content: string): LyricLine[] => {
           prevWord = newWord;
         }
       }
-      
-      if (prevWord) {
-          prevWord.endTime = prevWord.startTime + DEFAULT_WORD_DURATION; // 默认兜底
-      }
 
+      if (prevWord) {
+        prevWord.endTime = prevWord.startTime + DEFAULT_WORD_DURATION; // 默认兜底
+      }
     } else {
       // 无增强型标记，作为整行处理
       const text = contentAfterTime.trim();
@@ -213,13 +212,13 @@ export const parseEnhancedLrc = (content: string): LyricLine[] => {
     if (words.length > 0) {
       const lineObj = createLine(words, lineStartTime);
       lineObj.endTime = words[words.length - 1].endTime;
-      
+
       // 修正上一行的结束时间 (Single Pass)
       if (prevLine) {
         const prevLastWord = prevLine.words[prevLine.words.length - 1];
         if (lineObj.startTime > prevLastWord.startTime) {
-            prevLastWord.endTime = Math.min(prevLastWord.endTime, lineObj.startTime);
-            prevLine.endTime = prevLastWord.endTime;
+          prevLastWord.endTime = Math.min(prevLastWord.endTime, lineObj.startTime);
+          prevLine.endTime = prevLastWord.endTime;
         }
       }
 
@@ -275,7 +274,7 @@ export const alignLyrics = (
   if (!lyrics.length || !otherLyrics.length) return cloneDeep(lyrics) as LyricLine[];
 
   const result = cloneDeep(lyrics) as LyricLine[];
-  
+
   let i = 0;
   let j = 0;
 
@@ -335,7 +334,7 @@ const parseQRCContent = (
 
     // 解析逐字
     const words: Array<{ word: string; startTime: number; endTime: number }> = [];
-    
+
     const matches = lineContent.matchAll(QRC_WORD_PATTERN);
 
     for (const match of matches) {
@@ -371,7 +370,6 @@ const parseQRCContent = (
  * @returns LyricLine 数组
  */
 export const parseQRCLyric = (qrcContent: string, trans?: string, roma?: string): LyricLine[] => {
-  
   // 解析主歌词
   const qrcLines = parseQRCContent(qrcContent);
   let result: LyricLine[] = qrcLines.map((qrcLine) => {
@@ -462,7 +460,7 @@ class XmlNode {
     const attrs = Object.entries(this.attributes)
       .map(([key, val]) => `${key}="${this.escape(String(val))}"`)
       .join(" ");
-    
+
     const attrStr = attrs ? " " + attrs : "";
 
     if (this.children.length === 0) {
@@ -470,10 +468,10 @@ class XmlNode {
     }
 
     const isAllText = this.children.every((c) => typeof c === "string");
-    
+
     if (isAllText) {
-        const textContent = this.children.map(c => this.escape(c as string)).join("");
-        return `${spaces}<${this.name}${attrStr}>${textContent}</${this.name}>`;
+      const textContent = this.children.map((c) => this.escape(c as string)).join("");
+      return `${spaces}<${this.name}${attrStr}>${textContent}</${this.name}>`;
     }
 
     const childrenStr = this.children
@@ -499,9 +497,9 @@ export const lyricLinesToTTML = (lines: LyricLine[]): string => {
   };
 
   const root = new XmlNode("tt", {
-      "xmlns": "http://www.w3.org/ns/ttml",
-      "xmlns:ttm": "http://www.w3.org/ns/ttml#metadata",
-      "xmlns:amll": "http://www.example.com/ns/amll"
+    xmlns: "http://www.w3.org/ns/ttml",
+    "xmlns:ttm": "http://www.w3.org/ns/ttml#metadata",
+    "xmlns:amll": "http://www.example.com/ns/amll",
   });
 
   const head = new XmlNode("head");
@@ -516,26 +514,28 @@ export const lyricLinesToTTML = (lines: LyricLine[]): string => {
   for (const line of lines) {
     const lineStart = formatTime(line.startTime);
     const lineEnd = formatTime(line.endTime);
-    
+
     const p = new XmlNode("p", { begin: lineStart, end: lineEnd });
 
     for (const word of line.words) {
-       // 过滤无效的空词（内容为空且时长为0）
-       if (!word.word || word.startTime === word.endTime) continue;
-       
-       const wordStart = formatTime(word.startTime);
-       const wordEnd = formatTime(word.endTime);
-       p.addChild(new XmlNode("span", { begin: wordStart, end: wordEnd }).addChild(word.word));
+      // 过滤无效的空词（内容为空且时长为0）
+      if (!word.word || word.startTime === word.endTime) continue;
+
+      const wordStart = formatTime(word.startTime);
+      const wordEnd = formatTime(word.endTime);
+      p.addChild(new XmlNode("span", { begin: wordStart, end: wordEnd }).addChild(word.word));
     }
 
     if (line.translatedLyric) {
-        p.addChild(new XmlNode("span", { "ttm:role": "x-translation" }).addChild(line.translatedLyric));
+      p.addChild(
+        new XmlNode("span", { "ttm:role": "x-translation" }).addChild(line.translatedLyric),
+      );
     }
 
     if (line.romanLyric) {
-        p.addChild(new XmlNode("span", { "ttm:role": "x-roman" }).addChild(line.romanLyric));
+      p.addChild(new XmlNode("span", { "ttm:role": "x-roman" }).addChild(line.romanLyric));
     }
-    
+
     div.addChild(p);
   }
 

@@ -279,11 +279,15 @@ const listData = computed<SongType[]>(() => {
   const order = statusStore.listSortOrder;
   const isAsc = order === "asc";
 
+  // 使用 Intl.Collator 进行排序，支持数字敏感排序 (numeric: true)
+  // 这解决了 1.mp3, 10.mp3, 2.mp3 的问题
+  const collator = new Intl.Collator("zh-CN", { numeric: true });
+
   return data.sort((a, b) => {
     let result = 0;
     switch (field) {
       case "title":
-        result = a.name.localeCompare(b.name, "zh-CN");
+        result = collator.compare(a.name || "", b.name || "");
         break;
       case "artist": {
         const artistA = Array.isArray(a.artists)
@@ -292,26 +296,27 @@ const listData = computed<SongType[]>(() => {
         const artistB = Array.isArray(b.artists)
           ? b.artists[0]?.name || ""
           : (b.artists as string) || "";
-        result = artistA.localeCompare(artistB, "zh-CN");
+        result = collator.compare(artistA, artistB);
         break;
       }
       case "album": {
         const albumA = typeof a.album === "string" ? a.album : a.album?.name || "";
         const albumB = typeof b.album === "string" ? b.album : b.album?.name || "";
-        result = albumA.localeCompare(albumB, "zh-CN", { numeric: true });
+        result = collator.compare(albumA, albumB);
         break;
       }
       case "trackNumber":
+        // 增加对 undefined/null 的处理，视为 0
         result = (a.trackNumber || 0) - (b.trackNumber || 0);
         break;
       case "filename": {
         const fileNameA = a.path?.split(/[\\/]/).pop() || "";
         const fileNameB = b.path?.split(/[\\/]/).pop() || "";
-        result = fileNameA.localeCompare(fileNameB, "zh-CN");
+        result = collator.compare(fileNameA, fileNameB);
         break;
       }
       case "duration":
-        result = a.duration - b.duration;
+        result = (a.duration || 0) - (b.duration || 0);
         break;
       case "size":
         result = (a.size || 0) - (b.size || 0);

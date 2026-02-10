@@ -8,7 +8,12 @@
       <n-tag :bordered="false" type="warning">
         {{ data?.version || "v0.0.0" }}
       </n-tag>
+      <n-tag v-if="isPrerelease" :bordered="false" type="error" size="small"> 测试版 </n-tag>
     </n-flex>
+    <!-- 测试版警告 -->
+    <n-alert v-if="isPrerelease" type="warning" :bordered="false" class="prerelease-warning">
+      当前更新为测试版本，可能包含未完成的功能或已知问题，请谨慎更新
+    </n-alert>
     <n-scrollbar style="max-height: 500px">
       <div
         v-if="data?.releaseNotes"
@@ -32,9 +37,15 @@
 import type { UpdateInfoType } from "@/types/main";
 import packageJson from "@/../package.json";
 
-defineProps<{ data: UpdateInfoType }>();
+const props = defineProps<{ data: UpdateInfoType }>();
 
 const emit = defineEmits<{ close: [] }>();
+
+// 检测是否为预发布版本（alpha/beta/rc 等）
+const isPrerelease = computed(() => {
+  const version = props.data?.version || "";
+  return /-(alpha|beta|rc|dev|canary|nightly)/i.test(version);
+});
 
 // 下载更新数据
 const downloadStatus = ref<boolean>(false);
@@ -94,6 +105,9 @@ const goDownload = () => {
   }
   .menu {
     margin-top: 20px;
+  }
+  .prerelease-warning {
+    margin-bottom: 12px;
   }
   .markdown-body {
     margin-top: 0 !important;

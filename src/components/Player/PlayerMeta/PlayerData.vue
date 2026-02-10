@@ -385,7 +385,7 @@ const jumpPage = debounce(
   }
   &.center {
     align-items: center;
-    padding: 0 2px;
+    padding: 0 40px;
     .name {
       text-align: center;
     }

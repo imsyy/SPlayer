@@ -9,9 +9,7 @@ export const getDisplayVersion = () => {
     // 版本号格式: x.y.z-nightly.yyyymmdd.hash
     // 提取 hash: a3f9c2d
     const parts = packageJson.version.split(".");
-    // 取最后一部分
-    const hash = parts[parts.length - 1];
-    return `snapshot-${hash}`;
+    return parts[parts.length - 1];
   }
   return `v${packageJson.version}`;
 };

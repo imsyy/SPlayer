@@ -15,6 +15,8 @@ interface ShortcutStore {
     playOrPause: ShortcutType;
     playPrev: ShortcutType;
     playNext: ShortcutType;
+    seekForward: ShortcutType;
+    seekBackward: ShortcutType;
     volumeUp: ShortcutType;
     volumeDown: ShortcutType;
     "toggle-desktop-lyric": ShortcutType;
@@ -46,6 +48,17 @@ export const useShortcutStore = defineStore("shortcut", {
         name: "下一曲",
         shortcut: "CmdOrCtrl+ArrowRight",
         globalShortcut: "CmdOrCtrl+Shift+Right",
+      },
+      // 快进 / 快退
+      seekForward: {
+        name: "快进 5 秒",
+        shortcut: "ArrowRight",
+        globalShortcut: "CmdOrCtrl+Shift+Right",
+      },
+      seekBackward: {
+        name: "快退 5 秒",
+        shortcut: "ArrowLeft",
+        globalShortcut: "CmdOrCtrl+Shift+Left",
       },
       // 音量加减
       volumeUp: {

@@ -70,6 +70,8 @@ export interface SettingState {
   updateChannel: "stable" | "nightly";
   /** 隐藏 VIP 标签 */
   hideVipTag: boolean;
+  /** 歌词字体大小模式 */
+  lyricFontSizeMode: "fixed" | "adaptive";
   /** 歌词字体大小 */
   lyricFontSize: number;
   /** 歌词翻译字体大小 */
@@ -557,6 +559,7 @@ export const useSettingStore = defineStore("setting", {
     playSongDemo: false,
     scrobbleSong: false,
     dynamicCover: false,
+    lyricFontSizeMode: "adaptive",
     lyricFontSize: 46,
     lyricTranFontSize: 22,
     lyricRomaFontSize: 18,

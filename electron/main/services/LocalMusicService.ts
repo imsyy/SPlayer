@@ -21,7 +21,7 @@ export class LocalMusicService {
   private lastDbPath: string = "";
 
   /** 获取动态路径 */
-  private get paths() {
+  get paths() {
     const store = useStore();
     const localCachePath = join(store.get("cachePath"), "local-data");
     return {

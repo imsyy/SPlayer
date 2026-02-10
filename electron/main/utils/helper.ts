@@ -56,3 +56,14 @@ export const metaDataLyricsArrayToLrc = (
     })
     .join("\n");
 };
+
+/**
+ * 数组分块
+ * @param array 数组
+ * @param size 每块大小
+ */
+export function* chunkArray<T>(array: T[], size: number): Generator<T[], void, unknown> {
+  for (let i = 0; i < array.length; i += size) {
+    yield array.slice(i, i + size);
+  }
+}

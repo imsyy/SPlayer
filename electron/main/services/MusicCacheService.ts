@@ -11,6 +11,7 @@ const tools: toolModule = loadNativeModule("tools.node", "tools");
 export class MusicCacheService {
   private static instance: MusicCacheService;
   private cacheService: CacheService;
+  private downloadingTasks: Map<string, Promise<string>> = new Map();
 
   private constructor() {
     this.cacheService = CacheService.getInstance();
@@ -75,61 +76,78 @@ export class MusicCacheService {
    */
   public async cacheMusic(id: number | string, url: string, quality: string): Promise<string> {
     const key = this.getCacheKey(id, quality);
-    const filePath = this.cacheService.getFilePath("music", key);
-    const tempPath = `${filePath}.tmp`;
-
-    // 确保目录存在
-    await this.cacheService.init();
-
-    // 检查并清理超限缓存
-    await this.cacheService.checkAndCleanCache();
-
-    // 下载并写入
-    try {
-      if (!tools) {
-        throw new Error("Native tools not loaded");
-      }
-
-      // 使用 Rust 下载器
-
-      const store = useStore();
-      const enableHttp2 = store.get("enableDownloadHttp2", true) as boolean;
-
-      const task = new tools.DownloadTask();
-      await task.download(
-        url,
-        tempPath,
-        null, // No metadata for cache
-        4, // Thread count
-        null, // Referer
-        () => {}, // No progress callback needed for cache currently
-        enableHttp2,
-      );
-
-      // 检查临时文件是否存在
-      if (!existsSync(tempPath)) throw new Error("下载失败：临时文件未创建");
-
-      // 检查文件大小，避免空文件
-      const stats = await stat(tempPath);
-      if (stats.size === 0) {
-        await unlink(tempPath).catch(() => {});
-        throw new Error("下载的文件为空");
-      }
-
-      // 下载成功后，将临时文件重命名为正式缓存文件
-      await rename(tempPath, filePath);
-
-      // 更新 CacheService 的大小记录
-      await this.cacheService.notifyFileChange("music", key);
-
-      return filePath;
-    } catch (error) {
-      // 下载失败，清理残余的临时文件
-      if (existsSync(tempPath)) {
-        await unlink(tempPath).catch(() => {});
-      }
-      cacheLog.error("Music download failed:", error);
-      throw error;
+    // 检查是否已有相同的下载任务在进行中
+    if (this.downloadingTasks.has(key)) {
+      cacheLog.info(`[MusicCache] Reusing existing download task for: ${key}`);
+      return this.downloadingTasks.get(key)!;
     }
+    const downloadPromise = (async () => {
+      const filePath = this.cacheService.getFilePath("music", key);
+      const tempPath = `${filePath}.tmp`;
+
+      // 确保目录存在
+      await this.cacheService.init();
+
+      // 检查并清理超限缓存
+      await this.cacheService.checkAndCleanCache();
+
+      // 下载并写入
+      try {
+        if (!tools) {
+          throw new Error("Native tools not loaded");
+        }
+
+        // 使用 Rust 下载器
+
+        const store = useStore();
+        const enableHttp2 = store.get("enableDownloadHttp2", true) as boolean;
+
+        const task = new tools.DownloadTask();
+        await task.download(
+          url,
+          tempPath,
+          null, // No metadata for cache
+          4, // Thread count
+          null, // Referer
+          () => {}, // No progress callback needed for cache currently
+          enableHttp2,
+        );
+
+        // 检查临时文件是否存在
+        if (!existsSync(tempPath)) throw new Error("下载失败：临时文件未创建");
+
+        // 检查文件大小，避免空文件
+        const stats = await stat(tempPath);
+        if (stats.size === 0) {
+          await unlink(tempPath).catch(() => {});
+          throw new Error("下载的文件为空");
+        }
+
+        // 下载成功后，将临时文件重命名为正式缓存文件
+        await rename(tempPath, filePath);
+
+        // 更新 CacheService 的大小记录
+        await this.cacheService.notifyFileChange("music", key);
+
+        return filePath;
+      } catch (error) {
+        // 下载失败，清理残余的临时文件
+        if (existsSync(tempPath)) {
+          await unlink(tempPath).catch(() => {});
+        }
+        cacheLog.error("Music download failed:", error);
+        throw error;
+      }
+    })();
+
+    // 记录此任务
+    this.downloadingTasks.set(key, downloadPromise);
+
+    // 任务完成后（无论成功失败）从 Map 中移除
+    downloadPromise.finally(() => {
+      this.downloadingTasks.delete(key);
+    });
+
+    return downloadPromise;
   }
 }

@@ -6,7 +6,8 @@
     "binaryName": "tools"
   },
   "scripts": {
-    "build": "napi build --release --no-const-enum"
+    "build": "napi build --release --no-const-enum",
+    "build:debug": "napi build --no-const-enum"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3"

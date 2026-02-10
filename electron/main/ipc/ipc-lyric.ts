@@ -10,8 +10,6 @@ import mainWindow from "../windows/main-window";
 const initLyricIpc = (): void => {
   const store = useStore();
 
-  // 歌词窗口
-  let lyricWin: BrowserWindow | null = null;
   // 是否锁定（从配置读取）
   let isLocked = store.get("lyric.config")?.isLock ?? false;
   // 恢复 forward 的定时器
@@ -30,6 +28,7 @@ const initLyricIpc = (): void => {
    * @param enableForward 是否启用 forward（传递鼠标事件到网页，用于悬浮显示解锁按钮）
    */
   const setLyricMouseEvents = (enableForward: boolean) => {
+    const lyricWin = lyricWindow.getWin();
     if (!isWinAlive(lyricWin) || !isLocked) return;
     lyricWin.setIgnoreMouseEvents(true, enableForward ? { forward: true } : undefined);
   };
@@ -96,14 +95,14 @@ const initLyricIpc = (): void => {
   };
 
   // 切换桌面歌词
-  ipcMain.on("toggle-desktop-lyric", (_event, val: boolean) => {
+  ipcMain.on("desktop-lyric:toggle", (_event, val: boolean) => {
+    let lyricWin = lyricWindow.getWin();
     if (val) {
       if (!isWinAlive(lyricWin)) {
         lyricWin = lyricWindow.create();
-        // 监听关闭，置空引用，防止后续调用报错
+        // 监听关闭，解绑事件
         lyricWin?.on("closed", () => {
           unbindMainWinEvents();
-          lyricWin = null;
         });
         // 设置位置
         const { x, y } = store.get("lyric");
@@ -129,56 +128,62 @@ const initLyricIpc = (): void => {
   });
 
   // 更新歌词窗口数据
-  ipcMain.on("update-desktop-lyric-data", (_, lyricData) => {
+  ipcMain.on("desktop-lyric:update-data", (_, lyricData) => {
+    const lyricWin = lyricWindow.getWin();
     if (!lyricData || !isWinAlive(lyricWin)) return;
-    lyricWin.webContents.send("update-desktop-lyric-data", lyricData);
+    lyricWin.webContents.send("desktop-lyric:update-data", lyricData);
   });
 
   // 更新歌词窗口配置
-  ipcMain.on("update-desktop-lyric-option", (_, option, callback: boolean = false) => {
+  ipcMain.on("desktop-lyric:set-option", (_, option, callback: boolean = false) => {
     const mainWin = mainWindow.getWin();
+    const lyricWin = lyricWindow.getWin();
     if (!option) return;
     // 增量更新
     const prevOption = store.get("lyric.config");
+    let newOption = option;
     if (prevOption) {
-      option = { ...prevOption, ...option };
+      newOption = { ...prevOption, ...option };
     }
-    store.set("lyric.config", option);
+    store.set("lyric.config", newOption);
     // 触发窗口更新
     if (callback && isWinAlive(lyricWin)) {
-      lyricWin.webContents.send("update-desktop-lyric-option", option);
+      lyricWin.webContents.send("desktop-lyric:update-option", newOption);
     }
     if (isWinAlive(mainWin)) {
-      mainWin?.webContents.send("update-desktop-lyric-option", option);
+      mainWin?.webContents.send("desktop-lyric:update-option", newOption);
     }
   });
 
   // 播放状态更改
   ipcMain.on("play-status-change", (_, status) => {
+    const lyricWin = lyricWindow.getWin();
     if (!isWinAlive(lyricWin)) return;
-    lyricWin.webContents.send("update-desktop-lyric-data", { playStatus: status });
+    lyricWin.webContents.send("desktop-lyric:update-data", { playStatus: status });
   });
 
   // 音乐歌词更改
   ipcMain.on("play-lyric-change", (_, lyricData) => {
+    const lyricWin = lyricWindow.getWin();
     if (!lyricData || !isWinAlive(lyricWin)) return;
-    lyricWin.webContents.send("update-desktop-lyric-data", lyricData);
+    lyricWin.webContents.send("desktop-lyric:update-data", lyricData);
   });
 
   // 获取窗口位置
-  ipcMain.handle("get-window-bounds", () => {
+  ipcMain.handle("desktop-lyric:get-bounds", () => {
+    const lyricWin = lyricWindow.getWin();
     if (!isWinAlive(lyricWin)) return {};
     return lyricWin.getBounds();
   });
 
   // 获取屏幕尺寸
-  ipcMain.handle("get-screen-size", () => {
+  ipcMain.handle("desktop-lyric:get-screen-size", () => {
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
     return { width, height };
   });
 
   // 获取多屏虚拟边界（支持负坐标）
-  ipcMain.handle("get-virtual-screen-bounds", () => {
+  ipcMain.handle("desktop-lyric:get-virtual-screen-bounds", () => {
     const displays = screen.getAllDisplays();
     const bounds = displays.map((d) => d.workArea);
     const minX = Math.min(...bounds.map((b) => b.x));
@@ -189,7 +194,8 @@ const initLyricIpc = (): void => {
   });
 
   // 移动窗口
-  ipcMain.on("move-window", (_, x, y, width, height) => {
+  ipcMain.on("desktop-lyric:move", (_, x, y, width, height) => {
+    const lyricWin = lyricWindow.getWin();
     if (!isWinAlive(lyricWin)) return;
     lyricWin.setBounds({ x, y, width, height });
     // 保存配置
@@ -200,7 +206,8 @@ const initLyricIpc = (): void => {
   });
 
   // 更新歌词窗口宽高
-  ipcMain.on("update-lyric-size", (_, width, height) => {
+  ipcMain.on("desktop-lyric:resize", (_, width, height) => {
+    const lyricWin = lyricWindow.getWin();
     if (!isWinAlive(lyricWin)) return;
     // 更新窗口宽度
     lyricWin.setBounds({ width, height });
@@ -209,7 +216,8 @@ const initLyricIpc = (): void => {
   });
 
   // 更新高度
-  ipcMain.on("update-window-height", (_, height) => {
+  ipcMain.on("desktop-lyric:set-height", (_, height) => {
+    const lyricWin = lyricWindow.getWin();
     if (!isWinAlive(lyricWin)) return;
     const { width } = lyricWin.getBounds();
     // 更新窗口高度
@@ -219,8 +227,9 @@ const initLyricIpc = (): void => {
 
   // 是否固定当前最大宽高
   ipcMain.on(
-    "toggle-fixed-max-size",
+    "desktop-lyric:toggle-fixed-size",
     (_, options: { width: number; height: number; fixed: boolean }) => {
+      const lyricWin = lyricWindow.getWin();
       if (!isWinAlive(lyricWin)) return;
       const { width, height, fixed } = options;
       if (fixed) {
@@ -232,54 +241,60 @@ const initLyricIpc = (): void => {
   );
 
   // 请求歌词数据
-  ipcMain.on("request-desktop-lyric-data", () => {
+  ipcMain.on("desktop-lyric:request-data", () => {
     const mainWin = mainWindow.getWin();
+    const lyricWin = lyricWindow.getWin();
     if (!isWinAlive(lyricWin) || !isWinAlive(mainWin)) return;
     // 触发窗口更新
-    mainWin?.webContents.send("request-desktop-lyric-data");
+    mainWin?.webContents.send("desktop-lyric:request-data");
   });
 
   // 请求歌词配置
-  ipcMain.handle("request-desktop-lyric-option", () => {
+  ipcMain.handle("desktop-lyric:get-option", () => {
     const config = store.get("lyric.config");
+    const lyricWin = lyricWindow.getWin();
     if (isWinAlive(lyricWin)) {
-      lyricWin.webContents.send("update-desktop-lyric-option", config);
+      lyricWin.webContents.send("desktop-lyric:update-option", config);
     }
     return config;
   });
 
   // 关闭桌面歌词
-  ipcMain.on("close-desktop-lyric", () => {
-    const mainWin = mainWindow.getWin();
-    if (!isWinAlive(lyricWin) || !isWinAlive(mainWin)) return;
-    lyricWin.hide();
-    mainWin?.webContents.send("close-desktop-lyric");
+  ipcMain.on("desktop-lyric:close", () => {
+    const lyricWin = lyricWindow.getWin();
+    if (!isWinAlive(lyricWin)) return;
+    lyricWin.close();
   });
 
   // 锁定/解锁桌面歌词
-  ipcMain.on("toggle-desktop-lyric-lock", (_, isLock: boolean, isTemp: boolean = false) => {
-    const mainWin = mainWindow.getWin();
+  ipcMain.on(
+    "desktop-lyric:toggle-lock",
+    (_, { lock, temp }: { lock: boolean; temp?: boolean }) => {
+      const mainWin = mainWindow.getWin();
+      const lyricWin = lyricWindow.getWin();
+      const isLock = lock;
 
-    // 更新锁定状态
-    if (!isTemp) isLocked = isLock;
+      // 更新锁定状态
+      if (!temp) isLocked = isLock;
 
-    // 设置鼠标事件穿透
-    if (isWinAlive(lyricWin)) {
-      if (isLock) {
-        lyricWin.setIgnoreMouseEvents(true, { forward: true });
-      } else {
-        lyricWin.setIgnoreMouseEvents(false);
+      // 设置鼠标事件穿透
+      if (isWinAlive(lyricWin)) {
+        if (isLock) {
+          lyricWin.setIgnoreMouseEvents(true, { forward: true });
+        } else {
+          lyricWin.setIgnoreMouseEvents(false);
+        }
       }
-    }
 
-    if (isTemp) return;
-    store.set("lyric.config.isLock", isLock);
-    // 触发窗口更新
-    const config = store.get("lyric.config");
-    if (isWinAlive(mainWin)) {
-      mainWin.webContents.send("update-desktop-lyric-option", config);
-    }
-  });
+      if (temp) return;
+      store.set("lyric.config.isLock", isLock);
+      // 触发窗口更新
+      const config = store.get("lyric.config");
+      if (isWinAlive(mainWin)) {
+        mainWin.webContents.send("desktop-lyric:update-option", config);
+      }
+    },
+  );
 };
 
 export default initLyricIpc;

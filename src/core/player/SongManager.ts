@@ -1,5 +1,6 @@
 import { personalFm, personalFmToTrash } from "@/api/rec";
 import { songUrl, unlockSongUrl } from "@/api/song";
+import { useLyricManager } from "@/core/player/LyricManager";
 import {
   useDataStore,
   useMusicStore,
@@ -246,14 +247,15 @@ class SongManager {
   };
 
   /**
-   * 预载下一首歌曲播放地址
+   * 预载下一首歌曲
    * @returns 预载数据
    */
-  public getNextSongUrl = async (): Promise<AudioSource | undefined> => {
+  public prefetchNextSong = async (): Promise<AudioSource | undefined> => {
     try {
       const dataStore = useDataStore();
       const statusStore = useStatusStore();
       const settingStore = useSettingStore();
+      const lyricManager = useLyricManager();
 
       // 无列表或私人FM模式直接跳过
       const playList = dataStore.playList;
@@ -269,6 +271,8 @@ class SongManager {
 
       // 预加载封面图片
       this.prefetchCover(nextSong);
+      // 预加载歌词
+      lyricManager.prefetchLyric(nextSong);
 
       // 本地歌曲跳过
       if (nextSong.path) return;
@@ -294,7 +298,13 @@ class SongManager {
       const { url: officialUrl, isTrial, quality } = await this.getOnlineUrl(songId, false);
       if (officialUrl && !isTrial) {
         // 官方可播放且非试听
-        this.nextPrefetch = { id: songId, url: officialUrl, isUnlocked: false, quality };
+        this.nextPrefetch = {
+          id: songId,
+          url: officialUrl,
+          isUnlocked: false,
+          quality,
+          source: "official",
+        };
         return this.nextPrefetch;
       } else if (canUnlock) {
         // 官方失败或为试听时尝试解锁
@@ -304,14 +314,14 @@ class SongManager {
           return this.nextPrefetch;
         } else if (officialUrl && settingStore.playSongDemo) {
           // 解锁失败，若官方为试听且允许试听，保留官方试听地址
-          this.nextPrefetch = { id: songId, url: officialUrl };
+          this.nextPrefetch = { id: songId, url: officialUrl, source: "official" };
           return this.nextPrefetch;
         } else {
           return;
         }
       } else {
         // 不可解锁，仅保留官方结果（可能为空）
-        this.nextPrefetch = { id: songId, url: officialUrl };
+        this.nextPrefetch = { id: songId, url: officialUrl, source: "official" };
         return this.nextPrefetch;
       }
     } catch (error) {

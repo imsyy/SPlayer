@@ -67,9 +67,14 @@
       <n-scrollbar
         ref="setScrollbar"
         class="set-content"
-        :content-style="{ overflow: 'hidden', padding: '40px 0' }"
+        :content-style="{ overflow: 'hidden', padding: '40px 10px' }"
       >
-        <Transition name="fade" mode="out-in" :duration="70" @after-leave="setScrollbar?.scrollTo({ top: 0 })">
+        <Transition
+          name="fade"
+          mode="out-in"
+          :duration="70"
+          @after-leave="setScrollbar?.scrollTo({ top: 0 })"
+        >
           <!-- 常规 -->
           <UniversalSetting
             v-if="activeKey === 'general'"
@@ -133,9 +138,6 @@ import { useStatusStore } from "@/stores";
 import { getDisplayVersion, isNightly } from "@/utils/version";
 import packageJson from "@/../package.json";
 import { usePlaySettings } from "./config/play";
-
-const displayVersion = getDisplayVersion();
-
 import { useGeneralSettings } from "./config/general";
 import { useAppearanceSettings } from "./config/appearance";
 import { useLyricSettings } from "./config/lyric";
@@ -178,6 +180,7 @@ const allSettingGroups = computed(() => {
 });
 
 const statusStore = useStatusStore();
+const displayVersion = getDisplayVersion();
 const { isSmallScreen } = useMobile();
 
 // 设置内容
@@ -473,7 +476,7 @@ onMounted(() => {
       transition: opacity 0.2s ease-in-out;
     }
     .set-content {
-      padding: 0 40px;
+      padding: 0 30px;
     }
     .set-list {
       padding-top: 30px;
@@ -515,6 +518,7 @@ onMounted(() => {
         .name {
           font-size: 16px;
           display: inline-flex;
+          align-items: center;
           gap: 6px;
         }
       }

@@ -15,9 +15,10 @@ import { type DebouncedFunc, throttle } from "lodash-es";
 import { useAudioManager } from "./AudioManager";
 import { useLyricManager } from "./LyricManager";
 import { mediaSessionManager } from "./MediaSessionManager";
-import * as playerIpc from "./PlayerIpc";
 import { PlayModeManager } from "./PlayModeManager";
 import { useSongManager } from "./SongManager";
+import { useBlobURLManager } from "../resource/BlobURLManager";
+import * as playerIpc from "./PlayerIpc";
 
 /**
  * 播放器核心类
@@ -181,7 +182,7 @@ class PlayerController {
       statusStore.abLoop.pointB = null;
       // 通知桌面歌词
       if (isElectron) {
-        window.electron.ipcRenderer.send("update-desktop-lyric-data", {
+        window.electron.ipcRenderer.send("desktop-lyric:update-data", {
           lyricLoading: true,
         });
       }
@@ -381,7 +382,7 @@ class PlayerController {
     }
 
     // 预载下一首
-    if (settingStore.useNextPrefetch) songManager.getNextSongUrl();
+    if (settingStore.useNextPrefetch) songManager.prefetchNextSong();
 
     // Last.fm Scrobbler
     if (settingStore.lastfm.enabled && settingStore.isLastfmConfigured) {
@@ -400,13 +401,39 @@ class PlayerController {
       const musicStore = useMusicStore();
       if (musicStore.playSong.type === "streaming") return;
       const statusStore = useStatusStore();
+      const blobURLManager = useBlobURLManager();
+      // Blob URL 清理
+      const oldCover = musicStore.playSong.cover;
+      let shouldFetchCover = !oldCover || oldCover === "/images/song.jpg?asset";
+
+      if (oldCover && oldCover.startsWith("blob:")) {
+        blobURLManager.revokeBlobURL(musicStore.playSong.path || "");
+        shouldFetchCover = true;
+      }
+
+      let coverBuffer: Uint8Array | undefined;
+
+      // 获取封面数据
+      if (shouldFetchCover) {
+        console.log("获取封面数据");
+        const coverData = await window.electron.ipcRenderer.invoke("get-music-cover", path);
+        if (coverData) {
+          const blobURL = blobURLManager.createBlobURL(coverData.data, coverData.format, path);
+          if (blobURL) musicStore.playSong.cover = blobURL;
+          if (coverData.data) {
+            coverBuffer = new Uint8Array(coverData.data);
+          }
+        } else {
+          musicStore.playSong.cover = "/images/song.jpg?asset";
+        }
+      }
       // 获取元数据
       const infoData = await window.electron.ipcRenderer.invoke("get-music-metadata", path);
       statusStore.songQuality = handleSongQuality(infoData.format?.bitrate ?? 0, "local");
       // 获取主色
       getCoverColor(musicStore.playSong.cover);
       // 更新媒体会话
-      mediaSessionManager.updateMetadata();
+      mediaSessionManager.updateMetadata(coverBuffer);
       // 更新任务栏歌词
       const { name, artist } = getPlayerInfoObj() || {};
       playerIpc.sendTaskbarMetadata({
@@ -851,6 +878,15 @@ class PlayerController {
     audioManager.seek(safeTime / 1000);
     statusStore.currentTime = safeTime;
     mediaSessionManager.updateState(this.getDuration(), safeTime, true);
+  }
+
+  /**
+   * 快进/快退指定时间
+   * @param delta 时间增量 (ms)，正数快进，负数快退
+   */
+  public seekBy(delta: number) {
+    const currentTime = this.getSeek();
+    this.setSeek(currentTime + delta);
   }
 
   /**
