@@ -142,6 +142,13 @@ const initIpc = () => {
         duration: statusStore.duration * 1000,
         offset: statusStore.getSongOffset(musicStore.playSong?.id),
       });
+
+      // macOS 状态栏歌词进度数据
+      window.electron.ipcRenderer.send("mac-statusbar:update-progress", {
+        currentTime: statusStore.currentTime,
+        duration: statusStore.duration,
+        offset: statusStore.getSongOffset(musicStore.playSong?.id),
+      });
     });
 
     // 请求歌词数据

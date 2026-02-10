@@ -4,7 +4,7 @@ import type { SongType } from "@/types/main";
 import type { RepeatModeType, ShuffleModeType } from "@/types/shared";
 import { calculateLyricIndex } from "@/utils/calc";
 import { getCoverColor } from "@/utils/color";
-import { isElectron } from "@/utils/env";
+import { isElectron, isMac } from "@/utils/env";
 import { getPlayerInfoObj, getPlaySongData } from "@/utils/format";
 import { handleSongQuality, shuffleArray, sleep } from "@/utils/helper";
 import lastfmScrobbler from "@/utils/lastfmScrobbler";
@@ -560,6 +560,16 @@ class PlayerController {
         duration,
         offset,
       });
+
+      // macOS 状态栏歌词进度
+      if (isMac) {
+        window.electron.ipcRenderer.send("mac-statusbar:update-progress", {
+          currentTime,
+          duration,
+          offset,
+        });
+      }
+
       // Socket 进度
       playerIpc.sendSocketProgress(currentTime, duration);
     }, 200);
