@@ -85,12 +85,12 @@ import LyricScroll from "./LyricScroll.vue";
 const settingStore = useSettingStore();
 
 /**
- * 只有当 IPC 时间与本地时间误差超过 100ms 时，才同步 IPC 的时间
+ * 只有当 IPC 时间与本地时间误差超过 250ms 时，才同步 IPC 的时间
  *
  * IPC 传来的时间有约 50ms 的延迟，可能导致 rAF 的时间抢跑了 50ms
  * 显示到了下一行歌词，而 IPC 传的时间又把歌词拉回到上一句
  */
-const SYNC_THRESHOLD_MS = 100;
+const SYNC_THRESHOLD_MS = 250;
 
 interface DisplayItem {
   key: string | number;
