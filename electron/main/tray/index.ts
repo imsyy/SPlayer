@@ -1,7 +1,4 @@
-import {
-  RepeatModeType,
-  ShuffleModeType,
-} from "@shared";
+import { RepeatModeType, ShuffleModeType } from "@shared";
 import {
   app,
   BrowserWindow,
@@ -64,22 +61,22 @@ const getTrayIcon = (): NativeImage | null => {
 
   try {
     let image = nativeImage.createFromPath(iconPath);
-    
-    image = image.resize({ width: 19, height: 19 }); 
-    
-    image.setTemplateImage(true); 
-    
-    return image; 
+
+    image = image.resize({ width: 19, height: 19 });
+
+    image.setTemplateImage(true);
+
+    return image;
   } catch (error) {
     trayLog.error(`获取托盘图标失败: ${error}`);
     try {
-        let fallbackImage = nativeImage.createFromPath(fallbackIconPath);
-        fallbackImage = fallbackImage.resize({ width: 19, height: 19 }); 
-        fallbackImage.setTemplateImage(true);
-        return fallbackImage;
+      let fallbackImage = nativeImage.createFromPath(fallbackIconPath);
+      fallbackImage = fallbackImage.resize({ width: 19, height: 19 });
+      fallbackImage.setTemplateImage(true);
+      return fallbackImage;
     } catch (fallbackError) {
-        trayLog.error(`备用托盘图标加载也失败: ${fallbackError}`);
-        return null;
+      trayLog.error(`备用托盘图标加载也失败: ${fallbackError}`);
+      return null;
     }
   }
 };
@@ -113,6 +110,8 @@ const getMenuIcon = (iconName: string): NativeImage | undefined => {
 const createTrayMenu = (win: BrowserWindow): MenuItemConstructorOptions[] => {
   /**
    * 获取 {@linkcode RepeatModeType} 对应的显示字符串
+   * @param mode 重复模式
+   * @returns 对应的显示字符串
    */
   const getRepeatLabel = (mode: RepeatModeType): string => {
     switch (mode) {
@@ -262,8 +261,11 @@ const createTrayMenu = (win: BrowserWindow): MenuItemConstructorOptions[] => {
 
 // 创建托盘
 class CreateTray implements MainTray {
+  // 窗口
   private _win: BrowserWindow;
+  // 托盘
   private _tray: Tray;
+  // 菜单
   private _menu: MenuItemConstructorOptions[];
   private _contextMenu: Menu;
 
@@ -293,14 +295,15 @@ class CreateTray implements MainTray {
     this.initEvents();
     this.setTitle(appName);
   }
-
+  // 托盘菜单
   private initTrayMenu() {
     this._menu = createTrayMenu(this._win);
     this._contextMenu = Menu.buildFromTemplate(this._menu);
     this._tray.setContextMenu(this._contextMenu);
   }
-
+  // 托盘事件
   private initEvents() {
+    // 点击
     this._tray.on("click", () => this._win.show());
 
     // 监听系统主题变化，用于菜单图标的更新
@@ -309,41 +312,72 @@ class CreateTray implements MainTray {
     });
   }
 
+  // 设置标题
+  /**
+   * 设置标题
+   * @param title 标题
+   */
   setTitle(title: string) {
     this._win.setTitle(title);
     this._tray.setTitle(title);
     this._tray.setToolTip(title);
   }
-
+  /**
+   * 设置播放名称
+   * @param name 播放名称
+   */
   setPlayName(name: string) {
+    // 超长处理
     if (name.length > 20) name = name.slice(0, 20) + "...";
     playName = name;
+    // 更新菜单
     this.initTrayMenu();
   }
-
+  /**
+   * 设置播放状态
+   * @param state 播放状态
+   */
   setPlayState(state: PlayState) {
     playState = state;
+    // 更新菜单
     this.initTrayMenu();
   }
-
+  /**
+   * 设置播放模式
+   * @param repeat 当前的重复播放模式
+   * @param shuffle 当前的随机播放模式
+   */
   setPlayMode(repeat: RepeatModeType, shuffle: ShuffleModeType) {
     repeatMode = repeat;
     shuffleMode = shuffle;
+    // 更新菜单
     this.initTrayMenu();
   }
-
+  /**
+   * 设置喜欢状态
+   * @param like 喜欢状态
+   */
   setLikeState(like: boolean) {
     likeSong = like;
+    // 更新菜单
     this.initTrayMenu();
   }
-
+  /**
+   * 桌面歌词开关
+   * @param show 桌面歌词开关状态
+   */
   setDesktopLyricShow(show: boolean) {
     desktopLyricShow = show;
+    // 更新菜单
     this.initTrayMenu();
   }
-
+  /**
+   * 锁定桌面歌词
+   * @param lock 锁定桌面歌词状态
+   */
   setDesktopLyricLock(lock: boolean) {
     desktopLyricLock = lock;
+    // 更新菜单
     this.initTrayMenu();
   }
 
@@ -368,16 +402,24 @@ class CreateTray implements MainTray {
       this._tray.setTitle(title);
     }
   }
-
+  /**
+   * 销毁托盘
+   */
   destroyTray() {
     this._tray.destroy();
   }
 }
 
+/**
+ * 初始化托盘
+ * @param win 主窗口
+ * @returns 托盘实例
+ */
 export const initTray = (win: BrowserWindow) => {
   try {
     trayLog.info("🚀 Tray Process Startup");
     const tray = new CreateTray(win);
+    // 保存单例实例
     mainTrayInstance = tray;
     return tray;
   } catch (error) {
@@ -386,4 +428,8 @@ export const initTray = (win: BrowserWindow) => {
   }
 };
 
+/**
+ * 获取托盘实例
+ * @returns 托盘实例
+ */
 export const getMainTray = (): MainTray | null => mainTrayInstance;

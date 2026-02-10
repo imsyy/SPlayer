@@ -75,7 +75,7 @@ export const useInit = () => {
 
       // 启动时，如果启用macOS歌词，发送初始数据
       if (isMac && settingStore.macos.statusBarLyric.enabled) {
-        window.electron.ipcRenderer.send("taskbar:request-data");
+        window.electron.ipcRenderer.send("mac-statusbar:request-data");
       }
 
       // 监听任务栏歌词设置

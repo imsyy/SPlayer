@@ -93,7 +93,7 @@ const initIpc = () => {
       },
     );
     // 给任务栏歌词初始数据
-    window.electron.ipcRenderer.on("taskbar:request-data", () => {
+    window.electron.ipcRenderer.on("mac-statusbar:request-data", () => {
       const musicStore = useMusicStore();
       const statusStore = useStatusStore();
       const settingStore = useSettingStore();
