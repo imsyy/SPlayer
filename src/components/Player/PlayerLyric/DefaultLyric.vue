@@ -3,8 +3,14 @@
     :key="`lyric-${musicStore.playSong.id}`"
     :style="{
       '--lrc-size': getFontSize(settingStore.lyricFontSize, settingStore.lyricFontSizeMode),
-      '--lrc-tran-size': getFontSize(settingStore.lyricTranFontSize, settingStore.lyricFontSizeMode),
-      '--lrc-roma-size': getFontSize(settingStore.lyricRomaFontSize, settingStore.lyricFontSizeMode),
+      '--lrc-tran-size': getFontSize(
+        settingStore.lyricTranFontSize,
+        settingStore.lyricFontSizeMode,
+      ),
+      '--lrc-roma-size': getFontSize(
+        settingStore.lyricRomaFontSize,
+        settingStore.lyricFontSizeMode,
+      ),
       '--lrc-bold': settingStore.lyricFontWeight,
       '--lrc-left-padding': `${settingStore.lyricHorizontalOffset}px`,
       'font-family': settingStore.LyricFont !== 'follow' ? settingStore.LyricFont : '',

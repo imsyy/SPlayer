@@ -256,7 +256,7 @@ export const convertSubsonicSong = (
         }
       : undefined,
     duration: (song.duration || 0) * 1000, // 转换为毫秒
-    size: song.size ? Number((song.size / (1024 * 1024)).toFixed(2)) : 0,
+    size: song.size || 0,
     quality: inferQuality(song),
     free: 0,
     mv: null,

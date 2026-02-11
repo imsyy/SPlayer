@@ -816,9 +816,9 @@ export const useLyricSettings = (): SettingConfig => {
           },
           {
             key: "taskbarLyricUseThemeColor",
-            label: "跟随主题色",
+            label: "跟随封面颜色",
             type: "switch",
-            description: "开启后任务栏歌词颜色将跟随应用主题，下一曲生效",
+            description: "开启后任务栏歌词颜色将跟随歌曲封面，下一曲生效",
             value: toRef(settingStore, "taskbarLyricUseThemeColor"),
           },
           {

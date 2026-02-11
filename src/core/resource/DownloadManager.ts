@@ -9,8 +9,6 @@ import { songLevelData } from "@/utils/meta";
 import { getPlayerInfoObj } from "@/utils/format";
 import { LyricProcessor, type LyricProcessorOptions, type LyricResult } from "./LyricProcessor";
 
-// 类型与接口定义
-
 interface DownloadConfig {
   fileName: string;
   fileType: string;
@@ -43,8 +41,9 @@ interface DownloadStrategy {
   postProcess(downloadedFilePath: string): Promise<void>;
 }
 
-// 下载策略实现
-
+/**
+ * 歌曲下载策略
+ */
 class SongDownloadStrategy implements DownloadStrategy {
   private settingStore = useSettingStore();
   private dataStore = useDataStore();
@@ -127,7 +126,10 @@ class SongDownloadStrategy implements DownloadStrategy {
       }
     }
   }
-
+  /**
+   * 获取下载配置
+   * @returns 下载配置
+   */
   getDownloadConfig(): DownloadConfig {
     const fileName = this.getFileName();
     const targetPath = this.getDownloadPath();
@@ -149,7 +151,10 @@ class SongDownloadStrategy implements DownloadStrategy {
       enableDownloadHttp2: enableDownloadHttp2,
     };
   }
-
+  /**
+   * 后置处理
+   * @param downloadedFilePath 下载文件路径
+   */
   async postProcess(downloadedFilePath: string): Promise<void> {
     console.log(`Post-processing file: ${downloadedFilePath}`);
     // 使用存储的文件名和路径
@@ -277,7 +282,10 @@ class SongDownloadStrategy implements DownloadStrategy {
       type: result.data.type?.toLowerCase() || "mp3",
     };
   }
-
+  /**
+   * 获取文件名
+   * @returns 文件名
+   */
   private getFileName(): string {
     const infoObj = getPlayerInfoObj(this.song) || {
       name: this.song.name || "未知歌曲",
@@ -294,7 +302,10 @@ class SongDownloadStrategy implements DownloadStrategy {
 
     return displayName.replace(/[/:*?"<>|]/g, "&");
   }
-
+  /**
+   * 获取下载路径
+   * @returns 下载路径
+   */
   private getDownloadPath(): string {
     const finalPath = this.settingStore.downloadPath;
     const infoObj = getPlayerInfoObj(this.song) || { artist: "未知歌手", album: "未知专辑" };
@@ -353,7 +364,9 @@ class DownloadManager {
 
     this.processQueue();
   }
-
+  /**
+   * 设置 IPC 监听器
+   */
   private setupIpcListeners() {
     if (typeof window === "undefined" || !window.electron?.ipcRenderer) return;
     window.electron.ipcRenderer.on("download-progress", (_event, progress) => {
@@ -367,32 +380,40 @@ class DownloadManager {
       dataStore.updateDownloadProgress(id, Number((percent * 100).toFixed(1)), transferred, total);
     });
   }
-
-  public async getDownloadedSongs(): Promise<SongType[]> {
+  /**
+   * 获取已下载的歌曲
+   * @returns 已下载的歌曲列表
+   */
+  public async getDownloadedSongs(): Promise<Record<string, unknown>[]> {
     const settingStore = useSettingStore();
     if (!isElectron) return [];
     const downloadPath = settingStore.downloadPath;
     if (!downloadPath) return [];
     try {
-      return await window.electron.ipcRenderer.invoke("get-music-files", downloadPath);
+      return await window.electron.ipcRenderer.invoke("get-downloaded-songs", downloadPath);
     } catch (error) {
       console.error("Failed to get downloaded songs:", error);
       return [];
     }
   }
-
+  /**
+   * 添加下载任务
+   * @param song 歌曲信息
+   * @param quality 歌曲质量
+   */
   public async addDownload(song: SongType, quality: SongLevelType) {
     this.init();
     const dataStore = useDataStore();
-
     if (this.checkExisting(song.id)) return;
-
     dataStore.addDownloadingSong(song, quality);
     const strategy = new SongDownloadStrategy(song, quality);
     this.queue.push(strategy);
     this.processQueue();
   }
-
+  /**
+   * 移除下载任务
+   * @param id 歌曲ID
+   */
   public removeDownload(id: number) {
     const dataStore = useDataStore();
     // 如果正在下载，尝试取消（目前仅移除任务）
@@ -408,7 +429,10 @@ class DownloadManager {
     // 尝试处理下一个任务
     this.processQueue();
   }
-
+  /**
+   * 重新下载任务
+   * @param id 歌曲ID
+   */
   public retryDownload(id: number) {
     const dataStore = useDataStore();
     const task = dataStore.downloadingSongs.find((s) => s.song.id === id);
@@ -419,7 +443,9 @@ class DownloadManager {
       this.processQueue();
     }
   }
-
+  /**
+   * 重新下载所有失败的任务
+   */
   public retryAllDownloads() {
     this.init();
     const dataStore = useDataStore();
@@ -428,7 +454,11 @@ class DownloadManager {
       .map((item) => item.song.id);
     failedSongs.forEach((id) => this.retryDownload(id));
   }
-
+  /**
+   * 检查是否存在相同的下载任务
+   * @param id 歌曲ID
+   * @returns 是否存在相同的下载任务
+   */
   private checkExisting(id: number): boolean {
     const dataStore = useDataStore();
     const existing = dataStore.downloadingSongs.find((item) => item.song.id === id);
@@ -451,14 +481,19 @@ class DownloadManager {
     }
     return false;
   }
-
+  /**
+   * 处理下载队列
+   */
   private processQueue() {
     while (this.activeDownloads.size < this.maxConcurrent && this.queue.length > 0) {
       const strategy = this.queue.shift();
       if (strategy) this.startTask(strategy);
     }
   }
-
+  /**
+   * 开始下载任务
+   * @param strategy 下载策略
+   */
   private async startTask(strategy: DownloadStrategy) {
     this.activeDownloads.add(strategy.id);
     const dataStore = useDataStore();

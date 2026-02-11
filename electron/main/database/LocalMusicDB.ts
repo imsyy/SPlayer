@@ -256,4 +256,26 @@ export class LocalMusicDB {
     if (!this.db) return [];
     return this.db.prepare("SELECT * FROM tracks").all() as MusicTrack[];
   }
+
+  /**
+   * 获取指定目录下的所有歌曲
+   * @param dirPath 目录路径
+   */
+  public getTracksInPath(dirPath: string): MusicTrack[] {
+    if (!this.db) return [];
+    // 确保路径以分隔符结尾，避免匹配到同名前缀的其他目录
+    const pathWithSep = dirPath.endsWith("/") || dirPath.endsWith("\\") ? dirPath : dirPath + "/";
+    // 先统一路径分隔符
+    const unixBase = pathWithSep.replace(/\\/g, "/");
+    const winBase = pathWithSep.replace(/\//g, "\\");
+    // 转义 LIKE 通配符（使用 ^ 作为转义字符，同时转义 ^ 本身）
+    const escapeLike = (s: string) =>
+      s.replace(/\^/g, "^^").replace(/%/g, "^%").replace(/_/g, "^_");
+    const unixPath = escapeLike(unixBase) + "%";
+    const winPath = escapeLike(winBase) + "%";
+    // 使用 OR 查询并指定 ESCAPE 字符
+    return this.db
+      .prepare("SELECT * FROM tracks WHERE path LIKE ? ESCAPE '^' OR path LIKE ? ESCAPE '^'")
+      .all(unixPath, winPath) as MusicTrack[];
+  }
 }

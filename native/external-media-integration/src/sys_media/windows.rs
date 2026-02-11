@@ -8,8 +8,9 @@ use windows::{
     Foundation::{TimeSpan, TypedEventHandler},
     Media::{
         MediaPlaybackAutoRepeatMode, MediaPlaybackStatus, MediaPlaybackType, Playback::MediaPlayer,
-        PlaybackPositionChangeRequestedEventArgs, SystemMediaTransportControls,
-        SystemMediaTransportControlsButton, SystemMediaTransportControlsButtonPressedEventArgs,
+        PlaybackPositionChangeRequestedEventArgs, PlaybackRateChangeRequestedEventArgs,
+        SystemMediaTransportControls, SystemMediaTransportControlsButton,
+        SystemMediaTransportControlsButtonPressedEventArgs,
         SystemMediaTransportControlsTimelineProperties,
     },
     Storage::Streams::{DataWriter, InMemoryRandomAccessStream, RandomAccessStreamReference},
@@ -34,6 +35,7 @@ struct SmtcHandlerTokens {
     shuffle_changed: i64,
     repeat_changed: i64,
     seek_requested: i64,
+    playback_rate_changed: i64,
 }
 
 struct SmtcContext {
@@ -55,6 +57,7 @@ impl SmtcContext {
         smtc.RemoveShuffleEnabledChangeRequested(self.tokens.shuffle_changed)?;
         smtc.RemoveAutoRepeatModeChangeRequested(self.tokens.repeat_changed)?;
         smtc.RemovePlaybackPositionChangeRequested(self.tokens.seek_requested)?;
+        smtc.RemovePlaybackRateChangeRequested(self.tokens.playback_rate_changed)?;
         Ok(())
     }
 }
@@ -151,6 +154,7 @@ impl WindowsImpl {
 
 impl SystemMediaControls for WindowsImpl {
     #[instrument]
+    #[allow(clippy::too_many_lines)] // TODO: 重构以解决此警告
     fn initialize(&self) -> Result<()> {
         info!("正在初始化 SMTC...");
 
@@ -228,6 +232,21 @@ impl SystemMediaControls for WindowsImpl {
         );
         let seek_requested = smtc.PlaybackPositionChangeRequested(&seek_handler)?;
 
+        // 监听播放速率变化
+        let playback_rate_handler = TypedEventHandler::new(
+            move |_,
+                  args: Ref<PlaybackRateChangeRequestedEventArgs>|
+                  -> windows::core::Result<()> {
+                if let Some(args) = args.as_ref() {
+                    let rate = args.RequestedPlaybackRate()?;
+                    debug!(rate, "SMTC 请求更改播放速率");
+                    dispatch_event(SystemMediaEvent::set_rate(rate));
+                }
+                Ok(())
+            },
+        );
+        let playback_rate_changed = smtc.PlaybackRateChangeRequested(&playback_rate_handler)?;
+
         debug!("SMTC 事件处理器已全部附加");
 
         let context = SmtcContext {
@@ -237,6 +256,7 @@ impl SystemMediaControls for WindowsImpl {
                 shuffle_changed,
                 repeat_changed,
                 seek_requested,
+                playback_rate_changed,
             },
             callback: None,
             cover_task: None,
@@ -384,6 +404,25 @@ impl SystemMediaControls for WindowsImpl {
             });
             if let Err(e) = result {
                 error!("更新播放状态失败: {e:?}");
+            }
+        });
+    }
+
+    fn update_playback_rate(&self, rate: f64) {
+        debug!(rate, "正在更新 SMTC 播放速率");
+
+        TOKIO_RUNTIME.spawn(async move {
+            let result = with_smtc_ctx("更新播放速率", |ctx| {
+                if !ctx.is_enabled {
+                    return Ok(());
+                }
+                let smtc = ctx.smtc()?;
+                smtc.SetPlaybackRate(rate)?;
+                debug!("更新 SMTC 播放速率成功: {}", rate);
+                Ok(())
+            });
+            if let Err(e) = result {
+                error!("更新播放速率失败: {e:?}");
             }
         });
     }

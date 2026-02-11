@@ -203,7 +203,7 @@ export const usePlaySettings = (): SettingConfig => {
     }
   };
 
-  // mpv 切换输出设备
+  // 切换输出设备
   const playDeviceChange = async (deviceId: string) => {
     // 找到对应的 label 用于显示
     const option = outputDevices.value.find((d) => d.value === deviceId);
@@ -213,6 +213,7 @@ export const usePlaySettings = (): SettingConfig => {
       try {
         const result = await window.electron.ipcRenderer.invoke("mpv-set-audio-device", deviceId);
         if (result.success) {
+          settingStore.playDevice = deviceId;
           window.$message.success(`已切换输出设备为 ${label}`);
         } else {
           window.$message.error(`切换输出设备失败: ${result.error}`);
@@ -224,6 +225,7 @@ export const usePlaySettings = (): SettingConfig => {
     }
 
     player.toggleOutputDevice(deviceId);
+    settingStore.playDevice = deviceId;
     window.$message.success(`已切换输出设备为 ${label}`);
   };
   // 监听播放引擎变化以刷新设备列表

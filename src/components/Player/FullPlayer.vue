@@ -8,6 +8,8 @@
         }"
         :class="['full-player', { 'show-comment': isShowComment }]"
         @mouseleave="playerLeave"
+        @mousemove="playerMove"
+        @click="playerMove"
       >
         <!-- 背景 -->
         <PlayerBackground />

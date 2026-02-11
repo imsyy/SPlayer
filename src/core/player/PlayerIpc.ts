@@ -202,6 +202,16 @@ export const sendMediaPlayState = (status: PlaybackStatus) => {
 };
 
 /**
+ * @description 通过外部媒体集成模块更新媒体控件的播放速率
+ * @note 仅在 Electron 上有效
+ * @param rate - 播放速率，1.0 表示正常速度
+ * @see {@link EmiModule.updatePlaybackRate 外部媒体集成模块的 `updatePlaybackRate` 方法}
+ */
+export const sendMediaPlaybackRate = (rate: number) => {
+  if (isElectron) window.electron.ipcRenderer.send("media-update-playback-rate", { rate });
+};
+
+/**
  * @description 通过外部媒体集成模块更新媒体控件和 Discord RPC 的播放状态
  * @note 仅在 Electron 上有效
  * @param currentTime - 当前的播放进度，单位是毫秒

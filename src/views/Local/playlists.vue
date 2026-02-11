@@ -7,16 +7,18 @@
       type="playlist"
       :show-size="false"
       empty-description="暂无本地歌单"
+      :hiddenCover="settingStore.hiddenCovers.playlist"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { CoverType } from "@/types/main";
-import { useLocalStore } from "@/stores";
+import { useLocalStore, useSettingStore } from "@/stores";
 import CoverList from "@/components/List/CoverList.vue";
 
 const localStore = useLocalStore();
+const settingStore = useSettingStore();
 
 // 歌单数据
 const playlistData = computed<CoverType[]>(() => {

@@ -2,13 +2,14 @@ import { useMusicStore, useSettingStore, useStatusStore } from "@/stores";
 import { isElectron } from "@/utils/env";
 import { getPlaySongData } from "@/utils/format";
 import { msToS } from "@/utils/time";
-import { SystemMediaEvent } from "@emi";
+import type { SystemMediaEvent } from "@emi";
 import axios from "axios";
 import { throttle } from "lodash-es";
 import { usePlayerController } from "./PlayerController";
 import {
   enableDiscordRpc,
   sendMediaMetadata,
+  sendMediaPlaybackRate,
   sendMediaPlayMode,
   sendMediaPlayState,
   sendMediaTimeline,
@@ -22,6 +23,7 @@ import {
  */
 class MediaSessionManager {
   private metadataAbortController: AbortController | null = null;
+  private currentRate: number = 1;
 
   private throttledSendTimeline = throttle((currentTime: number, duration: number) => {
     sendMediaTimeline(currentTime, duration);
@@ -71,6 +73,11 @@ class MediaSessionManager {
       case "ToggleRepeat":
         player.toggleRepeat();
         break;
+      case "SetRate":
+        if (event.rate != null) {
+          player.setRate(event.rate);
+        }
+        break;
     }
   }
 
@@ -83,6 +90,8 @@ class MediaSessionManager {
 
     const player = usePlayerController();
     const statusStore = useStatusStore();
+
+    this.currentRate = statusStore.playRate;
 
     if (isElectron) {
       window.electron.ipcRenderer.removeAllListeners("media-event");
@@ -101,6 +110,9 @@ class MediaSessionManager {
       sendMediaPlayMode(shuffle, repeat);
 
       player.syncMediaPlayMode();
+
+      // 同步初始播放速率
+      sendMediaPlaybackRate(statusStore.playRate);
 
       // Discord RPC 初始化
       if (settingStore.discordRpc.enabled) {
@@ -306,6 +318,17 @@ class MediaSessionManager {
   }
 
   /**
+   * 更新播放速率
+   */
+  public updatePlaybackRate(rate: number) {
+    this.currentRate = rate;
+
+    if (this.shouldUseNativeMedia()) {
+      sendMediaPlaybackRate(rate);
+    }
+  }
+
+  /**
    * 限流更新进度状态
    */
   private throttledUpdatePositionState = throttle((duration: number, position: number) => {
@@ -313,6 +336,7 @@ class MediaSessionManager {
       navigator.mediaSession.setPositionState({
         duration: msToS(duration),
         position: msToS(position),
+        playbackRate: this.currentRate,
       });
     }
   }, 1000);

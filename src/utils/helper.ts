@@ -402,7 +402,7 @@ export const handleSongQuality = (
 ): QualityType | undefined => {
   const settingStore = useSettingStore();
   const { disableAiAudio } = settingStore;
-
+  if (!song) return undefined;
   if (type === "local" && typeof song === "number") {
     if (song >= 960000) return QualityType.HiRes;
     if (song >= 441000) return QualityType.SQ;

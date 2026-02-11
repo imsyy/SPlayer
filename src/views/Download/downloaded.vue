@@ -1,6 +1,6 @@
 <template>
   <div class="download-downloaded">
-    <SongList :data="data" :loading="loading" hiddenCover @removeSong="getDownloadMusic" />
+    <SongList :data="data" :loading="loading" @removeSong="getDownloadMusic" />
   </div>
 </template>
 

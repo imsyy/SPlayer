@@ -5,11 +5,15 @@
         v-for="(item, key, index) in albumData"
         :key="index"
         :id="key"
-        :class="['album-item', { choose: chooseAlbum === key }]"
+        :class="[
+          'album-item',
+          { choose: chooseAlbum === key, 'no-cover': settingStore.hiddenCovers.album },
+        ]"
         @click="chooseAlbum = key"
       >
         <Transition name="fade" mode="out-in">
           <s-image
+            v-if="!settingStore.hiddenCovers.album"
             :key="item?.[0]?.cover"
             :src="item?.[0]?.cover || '/images/album.jpg?asset'"
             class="cover"
@@ -38,13 +42,14 @@
 
 <script setup lang="ts">
 import type { SongType } from "@/types/main";
-import { useLocalStore } from "@/stores";
+import { useLocalStore, useSettingStore } from "@/stores";
 import { some } from "lodash-es";
 import { usePlayerController } from "@/core/player/PlayerController";
 
 const props = defineProps<{ data: SongType[] }>();
 
 const localStore = useLocalStore();
+const settingStore = useSettingStore();
 const player = usePlayerController();
 
 // 播放事件总线
@@ -165,6 +170,13 @@ watch(
     &.choose {
       border-color: rgba(var(--primary), 0.58);
       background-color: rgba(var(--primary), 0.28);
+    }
+    &.no-cover {
+      .data {
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
     }
   }
   .song-list {

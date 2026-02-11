@@ -11,13 +11,14 @@ use objc2::{
     runtime::{AnyObject, ProtocolObject},
 };
 use objc2_app_kit::NSImage;
-use objc2_foundation::{NSData, NSMutableDictionary, NSNumber, NSSize, NSString};
+use objc2_foundation::{NSArray, NSData, NSMutableDictionary, NSNumber, NSSize, NSString};
 use objc2_media_player::{
-    MPChangePlaybackPositionCommandEvent, MPChangeRepeatModeCommandEvent,
-    MPChangeShuffleModeCommandEvent, MPMediaItemArtwork, MPMediaItemPropertyAlbumTitle,
-    MPMediaItemPropertyArtist, MPMediaItemPropertyArtwork, MPMediaItemPropertyPersistentID,
-    MPMediaItemPropertyPlaybackDuration, MPMediaItemPropertyTitle, MPNowPlayingInfoCenter,
-    MPNowPlayingInfoPropertyElapsedPlaybackTime, MPNowPlayingPlaybackState, MPRemoteCommand,
+    MPChangePlaybackPositionCommandEvent, MPChangePlaybackRateCommandEvent,
+    MPChangeRepeatModeCommandEvent, MPChangeShuffleModeCommandEvent, MPMediaItemArtwork,
+    MPMediaItemPropertyAlbumTitle, MPMediaItemPropertyArtist, MPMediaItemPropertyArtwork,
+    MPMediaItemPropertyPersistentID, MPMediaItemPropertyPlaybackDuration, MPMediaItemPropertyTitle,
+    MPNowPlayingInfoCenter, MPNowPlayingInfoPropertyElapsedPlaybackTime,
+    MPNowPlayingInfoPropertyPlaybackRate, MPNowPlayingPlaybackState, MPRemoteCommand,
     MPRemoteCommandCenter, MPRemoteCommandEvent, MPRemoteCommandHandlerStatus, MPRepeatType,
     MPShuffleType,
 };
@@ -131,6 +132,54 @@ impl MacosImpl {
         }
     }
 
+    fn add_change_playback_rate_handler(&self) {
+        let command = unsafe { self.cmd_ctr.changePlaybackRateCommand() };
+        let handler_arc = self.event_handler.clone();
+
+        let block = RcBlock::new(
+            move |event: NonNull<MPRemoteCommandEvent>| -> MPRemoteCommandHandlerStatus {
+                let rate_evt_opt = unsafe { Retained::retain(event.as_ptr()) }
+                    .and_then(|evt| evt.downcast::<MPChangePlaybackRateCommandEvent>().ok());
+
+                if let Some(rate_evt) = rate_evt_opt {
+                    let rate = unsafe { rate_evt.playbackRate() };
+                    debug!(rate, "MPChangePlaybackRateCommand 触发");
+
+                    if let Ok(guard) = handler_arc.lock()
+                        && let Some(tsfn) = guard.as_ref()
+                    {
+                        let evt = SystemMediaEvent::set_rate(f64::from(rate));
+                        tsfn.call(
+                            evt,
+                            napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
+                        );
+                    }
+                }
+
+                MPRemoteCommandHandlerStatus::Success
+            },
+        );
+
+        unsafe {
+            command.setEnabled(true);
+            // 这里可以设置 supportedPlaybackRates，但如果不设置，系统可能会提供默认选项或允许任意值
+            let rates = NSArray::from_retained_slice(&[
+                NSNumber::new_f64(0.25),
+                NSNumber::new_f64(0.5),
+                NSNumber::new_f64(0.75),
+                NSNumber::new_f64(1.0),
+                NSNumber::new_f64(1.25),
+                NSNumber::new_f64(1.5),
+                NSNumber::new_f64(1.75),
+                NSNumber::new_f64(2.0),
+            ]);
+            command.setSupportedPlaybackRates(&rates);
+
+            let token = command.addTargetWithHandler(&block);
+            self.store_token(&command, token);
+        }
+    }
+
     fn add_shuffle_handler(&self) {
         let command = unsafe { self.cmd_ctr.changeShuffleModeCommand() };
         let handler_arc = self.event_handler.clone();
@@ -204,6 +253,7 @@ impl MacosImpl {
             self.cmd_ctr
                 .changePlaybackPositionCommand()
                 .setEnabled(enabled);
+            self.cmd_ctr.changePlaybackRateCommand().setEnabled(enabled);
             self.cmd_ctr.changeShuffleModeCommand().setEnabled(enabled);
             self.cmd_ctr.changeRepeatModeCommand().setEnabled(enabled);
         }
@@ -235,6 +285,9 @@ impl MacosImpl {
 
         // Seek
         self.add_seek_handler();
+
+        // 速率
+        self.add_change_playback_rate_handler();
 
         // 随机和循环
         self.add_shuffle_handler();
@@ -401,6 +454,19 @@ impl SystemMediaControls for MacosImpl {
 
         unsafe {
             self.np_info_ctr.setPlaybackState(macos_state);
+        }
+    }
+
+    fn update_playback_rate(&self, rate: f64) {
+        if let Ok(mut info_guard) = self.info.lock() {
+            let info = &mut *info_guard;
+            unsafe {
+                info.setObject_forKey(
+                    &NSNumber::new_f64(rate),
+                    ProtocolObject::from_ref(MPNowPlayingInfoPropertyPlaybackRate),
+                );
+                self.np_info_ctr.setNowPlayingInfo(Some(info));
+            }
         }
     }
 

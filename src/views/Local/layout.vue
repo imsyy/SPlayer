@@ -305,10 +305,10 @@ const getMusicFolder = async (): Promise<string[]> => {
   return paths.filter((p) => p && p.trim() !== "");
 };
 
-// 全部音乐大小（基于筛选后的数据）
+// 全部音乐大小
 const allMusicSize = computed<number>(() => {
-  const total = listData.value.reduce((total, song) => (total += song?.size || 0), 0);
-  return Number((total / 1024).toFixed(2));
+  const totalBytes = listData.value.reduce((total, song) => (total += song?.size || 0), 0);
+  return Number((totalBytes / (1024 * 1024 * 1024)).toFixed(2));
 });
 
 // 更多操作
@@ -352,25 +352,11 @@ const tabDropdownOptions = computed<DropdownOption[]>(() => [
 // 当前 Tab 标签
 const currentTabLabel = computed(() => tabLabels[localType.value] || "单曲");
 
-/** 主进程发送的Track数据类型 */
-interface MusicTrackData {
-  id: string;
-  path: string;
-  title: string;
-  artist: string;
-  album: string;
-  duration: number;
-  cover?: string;
-  mtime: number;
-  size: number;
-  bitrate?: number;
-}
-
 /** 同步完成事件类型 */
 interface SyncCompleteData {
   success: boolean;
   message?: string;
-  tracks?: MusicTrackData[];
+  tracks?: Record<string, unknown>[];
 }
 
 // 获取全部路径歌曲（流式接收）
@@ -400,13 +386,13 @@ const getAllLocalMusic = debounce(
     // 记录初始歌曲数量，用于计算新增数量
     const initialSongCount = localStore.localSongs.length;
     // 累积接收到的tracks
-    const receivedTracks: MusicTrackData[] = [];
+    const receivedTracks: Record<string, unknown>[] = [];
     let isCompleted = false;
     // 清理之前的监听器
     window.electron.ipcRenderer.removeAllListeners("music-sync-tracks-batch");
     window.electron.ipcRenderer.removeAllListeners("music-sync-complete");
     // 监听批量track数据
-    const tracksBatchHandler = (_event: unknown, tracks: MusicTrackData[]) => {
+    const tracksBatchHandler = (_event: unknown, tracks: Record<string, unknown>[]) => {
       if (!loading.value || isCompleted) return;
       // 批量添加tracks
       receivedTracks.push(...tracks);
@@ -428,24 +414,8 @@ const getAllLocalMusic = debounce(
         return;
       }
       const sourceTracks = data.tracks && data.tracks.length > 0 ? data.tracks : receivedTracks;
-      const adaptedDataList = sourceTracks.map((track) => {
-        // 将字节转换为 MB，保留两位小数
-        const sizeMB =
-          track.size && track.size > 0 ? Number((track.size / (1024 * 1024)).toFixed(2)) : 0;
-        return {
-          id: track.id,
-          name: track.title,
-          artists: track.artist,
-          cover: track.cover,
-          album: track.album,
-          duration: track.duration,
-          size: sizeMB,
-          path: track.path,
-          quality: track.bitrate ?? 0,
-        };
-      });
-      // 批量格式化
-      const finalSongs = formatSongsList(adaptedDataList);
+      // 直接格式化
+      const finalSongs = formatSongsList(sourceTracks);
       localStore.updateLocalSong(finalSongs);
       // 更新搜索数据
       if (searchValue.value) {

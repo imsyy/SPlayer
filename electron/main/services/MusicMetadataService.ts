@@ -12,6 +12,21 @@ import pLimit from "p-limit";
 type toolModule = typeof import("@native/tools");
 const tools: toolModule = loadNativeModule("tools.node", "tools");
 
+/** 修改音乐元数据的输入参数 */
+export interface MusicMetadataInput {
+  name?: string;
+  artist?: string;
+  album?: string;
+  alia?: string;
+  lyric?: string;
+  cover?: string | null;
+  albumArtist?: string;
+  genre?: string;
+  year?: number;
+  trackNumber?: number;
+  discNumber?: number;
+}
+
 /** 支持的音乐文件扩展名列表 */
 const MUSIC_EXTENSIONS = ["mp3", "wav", "flac", "aac", "webm", "m4a", "ogg", "aiff", "aif", "aifc"];
 
@@ -279,7 +294,7 @@ export class MusicMetadataService {
    * @param path 文件路径
    * @param metadata 元数据对象
    */
-  async setMetadata(path: string, metadata: any) {
+  async setMetadata(path: string, metadata: MusicMetadataInput) {
     try {
       const {
         name,

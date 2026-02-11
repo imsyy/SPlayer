@@ -192,7 +192,7 @@
       </n-text>
       <!-- 大小 -->
       <n-text v-if="song.size && !hiddenSize && !isSmallScreen" class="meta size" depth="3">
-        {{ song.size }}M
+        {{ formatFileSize(song.size) }}
       </n-text>
     </div>
   </div>
@@ -201,7 +201,7 @@
 <script setup lang="ts">
 import { QualityType, type SongType } from "@/types/main";
 import { useStatusStore, useMusicStore, useDataStore, useSettingStore } from "@/stores";
-import { formatNumber } from "@/utils/helper";
+import { formatNumber, formatFileSize } from "@/utils/helper";
 import { openJumpArtist } from "@/utils/modal";
 import { removeBrackets } from "@/utils/format";
 import { toLikeSong } from "@/utils/auth";

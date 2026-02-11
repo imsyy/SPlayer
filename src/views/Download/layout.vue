@@ -9,7 +9,8 @@
         </n-text>
         <n-text v-if="currentTab === 'download-downloaded'" class="item" depth="3">
           <SvgIcon name="Download" :depth="3" />
-          <n-number-animation :from="0" :to="dataStore.downloadingSongs.length" /> 下载中
+          <n-number-animation :from="0" :to="dataStore.downloadingSongs.length" />
+          下载中
         </n-text>
         <n-text v-else class="item" depth="3">
           <SvgIcon name="DownloadDone" :depth="3" />
