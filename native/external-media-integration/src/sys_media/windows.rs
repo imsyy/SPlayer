@@ -8,9 +8,10 @@ use windows::{
     Foundation::{TimeSpan, TypedEventHandler},
     Media::{
         MediaPlaybackAutoRepeatMode, MediaPlaybackStatus, MediaPlaybackType, Playback::MediaPlayer,
-        PlaybackPositionChangeRequestedEventArgs, PlaybackRateChangeRequestedEvent,
+        PlaybackPositionChangeRequestedEventArgs, PlaybackRateChangeRequestedEventArgs,
         SystemMediaTransportControls, SystemMediaTransportControlsButton,
-        SystemMediaTransportControlsButtonPressedEventArgs, SystemMediaTransportControlsTimelineProperties,
+        SystemMediaTransportControlsButtonPressedEventArgs,
+        SystemMediaTransportControlsTimelineProperties,
     },
     Storage::Streams::{DataWriter, InMemoryRandomAccessStream, RandomAccessStreamReference},
     core::{HSTRING, Ref},
@@ -56,7 +57,7 @@ impl SmtcContext {
         smtc.RemoveShuffleEnabledChangeRequested(self.tokens.shuffle_changed)?;
         smtc.RemoveAutoRepeatModeChangeRequested(self.tokens.repeat_changed)?;
         smtc.RemovePlaybackPositionChangeRequested(self.tokens.seek_requested)?;
-        smtc.RemovePlaybackRateChanged(self.tokens.playback_rate_changed)?;
+        smtc.RemovePlaybackRateChangeRequested(self.tokens.playback_rate_changed)?;
         Ok(())
     }
 }
@@ -153,6 +154,7 @@ impl WindowsImpl {
 
 impl SystemMediaControls for WindowsImpl {
     #[instrument]
+    #[allow(clippy::too_many_lines)] // TODO: 重构以解决此警告
     fn initialize(&self) -> Result<()> {
         info!("正在初始化 SMTC...");
 
@@ -233,7 +235,7 @@ impl SystemMediaControls for WindowsImpl {
         // 监听播放速率变化
         let playback_rate_handler = TypedEventHandler::new(
             move |_,
-                  args: Ref<PlaybackRateChangeRequestedEvent>|
+                  args: Ref<PlaybackRateChangeRequestedEventArgs>|
                   -> windows::core::Result<()> {
                 if let Some(args) = args.as_ref() {
                     let rate = args.RequestedPlaybackRate()?;
@@ -243,7 +245,7 @@ impl SystemMediaControls for WindowsImpl {
                 Ok(())
             },
         );
-        let playback_rate_changed = smtc.PlaybackRateChanged(&playback_rate_handler)?;
+        let playback_rate_changed = smtc.PlaybackRateChangeRequested(&playback_rate_handler)?;
 
         debug!("SMTC 事件处理器已全部附加");
 
