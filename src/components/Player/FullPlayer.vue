@@ -328,7 +328,19 @@ onBeforeUnmount(() => {
       }
     }
   }
+
+  // 全屏封面过渡
+  .full-screen:not(.player-content) {
+    transition:
+      opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+      transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
   &.show-comment {
+    .full-screen:not(.player-content) {
+      opacity: 0;
+      transform: scale(1.05);
+    }
     .player-content {
       &:not(.pure) {
         transform: scale(0.95);
