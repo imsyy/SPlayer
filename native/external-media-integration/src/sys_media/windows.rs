@@ -240,6 +240,7 @@ impl SystemMediaControls for WindowsImpl {
                     debug!(rate, "SMTC 请求更改播放速率");
                     dispatch_event(SystemMediaEvent::set_rate(rate));
                 }
+                Ok(())
             },
         );
         let playback_rate_changed = smtc.PlaybackRateChanged(&playback_rate_handler)?;

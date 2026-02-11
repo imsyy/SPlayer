@@ -932,19 +932,29 @@ class PlayerController {
 
   /**
    * 设置播放速率
-   * @param rate 速率 (0.25 - 2.0)
+   * @param rate 速率 (0.2 - 2.0)
    */
   public setRate(rate: number) {
     const statusStore = useStatusStore();
     const audioManager = useAudioManager();
 
-    statusStore.playRate = rate;
+    if (!Number.isFinite(rate)) {
+      console.warn("⚠️ 无效的播放速率:", rate);
+      return;
+    }
+    if (audioManager.engineType === "mpv") {
+      console.warn("⚠️ MPV 引擎不支持倍速播放");
+      return;
+    }
+    const safeRate = Math.max(0.2, Math.min(rate, 2.0));
+
+    statusStore.playRate = safeRate;
 
     // 统一调用 audioManager
-    audioManager.setRate(rate);
+    audioManager.setRate(safeRate);
 
     // 更新系统播放速率
-    mediaSessionManager.updatePlaybackRate(rate);
+    mediaSessionManager.updatePlaybackRate(safeRate);
   }
 
   /**
