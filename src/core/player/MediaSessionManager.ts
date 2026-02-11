@@ -2,7 +2,7 @@ import { useMusicStore, useSettingStore, useStatusStore } from "@/stores";
 import { isElectron } from "@/utils/env";
 import { getPlaySongData } from "@/utils/format";
 import { msToS } from "@/utils/time";
-import { SystemMediaEvent } from "@emi";
+import type { SystemMediaEvent } from "@emi";
 import axios from "axios";
 import { throttle } from "lodash-es";
 import { usePlayerController } from "./PlayerController";
@@ -23,6 +23,7 @@ import {
  */
 class MediaSessionManager {
   private metadataAbortController: AbortController | null = null;
+  private currentRate: number = 1;
 
   private throttledSendTimeline = throttle((currentTime: number, duration: number) => {
     sendMediaTimeline(currentTime, duration);
@@ -89,6 +90,8 @@ class MediaSessionManager {
 
     const player = usePlayerController();
     const statusStore = useStatusStore();
+
+    this.currentRate = statusStore.playRate;
 
     if (isElectron) {
       window.electron.ipcRenderer.removeAllListeners("media-event");
@@ -318,6 +321,8 @@ class MediaSessionManager {
    * 更新播放速率
    */
   public updatePlaybackRate(rate: number) {
+    this.currentRate = rate;
+
     if (this.shouldUseNativeMedia()) {
       sendMediaPlaybackRate(rate);
     }
@@ -331,6 +336,7 @@ class MediaSessionManager {
       navigator.mediaSession.setPositionState({
         duration: msToS(duration),
         position: msToS(position),
+        playbackRate: this.currentRate,
       });
     }
   }, 1000);
