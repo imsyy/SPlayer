@@ -14,12 +14,11 @@ use objc2_app_kit::NSImage;
 use objc2_foundation::{NSArray, NSData, NSMutableDictionary, NSNumber, NSSize, NSString};
 use objc2_media_player::{
     MPChangePlaybackPositionCommandEvent, MPChangePlaybackRateCommandEvent,
-    MPChangeRepeatModeCommandEvent,
-    MPChangeShuffleModeCommandEvent, MPMediaItemArtwork, MPMediaItemPropertyAlbumTitle,
-    MPMediaItemPropertyArtist, MPMediaItemPropertyArtwork, MPMediaItemPropertyPersistentID,
-    MPMediaItemPropertyPlaybackDuration, MPMediaItemPropertyTitle, MPNowPlayingInfoCenter,
-    MPNowPlayingInfoPropertyElapsedPlaybackTime, MPNowPlayingInfoPropertyPlaybackRate,
-    MPNowPlayingPlaybackState, MPRemoteCommand,
+    MPChangeRepeatModeCommandEvent, MPChangeShuffleModeCommandEvent, MPMediaItemArtwork,
+    MPMediaItemPropertyAlbumTitle, MPMediaItemPropertyArtist, MPMediaItemPropertyArtwork,
+    MPMediaItemPropertyPersistentID, MPMediaItemPropertyPlaybackDuration, MPMediaItemPropertyTitle,
+    MPNowPlayingInfoCenter, MPNowPlayingInfoPropertyElapsedPlaybackTime,
+    MPNowPlayingInfoPropertyPlaybackRate, MPNowPlayingPlaybackState, MPRemoteCommand,
     MPRemoteCommandCenter, MPRemoteCommandEvent, MPRemoteCommandHandlerStatus, MPRepeatType,
     MPShuffleType,
 };
@@ -149,7 +148,7 @@ impl MacosImpl {
                     if let Ok(guard) = handler_arc.lock()
                         && let Some(tsfn) = guard.as_ref()
                     {
-                        let evt = SystemMediaEvent::set_rate(rate as f64);
+                        let evt = SystemMediaEvent::set_rate(f64::from(rate));
                         tsfn.call(
                             evt,
                             napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
