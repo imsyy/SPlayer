@@ -942,6 +942,9 @@ class PlayerController {
 
     // 统一调用 audioManager
     audioManager.setRate(rate);
+
+    // 更新系统播放速率
+    mediaSessionManager.updatePlaybackRate(rate);
   }
 
   /**

@@ -388,6 +388,10 @@ impl SystemMediaControls for WindowsImpl {
         });
     }
 
+    fn update_playback_rate(&self, rate: f64) {
+        // 未实现
+    }
+
     fn update_timeline(&self, payload: TimelinePayload) {
         // trace!(current_time, total_time, "正在更新 SMTC 时间线");
 

@@ -9,6 +9,7 @@ import { usePlayerController } from "./PlayerController";
 import {
   enableDiscordRpc,
   sendMediaMetadata,
+  sendMediaPlaybackRate,
   sendMediaPlayMode,
   sendMediaPlayState,
   sendMediaTimeline,
@@ -71,6 +72,11 @@ class MediaSessionManager {
       case "ToggleRepeat":
         player.toggleRepeat();
         break;
+      case "SetRate":
+        if (event.rate != null) {
+          player.setRate(event.rate);
+        }
+        break;
     }
   }
 
@@ -101,6 +107,9 @@ class MediaSessionManager {
       sendMediaPlayMode(shuffle, repeat);
 
       player.syncMediaPlayMode();
+
+      // 同步初始播放速率
+      sendMediaPlaybackRate(statusStore.playRate);
 
       // Discord RPC 初始化
       if (settingStore.discordRpc.enabled) {
@@ -302,6 +311,15 @@ class MediaSessionManager {
     // 发送到原生插件
     if (this.shouldUseNativeMedia()) {
       sendMediaPlayState(isPlaying ? "Playing" : "Paused");
+    }
+  }
+
+  /**
+   * 更新播放速率
+   */
+  public updatePlaybackRate(rate: number) {
+    if (this.shouldUseNativeMedia()) {
+      sendMediaPlaybackRate(rate);
     }
   }
 

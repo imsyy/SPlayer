@@ -31,6 +31,7 @@ use crate::{
 pub enum MprisCommand {
     UpdateMetadata(MetadataPayload),
     UpdatePlaybackStatus(PlayStatePayload),
+    UpdatePlaybackRate(f64),
     UpdateTimeline(TimelinePayload),
     UpdatePlayMode(PlayModePayload),
     Enable,
@@ -143,6 +144,13 @@ fn setup_mpris_signals(
     player.connect_set_shuffle(move |_, new_val| {
         debug!(?new_val, "收到 set_shuffle 命令");
         d(SystemMediaEvent::new(SystemMediaEventType::ToggleShuffle));
+    });
+
+    // 播放速率
+    let d = dispatch.clone();
+    player.connect_set_rate(move |_, new_rate| {
+        debug!(?new_rate, "收到 set_rate 命令");
+        d(SystemMediaEvent::set_rate(new_rate));
     });
 
     // 相对跳转
@@ -265,6 +273,10 @@ async fn handle_command(
             player.set_playback_status(status).await.ok();
         }
 
+        MprisCommand::UpdatePlaybackRate(rate) => {
+            player.set_rate(rate).await.ok();
+        }
+
         MprisCommand::UpdateTimeline(payload) => {
             let pos = Time::from_millis(payload.current_time as i64);
             player.set_position(pos);
@@ -311,6 +323,8 @@ async fn run_mpris_loop(mut rx: UnboundedReceiver<MprisCommand>) -> Result<()> {
         .can_go_previous(true)
         .can_seek(true)
         .can_control(true)
+        .minimum_rate(0.2)
+        .maximum_rate(2.0)
         .playback_status(MprisPlaybackStatus::Stopped)
         .identity("SPlayer")
         .desktop_entry("SPlayer")
@@ -383,6 +397,10 @@ impl SystemMediaControls for LinuxImpl {
 
     fn update_playback_status(&self, payload: PlayStatePayload) {
         self.send_command(MprisCommand::UpdatePlaybackStatus(payload));
+    }
+
+    fn update_playback_rate(&self, rate: f64) {
+        self.send_command(MprisCommand::UpdatePlaybackRate(rate));
     }
 
     fn update_timeline(&self, payload: TimelinePayload) {

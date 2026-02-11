@@ -136,6 +136,7 @@ export declare function shutdown(): void
 export interface SystemMediaEvent {
   type: SystemMediaEventType
   positionMs?: number
+  rate?: number
 }
 
 export type SystemMediaEventType =  'Play'|
@@ -145,6 +146,7 @@ export type SystemMediaEventType =  'Play'|
 'PreviousSong'|
 'ToggleShuffle'|
 'ToggleRepeat'|
+'SetRate'|
 /** 绝对位置，毫秒 */
 'Seek';
 
@@ -175,6 +177,15 @@ export declare function updateDiscordConfig(payload: DiscordConfigPayload): void
  * 更新 Discord RPC 的元数据时，必须提供 `original_cover_url`
  */
 export declare function updateMetadata(payload: MetadataParam): void
+
+/**
+ * 更新播放速率
+ *
+ * ### 备注
+ *
+ * 只会更新媒体控件的信息，不会更新 Discord RPC 上的信息
+ */
+export declare function updatePlaybackRate(rate: number): void
 
 /**
  * 更新播放模式
