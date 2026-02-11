@@ -7,6 +7,7 @@ import { cloneDeep } from "lodash-es";
 import { toRaw } from "vue";
 import { toLikeSong } from "./auth";
 import { isElectron, isMac } from "./env";
+import { sendTaskbarCoverColor } from "./color";
 import { getPlayerInfoObj } from "./format";
 import { openSetting, openUpdateApp } from "./modal";
 
