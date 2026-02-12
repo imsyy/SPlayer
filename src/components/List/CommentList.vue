@@ -288,7 +288,7 @@ const handleDoubleClick = debounce(async (item: CommentType) => {
         border-radius: 8px;
         font-size: 13px;
         margin-top: 6px;
-        background-color: rgba(var(--primary), 0.12);
+        background-color: rgba(var(--main-cover-color), 0.12);
         .text {
           white-space: pre-wrap;
           user-select: text;

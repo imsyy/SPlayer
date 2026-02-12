@@ -1,4 +1,4 @@
-import type { ColorScheme, RGB } from "@/types/main";
+import type { ColorScheme, RGB, UpdateInfoType } from "@/types/main";
 import {
   QualityType,
   type SongLevelDataType,
@@ -98,6 +98,16 @@ interface StatusState {
   personalFmMode: boolean;
   /** 更新检查 */
   updateCheck: boolean;
+  /** 有可用更新 */
+  updateAvailable: boolean;
+  /** 更新信息 */
+  updateInfo: UpdateInfoType | null;
+  /** 更新已下载完成 */
+  updateDownloaded: boolean;
+  /** 更新下载中 */
+  updateDownloading: boolean;
+  /** 更新下载进度 */
+  updateDownloadProgress: number;
   /** 均衡器是否开启 */
   eqEnabled: boolean;
   /** 均衡器 10 段增益（dB） */
@@ -191,6 +201,11 @@ export const useStatusStore = defineStore("status", {
     showTaskbarLyric: false,
     showPlayerComment: false,
     updateCheck: false,
+    updateAvailable: false,
+    updateInfo: null,
+    updateDownloaded: false,
+    updateDownloading: false,
+    updateDownloadProgress: 0,
     eqEnabled: false,
     eqBands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     eqPreset: "acoustic",
