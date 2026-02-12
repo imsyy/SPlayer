@@ -316,6 +316,7 @@ const handleLyricResize = (key: string | number, width: number) => {
 const calculateAndResizeWindow = () => {
   const ipc = window.electron?.ipcRenderer;
   if (!ipc) return;
+  if (isHovering.value) return;
 
   const activeKeys = new Set(itemsToRender.value.map((i) => i.key));
   let maxTextWidth = 0;
@@ -331,11 +332,17 @@ const calculateAndResizeWindow = () => {
   const BASE_WIDTH = 200; // Cover, controls, padding, etc.
   const requiredWidth = BASE_WIDTH + maxTextWidth;
 
-  if (requiredWidth > lastRequestedWidth.value || !isHovering.value) {
+  if (requiredWidth !== lastRequestedWidth.value) {
     lastRequestedWidth.value = requiredWidth;
     ipc.send("taskbar:set-width", requiredWidth);
   }
 };
+
+watch(isHovering, (newVal) => {
+  if (!newVal) {
+    calculateAndResizeWindow();
+  }
+});
 
 watch(
   () => state.title,

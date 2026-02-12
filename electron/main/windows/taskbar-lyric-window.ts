@@ -50,6 +50,7 @@ class TaskbarLyricWindow {
   private contentWidth = 300;
   private maxWidthPercent = 30;
   private isFadingOut = false;
+  private shouldBeVisible = false;
 
   private debouncedUpdateLayout = debounce(() => {
     this.updateLayout(true);
@@ -152,7 +153,9 @@ class TaskbarLyricWindow {
     this.win.once("ready-to-show", () => {
       if (this.win) {
         this.embed();
-        this.win.show();
+        if (this.shouldBeVisible) {
+          this.win.show();
+        }
         this.updateLayout(false);
         sendTheme();
       }
@@ -428,6 +431,8 @@ class TaskbarLyricWindow {
   }
 
   public setVisibility(shouldShow: boolean) {
+    this.shouldBeVisible = shouldShow;
+
     if (!this.win || this.win.isDestroyed()) return;
 
     if (shouldShow) {

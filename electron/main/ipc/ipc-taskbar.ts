@@ -116,6 +116,7 @@ const initTaskbarIpc = () => {
       }
     } else if (payload.type === "full-hydration" && payload.data.playback) {
       cachedIsPlaying = payload.data.playback.isPlaying;
+      updateWindowVisibility(getTaskbarConfig());
     }
 
     taskbarLyricWindow.send(TASKBAR_IPC_CHANNELS.SYNC_STATE, payload);
