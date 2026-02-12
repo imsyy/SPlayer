@@ -95,6 +95,40 @@ impl MacosImpl {
         }
     }
 
+    fn add_toggle_handler(&self) {
+        let command = unsafe { self.cmd_ctr.togglePlayPauseCommand() };
+        let handler_arc = self.event_handler.clone();
+        let info_ctr = self.np_info_ctr.clone();
+
+        let block = RcBlock::new(move |_| -> MPRemoteCommandHandlerStatus {
+            let current_state = unsafe { info_ctr.playbackState() };
+
+            let event_type = if current_state == MPNowPlayingPlaybackState::Playing {
+                SystemMediaEventType::Pause
+            } else {
+                SystemMediaEventType::Play
+            };
+
+            if let Ok(guard) = handler_arc.lock()
+                && let Some(tsfn) = guard.as_ref()
+            {
+                debug!(?event_type, "MPRemoteCommand Toggle 触发");
+                let evt = SystemMediaEvent::new(event_type);
+                tsfn.call(
+                    evt,
+                    napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
+                );
+            }
+            MPRemoteCommandHandlerStatus::Success
+        });
+
+        unsafe {
+            command.setEnabled(true);
+            let token = command.addTargetWithHandler(&block);
+            self.store_token(&command, token);
+        }
+    }
+
     fn add_seek_handler(&self) {
         let command = unsafe { self.cmd_ctr.changePlaybackPositionCommand() };
         let handler_arc = self.event_handler.clone();
@@ -266,6 +300,9 @@ impl MacosImpl {
 
             // 暂停
             self.add_command_handler(&self.cmd_ctr.pauseCommand(), SystemMediaEventType::Pause);
+
+            // 播放暂停
+            self.add_toggle_handler();
 
             // 上一首
             self.add_command_handler(
