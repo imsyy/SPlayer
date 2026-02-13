@@ -61,7 +61,6 @@ const initIpc = () => {
     window.electron.ipcRenderer.on("desktop-lyric:close", () => player.setDesktopLyricShow(false));
     // 任务栏歌词开关
     window.electron.ipcRenderer.on("toggle-taskbar-lyric", async () => {
-      player.toggleTaskbarLyric();
       if (isMac) {
         const currentMacLyricEnabled = await window.electron.ipcRenderer.invoke(
           "store-get",
@@ -71,6 +70,8 @@ const initIpc = () => {
         window.electron.ipcRenderer.send("macos-lyric:toggle", newState);
         const message = `${newState ? "已开启" : "已关闭"}状态栏歌词`;
         window.$message.success(message);
+      } else {
+        player.toggleTaskbarLyric();
       }
     });
 
