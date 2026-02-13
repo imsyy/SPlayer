@@ -28,7 +28,19 @@ export interface MusicMetadataInput {
 }
 
 /** 支持的音乐文件扩展名列表 */
-const MUSIC_EXTENSIONS = ["mp3", "wav", "flac", "aac", "webm", "m4a", "ogg", "aiff", "aif", "aifc", "opus"];
+const MUSIC_EXTENSIONS = [
+  "mp3",
+  "wav",
+  "flac",
+  "aac",
+  "webm",
+  "m4a",
+  "ogg",
+  "aiff",
+  "aif",
+  "aifc",
+  "opus",
+];
 
 /**
  * 获取全局搜索配置

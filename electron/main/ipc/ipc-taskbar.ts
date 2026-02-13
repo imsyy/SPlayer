@@ -54,19 +54,6 @@ const initTaskbarIpc = () => {
     updateWindowVisibility(initialConfig);
   }
 
-  ipcMain.on("taskbar:toggle", (_event, show: boolean) => {
-    store.set("taskbar.enabled", show);
-    const tray = getMainTray();
-
-    tray?.setTaskbarLyricShow(show);
-
-    const mainWin = mainWindow.getWin(); // 获取主窗口实例
-    if (mainWin && !mainWin.isDestroyed()) {
-      // 发送更新给渲染进程，同步 Pinia store
-      mainWin.webContents.send("setting:update-taskbar-lyric-enabled", show);
-    }
-  });
-
   ipcMain.on(
     TASKBAR_IPC_CHANNELS.UPDATE_CONFIG,
     (_event, partialConfig: Partial<TaskbarConfig>) => {

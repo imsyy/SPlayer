@@ -1,16 +1,11 @@
+import type { LyricLine } from "@applemusic-like-lyrics/lyric";
+import { TASKBAR_IPC_CHANNELS, type SyncStatePayload, type SyncTickPayload } from "@shared";
 import { ipcMain } from "electron";
 import { useStore } from "../store";
 import { getMainTray } from "../tray";
 import mainWindow from "../windows/main-window";
-import { MacLyricLine } from "../../../src/types/lyric";
-import {
-  UpdateLyricsPayload,
-  UpdateProgressPayload,
-  UpdateStatePayload,
-} from "../../../src/types/ipc";
 
-
-let macLyricLines: MacLyricLine[] = [];
+let macLyricLines: LyricLine[] = [];
 let macCurrentTime = 0;
 let macOffset = 0;
 let macIsPlaying = false;
@@ -51,7 +46,7 @@ const startInterpolation = (store: ReturnType<typeof useStore>) => {
  */
 const findCurrentLyricIndex = (
   currentTime: number,
-  lyrics: MacLyricLine[],
+  lyrics: LyricLine[],
   offset: number = 0,
 ): number => {
   // 提前 300ms 显示下一行歌词，以看起来更舒服
@@ -126,8 +121,7 @@ export const initMacStatusBarIpc = () => {
       // 发送更新给渲染进程，同步 Pinia store
       mainWin.webContents.send("setting:update-macos-lyric-enabled", show);
       if (show) {
-        
-        mainWin.webContents.send("mac-statusbar:request-data"); // 请求新数据
+        mainWin.webContents.send(TASKBAR_IPC_CHANNELS.REQUEST_DATA); // 请求新数据
       } else {
         tray?.setMacStatusBarLyricTitle(""); // 关闭时清空歌词
         stopInterpolation(); // 关闭时停止计时器
@@ -139,33 +133,64 @@ export const initMacStatusBarIpc = () => {
     }
   });
 
-  ipcMain.on("taskbar:update-lyrics", (_event, lyrics: UpdateLyricsPayload) => {
-    // 新歌词到达，更新数据并重置索引
-    macLyricLines = lyrics.lines ?? [];
-    macLastLyricIndex = -1;
-    // 确保新歌词到达后立即更新状态栏显示
-    const mainWin = mainWindow.getWin();
-    if (mainWin && !mainWin.isDestroyed()) {
-      updateMacStatusBarLyric(useStore());
+  ipcMain.on(TASKBAR_IPC_CHANNELS.SYNC_STATE, (_event, payload: SyncStatePayload) => {
+    switch (payload.type) {
+      case "lyrics-loaded": {
+        macLyricLines = payload.data.lines;
+        macLastLyricIndex = -1;
+        // 确保新歌词到达后立即更新状态栏显示
+        const mainWin = mainWindow.getWin();
+        if (mainWin && !mainWin.isDestroyed()) {
+          updateMacStatusBarLyric(useStore());
+        }
+        break;
+      }
+
+      case "playback-state":
+        macIsPlaying = payload.data.isPlaying;
+        if (!macIsPlaying) {
+          stopInterpolation();
+          updateMacStatusBarLyric(store);
+        }
+        break;
+
+      case "full-hydration":
+        if (payload.data.lyrics) {
+          macLyricLines = payload.data.lyrics.lines;
+          macLastLyricIndex = -1;
+        }
+        if (payload.data.playback) {
+          macIsPlaying = payload.data.playback.isPlaying;
+          if (payload.data.playback.tick) {
+            const [currentTime, , offset] = payload.data.playback.tick;
+            macCurrentTime = currentTime;
+            macOffset = offset;
+          }
+        }
+        updateMacStatusBarLyric(store);
+        if (macIsPlaying) {
+          startInterpolation(store);
+        }
+        break;
     }
   });
 
-  // macOS 状态栏歌词专用进度更新
-  ipcMain.on("mac-statusbar:update-progress", (_event, progress: UpdateProgressPayload) => {
-    
+  ipcMain.on(TASKBAR_IPC_CHANNELS.SYNC_TICK, (_, payload: SyncTickPayload) => {
+    const [currentTime, _duration, offset] = payload;
+
     // 进度到达，这是启动更新和插值的“门禁”
-    if (progress.currentTime !== undefined) {
-      const diff = Math.abs(progress.currentTime - macCurrentTime);
+    if (currentTime !== undefined) {
+      const diff = Math.abs(currentTime - macCurrentTime);
 
       // 如果误差在阈值之内，并且当前正在播放，则不进行时间同步，让内部状态保持稳定
       // 否则，进行校准
       if (!(diff <= PROGRESS_SYNC_THRESHOLD_MS && macIsPlaying)) {
-        macCurrentTime = progress.currentTime;
+        macCurrentTime = currentTime;
         macLastUpdateTime = Date.now(); // 校准时更新时间戳
       }
     }
-    if (progress.offset !== undefined) {
-      macOffset = progress.offset;
+    if (offset !== undefined) {
+      macOffset = offset;
     }
     // 收到精确进度或误差较大同步后，立即更新一次歌词显示
     updateMacStatusBarLyric(store);
@@ -175,25 +200,11 @@ export const initMacStatusBarIpc = () => {
     }
   });
 
-  ipcMain.on("taskbar:update-state", (_event, state: UpdateStatePayload) => {
-    // 根据播放状态更新 macOS 状态栏歌词显示逻辑
-    if (state.isPlaying !== undefined) {
-      macIsPlaying = state.isPlaying;
-      // 当歌曲暂停时：停止歌词更新计时器，并进行一次最终更新以显示当前歌词
-      if (!macIsPlaying) {
-        stopInterpolation();
-        updateMacStatusBarLyric(store);
-      }
-      // 当歌曲开始播放时：不在这里直接启动歌词更新，而是等待 'mac-statusbar:update-progress' 事件
-      // 该事件作为“门禁”，负责启动歌词更新的插值计时器，以确保与播放进度的同步
-    }
-  });
-
-  ipcMain.on("mac-statusbar:request-data", () => {
+  ipcMain.on(TASKBAR_IPC_CHANNELS.REQUEST_DATA, () => {
     // macOS 请求歌词数据，转发请求并等待响应
     const mainWin = mainWindow.getWin();
     if (mainWin && !mainWin.isDestroyed()) {
-      mainWin.webContents.send("mac-statusbar:request-data");
+      mainWin.webContents.send(TASKBAR_IPC_CHANNELS.REQUEST_DATA);
     }
   });
 };

@@ -368,7 +368,6 @@ export class FFmpegAudioPlayer extends BaseAudioPlayer {
     await this.seek(trueTime, true);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected async doSetSinkId(_deviceId: string): Promise<void> {
     return Promise.resolve();
   }

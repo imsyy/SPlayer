@@ -2,7 +2,7 @@ import { usePlayerController } from "@/core/player/PlayerController";
 import * as playerIpc from "@/core/player/PlayerIpc";
 import { useDataStore, useMusicStore, useSettingStore, useStatusStore } from "@/stores";
 import type { SettingType } from "@/types/main";
-import type { TaskbarConfig } from "@/types/shared";
+import { TASKBAR_IPC_CHANNELS, type TaskbarConfig } from "@/types/shared";
 import { handleProtocolUrl } from "@/utils/protocol";
 import { cloneDeep } from "lodash-es";
 import { toRaw } from "vue";
@@ -62,7 +62,6 @@ const initIpc = () => {
     // 任务栏歌词开关
     window.electron.ipcRenderer.on("toggle-taskbar-lyric", async () => {
       player.toggleTaskbarLyric();
-      let message = "";
       if (isMac) {
         const currentMacLyricEnabled = await window.electron.ipcRenderer.invoke(
           "store-get",
@@ -70,17 +69,9 @@ const initIpc = () => {
         );
         const newState = !currentMacLyricEnabled;
         window.electron.ipcRenderer.send("macos-lyric:toggle", newState);
-        message = `${newState ? "已开启" : "已关闭"}状态栏歌词`;
-      } else {
-        const currentTaskbarEnabled = await window.electron.ipcRenderer.invoke(
-          "store-get",
-          "taskbar.enabled",
-        );
-        const newState = !currentTaskbarEnabled;
-        window.electron.ipcRenderer.send("taskbar:toggle", newState);
-        message = `${newState ? "已开启" : "已关闭"}任务栏歌词`;
+        const message = `${newState ? "已开启" : "已关闭"}状态栏歌词`;
+        window.$message.success(message);
       }
-      window.$message.success(message);
     });
 
     // 监听主进程发来的 macOS 状态栏歌词启用状态更新
@@ -92,15 +83,8 @@ const initIpc = () => {
       },
     );
 
-    // 监听主进程发来的任务栏歌词启用状态更新
-    window.electron.ipcRenderer.on(
-      "setting:update-taskbar-lyric-enabled",
-      (_event, enabled: boolean) => {
-        player.setTaskbarLyricShow(enabled);
-      },
-    );
     // 给任务栏歌词初始数据
-    window.electron.ipcRenderer.on("mac-statusbar:request-data", () => {
+    window.electron.ipcRenderer.on(TASKBAR_IPC_CHANNELS.REQUEST_DATA, () => {
       const musicStore = useMusicStore();
       const statusStore = useStatusStore();
       const settingStore = useSettingStore();

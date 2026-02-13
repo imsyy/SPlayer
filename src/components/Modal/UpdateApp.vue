@@ -15,7 +15,12 @@
       当前更新为测试版本，可能包含未完成的功能或已知问题，请谨慎更新
     </n-alert>
     <n-scrollbar style="max-height: 500px">
-      <div v-if="data?.releaseNotes" class="markdown-body" v-html="data.releaseNotes" @click="handleMarkdownClick" />
+      <div
+        v-if="data?.releaseNotes"
+        class="markdown-body"
+        v-html="data.releaseNotes"
+        @click="handleMarkdownClick"
+      />
       <div v-else class="markdown-body">暂无更新日志</div>
     </n-scrollbar>
     <n-flex class="menu" justify="end">
@@ -26,7 +31,12 @@
         立即安装
       </n-button>
       <!-- 下载中：显示进度 -->
-      <n-button v-else :loading="statusStore.updateDownloading" type="primary" @click="startDownload">
+      <n-button
+        v-else
+        :loading="statusStore.updateDownloading"
+        type="primary"
+        @click="startDownload"
+      >
         {{
           statusStore.updateDownloading
             ? `下载中 ${statusStore.updateDownloadProgress}%`

@@ -492,7 +492,7 @@ export const initQQMusicAPI = async (fastify: FastifyInstance) => {
       );
 
       // 返回歌曲信息和歌词
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
       const { code: _code, ...lyrics } = lyricResult;
       return reply.send({
         code: 200,

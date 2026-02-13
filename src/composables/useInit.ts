@@ -3,6 +3,7 @@ import { usePlayerController } from "@/core/player/PlayerController";
 import { updateTaskbarConfig } from "@/core/player/PlayerIpc";
 import { useDownloadManager } from "@/core/resource/DownloadManager";
 import { useDataStore, useSettingStore, useShortcutStore, useStatusStore } from "@/stores";
+import { TASKBAR_IPC_CHANNELS } from "@/types/shared";
 import { isElectron, isMac } from "@/utils/env";
 import { printVersion } from "@/utils/log";
 import { openUserAgreement } from "@/utils/modal";
@@ -75,7 +76,7 @@ export const useInit = () => {
 
       // 启动时，如果启用macOS歌词，发送初始数据
       if (isMac && settingStore.macos.statusBarLyric.enabled) {
-        window.electron.ipcRenderer.send("mac-statusbar:request-data");
+        window.electron.ipcRenderer.send(TASKBAR_IPC_CHANNELS.REQUEST_DATA);
       }
 
       // 监听任务栏歌词设置
