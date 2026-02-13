@@ -59,6 +59,7 @@
     "better-sqlite3": "^12.5.0",
     "change-case": "^5.4.4",
     "dayjs": "^1.11.19",
+    "es-object-atoms": "^1.1.1",
     "electron-store": "^11.0.2",
     "electron-updater": "^6.6.2",
     "file-saver": "^2.0.5",
