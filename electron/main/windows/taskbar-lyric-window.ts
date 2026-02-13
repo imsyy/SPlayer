@@ -5,6 +5,7 @@ import type {
   TrayWatcher,
   UiaWatcher,
 } from "@native/taskbar-lyric";
+import { TASKBAR_IPC_CHANNELS } from "@shared";
 import { app, type BrowserWindow, ipcMain, nativeTheme, screen } from "electron";
 import { debounce } from "lodash-es";
 import { join } from "node:path";
@@ -131,7 +132,10 @@ class TaskbarLyricWindow {
     const sendTheme = () => {
       if (this.win && !this.win.isDestroyed()) {
         const isDark = nativeTheme.shouldUseDarkColors;
-        this.win.webContents.send("taskbar:update-theme", { isDark });
+        this.win.webContents.send(TASKBAR_IPC_CHANNELS.SYNC_STATE, {
+          type: "system-theme",
+          data: { isDark },
+        });
       }
     };
 

@@ -77,6 +77,10 @@ export type SyncStatePayload =
   | {
       type: "theme-color";
       data: ThemeColorData | null;
+    }
+  | {
+      type: "system-theme";
+      data: { isDark: boolean };
     };
 
 /**

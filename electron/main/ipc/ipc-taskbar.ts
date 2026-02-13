@@ -122,7 +122,10 @@ const initTaskbarIpc = () => {
     taskbarLyricWindow.updateLayout(false);
 
     const isDark = nativeTheme.shouldUseDarkColors;
-    taskbarLyricWindow.send("taskbar:update-theme", { isDark });
+    taskbarLyricWindow.send(TASKBAR_IPC_CHANNELS.SYNC_STATE, {
+      type: "system-theme",
+      data: { isDark },
+    } as SyncStatePayload);
   });
 
   ipcMain.on("taskbar:fade-done", () => {

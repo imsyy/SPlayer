@@ -544,6 +544,11 @@ onMounted(() => {
         state.themeColor = payload.data;
         break;
       }
+
+      case "system-theme": {
+        state.isDark = payload.data.isDark;
+        break;
+      }
     }
   });
 
@@ -580,10 +585,6 @@ onMounted(() => {
       state.opacity = 1;
       state.blurVal = 0;
     }, 200);
-  });
-
-  ipc.on("taskbar:update-theme", (_, { isDark }: { isDark: boolean }) => {
-    state.isDark = isDark;
   });
 
   ipc.send(TASKBAR_IPC_CHANNELS.REQUEST_DATA);
