@@ -1,6 +1,12 @@
 <!-- 图片组件 -->
 <template>
-  <div ref="imgContainer" :key="src" class="s-image">
+  <div
+    ref="imgContainer"
+    :key="src"
+    class="s-image"
+    :class="{ round }"
+    :style="{ width: size + 'px', height: size + 'px' }"
+  >
     <!-- 加载图片 -->
     <Transition name="fade">
       <img v-if="!isLoaded" :src="defaultSrc" class="loading" alt="loading" />
@@ -16,6 +22,7 @@
       :decoding="decodeAsync ? 'async' : 'auto'"
       :loading="nativeLazy ? 'lazy' : 'eager'"
       :style="{ objectFit: objectFit }"
+      :crossorigin="crossorigin"
       @load="imageLoaded"
       @error="imageError"
     />
@@ -25,19 +32,28 @@
 <script setup lang="ts">
 const props = withDefaults(
   defineProps<{
+    /** 图片地址 */
     src: string | undefined;
+    /** 默认图片 */
     defaultSrc?: string;
+    /** 图片描述 */
     alt?: string;
-    // 图片填充方式
+    /** 图片大小 */
+    size?: number;
+    /** 图片填充方式 */
     objectFit?: "cover" | "contain" | "fill" | "none" | "scale-down";
-    // 是否进行可视状态变化
+    /** 是否进行可视状态变化 */
     observeVisibility?: boolean;
-    // 在不可视时是否释放图片以回收内存
+    /** 在不可视时是否释放图片以回收内存 */
     releaseOnHide?: boolean;
-    // 是否使用浏览器异步解码
+    /** 是否使用浏览器异步解码 */
     decodeAsync?: boolean;
-    // 是否使用原生懒加载
+    /** 是否使用原生懒加载 */
     nativeLazy?: boolean;
+    /** 跨域 */
+    crossorigin?: "" | "anonymous" | "use-credentials" | undefined;
+    /** 圆角 */
+    round?: boolean;
   }>(),
   {
     defaultSrc: "/images/song.jpg?asset",
@@ -191,6 +207,10 @@ onUnmounted(() => {
     &.loaded {
       opacity: 1;
     }
+  }
+  &.round {
+    border-radius: 50%;
+    overflow: hidden;
   }
 }
 </style>

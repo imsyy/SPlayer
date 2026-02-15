@@ -2,6 +2,7 @@ import { WebSocketServer, type WebSocket } from "ws";
 import { createServer } from "net";
 import { socketLog } from "../logger";
 import { useStore } from "../store";
+import { getTrackInfoFromRenderer } from "../utils/track-info";
 import mainWindow from "../windows/main-window";
 
 /**
@@ -308,7 +309,6 @@ export class SocketService {
    */
   private async handleGetSongInfo(socket: WebSocket): Promise<void> {
     try {
-      const { getTrackInfoFromRenderer } = await import("../utils/track-info");
       const trackInfo = await getTrackInfoFromRenderer();
       this.sendToClient(socket, {
         type: "song-info",

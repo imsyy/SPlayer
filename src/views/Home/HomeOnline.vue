@@ -1,8 +1,8 @@
 <template>
   <div class="home-online">
     <!-- 登录功能 -->
-    <n-grid v-if="isLogin()" :cols="2" :x-gap="20" class="main-rec">
-      <n-gi>
+    <div v-if="isLogin()" class="main-rec">
+      <div class="main-rec-grid">
         <n-flex :size="20" class="rec-list" justify="space-between" vertical>
           <!-- 每日推荐 -->
           <SongListCard
@@ -11,6 +11,7 @@
             :height="90"
             description="根据你的音乐口味 · 每日更新"
             size="small"
+            :hiddenCover="settingStore.hiddenCovers.home"
             @click="router.push({ name: 'daily-songs' })"
           />
           <!-- 我喜欢的音乐 -->
@@ -20,15 +21,14 @@
             title="我喜欢的音乐"
             description="发现你独特的音乐品味"
             size="small"
+            :hiddenCover="settingStore.hiddenCovers.home"
             @click="router.push({ name: 'like-songs' })"
           />
         </n-flex>
-      </n-gi>
-      <!-- 私人FM -->
-      <n-gi>
+        <!-- 私人FM -->
         <PersonalFM />
-      </n-gi>
-    </n-grid>
+      </div>
+    </div>
     <!-- 公共推荐 -->
     <div v-for="(item, index) in sortedRecData" :key="index" class="rec-public">
       <n-flex
@@ -43,8 +43,19 @@
         </n-h3>
       </n-flex>
       <!-- 列表 -->
-      <ArtistList v-if="item.type === 'artist'" :data="item.list" :loading="true" />
-      <CoverList v-else :data="item.list" :type="item.type" :cols="item.cols" :loading="true" />
+      <ArtistList
+        v-if="item.type === 'artist'"
+        :data="item.list"
+        :loading="true"
+        :hiddenCover="settingStore.hiddenCovers.home"
+      />
+      <CoverList
+        v-else
+        :data="item.list"
+        :type="item.type"
+        :loading="true"
+        :hiddenCover="settingStore.hiddenCovers.home"
+      />
     </div>
   </div>
 </template>
@@ -62,21 +73,28 @@ import { sleep } from "@/utils/helper";
 import { isLogin } from "@/utils/auth";
 import SvgIcon from "@/components/Global/SvgIcon.vue";
 
-interface RecItemType {
+interface RecItemTypeBase {
   name: string;
-  list: ArtistType[] | CoverType[];
-  type: "playlist" | "artist" | "video" | "radio" | "album";
   path?: string;
-  cols?: string;
+}
+
+interface RecItemArtist extends RecItemTypeBase {
+  type: "artist";
+  list: ArtistType[];
+}
+
+interface RecItemCover extends RecItemTypeBase {
+  type: "playlist" | "video" | "radio" | "album";
+  list: CoverType[];
 }
 
 interface RecDataType {
-  playlist: RecItemType;
-  radar: RecItemType;
-  artist: RecItemType;
-  video: RecItemType;
-  radio: RecItemType;
-  album: RecItemType;
+  playlist: RecItemCover;
+  radar: RecItemCover;
+  artist: RecItemArtist;
+  video: RecItemCover;
+  radio: RecItemCover;
+  album: RecItemCover;
 }
 
 const router = useRouter();
@@ -86,13 +104,14 @@ const settingStore = useSettingStore();
 
 // 日推标题
 const dailySongsTitle = computed(() => {
+  if (settingStore.hiddenCovers.home) return "每日推荐";
   const day = new Date().getDate();
   return h("div", { class: "date" }, [
     h("div", { class: "date-icon" }, [
       h(SvgIcon, { name: "Calendar-Empty", size: 30, depth: 2 }),
       h(NText, null, () => day),
     ]),
-    h(NText, { class: "name" }, () => ["每日推荐"]),
+    h(NText, { class: "name text-hidden" }, () => ["每日推荐"]),
   ]);
 });
 
@@ -119,7 +138,6 @@ const recData = ref<RecDataType>({
     name: "推荐 MV",
     list: [] as CoverType[],
     type: "video",
-    cols: "2 600:2 800:3 900:4 1200:5 1400:6",
   },
   radio: {
     name: "推荐播客",
@@ -222,6 +240,11 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .main-rec {
+  .main-rec-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
   .date {
     display: flex;
     align-items: center;
@@ -244,6 +267,15 @@ onMounted(() => {
     .name {
       font-size: 18px;
       font-weight: bold;
+    }
+  }
+  @media (max-width: 768px) {
+    .main-rec-grid {
+      grid-template-columns: repeat(1, 1fr);
+    }
+    .rec-list {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr);
     }
   }
 }

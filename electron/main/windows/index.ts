@@ -32,6 +32,13 @@ export const createWindow = (
       },
     };
     // 合并参数
+    if (options.webPreferences) {
+      options.webPreferences = Object.assign(
+        {},
+        defaultOptions.webPreferences,
+        options.webPreferences,
+      );
+    }
     options = Object.assign(defaultOptions, options);
     // 创建窗口
     const win = new BrowserWindow(options);

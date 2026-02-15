@@ -1,88 +1,98 @@
 <template>
   <Transition name="fade" mode="out-in">
     <div v-if="data.length > 0" :class="['cover-list', type]">
-      <n-grid :cols="cols" x-gap="20" y-gap="20">
-        <n-gi v-for="(item, index) in data" :key="index">
-          <div
-            class="cover-item"
-            @click="goDetail(item)"
-            @contextmenu="coverMenuRef?.openDropdown($event, item, type)"
-          >
-            <!-- 封面 -->
-            <div class="cover">
-              <s-image
-                :key="item.cover"
-                :src="
-                  type === 'video' ? `${item.cover}?param=464y260` : item.coverSize?.m || item.cover
-                "
-                :default-src="
-                  type !== 'video' ? '/images/album.jpg?asset' : '/images/video.jpg?asset'
-                "
-                class="cover-img"
-                once
-              />
-              <template v-if="item.playCount">
-                <!-- 遮罩 -->
-                <div v-if="type !== 'album'" class="cover-mask" />
-                <!-- 播放量 -->
-                <div v-if="type !== 'album'" class="play-count">
-                  <SvgIcon name="Play" />
-                  <span class="num">{{ formatNumber(item.playCount || 0) }}</span>
-                </div>
-              </template>
-              <!-- 简介 -->
-              <div v-if="item.description" class="description">
-                <n-text class="text-hidden"> {{ item.description }}</n-text>
+      <div class="cover-grid">
+        <div
+          v-for="(item, index) in data"
+          :key="index"
+          :class="['cover-item', { 'no-cover': hiddenCover }]"
+          @click="goDetail(item)"
+          @contextmenu="coverMenuRef?.openDropdown($event, item, type)"
+        >
+          <!-- 封面 -->
+          <div v-if="!hiddenCover" class="cover">
+            <s-image
+              :key="item.cover"
+              :src="
+                type === 'video' ? `${item.cover}?param=464y260` : item.coverSize?.m || item.cover
+              "
+              :default-src="
+                type !== 'video' ? '/images/album.jpg?asset' : '/images/video.jpg?asset'
+              "
+              class="cover-img"
+              once
+            />
+            <template v-if="item.playCount">
+              <!-- 遮罩 -->
+              <div v-if="type !== 'album'" class="cover-mask" />
+              <!-- 播放量 -->
+              <div v-if="type !== 'album'" class="play-count">
+                <SvgIcon name="Play" />
+                <span class="num">{{ formatNumber(item.playCount || 0) }}</span>
               </div>
-              <!-- 播放按钮 -->
-              <div class="play-btn" @click.stop>
-                <n-button
-                  :focusable="false"
-                  :loading="item.loading"
-                  secondary
-                  circle
-                  class="play"
-                  @click.stop="playList(item)"
-                >
-                  <template #icon>
-                    <SvgIcon :size="32" :name="isPlaying(item.id) ? 'Pause' : 'Play'" />
-                  </template>
-                </n-button>
-              </div>
+            </template>
+            <!-- 简介 -->
+            <div v-if="item.description" class="description">
+              <n-text class="text-hidden"> {{ item.description }}</n-text>
             </div>
-            <!-- 信息 -->
-            <div class="cover-data">
-              <n-text class="name text-hidden">{{ item.name }}</n-text>
-              <!-- 创建者 -->
-              <n-text
-                v-if="(type === 'playlist' || type === 'radio') && item?.creator?.id"
-                class="creator"
-                depth="3"
+            <!-- 播放按钮 -->
+            <div class="play-btn" @click.stop>
+              <n-button
+                :focusable="false"
+                :loading="item.loading"
+                secondary
+                circle
+                class="play"
+                @click.stop="playList(item)"
               >
-                {{ item.creator?.name || item.creator || "未知" }}
-              </n-text>
-              <!-- 更新提示 -->
-              <n-text v-if="item.updateTip" class="tip" depth="3">{{ item.updateTip }}</n-text>
-              <!-- 专辑信息 -->
-              <div v-if="type === 'album'" class="meta">
-                <n-text class="count" depth="3">{{ item.count || 0 }}首</n-text>
-                <n-text class="date" depth="3">{{ formatTimestamp(item.createTime) }}</n-text>
-              </div>
-              <!-- 歌手 -->
-              <template v-if="type === 'video' && item.artists">
-                <div v-if="Array.isArray(item.artists)" class="artists text-hidden">
-                  <n-text v-for="(ar, arIndex) in item.artists" :key="arIndex" class="ar">
-                    {{ ar.name || "未知艺术家" }}
-                  </n-text>
-                </div>
-                <div v-else class="artists text-hidden">
-                  <n-text class="ar"> {{ item.artists || "未知艺术家" }} </n-text>
-                </div>
-              </template>
+                <template #icon>
+                  <SvgIcon :size="32" :name="isPlaying(item.id) ? 'Pause' : 'Play'" />
+                </template>
+              </n-button>
             </div>
           </div>
-        </n-gi>
-      </n-grid>
+          <!-- 信息 -->
+          <div class="cover-data">
+            <n-text class="name text-hidden">{{ item.name }}</n-text>
+            <!-- 创建者 -->
+            <n-text
+              v-if="(type === 'playlist' || type === 'radio') && item?.creator?.id"
+              class="creator"
+              depth="3"
+            >
+              {{ item.creator?.name || item.creator || "未知" }}
+            </n-text>
+            <!-- 更新提示 -->
+            <n-text v-if="item.updateTip" class="tip" depth="3">{{ item.updateTip }}</n-text>
+            <!-- 专辑信息 -->
+            <div v-if="type === 'album'" class="meta">
+              <n-text class="count" depth="3">{{ item.count || 0 }}首</n-text>
+              <n-text class="date" depth="3">{{ formatTimestamp(item.createTime) }}</n-text>
+            </div>
+            <!-- 歌手 -->
+            <template v-if="type === 'video' && item.artists">
+              <div v-if="Array.isArray(item.artists)" class="artists text-hidden">
+                <n-text v-for="(ar, arIndex) in item.artists" :key="arIndex" class="ar">
+                  {{
+                    settingStore.hideBracketedContent
+                      ? removeBrackets(ar.name)
+                      : ar.name || "未知艺术家"
+                  }}
+                </n-text>
+              </div>
+              <div v-else class="artists text-hidden">
+                <n-text class="ar">
+                  {{
+                    settingStore.hideBracketedContent
+                      ? removeBrackets(item.artists)
+                      : item.artists || "未知艺术家"
+                  }}
+                </n-text>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
       <!-- 加载更多 -->
       <n-flex v-if="loadMore" class="load-more" justify="center">
         <n-button :loading="loading" size="large" strong secondary round @click="emit('loadMore')">
@@ -93,21 +103,23 @@
       <CoverMenu ref="coverMenuRef" @toPlay="playList" />
     </div>
     <div v-else-if="loading" :class="['cover-list', 'loading', type]">
-      <n-grid :cols="cols" x-gap="20" y-gap="20">
-        <n-gi v-for="item in loadingNum || 50" :key="item">
-          <div class="cover-item">
-            <div class="cover">
-              <n-skeleton class="cover-img" />
-            </div>
-            <div class="cover-data">
-              <n-skeleton text round :repeat="2" />
-            </div>
+      <div class="cover-grid">
+        <div
+          v-for="item in loadingNum || 50"
+          :key="item"
+          :class="['cover-item', { 'no-cover': hiddenCover }]"
+        >
+          <div v-if="!hiddenCover" class="cover">
+            <n-skeleton class="cover-img" />
           </div>
-        </n-gi>
-      </n-grid>
+          <div class="cover-data" :style="hiddenCover ? { width: '100%', padding: '0 12px' } : {}">
+            <n-skeleton text round :repeat="2" />
+          </div>
+        </div>
+      </div>
     </div>
     <!-- 空列表 -->
-    <n-empty v-else description="空空如也，怎么什么都没有啊" size="large" />
+    <n-empty v-else :description="emptyDescription || '空空如也，怎么什么都没有啊'" size="large" />
   </Transition>
 </template>
 
@@ -115,9 +127,9 @@
 import type { CoverType, SongType } from "@/types/main";
 import { albumDetail } from "@/api/album";
 import { formatNumber } from "@/utils/helper";
-import { useMusicStore, useStatusStore } from "@/stores";
+import { useMusicStore, useStatusStore, useLocalStore, useSettingStore } from "@/stores";
 import { debounce } from "lodash-es";
-import { formatSongsList } from "@/utils/format";
+import { formatSongsList, removeBrackets } from "@/utils/format";
 import { songDetail } from "@/api/song";
 import { playlistAllSongs } from "@/api/playlist";
 import { radioAllProgram } from "@/api/radio";
@@ -125,19 +137,18 @@ import { usePlayerController } from "@/core/player/PlayerController";
 import { formatTimestamp } from "@/utils/time";
 import CoverMenu from "@/components/Menu/CoverMenu.vue";
 
-interface Props {
+const props = defineProps<{
   data: CoverType[];
   type: "playlist" | "album" | "video" | "radio";
-  cols?: string;
   loadMore?: boolean;
   loading?: boolean;
   loadingNum?: number;
   loadingText?: string;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  cols: "3 600:3 800:4 900:5 1200:6 1400:7",
-});
+  emptyDescription?: string;
+  /** 是否为流媒体数据 */
+  isStreaming?: boolean;
+  hiddenCover?: boolean;
+}>();
 
 const emit = defineEmits<{
   // 加载更多
@@ -147,16 +158,27 @@ const emit = defineEmits<{
 const router = useRouter();
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
+const localStore = useLocalStore();
+const settingStore = useSettingStore();
 const player = usePlayerController();
 
 // 右键菜单
 const coverMenuRef = ref<InstanceType<typeof CoverMenu> | null>(null);
 
 // 是否处于当前播放列表
-const isPlaying = (id: number) => musicStore.playPlaylistId === id && statusStore.playStatus;
+const isPlaying = (id: number | string) =>
+  musicStore.playPlaylistId === id && statusStore.playStatus;
 
 // 查看详情
 const goDetail = (item: CoverType) => {
+  // 流媒体歌单跳转到专门的路由
+  if (props.isStreaming && props.type === "playlist") {
+    router.push({
+      name: "streaming-playlist",
+      query: { id: item.id },
+    });
+    return;
+  }
   router.push({
     name: props.type,
     query: { id: item.id },
@@ -171,13 +193,17 @@ const playList = debounce(
       if (props.type === "video") {
         return router.push({ name: "video", query: { id: item.id } });
       }
+      // 流媒体歌单直接跳转到详情页
+      if (props.isStreaming && props.type === "playlist") {
+        return router.push({ name: "streaming-playlist", query: { id: item.id } });
+      }
       // 是否为当前列表
       if (musicStore.playPlaylistId === item.id) return player.playOrPause();
       // 开始加载
       item.loading = true;
       // 获取播放列表
       const list = await getListData(item.id);
-      player.updatePlayList(list, undefined, item.id);
+      player.updatePlayList(list, undefined, item.id as number);
     } catch (error) {
       console.log("Error to play: ", error);
     } finally {
@@ -189,21 +215,33 @@ const playList = debounce(
 );
 
 // 获取列表数据
-const getListData = async (id: number): Promise<SongType[]> => {
+const getListData = async (id: number | string): Promise<SongType[]> => {
+  // 判断是否为本地歌单
+  const isLocalPlaylist = localStore.isLocalPlaylist(id);
+
   switch (props.type) {
     case "album": {
-      const result = await albumDetail(id);
+      const result = await albumDetail(Number(id));
       const ids: number[] = result.songs.map((song: any) => song.id as number);
       const songRes = await songDetail(ids);
       return formatSongsList(songRes.songs);
     }
     case "playlist": {
-      // 仅请求 100 首
-      const result = await playlistAllSongs(id, 100);
+      // 本地歌单
+      if (isLocalPlaylist) {
+        const result = localStore.getLocalPlaylistDetail(Number(id));
+        if (!result) {
+          window.$message.error("本地歌单不存在");
+          return [];
+        }
+        return result.songs;
+      }
+      // 在线歌单：仅请求 100 首
+      const result = await playlistAllSongs(Number(id), 100);
       return formatSongsList(result.songs);
     }
     case "radio": {
-      const result = await radioAllProgram(id, 100);
+      const result = await radioAllProgram(Number(id), 100);
       return formatSongsList(result.programs);
     }
     default:
@@ -216,6 +254,15 @@ const getListData = async (id: number): Promise<SongType[]> => {
 .cover-list {
   width: 100%;
   padding: 20px 4px;
+  .cover-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 20px;
+    @media (max-width: 600px) {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+  }
   .cover-item {
     position: relative;
     height: auto;
@@ -377,11 +424,31 @@ const getListData = async (id: number): Promise<SongType[]> => {
         }
       }
     }
+    &.no-cover {
+      background-color: var(--surface-container-hex);
+      border: 2px solid rgba(var(--primary), 0.12);
+      padding: 0;
+      overflow: hidden;
+      &:hover {
+        border-color: rgba(var(--primary), 0.58);
+      }
+      .cover-data {
+        height: 100%;
+        justify-content: center;
+        .name {
+          font-size: 18px;
+          font-weight: bold;
+        }
+      }
+    }
   }
   .load-more {
     margin: 20px 0;
   }
   &.video {
+    .cover-grid {
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
     .cover-item {
       .cover {
         aspect-ratio: 16/9;
@@ -391,6 +458,15 @@ const getListData = async (id: number): Promise<SongType[]> => {
   &.loading {
     .cover {
       box-shadow: none;
+    }
+    .cover-item.no-cover {
+      height: 80px;
+      .cover-data {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
     }
   }
 }

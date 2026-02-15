@@ -20,3 +20,34 @@ export const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Oper
 
 /** 是否为 DEV 构建 */
 export const isDevBuild = import.meta.env.VITE_BUILD_TYPE === "dev";
+
+/**
+ * 检查环境是否隔离
+ *
+ * 必须同时满足：
+ * * 安全上下文 (HTTPS/Localhost)
+ * * 跨域隔离 (COOP/COEP)
+ * * 有 SharedArrayBuffer
+ *
+ * 一个典型的使用场景是判断 ffmpeg 解码器是否可用
+ */
+export const checkIsolationSupport = (): boolean => {
+  const scope =
+    typeof globalThis !== "undefined"
+      ? globalThis
+      : typeof self !== "undefined"
+        ? self
+        : typeof window !== "undefined"
+          ? window
+          : undefined;
+
+  if (!scope) {
+    return false;
+  }
+
+  const isSecure = !!scope.isSecureContext;
+  const isIsolated = !!scope.crossOriginIsolated;
+  const hasSharedArrayBuffer = typeof SharedArrayBuffer !== "undefined";
+
+  return isSecure && isIsolated && hasSharedArrayBuffer;
+};

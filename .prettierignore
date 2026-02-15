@@ -4,5 +4,7 @@ pnpm-lock.yaml
 LICENSE.md
 auto-imports.d.ts
 components.d.ts
+native/**/index.d.ts
 # tsconfig.json
 # tsconfig.*.json
+auto-eslint.mjs

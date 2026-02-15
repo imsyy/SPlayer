@@ -73,7 +73,7 @@
             <!-- 操作 -->
             <n-flex align="center" justify="center" class="actions">
               <n-button
-                v-if="item.status !== 'downloading'"
+                v-if="item.status === 'failed'"
                 type="primary"
                 secondary
                 strong
@@ -83,12 +83,7 @@
                   <SvgIcon name="Refresh" />
                 </template>
               </n-button>
-              <n-button
-                type="error"
-                secondary
-                strong
-                @click="handleRemoveDownload(item.song.id)"
-              >
+              <n-button type="error" secondary strong @click="handleRemoveDownload(item.song.id)">
                 <template #icon>
                   <SvgIcon name="Close" />
                 </template>
@@ -140,7 +135,7 @@ const handleRemoveDownload = (id: number) => {
       align-items: center;
       padding: 0 12px;
       height: 40px;
-      background-color: var(--background-hex);
+      // background-color: var(--background-hex);
       font-weight: normal;
 
       .n-text {

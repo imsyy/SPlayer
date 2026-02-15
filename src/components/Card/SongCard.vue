@@ -25,7 +25,6 @@
           :key="song.cover"
           :src="song.path ? song.cover : song.coverSize?.s || song.cover"
           class="cover"
-          @update:show="localCover"
         />
         <!-- 信息 -->
         <n-flex size="small" class="info" vertical>
@@ -39,8 +38,18 @@
               }"
               class="name-text"
             >
-              {{ song?.name || "未知曲目" }}
-              <n-text v-if="song.alia?.length" class="alia" depth="3"> ({{ song.alia }}) </n-text>
+              {{
+                settingStore.hideBracketedContent
+                  ? removeBrackets(song?.name)
+                  : song?.name || "未知曲目"
+              }}
+              <n-text
+                v-if="song.alia?.length && !settingStore.hideBracketedContent"
+                class="alia"
+                depth="3"
+              >
+                ({{ song.alia }})
+              </n-text>
             </n-ellipsis>
           </div>
           <n-flex :size="4" :wrap="false" class="desc" align="center">
@@ -89,28 +98,52 @@
             >
               MV
             </n-tag>
+            <!-- 脏标 -->
+            <n-tag
+              v-if="
+                settingStore.showSongExplicitTag && song.mark && song.mark & EXPLICIT_CONTENT_MARK
+              "
+              :bordered="false"
+              class="explicit"
+              type="error"
+              round
+              title="Explicit Content"
+            >
+              E
+            </n-tag>
             <!-- 歌手 -->
-            <div v-if="Array.isArray(song.artists)" class="artists text-hidden">
-              <n-text
-                v-for="ar in song.artists"
-                :key="ar.id"
-                class="ar"
-                @click="openJumpArtist(song.artists, ar.id)"
-              >
-                {{ ar.name }}
-              </n-text>
-            </div>
-            <div v-else-if="song.type === 'radio'" class="artists">
-              <n-text class="ar"> 电台节目 </n-text>
-            </div>
-            <div v-else class="artists text-hidden" @click="openJumpArtist(song.artists)">
-              <n-text class="ar"> {{ song.artists || "未知艺术家" }} </n-text>
-            </div>
+            <template v-if="settingStore.showSongArtist">
+              <div v-if="Array.isArray(song.artists)" class="artists">
+                <n-text
+                  v-for="ar in song.artists"
+                  :key="ar.id"
+                  class="ar"
+                  @click="openJumpArtist(song.artists, ar.id)"
+                >
+                  {{ settingStore.hideBracketedContent ? removeBrackets(ar.name) : ar.name }}
+                </n-text>
+              </div>
+              <div v-else-if="song.type === 'radio'" class="artists">
+                <n-text class="ar"> 电台节目 </n-text>
+              </div>
+              <div v-else class="artists" @click="openJumpArtist(song.artists)">
+                <n-text class="ar">
+                  {{
+                    settingStore.hideBracketedContent
+                      ? removeBrackets(song.artists)
+                      : song.artists || "未知艺术家"
+                  }}
+                </n-text>
+              </div>
+            </template>
           </n-flex>
         </n-flex>
       </div>
       <!-- 专辑 -->
-      <div v-if="song.type !== 'radio' && !hiddenAlbum" class="album text-hidden">
+      <div
+        v-if="song.type !== 'radio' && !hiddenAlbum && !isSmallScreen && settingStore.showSongAlbum"
+        class="album text-hidden"
+      >
         <n-text
           v-if="isObject(song.album)"
           class="album-text"
@@ -121,35 +154,45 @@
             })
           "
         >
-          {{ song.album?.name || "未知专辑" }}
+          {{ albumName }}
         </n-text>
         <n-text v-else class="album-text">
-          {{ song.album || "未知专辑" }}
+          {{ albumName }}
         </n-text>
       </div>
       <!-- 操作 -->
-      <div v-if="song.type !== 'radio'" class="actions" @click.stop @dblclick.stop>
+      <div
+        v-if="song.type !== 'radio' && settingStore.showSongOperations"
+        class="actions"
+        @click.stop
+        @dblclick.stop
+      >
         <!-- 喜欢歌曲 -->
         <SvgIcon
+          v-if="!isSmallScreen"
           :name="dataStore.isLikeSong(song.id) ? 'Favorite' : 'FavoriteBorder'"
           :size="20"
           @click.stop="toLikeSong(song, !dataStore.isLikeSong(song.id))"
           @delclick.stop
         />
+        <!-- 移动端菜单 -->
+        <SvgIcon v-else name="More" :size="20" @click.stop="emit('show-menu', $event)" />
       </div>
       <!-- 更新日期 -->
-      <n-text v-if="song.type === 'radio'" class="meta date" depth="3">
+      <n-text v-if="song.type === 'radio' && !isSmallScreen" class="meta date" depth="3">
         {{ formatTimestamp(song.updateTime) }}
       </n-text>
       <!-- 播放量 -->
-      <n-text v-if="song.type === 'radio'" class="meta" depth="3">
+      <n-text v-if="song.type === 'radio' && !isSmallScreen" class="meta" depth="3">
         {{ formatNumber(song.playCount || 0) }}
       </n-text>
       <!-- 时长 -->
-      <n-text class="meta" depth="3">{{ msToTime(song.duration) }}</n-text>
+      <n-text v-if="!isSmallScreen && settingStore.showSongDuration" class="meta" depth="3">
+        {{ msToTime(song.duration) }}
+      </n-text>
       <!-- 大小 -->
-      <n-text v-if="song.path && song.size && !hiddenSize" class="meta size" depth="3">
-        {{ song.size }}M
+      <n-text v-if="song.size && !hiddenSize && !isSmallScreen" class="meta size" depth="3">
+        {{ formatFileSize(song.size) }}
       </n-text>
     </div>
   </div>
@@ -158,14 +201,15 @@
 <script setup lang="ts">
 import { QualityType, type SongType } from "@/types/main";
 import { useStatusStore, useMusicStore, useDataStore, useSettingStore } from "@/stores";
-import { formatNumber } from "@/utils/helper";
+import { formatNumber, formatFileSize } from "@/utils/helper";
 import { openJumpArtist } from "@/utils/modal";
+import { removeBrackets } from "@/utils/format";
 import { toLikeSong } from "@/utils/auth";
 import { isObject } from "lodash-es";
 import { formatTimestamp, msToTime } from "@/utils/time";
 import { usePlayerController } from "@/core/player/PlayerController";
-import { isElectron } from "@/utils/env";
-import { useBlobURLManager } from "@/core/resource/BlobURLManager";
+import { useMobile } from "@/composables/useMobile";
+import { EXPLICIT_CONTENT_MARK } from "@/utils/meta";
 
 const props = defineProps<{
   // 歌曲
@@ -178,6 +222,11 @@ const props = defineProps<{
   hiddenSize?: boolean;
 }>();
 
+const emit = defineEmits<{
+  "show-menu": [event: MouseEvent];
+}>();
+
+const { isSmallScreen } = useMobile();
 const router = useRouter();
 const dataStore = useDataStore();
 const musicStore = useMusicStore();
@@ -185,7 +234,6 @@ const statusStore = useStatusStore();
 const settingStore = useSettingStore();
 
 const player = usePlayerController();
-const blobURLManager = useBlobURLManager();
 
 // 歌曲数据
 const song = toRef(props, "song");
@@ -198,35 +246,12 @@ const qualityColor = computed(() => {
   return "primary";
 });
 
-// 加载本地歌曲封面
-const localCover = async (show: boolean) => {
-  if (!isElectron || !show) return;
-  // 本地路径
-  const path = song.value.path;
-  if (!path) return;
-  // 当前封面
-  const currentCover = song.value.cover;
-  // 直接复用
-  if (
-    currentCover &&
-    currentCover !== "/images/song.jpg?asset" &&
-    !currentCover.startsWith("blob:")
-  ) {
-    return;
-  }
-  // 缓存生效
-  if (blobURLManager.hasBlobURL(path)) return;
-  // 请求路径
-  const requestPath = path;
-  // 获取封面
-  const coverData = await window.electron.ipcRenderer.invoke("get-music-cover", requestPath);
-  if (song.value.path !== requestPath || !coverData) return;
-  const { data, format } = coverData;
-  const blobURL = blobURLManager.createBlobURL(data, format, requestPath);
-  if (blobURL && song.value.path === requestPath) {
-    song.value.cover = blobURL;
-  }
-};
+// 专辑名称
+const albumName = computed(() => {
+  const album = song.value.album;
+  const name = isObject(album) ? album.name : album;
+  return (settingStore.hideBracketedContent ? removeBrackets(name) : name) || "未知专辑";
+});
 </script>
 
 <style lang="scss" scoped>
@@ -311,6 +336,7 @@ const localCover = async (show: boolean) => {
   }
   .title {
     flex: 1;
+    min-width: 0;
     display: flex;
     align-items: center;
     padding: 4px 20px 4px 0;
@@ -326,6 +352,7 @@ const localCover = async (show: boolean) => {
       overflow: hidden;
     }
     .info {
+      min-width: 0;
       .name {
         display: flex;
         flex-direction: row;
@@ -334,6 +361,7 @@ const localCover = async (show: boolean) => {
         font-size: 16px;
       }
       .desc {
+        min-width: 0;
         margin-top: 2px;
         font-size: 13px;
         .n-tag {
@@ -366,8 +394,13 @@ const localCover = async (show: boolean) => {
         }
       }
       .artists {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
         .ar {
-          display: inline-flex;
+          display: inline;
           transition: opacity 0.3s;
           opacity: 0.6;
           cursor: pointer;
@@ -398,6 +431,7 @@ const localCover = async (show: boolean) => {
   }
   .album {
     flex: 1;
+    min-width: 0;
     line-clamp: 2;
     -webkit-line-clamp: 2;
     padding-right: 20px;

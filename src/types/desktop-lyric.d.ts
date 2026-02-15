@@ -37,8 +37,8 @@ export interface LyricConfig {
   fontFamily: string;
   /** 字体大小 */
   fontSize: number;
-  /** 字体是否加粗 */
-  fontIsBold: boolean;
+  /** 字体字重设置 */
+  fontWeight: number;
   /** 是否双行 */
   isDoubleLine: boolean;
   /** 显示翻译 */
@@ -51,8 +51,12 @@ export interface LyricConfig {
   limitBounds: boolean;
   /** 文本背景遮罩 */
   textBackgroundMask: boolean;
+  /** 文本背景遮罩颜色 */
+  backgroundMaskColor: string;
   /** 始终展示播放信息 */
   alwaysShowPlayInfo: boolean;
+  /** 是否开启歌词切换动画 */
+  animation: boolean;
 }
 
 /**

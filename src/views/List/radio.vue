@@ -10,7 +10,6 @@
       :config="listConfig"
       :play-button-text="playButtonText"
       :more-options="moreOptions"
-      :show-comment-tab="true"
       @update:search-value="handleSearchUpdate"
       @play-all="playAllSongs"
       @tab-change="handleTabChange"
@@ -212,8 +211,9 @@ const getRadioDetail = async (id: number, refresh: boolean = false) => {
   }
 
   // 获取播客详情
-  if (detailData.value?.id !== id) {
+  if (detailData.value?.id !== id || refresh) {
     setDetailData(null);
+    setListData([]);
   }
   const detail = await radioDetail(id);
   if (currentRequestId.value !== id) return;
@@ -245,6 +245,8 @@ const getRadioAllProgram = async (id: number, count: number) => {
   setLoading(true);
   // 加载提示
   if (count > 500) loadingMsgShow();
+  // 强制清空列表，防止重复
+  setListData([]);
   // 循环获取
   let offset: number = 0;
   const limit: number = 500;

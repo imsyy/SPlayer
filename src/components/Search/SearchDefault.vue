@@ -34,12 +34,12 @@
             v-for="(item, index) in searchHotData"
             :key="index"
             class="hot-item"
-            @click="emit('toSearch', item.searchWord)"
+            @click="emit('toSearch', item?.searchWord)"
           >
             <n-text class="num" depth="3">{{ index + 1 }}</n-text>
             <div class="data">
               <div class="name">
-                <n-text class="text">{{ item.searchWord }}</n-text>
+                <n-text class="text">{{ item?.searchWord }}</n-text>
                 <n-tag
                   v-if="item.iconUrl"
                   :type="item.iconType == 1 ? 'error' : 'warning'"
@@ -68,6 +68,14 @@ import { searchHot } from "@/api/search";
 import { getCacheData } from "@/utils/cache";
 import { useSettingStore, useStatusStore, useDataStore } from "@/stores";
 
+interface SearchHotItem {
+  searchWord: string;
+  score: number;
+  content: string;
+  iconUrl?: string;
+  iconType?: number;
+}
+
 const emit = defineEmits<{
   toSearch: [keyword: string];
 }>();
@@ -76,7 +84,7 @@ const dataStore = useDataStore();
 const statusStore = useStatusStore();
 const settingStore = useSettingStore();
 
-const searchHotData = ref<any>([]);
+const searchHotData = ref<SearchHotItem[]>([]);
 
 // 是否展示
 const isShow = computed(() => {
@@ -131,6 +139,9 @@ onMounted(() => {
     .n-scrollbar-content {
       padding: 10px;
     }
+  }
+  @media (max-width: 768px) {
+    width: 100%;
   }
   .title {
     display: flex;

@@ -39,6 +39,7 @@
       :loading="loading"
       :loadMore="hasMore"
       type="playlist"
+      :hiddenCover="settingStore.hiddenCovers.playlist"
       @loadMore="loadMore"
     />
     <!-- 分类选择 -->
@@ -74,8 +75,8 @@
                 (cat) => cat.category === Number(key),
               )"
               :key="catIndex"
-              :bordered="false"
-              :class="{ choose: catName === cat.name }"
+              :bordered="catName === cat.name"
+              :type="catName === cat.name ? 'primary' : 'default'"
               size="large"
               round
               @click="changeCatName(cat.name)"
@@ -94,12 +95,13 @@
 
 <script setup lang="ts">
 import type { CoverType } from "@/types/main";
-import { useDataStore } from "@/stores";
+import { useDataStore, useSettingStore } from "@/stores";
 import { allCatlistPlaylist } from "@/api/playlist";
 import { formatCoverList } from "@/utils/format";
 
 const router = useRouter();
 const dataStore = useDataStore();
+const settingStore = useSettingStore();
 
 const catChangeShow = ref<boolean>(false);
 

@@ -1,0 +1,15 @@
+{
+  "name": "taskbar-lyric",
+  "version": "0.1.0",
+  "main": "taskbar-lyric.node",
+  "napi": {
+    "binaryName": "taskbar-lyric"
+  },
+  "scripts": {
+    "build": "napi build --release --no-const-enum",
+    "build:debug": "napi build --no-const-enum"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.5.1"
+  }
+}

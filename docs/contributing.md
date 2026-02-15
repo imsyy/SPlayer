@@ -41,7 +41,7 @@
 2. 安装 pnpm
 3. 安装 Git
 4. 克隆仓库并安装依赖
-5. (可选) 安装 Rust 和 C++ 构建工具
+5. 安装 Rust 和 C++ 构建工具 (可选，若只开发 Web 版则不需要。开发桌面版则必选)
 
 ## Git 工作流
 
@@ -200,9 +200,8 @@ SPlayer/
 ├── electron/               # Electron 主进程
 │   ├── main/               # 主进程代码
 │   └── preload/            # 预加载脚本
-├── native/                 # 原生 Rust 插件
-│   ├── smtc-for-splayer/   # SMTC 模块
-│   └── discord-rpc-for-splayer/  # Discord RPC 模块
+├── native/                 # Node.js 原生插件
+│   ├── external-media-integration/   # 媒体控件集成模块
 ├── docs/                   # 文档
 └── scripts/                # 构建脚本
 ```

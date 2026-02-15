@@ -1,14 +1,14 @@
 import { app } from "electron";
-import path from "path";
 import { createRequire } from "module";
+import path from "path";
 import { processLog } from "../logger";
 
 const requireNative = createRequire(import.meta.url);
 
 /**
  * 加载一个原生插件
- * @param fileName 编译后的文件名 (例如: "smtc-for-splayer.node")
- * @param devDirName 开发环境下的目录名 (例如: "smtc-for-splayer")，必须位于项目根目录的 native/ 下
+ * @param fileName 编译后的文件名 (例如: "external-media-integration.node")
+ * @param devDirName 开发环境下的目录名 (例如: "external-media-integration")，必须位于项目根目录的 native/ 下
  */
 export function loadNativeModule(fileName: string, devDirName: string) {
   let nativeModulePath: string;

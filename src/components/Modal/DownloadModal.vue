@@ -72,7 +72,7 @@
 <script setup lang="ts">
 import type { SongType, SongLevelType } from "@/types/main";
 import { useSettingStore } from "@/stores";
-import { songLevelData, getSongLevelsData } from "@/utils/meta";
+import { songLevelData, getSongLevelsData, AI_AUDIO_LEVELS } from "@/utils/meta";
 import { formatFileSize } from "@/utils/helper";
 import { openSetting } from "@/utils/modal";
 import { isElectron } from "@/utils/env";
@@ -80,7 +80,6 @@ import { songDetail } from "@/api/song";
 import { formatSongsList } from "@/utils/format";
 import { pick } from "lodash-es";
 import { useDownloadManager } from "@/core/resource/DownloadManager";
-import SongDataCard from "@/components/Card/SongDataCard.vue";
 
 const props = defineProps<{
   songs?: SongType[];
@@ -105,14 +104,23 @@ const downloadPath = computed(() => settingStore.downloadPath);
 
 // 是否可以下载（需要配置下载目录）
 const canDownload = computed(() => {
-  if (!isElectron) return true; // 非 Electron 环境允许下载
+  if (!isElectron) return true;
   return !!downloadPath.value;
 });
 
 // 音质选项
 const qualityOptions = computed(() => {
   const levels = pick(songLevelData, ["l", "m", "h", "sq", "hr", "je", "sk", "db", "jm"]);
-  return getSongLevelsData(levels).map((item) => ({
+  let allData = getSongLevelsData(levels);
+
+  if (settingStore.disableAiAudio) {
+    allData = allData.filter((item) => {
+      if (item.level === "dolby") return true;
+      return !AI_AUDIO_LEVELS.includes(item.level);
+    });
+  }
+
+  return allData.map((item) => ({
     label: item.name,
     value: item.value,
     size: undefined,

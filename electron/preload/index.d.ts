@@ -11,9 +11,16 @@ declare global {
         has(key: keyof StoreType): Promise<boolean>;
         delete(key: keyof StoreType): Promise<boolean>;
         reset(keys?: (keyof StoreType)[]): Promise<boolean>;
-        export(data: any): Promise<boolean>;
-        import(): Promise<boolean>;
+        export(data: any): Promise<{ success: boolean; path?: string; error?: string }>;
+        import(): Promise<{ success: boolean; data?: any; error?: string }>;
       };
+    };
+    // logs
+    logger: {
+      info: (message: string, ...args: unknown[]) => void;
+      warn: (message: string, ...args: unknown[]) => void;
+      error: (message: string, ...args: unknown[]) => void;
+      debug: (message: string, ...args: unknown[]) => void;
     };
   }
 }

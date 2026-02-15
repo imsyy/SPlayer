@@ -1,40 +1,63 @@
 import { useSettingStore } from "@/stores";
+import { checkIsolationSupport, isElectron } from "@/utils/env";
+import { TypedEventTarget } from "@/utils/TypedEventTarget";
 import { AudioElementPlayer } from "../audio-player/AudioElementPlayer";
-import {
-  AUDIO_EVENTS,
-  AudioEventType,
-  BaseAudioPlayer,
-  type AudioEventMap,
-} from "../audio-player/BaseAudioPlayer";
+import { AUDIO_EVENTS, type AudioEventMap } from "../audio-player/BaseAudioPlayer";
 import { FFmpegAudioPlayer } from "../audio-player/ffmpeg-engine/FFmpegAudioPlayer";
+import type {
+  EngineCapabilities,
+  IPlaybackEngine,
+  PauseOptions,
+  PlayOptions,
+} from "../audio-player/IPlaybackEngine";
+import { MpvPlayer, useMpvPlayer } from "../audio-player/MpvPlayer";
 
 /**
  * 音频管理器
  *
- * 职责：作为 Facade 统一对外暴露接口，持有具体的播放器实现 (AudioElementPlayer 或 FFmpegPlayer)
- * 并负责事件的转发
+ * 统一的音频播放接口，根据设置选择播放引擎
  */
-class AudioManager extends EventTarget {
-  /** 当前活动的播放器实现 */
-  private player: BaseAudioPlayer;
-  /** 用于清理当前 player 的事件监听器 */
+class AudioManager extends TypedEventTarget<AudioEventMap> implements IPlaybackEngine {
+  /** 当前活动的播放引擎 */
+  private engine: IPlaybackEngine;
+  /** 用于清理当前引擎的事件监听器 */
   private cleanupListeners: (() => void) | null = null;
-  /** 当前引擎类型 */
-  public readonly engineType: "ffmpeg" | "element";
 
-  constructor(engineType: "ffmpeg" | "element") {
+  /** 当前引擎类型：element | ffmpeg | mpv */
+  public readonly engineType: "element" | "ffmpeg" | "mpv";
+
+  /** 引擎能力描述 */
+  public readonly capabilities: EngineCapabilities;
+
+  constructor(playbackEngine: "web-audio" | "mpv", audioEngine: "element" | "ffmpeg") {
     super();
 
-    if (engineType === "ffmpeg") {
-      this.player = new FFmpegAudioPlayer();
+    // 根据设置选择引擎
+    if (isElectron && playbackEngine === "mpv") {
+      const mpvPlayer = useMpvPlayer();
+      mpvPlayer.init();
+      this.engine = mpvPlayer;
+      this.engineType = "mpv";
+    } else if (audioEngine === "ffmpeg" && checkIsolationSupport()) {
+      this.engine = new FFmpegAudioPlayer();
+      this.engineType = "ffmpeg";
     } else {
-      this.player = new AudioElementPlayer();
+      if (audioEngine === "ffmpeg" && !checkIsolationSupport()) {
+        console.warn("[AudioManager] 环境未隔离，从 FFmpeg 回退到 Web Audio");
+      }
+
+      this.engine = new AudioElementPlayer();
+      this.engineType = "element";
     }
-    this.engineType = engineType;
-    this.bindPlayerEvents();
+
+    this.capabilities = this.engine.capabilities;
+    this.bindEngineEvents();
   }
 
-  private bindPlayerEvents() {
+  /**
+   * 绑定引擎事件，转发到 AudioManager
+   */
+  private bindEngineEvents() {
     if (this.cleanupListeners) {
       this.cleanupListeners();
     }
@@ -44,214 +67,229 @@ class AudioManager extends EventTarget {
 
     events.forEach((eventType) => {
       const handler = (e: Event) => {
-        if (e instanceof CustomEvent) {
-          this.dispatchEvent(new CustomEvent(eventType, { detail: e.detail }));
-        } else {
-          this.dispatchEvent(new Event(eventType));
-        }
+        const detail = (e as CustomEvent).detail;
+        this.dispatch(eventType, detail);
       };
       handlers.set(eventType, handler);
-      this.player.addEventListener(eventType, handler);
+      this.engine.addEventListener(eventType, handler);
     });
 
     this.cleanupListeners = () => {
       handlers.forEach((handler, eventType) => {
-        this.player.removeEventListener(eventType as AudioEventType, handler);
+        this.engine.removeEventListener(eventType, handler);
       });
     };
   }
 
   /**
    * 初始化
-   *
-   * 通常在首次播放时自动调用，也可手动调用以预热 AudioContext
    */
-  public init() {
-    this.player.init();
+  public init(): void {
+    this.engine.init();
+  }
+
+  /**
+   * 销毁引擎
+   */
+  public destroy(): void {
+    if (this.cleanupListeners) {
+      this.cleanupListeners();
+      this.cleanupListeners = null;
+    }
+    this.engine.destroy();
   }
 
   /**
    * 加载并播放音频
-   * @param url 音频地址
-   * @param options 播放选项 (fadeIn: 是否渐入, fadeDuration: 渐入时长, autoPlay: 是否自动播放)
    */
-  public async play(
-    url?: string,
-    options?: { fadeIn?: boolean; fadeDuration?: number; autoPlay?: boolean },
-  ) {
-    await this.player.play(url, options);
+  public async play(url?: string, options?: PlayOptions): Promise<void> {
+    await this.engine.play(url, options);
+  }
+
+  /**
+   * 恢复播放
+   */
+  public async resume(options?: { fadeIn?: boolean; fadeDuration?: number }): Promise<void> {
+    await this.engine.resume(options);
   }
 
   /**
    * 暂停音频
-   * @param options 暂停选项 (fadeOut: 是否渐出, fadeDuration: 渐出时长)
    */
-  public pause(options?: { fadeOut?: boolean; fadeDuration?: number }) {
-    this.player.pause(options);
+  public pause(options?: PauseOptions): void {
+    this.engine.pause(options);
   }
 
   /**
    * 停止播放并将时间重置为 0
    */
-  public stop() {
-    this.player.stop();
-  }
-
-  /**
-   * 切换播放/暂停
-   */
-  public togglePlayPause() {
-    this.player.togglePlayPause();
+  public stop(): void {
+    this.engine.stop();
   }
 
   /**
    * 跳转到指定时间
    * @param time 时间（秒）
    */
-  public seek(time: number) {
-    this.player.seek(time);
+  public seek(time: number): void {
+    this.engine.seek(time);
+  }
+
+  /**
+   * 设置 ReplayGain 增益
+   * @param gain 线性增益值
+   */
+  public setReplayGain(gain: number): void {
+    this.engine.setReplayGain?.(gain);
   }
 
   /**
    * 设置音量
    * @param value 音量值 (0.0 - 1.0)
    */
-  public setVolume(value: number) {
-    this.player.setVolume(value);
+  public setVolume(value: number): void {
+    this.engine.setVolume(value);
   }
 
   /**
    * 获取当前音量
-   * @returns 当前音量值 (0.0 - 1.0)
    */
   public getVolume(): number {
-    return this.player.getVolume();
+    return this.engine.getVolume();
   }
 
   /**
    * 设置播放速率
    * @param value 速率 (0.5 - 2.0)
    */
-  public setRate(value: number) {
-    this.player.setRate(value);
+  public setRate(value: number): void {
+    this.engine.setRate(value);
   }
 
   /**
    * 获取当前播放速率
-   * @returns 当前速率
    */
   public getRate(): number {
-    return this.player.getRate();
+    return this.engine.getRate();
   }
 
   /**
    * 设置输出设备
    */
-  public async setSinkId(deviceId: string) {
-    await this.player.setSinkId(deviceId);
+  public async setSinkId(deviceId: string): Promise<void> {
+    await this.engine.setSinkId(deviceId);
   }
 
   /**
    * 获取频谱数据 (用于可视化)
-   * @returns Uint8Array 频谱数据
    */
   public getFrequencyData(): Uint8Array {
-    return this.player.getFrequencyData();
+    return this.engine.getFrequencyData?.() ?? new Uint8Array(0);
   }
 
   /**
    * 获取低频音量 [0.0-1.0]
-   * 用于驱动背景动画等视觉效果
-   * @returns 低频音量值
    */
   public getLowFrequencyVolume(): number {
-    return this.player.getLowFrequencyVolume();
+    return this.engine.getLowFrequencyVolume?.() ?? 0;
   }
 
   /**
    * 设置均衡器增益
-   * @param index 频段索引 (0-9)
-   * @param value 增益值 (-40 to 40)
    */
-  public setFilterGain(index: number, value: number) {
-    this.player.setFilterGain(index, value);
+  public setFilterGain(index: number, value: number): void {
+    this.engine.setFilterGain?.(index, value);
   }
 
   /**
    * 获取当前均衡器设置
-   * @returns 各频段增益值数组
    */
   public getFilterGains(): number[] {
-    return this.player.getFilterGains();
+    return this.engine.getFilterGains?.() ?? [];
   }
 
   /**
-   * 获取音频总时长
-   * @returns 总时长（秒）
+   * 获取音频总时长（秒）
    */
-  public get duration() {
-    return this.player.duration;
+  public get duration(): number {
+    return this.engine.duration;
   }
 
   /**
-   * 获取当前播放时间
-   * @returns 当前播放时间（秒）
+   * 获取当前播放时间（秒）
    */
-  public get currentTime() {
-    return this.player.currentTime;
+  public get currentTime(): number {
+    return this.engine.currentTime;
   }
 
   /**
    * 获取是否暂停状态
-   * @returns 是否暂停
    */
-  public get paused() {
-    return this.player.paused;
+  public get paused(): boolean {
+    return this.engine.paused;
   }
 
   /**
    * 获取当前播放地址
-   * @returns 当前播放地址
    */
-  public get src() {
-    return this.player.src;
+  public get src(): string {
+    return this.engine.src;
   }
 
   /**
    * 获取音频错误码
-   * @returns 错误码
    */
   public getErrorCode(): number {
-    return this.player.getErrorCode();
+    return this.engine.getErrorCode();
   }
 
-  public override addEventListener<K extends keyof AudioEventMap>(
-    type: K,
-    listener: (this: AudioManager, ev: AudioEventMap[K]) => unknown,
-    options?: boolean | AddEventListenerOptions,
-  ): void {
-    super.addEventListener(type, listener as EventListenerOrEventListenerObject, options);
+  /**
+   * 解除 MPV 强制暂停状态
+   * 仅在 MPV 引擎下有效
+   */
+  public clearForcePaused(): void {
+    if (this.engine instanceof MpvPlayer) {
+      this.engine.clearForcePaused();
+    }
   }
 
-  public override removeEventListener<K extends keyof AudioEventMap>(
-    type: K,
-    listener: (this: AudioManager, ev: AudioEventMap[K]) => unknown,
-    options?: boolean | EventListenerOptions,
-  ): void {
-    super.removeEventListener(type, listener as EventListenerOrEventListenerObject, options);
+  /**
+   * 设置 MPV 期望的 Seek 位置
+   * 仅在 MPV 引擎下有效
+   */
+  public setPendingSeek(seconds: number | null): void {
+    if (this.engine instanceof MpvPlayer) {
+      this.engine.setPendingSeek(seconds);
+    }
+  }
+
+  /**
+   * 切换播放/暂停
+   */
+  public togglePlayPause(): void {
+    if (this.paused) {
+      this.resume();
+    } else {
+      this.pause();
+    }
   }
 }
 
-let instance: AudioManager | null = null;
+const AUDIO_MANAGER_KEY = "__SPLAYER_AUDIO_MANAGER__";
 
 /**
  * 获取 AudioManager 实例
  * @returns AudioManager
  */
 export const useAudioManager = (): AudioManager => {
-  if (!instance) {
+  const win = window as Window & { [AUDIO_MANAGER_KEY]?: AudioManager };
+  if (!win[AUDIO_MANAGER_KEY]) {
     const settingStore = useSettingStore();
-    instance = new AudioManager(settingStore.audioEngine);
+    win[AUDIO_MANAGER_KEY] = new AudioManager(
+      settingStore.playbackEngine,
+      settingStore.audioEngine,
+    );
+    console.log(`[AudioManager] 创建新实例, engine: ${win[AUDIO_MANAGER_KEY].engineType}`);
   }
-  return instance;
+  return win[AUDIO_MANAGER_KEY];
 };

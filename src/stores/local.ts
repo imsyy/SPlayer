@@ -30,6 +30,8 @@ const createLocalStore = () => {
   const localSongs = ref<SongType[]>([]);
   // 本地歌单
   const localPlaylists = ref<LocalPlaylistType[]>([]);
+  // 是否初始化完成
+  const isInitialized = ref(false);
 
   // 读取本地歌曲
   const readLocalSong = async (): Promise<SongType[]> => {
@@ -124,6 +126,7 @@ const createLocalStore = () => {
     try {
       const result = await localDB.getItem("local-playlists");
       localPlaylists.value = (result as LocalPlaylistType[]) || [];
+      isInitialized.value = true;
       return localPlaylists.value;
     } catch (error) {
       console.error("Error reading local playlists:", error);
@@ -195,18 +198,16 @@ const createLocalStore = () => {
     // 过滤已存在的歌曲
     const existingIds = new Set(playlist.songs);
     const newIds = songIds.filter((id) => !existingIds.has(id));
-
     if (newIds.length === 0) return { success: true, addedCount: 0 };
-
-    const hadSongs = playlist.songs.length > 0;
-    playlist.songs.push(...newIds);
+    const oldFirstSongId = playlist.songs[0];
+    // 后添加的歌曲放在前面
+    playlist.songs.unshift(...newIds);
     playlist.updateTime = Date.now();
-
-    // 如果之前没有歌曲，现在有了，则更新封面
-    if (!hadSongs && playlist.songs.length > 0) {
+    // 如果第一首歌曲变了（或者之前没有歌曲），则更新封面
+    const newFirstSongId = playlist.songs[0];
+    if (oldFirstSongId !== newFirstSongId) {
       await updatePlaylistCover(playlist, true);
     }
-
     await saveLocalPlaylists();
     return { success: true, addedCount: newIds.length };
   };
@@ -250,6 +251,18 @@ const createLocalStore = () => {
     return { playlist, songs };
   };
 
+  /**
+   * 判断是否为本地歌单 ID
+   * @param id 歌单 ID
+   */
+  const isLocalPlaylist = (id: number | string | undefined | null): boolean => {
+    if (!id) return false;
+    const strId = id.toString();
+    if (strId.length !== 16) return false;
+    // 检查是否存在于本地歌单列表
+    return localPlaylists.value.some((p) => p.id.toString() === strId);
+  };
+
   // 直接初始化数据
   readLocalSong();
   readLocalPlaylists();
@@ -257,6 +270,7 @@ const createLocalStore = () => {
   return reactive({
     localSongs,
     localPlaylists,
+    isInitialized,
     readLocalSong,
     updateLocalSong,
     deleteLocalSong,
@@ -267,6 +281,7 @@ const createLocalStore = () => {
     addSongsToLocalPlaylist,
     removeSongsFromLocalPlaylist,
     getLocalPlaylistDetail,
+    isLocalPlaylist,
   });
 };
 

@@ -39,7 +39,8 @@ import {
   GlobalThemeOverrides,
 } from "naive-ui";
 import { useSettingStore, useStatusStore } from "@/stores";
-import { setColorSchemes } from "@/utils/color";
+import { setColorSchemes, MONOTONOUS_THEME } from "@/utils/color";
+import { useCustomCode } from "@/composables/useCustomCode";
 // import { rgbToHex } from "@imsyy/color-utils";
 import themeColor from "@/assets/data/themeColor.json";
 
@@ -49,7 +50,7 @@ const settingStore = useSettingStore();
 // 操作系统主题
 const osTheme = useOsTheme();
 
-// 全局主题（使用 shallowRef 避免深层追踪开销）
+// 全局主题
 const themeOverrides = shallowRef<GlobalThemeOverrides>({});
 // 轻量的 rgba 构造器
 const toRGBA = (rgb: string, alpha: number) => `rgba(${rgb}, ${alpha})`;
@@ -58,6 +59,8 @@ let lastThemeCacheKey: string | null = null;
 
 // 获取明暗模式
 const theme = computed(() => {
+  // 图片模式强制深色
+  if (statusStore.isCustomBackground) return darkTheme;
   return settingStore.themeMode === "auto"
     ? // 跟随系统
       osTheme.value === "dark"
@@ -72,19 +75,35 @@ const theme = computed(() => {
 // 获取当前主题色数据
 const getThemeMainColor = () => {
   const themeType = theme.value ? "dark" : "light";
+  // 背景图模式
+  if (statusStore.isCustomBackground) {
+    const { themeColor, useCustomColor, customColor, isSolid } = statusStore.backgroundConfig;
+    // 纯色覆盖
+    if (isSolid) return setColorSchemes(MONOTONOUS_THEME, themeType);
+    const color = useCustomColor ? customColor : themeColor;
+    // 强制使用 dark 模式生成
+    if (color) return setColorSchemes(color, "dark");
+  }
+  // 封面模式
   if (settingStore.themeFollowCover && statusStore.songCoverTheme) {
     const coverColor = statusStore.songCoverTheme;
     if (!coverColor) return {};
     return setColorSchemes(coverColor, themeType);
+  } else if (settingStore.themeColorType === "solid") {
+    // 纯色预设
+    return setColorSchemes(MONOTONOUS_THEME, themeType);
   } else if (settingStore.themeColorType !== "custom") {
+    // 预设模式
     return setColorSchemes(themeColor[settingStore.themeColorType].color, themeType);
   } else {
+    // 自定义模式
     return setColorSchemes(settingStore.themeCustomColor, themeType);
   }
 };
 
 // 更改全局主题
 const changeGlobalTheme = () => {
+  applyThemeBackgroundMode();
   try {
     // 获取配色方案
     const colorSchemes = getThemeMainColor();
@@ -105,121 +124,129 @@ const changeGlobalTheme = () => {
     // 全局字体
     const fontFamily = `${settingStore.globalFont === "default" ? "v-sans" : settingStore.globalFont}, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`;
 
+    // 预计算颜色值
+    const colors = {
+      primary: `rgb(${primaryRGB})`,
+      primary78: toRGBA(primaryRGB, 0.78),
+      primary58: toRGBA(primaryRGB, 0.58),
+      primary52: toRGBA(primaryRGB, 0.52),
+      primary20: toRGBA(primaryRGB, 0.2),
+      primary12: toRGBA(primaryRGB, 0.12),
+      primary09: toRGBA(primaryRGB, 0.09),
+      primary08: toRGBA(primaryRGB, 0.08),
+      surface: `rgb(${surfaceContainerRGB})`,
+    };
+
     // 通用样式基座
     const commonBase = {
       fontFamily,
-      primaryColor: `rgb(${primaryRGB})`,
-      primaryColorHover: toRGBA(primaryRGB, 0.78),
+      primaryColor: colors.primary,
+      primaryColorHover: colors.primary78,
       primaryColorPressed: toRGBA(primaryRGB, 0.26),
-      primaryColorSuppl: toRGBA(primaryRGB, 0.12),
+      primaryColorSuppl: colors.primary12,
     } as GlobalThemeOverrides["common"];
+
+    /**
+     * 获取组件样式
+     * @param isGlobal 是否全局着色
+     */
+    const getComponentStyles = (isGlobal: boolean) => ({
+      Slider: {
+        handleColor: colors.primary,
+        fillColor: colors.primary,
+        fillColorHover: colors.primary,
+        railColor: colors.primary20,
+        railColorHover: toRGBA(primaryRGB, 0.3),
+        indicatorColor: colors.surface,
+        indicatorTextColor: colors.primary,
+      },
+      Icon: {
+        color: colors.primary,
+      },
+      Tooltip: {
+        color: colors.surface,
+        textColor: colors.primary,
+      },
+      Tabs: {
+        colorSegment: colors.surface,
+        tabColorSegment: colors.primary12,
+      },
+      ...(isGlobal
+        ? {
+            Card: { borderColor: colors.primary09 },
+            Button: {
+              textColorHover: colors.primary78,
+              textColorFocus: colors.primary58,
+              colorPrimary: toRGBA(primaryRGB, 0.9),
+              colorHoverPrimary: colors.primary,
+              colorPressedPrimary: toRGBA(primaryRGB, 0.8),
+              colorFocusPrimary: colors.primary,
+            },
+            Switch: { railColorActive: toRGBA(primaryRGB, 0.8) },
+            Input: {
+              color: toRGBA(primaryRGB, 0.1),
+              colorFocus: colors.surface,
+              placeholderColor: colors.primary58,
+              border: `1px solid ${toRGBA(primaryRGB, 0.1)}`,
+              clearColor: toRGBA(primaryRGB, 0.38),
+              clearColorHover: toRGBA(primaryRGB, 0.48),
+              clearColorPressed: toRGBA(primaryRGB, 0.3),
+            },
+            Empty: { textColor: toRGBA(primaryRGB, 0.38) },
+            Divider: { color: colors.primary09 },
+            Dropdown: { dividerColor: colors.primary09 },
+            Layout: { siderBorderColor: colors.primary09 },
+            Tabs: {
+              colorSegment: colors.primary08,
+              tabColorSegment: colors.primary12,
+            },
+            Drawer: {
+              headerBorderBottom: `1px solid ${colors.primary09}`,
+              footerBorderTop: `1px solid ${colors.primary09}`,
+            },
+            Menu: { dividerColor: colors.primary09 },
+            Progress: { railColor: toRGBA(primaryRGB, 0.16) },
+            Popover: {
+              color: colors.surface,
+            },
+          }
+        : {}),
+    });
+
+    // 获取组件样式
+    const specificStyles = getComponentStyles(settingStore.themeGlobalColor);
 
     if (settingStore.themeGlobalColor) {
       themeOverrides.value = {
         common: {
           ...commonBase,
           textColorBase: primaryRGB,
-          textColor1: `rgb(${primaryRGB})`,
+          textColor1: colors.primary,
           textColor2: toRGBA(primaryRGB, 0.82),
-          textColor3: toRGBA(primaryRGB, 0.52),
+          textColor3: colors.primary52,
           bodyColor: `rgb(${colorSchemes.background})`,
-          cardColor: `rgb(${surfaceContainerRGB})`,
-          tagColor: `rgb(${surfaceContainerRGB})`,
-          modalColor: `rgb(${surfaceContainerRGB})`,
-          popoverColor: `rgb(${surfaceContainerRGB})`,
-          buttonColor2: toRGBA(primaryRGB, 0.08),
-          buttonColor2Hover: toRGBA(primaryRGB, 0.12),
-          buttonColor2Pressed: toRGBA(primaryRGB, 0.08),
-          iconColor: `rgb(${primaryRGB})`,
+          cardColor: colors.surface,
+          tagColor: colors.surface,
+          modalColor: colors.surface,
+          popoverColor: colors.surface,
+          buttonColor2: colors.primary08,
+          buttonColor2Hover: colors.primary12,
+          buttonColor2Pressed: colors.primary08,
+          iconColor: colors.primary,
           iconColorHover: toRGBA(primaryRGB, 0.475),
-          closeIconColor: toRGBA(primaryRGB, 0.58),
-          hoverColor: toRGBA(primaryRGB, 0.09),
-          borderColor: toRGBA(primaryRGB, 0.09),
+          closeIconColor: colors.primary58,
+          hoverColor: colors.primary09,
+          borderColor: colors.primary09,
           textColorDisabled: toRGBA(primaryRGB, 0.3),
           placeholderColorDisabled: toRGBA(primaryRGB, 0.3),
           iconColorDisabled: toRGBA(primaryRGB, 0.3),
         },
-        Card: {
-          borderColor: toRGBA(primaryRGB, 0.09),
-        },
-        Button: {
-          textColorHover: toRGBA(primaryRGB, 0.78),
-          textColorFocus: toRGBA(primaryRGB, 0.58),
-          colorPrimary: toRGBA(primaryRGB, 0.9),
-          colorHoverPrimary: `rgb(${primaryRGB})`,
-          colorPressedPrimary: toRGBA(primaryRGB, 0.8),
-          colorFocusPrimary: `rgb(${primaryRGB})`,
-        },
-        Slider: {
-          handleColor: `rgb(${primaryRGB})`,
-          fillColor: `rgb(${primaryRGB})`,
-          fillColorHover: `rgb(${primaryRGB})`,
-          railColor: toRGBA(primaryRGB, 0.2),
-          railColorHover: toRGBA(primaryRGB, 0.3),
-        },
-        Switch: {
-          railColorActive: toRGBA(primaryRGB, 0.8),
-        },
-        Input: {
-          color: toRGBA(primaryRGB, 0.1),
-          colorFocus: `rgb(${surfaceContainerRGB})`,
-          placeholderColor: toRGBA(primaryRGB, 0.58),
-          border: `1px solid ${toRGBA(primaryRGB, 0.1)}`,
-          clearColor: toRGBA(primaryRGB, 0.38),
-          clearColorHover: toRGBA(primaryRGB, 0.48),
-          clearColorPressed: toRGBA(primaryRGB, 0.3),
-        },
-        Icon: {
-          color: `rgb(${primaryRGB})`,
-        },
-        Empty: {
-          textColor: toRGBA(primaryRGB, 0.38),
-        },
-        Divider: {
-          color: toRGBA(primaryRGB, 0.09),
-        },
-        Dropdown: {
-          dividerColor: toRGBA(primaryRGB, 0.09),
-        },
-        Layout: {
-          siderBorderColor: toRGBA(primaryRGB, 0.09),
-        },
-        Tabs: {
-          colorSegment: toRGBA(primaryRGB, 0.08),
-          tabColorSegment: toRGBA(primaryRGB, 0.12),
-        },
-        Drawer: {
-          headerBorderBottom: `1px solid ${toRGBA(primaryRGB, 0.09)}`,
-          footerBorderTop: `1px solid ${toRGBA(primaryRGB, 0.09)}`,
-        },
-        Menu: {
-          dividerColor: toRGBA(primaryRGB, 0.09),
-        },
-        Progress: {
-          railColor: toRGBA(primaryRGB, 0.16),
-        },
-        Popover: {
-          color: `rgb(${surfaceContainerRGB})`,
-        },
+        ...specificStyles,
       };
     } else {
       themeOverrides.value = {
-        common: {
-          ...commonBase,
-        },
-        Icon: {
-          color: `rgb(${primaryRGB})`,
-        },
-        Slider: {
-          handleColor: `rgb(${primaryRGB})`,
-          fillColor: `rgb(${primaryRGB})`,
-          fillColorHover: `rgb(${primaryRGB})`,
-          railColor: toRGBA(primaryRGB, 0.2),
-          railColorHover: toRGBA(primaryRGB, 0.3),
-        },
-        Popover: {
-          color: `rgb(${surfaceContainerRGB})`,
-        },
+        common: commonBase,
+        ...specificStyles,
       };
     }
   } catch (error) {
@@ -253,6 +280,15 @@ const NaiveProviderContent = defineComponent({
   },
 });
 
+// 应用背景模式类名
+const applyThemeBackgroundMode = () => {
+  if (statusStore.isCustomBackground) {
+    document.documentElement.classList.add("image");
+  } else {
+    document.documentElement.classList.remove("image");
+  }
+};
+
 // 监听设置更改
 watch(
   () => [
@@ -261,6 +297,11 @@ watch(
     settingStore.themeGlobalColor,
     settingStore.globalFont,
     statusStore.songCoverTheme?.main,
+    statusStore.themeBackgroundMode,
+    statusStore.backgroundConfig.themeColor,
+    statusStore.backgroundConfig.useCustomColor,
+    statusStore.backgroundConfig.customColor,
+    statusStore.backgroundConfig.isSolid,
     theme.value,
   ],
   () => changeGlobalTheme(),
@@ -277,5 +318,7 @@ watchDebounced(
 
 onMounted(() => {
   changeGlobalTheme();
+  // 自定义代码注入
+  useCustomCode();
 });
 </script>

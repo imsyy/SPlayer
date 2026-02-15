@@ -1,15 +1,14 @@
 import { heartRateList } from "@/api/playlist";
 import { useDataStore, useMusicStore, useStatusStore } from "@/stores";
-import { type SongType } from "@/types/main";
-import { RepeatModeType, ShuffleModeType } from "@/types/shared";
-import { RepeatMode } from "@/types/smtc";
+import type { SongType } from "@/types/main";
+import type { RepeatModeType, ShuffleModeType } from "@/types/shared/play-mode";
 import { isLogin } from "@/utils/auth";
-import { isElectron, isWin } from "@/utils/env";
+import { isElectron } from "@/utils/env";
 import { formatSongsList } from "@/utils/format";
 import { shuffleArray } from "@/utils/helper";
 import { openUserLogin } from "@/utils/modal";
 import axios from "axios";
-import { MessageReactive } from "naive-ui";
+import type { MessageReactive } from "naive-ui";
 import * as playerIpc from "./PlayerIpc";
 
 /**
@@ -52,14 +51,14 @@ export class PlayModeManager {
       statusStore.toggleRepeat();
     }
 
-    this.syncSmtcPlayMode();
+    this.syncMediaPlayMode();
 
-    // const modeText: Record<RepeatModeType, string> = {
-    //   list: "列表循环",
-    //   one: "单曲循环",
-    //   off: "不循环",
-    // };
-    // window.$message.success(`已切换至：${modeText[statusStore.repeatMode]}`);
+    const modeText: Record<RepeatModeType, string> = {
+      list: "列表循环",
+      one: "单曲循环",
+      off: "不循环",
+    };
+    window.$message.success(modeText[statusStore.repeatMode], { showIcon: false });
   }
 
   /**
@@ -108,6 +107,8 @@ export class PlayModeManager {
     // 修正当前播放索引
     const idx = shuffled.findIndex((s) => s.id === musicStore.playSong?.id);
     if (idx !== -1) statusStore.playIndex = idx;
+
+    window.$message.success("随机播放已开启", { showIcon: false });
   }
 
   /**
@@ -118,8 +119,8 @@ export class PlayModeManager {
     const musicStore = useMusicStore();
     const dataStore = useDataStore();
 
+    // 检查登录状态
     if (isLogin() !== 1) {
-      // 未登录，回滚状态
       statusStore.shuffleMode = previousMode;
       if (isLogin() === 0) {
         openUserLogin(true);
@@ -129,34 +130,77 @@ export class PlayModeManager {
       return;
     }
 
+    // 检查是否有播放歌曲
+    if (!musicStore.playSong) {
+      statusStore.shuffleMode = previousMode;
+      window.$message.warning("请先播放一首歌曲后再开启心动模式");
+      return;
+    }
+
     this.loadingMessage = window.$message.loading("心动模式开启中...", {
       duration: 0,
     });
 
     try {
-      const pid =
-        musicStore.playPlaylistId || (await dataStore.getUserLikePlaylist())?.detail?.id || 0;
-      if (!musicStore.playSong) throw new Error("无播放歌曲");
-      // 获取当前歌曲ID，如果不是纯数字则生成随机10位数
-      let currentSongId = musicStore.playSong.id;
-      if (!Number.isInteger(currentSongId) || currentSongId <= 0) {
-        currentSongId = Math.floor(Math.random() * 9000000000) + 1000000000;
+      let pid = Number(musicStore.playPlaylistId);
+      if (!pid) {
+        const likedPlaylist = await dataStore.getUserLikePlaylist();
+        pid = likedPlaylist?.detail?.id ? Number(likedPlaylist.detail.id) : 0;
       }
-
+      // 获取当前歌曲ID，强制转换为数字
+      let currentSongId: number;
+      const rawId = musicStore.playSong.id;
+      // 字符串ID，尝试解析为数字
+      if (typeof rawId === "string") {
+        const parsed = parseInt(rawId, 10);
+        if (Number.isNaN(parsed) || parsed <= 0) {
+          // 无法解析为有效数字ID，使用喜欢列表中的随机歌曲ID
+          const likePlaylist = await dataStore.getUserLikePlaylist();
+          if (likePlaylist?.data && likePlaylist.data.length > 0) {
+            const randomIndex = Math.floor(Math.random() * likePlaylist.data.length);
+            currentSongId = likePlaylist.data[randomIndex].id as number;
+          } else {
+            throw new Error("无法获取有效的歌曲ID，请确保喜欢列表中有歌曲");
+          }
+        } else {
+          currentSongId = parsed;
+        }
+      } else if (typeof rawId === "number" && Number.isInteger(rawId) && rawId > 0) {
+        currentSongId = rawId;
+      } else {
+        // 无效ID，使用喜欢列表中的随机歌曲ID
+        const likePlaylist = await dataStore.getUserLikePlaylist();
+        if (likePlaylist?.data && likePlaylist.data.length > 0) {
+          const randomIndex = Math.floor(Math.random() * likePlaylist.data.length);
+          currentSongId = likePlaylist.data[randomIndex].id as number;
+        } else {
+          throw new Error("无法获取有效的歌曲ID，请确保喜欢列表中有歌曲");
+        }
+      }
+      if (signal.aborted) return;
       const res = await heartRateList(currentSongId, pid, undefined, signal);
-      if (res.code !== 200) throw new Error("获取推荐失败");
-
+      if (res.code !== 200) throw new Error("获取心动模式推荐失败，请稍后重试");
       const recList = formatSongsList(res.data);
-
-      // 混合列表
+      if (!recList || recList.length === 0) {
+        throw new Error("心动模式推荐列表为空");
+      }
+      // 备份当前播放列表
       const currentList = [...dataStore.playList];
-      const mixedList = interleaveLists(currentList, recList);
-
-      await dataStore.setPlayList(mixedList);
-
-      const idx = mixedList.findIndex((s) => s.id === currentSongId);
-      if (idx !== -1) statusStore.playIndex = idx;
+      await dataStore.setOriginalPlayList(currentList);
+      if (signal.aborted) return;
+      // 构建新的心动播放列表
+      const currentSong = musicStore.playSong;
+      // 过滤掉推荐列表中可能重复的当前歌曲
+      const filteredRec = recList.filter((s) => s.id !== currentSong.id);
+      const finalList = [{ ...currentSong }, ...filteredRec.map((s) => ({ ...s }))];
+      // 直接替换播放列表
+      await dataStore.setPlayList(finalList);
+      // 设置播放索引为第一首
+      statusStore.playIndex = 0;
       window.$message.success("心动模式已开启");
+    } catch (e) {
+      statusStore.shuffleMode = previousMode;
+      throw e;
     } finally {
       this.clearLoadingMessage();
     }
@@ -181,9 +225,10 @@ export class PlayModeManager {
       statusStore.playIndex = idx !== -1 ? idx : 0;
       await dataStore.clearOriginalPlayList();
     } else {
-      const cleaned = cleanRecommendations(dataStore.playList);
-      await dataStore.setPlayList(cleaned);
+      await dataStore.setPlayList(dataStore.playList);
     }
+
+    window.$message.success("随机播放已关闭", { showIcon: false });
   }
 
   /**
@@ -201,7 +246,7 @@ export class PlayModeManager {
 
     const previousMode = statusStore.shuffleMode;
     statusStore.shuffleMode = nextMode;
-    this.syncSmtcPlayMode();
+    this.syncMediaPlayMode();
 
     // 将耗时的数据处理扔到 UI 图标更新后再进行，避免打乱庞大列表导致点击延迟
     setTimeout(async () => {
@@ -236,36 +281,22 @@ export class PlayModeManager {
   }
 
   /**
-   * 同步当前的播放模式到 SMTC
+   * 同步当前的播放模式到媒体控件
    */
-  public syncSmtcPlayMode() {
+  public syncMediaPlayMode() {
     const statusStore = useStatusStore();
 
-    if (isElectron && isWin) {
-      const smtcShuffle = statusStore.shuffleMode !== "off";
+    if (isElectron) {
+      const shuffle = statusStore.shuffleMode !== "off";
+      const repeat =
+        statusStore.repeatMode === "list"
+          ? "List"
+          : statusStore.repeatMode === "one"
+            ? "Track"
+            : "None";
 
-      let smtcRepeat = RepeatMode.None;
-      if (statusStore.repeatMode === "list") smtcRepeat = RepeatMode.List;
-      if (statusStore.repeatMode === "one") smtcRepeat = RepeatMode.Track;
-
-      playerIpc.sendSmtcPlayMode(smtcShuffle, smtcRepeat);
+      playerIpc.sendMediaPlayMode(shuffle, repeat);
     }
-  }
-
-  /**
-   * 专门处理 SMTC 的随机按钮事件
-   */
-  public handleSmtcShuffle() {
-    const statusStore = useStatusStore();
-    const nextMode = statusStore.shuffleMode === "off" ? "on" : "off";
-    this.toggleShuffle(nextMode);
-  }
-
-  /**
-   * 专门处理 SMTC 的循环按钮事件
-   */
-  public handleSmtcRepeat() {
-    this.toggleRepeat();
   }
 
   /**
@@ -298,7 +329,6 @@ export const interleaveLists = (
   // 标记推荐歌曲
   const taggedRecs = recommendationList.map((song) => ({
     ...song,
-    isRecommendation: true,
   }));
 
   sourceList.forEach((song, index) => {
@@ -311,12 +341,4 @@ export const interleaveLists = (
   });
 
   return result;
-};
-
-/**
- * 清理推荐歌曲，
- * 用于退出心动模式时，恢复纯净列表
- */
-export const cleanRecommendations = (list: SongType[]): SongType[] => {
-  return list.filter((s) => !s.isRecommendation);
 };

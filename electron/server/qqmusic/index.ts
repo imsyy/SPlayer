@@ -77,7 +77,7 @@ async function initSession(): Promise<void> {
       };
       serverLog.log("🔑 QQ 音乐会话初始化成功");
     }
-  } catch (error) {
+  } catch {
     serverLog.warn("⚠️ QQ 音乐会话初始化失败，将使用默认参数");
   }
 }
@@ -212,7 +212,9 @@ async function getQQMusicLyric(
       // lyric 就是 LRC 格式
       try {
         result.lrc = decryptQrc(lyric);
-      } catch {}
+      } catch {
+        // LRC 解密失败，忽略
+      }
     } else {
       // 单独请求 LRC 格式歌词
       try {
@@ -490,7 +492,8 @@ export const initQQMusicAPI = async (fastify: FastifyInstance) => {
       );
 
       // 返回歌曲信息和歌词
-      const { code: _, ...lyrics } = lyricResult;
+
+      const { code: _code, ...lyrics } = lyricResult;
       return reply.send({
         code: 200,
         song: {

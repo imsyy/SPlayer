@@ -17,7 +17,6 @@ export type TimeDisplayType = "current" | "total" | "remaining";
  */
 export type TimeFormat = "current-total" | "remaining-total" | "current-remaining";
 
-
 // 歌曲播放时间显示格式所对应的两个时间的显示类型
 const timeFormatConfig: Record<TimeFormat, [TimeDisplayType, TimeDisplayType]> = {
   "current-total": ["current", "total"],
@@ -27,7 +26,6 @@ const timeFormatConfig: Record<TimeFormat, [TimeDisplayType, TimeDisplayType]> =
 
 // 所有的歌曲播放时间显示格式
 const timeFormats = Object.keys(timeFormatConfig) as TimeFormat[];
-
 
 /**
  * 获取歌曲播放时间显示格式
@@ -66,4 +64,4 @@ export const useTimeFormat = () => {
     timeDisplay: [useTimeDisplay(0), useTimeDisplay(1)] as const,
     toggleTimeFormat,
   };
-}
+};

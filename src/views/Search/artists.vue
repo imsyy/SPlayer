@@ -6,6 +6,7 @@
         :data="searchResultData"
         :loading="loading"
         :loadMore="hasMore"
+        :hiddenCover="settingStore.hiddenCovers.artist"
         @loadMore="loadMore"
       />
       <n-empty
@@ -26,10 +27,13 @@
 import type { ArtistType } from "@/types/main";
 import { searchResult } from "@/api/search";
 import { formatArtistsList } from "@/utils/format";
+import { useSettingStore } from "@/stores";
 
 const props = defineProps<{
   keyword: string;
 }>();
+
+const settingStore = useSettingStore();
 
 // 搜索数据
 const hasMore = ref<boolean>(true);

@@ -29,7 +29,6 @@
 
 <script setup lang="ts">
 import { useSettingStore } from "@/stores";
-
 const router = useRouter();
 const settingStore = useSettingStore();
 

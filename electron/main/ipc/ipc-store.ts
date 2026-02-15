@@ -13,30 +13,30 @@ const initStoreIpc = (): void => {
 
   // 获取配置项
   ipcMain.handle("store-get", (_event, key: keyof StoreType) => {
-    return store.get(key as any);
+    return store.get(key);
   });
 
   // 设置配置项
   ipcMain.handle("store-set", (_event, key: keyof StoreType, value: unknown) => {
-    store.set(key as any, value as any);
+    store.set(key, value as StoreType[typeof key]);
     return true;
   });
 
   // 判断配置项是否存在
   ipcMain.handle("store-has", (_event, key: keyof StoreType) => {
-    return store.has(key as any);
+    return store.has(key);
   });
 
   // 删除配置项
   ipcMain.handle("store-delete", (_event, key: keyof StoreType) => {
-    store.delete(key as any);
+    store.delete(key);
     return true;
   });
 
   // 重置配置（支持指定 keys 或全部重置）
   ipcMain.handle("store-reset", (_event, keys?: (keyof StoreType)[]) => {
     if (keys && keys.length > 0) {
-      store.reset(...(keys as any));
+      store.reset(...keys);
     } else {
       store.reset();
     }
@@ -44,35 +44,41 @@ const initStoreIpc = (): void => {
   });
 
   // 导出配置
-  ipcMain.handle("store-export", async (_event, rendererData: any) => {
+  ipcMain.handle("store-export", async (_event, rendererData: unknown) => {
     console.log("[IPC] store-export called");
     try {
       const now = new Date();
-      const filename = `${appName}_Settings_v${appVersion}_${now.getTime()}.json`;
+      // 使用 ISO 格式的时间字符串，文件名更友好
+      const timeStr = now.toISOString().replace(/[:.]/g, "-").slice(0, 19);
+      const filename = `${appName}_Settings_v${appVersion}_${timeStr}.json`;
 
       const { filePath } = await dialog.showSaveDialog({
         title: "导出设置",
         defaultPath: filename,
-        filters: [{ name: "JSON", extensions: ["json"] }],
+        filters: [{ name: "SPlayer Config", extensions: ["json"] }],
       });
 
       if (filePath) {
         console.log("[IPC] Exporting to:", filePath);
         const fullData = {
-          version: appVersion,
-          timestamp: now.getTime(),
+          meta: {
+            appName,
+            version: appVersion,
+            timestamp: now.getTime(),
+            date: now.toISOString(),
+          },
           electron: store.store,
           renderer: rendererData,
         };
         const data = JSON.stringify(fullData, null, 2);
         await writeFile(filePath, data, "utf-8");
-        return true;
+        return { success: true, path: filePath };
       }
       console.log("[IPC] Export cancelled");
-      return false;
+      return { success: false, error: "cancelled" };
     } catch (error) {
       console.error("❌ Export settings failed:", error);
-      return false;
+      return { success: false, error: String(error) };
     }
   });
 
@@ -82,30 +88,44 @@ const initStoreIpc = (): void => {
     try {
       const { filePaths } = await dialog.showOpenDialog({
         title: "导入设置",
-        filters: [{ name: "JSON", extensions: ["json"] }],
+        filters: [{ name: "SPlayer Config", extensions: ["json"] }],
         properties: ["openFile"],
       });
 
       if (filePaths && filePaths.length > 0) {
         console.log("[IPC] Importing from:", filePaths[0]);
-        const data = await readFile(filePaths[0], "utf-8");
-        const settings = JSON.parse(data);
+        const fileContent = await readFile(filePaths[0], "utf-8");
 
+        let settings;
+        try {
+          settings = JSON.parse(fileContent);
+        } catch {
+          return { success: false, error: "invalid_json" };
+        }
+        // 基础结构验证
+        if (!settings || typeof settings !== "object") {
+          return { success: false, error: "invalid_format" };
+        }
         // 恢复 Electron Store 配置
         if (settings.electron) {
-          store.store = settings.electron;
-        } else if (!settings.renderer) {
-          // 兼容旧版导出（如果是纯 electron store 数据）
+          try {
+            // 过滤 window
+            const { ...rest } = settings.electron;
+            store.store = { ...store.store, ...rest };
+          } catch (e) {
+            console.error("Error restoring electron store:", e);
+          }
+        } else if (!settings.renderer && !settings.meta) {
+          // 兼容旧版纯 Electron Store 导出
           store.store = settings;
         }
-
-        return settings;
+        return { success: true, data: settings };
       }
       console.log("[IPC] Import cancelled");
-      return false;
+      return { success: false, error: "cancelled" };
     } catch (error) {
       console.error("❌ Import settings failed:", error);
-      return false;
+      return { success: false, error: String(error) };
     }
   });
 };

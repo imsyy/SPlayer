@@ -22,7 +22,6 @@ on:
 
 env:
   NODE_VERSION: 22.x
-  PNPM_VERSION: 10
 
 jobs:
   # ===================================================================
@@ -42,26 +41,25 @@ jobs:
       # 检出 Git 仓库
       - name: Check out git repository
         uses: actions/checkout@v4
-      # 设置 pnpm 版本
+      # 设置 pnpm
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
-        with:
-          version: ${{ env.PNPM_VERSION }}
       # 安装 Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
       # 清理旧的构建产物
       - name: Clean workspace on Windows
         if: runner.os == 'Windows'
         run: |
-          Write-Host "🧹 Cleaning workspace, node_modules, and Electron caches..."
+          Write-Host "🧹 Cleaning workspace, node_modules, Electron caches, and pnpm store..."
           if (Test-Path dist) { Remove-Item -Recurse -Force dist }
           if (Test-Path out) { Remove-Item -Recurse -Force out }
           if (Test-Path node_modules) { Remove-Item -Recurse -Force node_modules }
@@ -72,11 +70,24 @@ jobs:
           if (Test-Path "$env:LOCALAPPDATA\electron") {
             Remove-Item "$env:LOCALAPPDATA\electron" -Recurse -Force -ErrorAction SilentlyContinue
           }
+
+          if (Test-Path "$env:USERPROFILE\.pnpm-store") {
+            Remove-Item "$env:USERPROFILE\.pnpm-store" -Recurse -Force -ErrorAction SilentlyContinue
+          }
       - name: Clean workspace on macOS & Linux
         if: runner.os == 'macOS' || runner.os == 'Linux'
         run: |
-          echo "🧹 Cleaning workspace, node_modules, and Electron caches..."
-          rm -rf dist out node_modules ~/.cache/electron-builder ~/.cache/electron
+          echo "🧹 Cleaning workspace, node_modules, Electron caches, and pnpm store..."
+          rm -rf dist out node_modules ~/.cache/electron-builder ~/.cache/electron ~/.pnpm-store
+      # macOS 上安装 LLVM 以支持 Wasm 编译
+      - name: Install LLVM on macOS
+        if: runner.os == 'macOS'
+        run: brew install llvm
+      - name: Set Environment Variables on macOS
+        if: runner.os == 'macOS'
+        run: |
+          echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
+          echo "AR=$(brew --prefix llvm)/bin/llvm-ar" >> $GITHUB_ENV
       # 安装项目依赖
       - name: Install dependencies
         run: pnpm install
@@ -113,21 +124,19 @@ jobs:
         if: runner.os == 'Windows'
         run: pnpm build:win -- --x64 --arm64
         env:
-          VITE_BUILD_TYPE: dev
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build macOS Universal App
         if: runner.os == 'macOS'
         run: pnpm build:mac -- --x64 --arm64
         shell: bash
         env:
-          VITE_BUILD_TYPE: dev
+          CSC_IDENTITY_AUTO_DISCOVERY: false
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build Linux x64 & ARM64 App
         if: runner.os == 'Linux'
         run: pnpm build:linux -- --x64 --arm64
         shell: bash
         env:
-          VITE_BUILD_TYPE: dev
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # 分别上传
@@ -141,28 +150,19 @@ jobs:
           name: Upload Artifacts - Windows Setup arm64,
           if: runner.os == 'Windows',
           uses: actions/upload-artifact@v4,
-          with:
-            { name: SPlayer-Windows-setup-arm64, path: dist/*-arm64-setup.exe },
+          with: { name: SPlayer-Windows-setup-arm64, path: dist/*-arm64-setup.exe },
         }
       - {
           name: Upload Artifacts - Windows Portable x64,
           if: runner.os == 'Windows',
           uses: actions/upload-artifact@v4,
-          with:
-            {
-              name: SPlayer-Windows-portable-x64,
-              path: dist/*-x64-portable.exe,
-            },
+          with: { name: SPlayer-Windows-portable-x64, path: dist/*-x64-portable.exe },
         }
       - {
           name: Upload Artifacts - Windows Portable arm64,
           if: runner.os == 'Windows',
           uses: actions/upload-artifact@v4,
-          with:
-            {
-              name: SPlayer-Windows-portable-arm64,
-              path: dist/*-arm64-portable.exe,
-            },
+          with: { name: SPlayer-Windows-portable-arm64, path: dist/*-arm64-portable.exe },
         }
       - {
           name: Upload Artifacts - macOS DMG x64,
@@ -192,15 +192,13 @@ jobs:
           name: Upload Artifacts - Linux AppImage x64,
           if: runner.os == 'Linux',
           uses: actions/upload-artifact@v4,
-          with:
-            { name: SPlayer-Linux-appimage-x64, path: dist/*-x86_64.AppImage },
+          with: { name: SPlayer-Linux-appimage-x64, path: dist/*-x86_64.AppImage },
         }
       - {
           name: Upload Artifacts - Linux AppImage arm64,
           if: runner.os == 'Linux',
           uses: actions/upload-artifact@v4,
-          with:
-            { name: SPlayer-Linux-appimage-arm64, path: dist/*-arm64.AppImage },
+          with: { name: SPlayer-Linux-appimage-arm64, path: dist/*-arm64.AppImage },
         }
       - {
           name: Upload Artifacts - Linux Pacman x64,
@@ -212,8 +210,7 @@ jobs:
           name: Upload Artifacts - Linux Pacman arm64,
           if: runner.os == 'Linux',
           uses: actions/upload-artifact@v4,
-          with:
-            { name: SPlayer-Linux-pacman-arm64, path: dist/*-aarch64.pacman },
+          with: { name: SPlayer-Linux-pacman-arm64, path: dist/*-aarch64.pacman },
         }
       - {
           name: Upload Artifacts - Linux DEB x64,
@@ -251,9 +248,3 @@ jobs:
           uses: actions/upload-artifact@v4,
           with: { name: SPlayer-Linux-tar-arm64, path: dist/*-arm64.tar.gz },
         }
-      # - {
-      #     name: Upload Artifacts - Linux Snap x64,
-      #     if: runner.os == 'Linux',
-      #     uses: actions/upload-artifact@v4,
-      #     with: { name: SPlayer-Linux-snap-x64, path: dist/*-amd64.snap },
-      #   }

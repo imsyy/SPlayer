@@ -16,7 +16,6 @@
             left: 0,
             right: 0,
             transform: `translateY(${offsetY}px)`,
-            willChange: 'transform',
           }"
         >
           <div
@@ -36,7 +35,6 @@
 
 <script setup lang="ts">
 import { NScrollbar } from "naive-ui";
-import { useElementSize } from "@vueuse/core";
 
 interface Props {
   /** 列表项数据 */
@@ -118,15 +116,21 @@ const initializeHeights = () => {
 };
 
 // 更新累积高度
-const updateTops = () => {
+const updateTops = (fromIndex = 0) => {
   if (props.itemFixed) return;
 
-  itemTops.value = [];
-  let top = 0;
-  for (let i = 0; i < itemHeights.value.length; i++) {
-    itemTops.value[i] = top;
-    top += itemHeights.value[i];
+  const heights = itemHeights.value;
+  const tops =
+    itemTops.value.length === heights.length ? itemTops.value : new Array(heights.length);
+
+  // 从变更位置开始计算
+  let top = fromIndex > 0 ? tops[fromIndex - 1] + heights[fromIndex - 1] : 0;
+  for (let i = fromIndex; i < heights.length; i++) {
+    tops[i] = top;
+    top += heights[i];
   }
+
+  itemTops.value = tops;
 };
 
 // 列表总高度
@@ -159,33 +163,38 @@ const calculateVisibleRange = (currentScrollTop: number) => {
     const visibleCount = Math.ceil(vHeight / props.itemHeight);
     endIndex = startIndex + visibleCount;
   } else {
-    // 动态高度模式
-    let start = 0;
-    let end = itemTops.value.length - 1;
+    // 动态高度模式 - 使用二分查找优化
+    const tops = itemTops.value;
+    const heights = itemHeights.value;
+    const len = tops.length;
 
-    while (start <= end) {
-      const mid = Math.floor((start + end) / 2);
-      const top = itemTops.value[mid];
-      const bottom = top + itemHeights.value[mid];
-
+    // 二分查找起始索引
+    let lo = 0;
+    let hi = len - 1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >>> 1;
+      const bottom = tops[mid] + heights[mid];
       if (bottom > currentScrollTop) {
         startIndex = mid;
-        end = mid - 1;
+        hi = mid - 1;
       } else {
-        start = mid + 1;
+        lo = mid + 1;
       }
     }
 
-    // 查找结束索引
+    // 二分查找结束索引
     const viewportBottom = currentScrollTop + vHeight;
+    lo = startIndex;
+    hi = len - 1;
     endIndex = startIndex;
-
-    // 从 startIndex 开始向后查找
-    for (let i = startIndex; i < itemTops.value.length; i++) {
-      if (itemTops.value[i] > viewportBottom) {
-        break;
+    while (lo <= hi) {
+      const mid = (lo + hi) >>> 1;
+      if (tops[mid] <= viewportBottom) {
+        endIndex = mid;
+        lo = mid + 1;
+      } else {
+        hi = mid - 1;
       }
-      endIndex = i;
     }
   }
 
@@ -212,7 +221,7 @@ const offsetY = computed(() => {
     return actualStartIndex.value * props.itemHeight;
   }
   if (itemTops.value.length === 0) return 0;
-  return itemTops.value[actualStartIndex.value];
+  return Math.round(itemTops.value[actualStartIndex.value]);
 });
 
 // 测量项目高度
@@ -246,8 +255,25 @@ const measureItemHeights = () => {
   }
 };
 
+let rafId: number | null = null;
+let pendingScrollTarget: HTMLElement | null = null;
+
+const processScroll = () => {
+  rafId = null;
+  const target = pendingScrollTarget;
+  if (!target) return;
+
+  const { scrollTop: st, scrollHeight, clientHeight } = target;
+  scrollTop.value = st;
+  calculateVisibleRange(st);
+
+  // 触底检测
+  if (scrollHeight - st - clientHeight < 50) {
+    emit("reachBottom");
+  }
+};
+
 // 处理滚动事件
-let ticking = false;
 const handleScroll = (event: Event) => {
   const target = event.target as HTMLElement;
   if (!target) return;
@@ -255,19 +281,10 @@ const handleScroll = (event: Event) => {
   // 触发外部事件
   emit("scroll", event);
 
-  if (!ticking) {
-    requestAnimationFrame(() => {
-      const { scrollTop: st, scrollHeight, clientHeight } = target;
-      scrollTop.value = st;
-      calculateVisibleRange(st);
-
-      // 触底检测
-      if (scrollHeight - st - clientHeight < 50) {
-        emit("reachBottom");
-      }
-      ticking = false;
-    });
-    ticking = true;
+  // 合并多次滚动到一个 rAF
+  pendingScrollTarget = target;
+  if (rafId === null) {
+    rafId = requestAnimationFrame(processScroll);
   }
 };
 
@@ -312,6 +329,9 @@ defineExpose({
   getScrollTop,
 });
 
+// 防抖高度测量
+const debouncedMeasure = useDebounceFn(measureItemHeights, 50);
+
 // 监听数据变化
 watch(
   () => props.items,
@@ -319,7 +339,7 @@ watch(
     initializeHeights();
     calculateVisibleRange(scrollTop.value);
     // 重新测量高度
-    nextTick(measureItemHeights);
+    nextTick(debouncedMeasure);
   },
   { deep: false },
 );
@@ -343,13 +363,12 @@ watch(
   () => [actualStartIndex.value, actualEndIndex.value],
   () => {
     if (!props.itemFixed) {
-      nextTick(measureItemHeights);
+      nextTick(debouncedMeasure);
     }
   },
   { flush: "post" },
 );
 
-// 组件挂载后初始化
 onMounted(() => {
   initializeHeights();
   // 等待 DOM 渲染和容器尺寸确定
@@ -361,6 +380,13 @@ onMounted(() => {
     // 初始测量
     if (!props.itemFixed) measureItemHeights();
   });
+});
+
+onUnmounted(() => {
+  if (rafId !== null) {
+    cancelAnimationFrame(rafId);
+    rafId = null;
+  }
 });
 </script>
 

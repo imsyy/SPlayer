@@ -4,50 +4,105 @@
     "name": "默认",
     "color": "#fe7971"
   },
-  "orange": {
-    "label": "orange",
-    "name": "橙色",
-    "color": "#ff8c00"
-  },
-  "blue": {
-    "label": "blue",
-    "name": "蓝色",
-    "color": "#3b5998"
+  "red": {
+    "label": "red",
+    "name": "红色",
+    "color": "#F44336"
   },
   "pink": {
     "label": "pink",
     "name": "粉色",
-    "color": "#e91e63"
+    "color": "#E91E63"
+  },
+  "purple": {
+    "label": "purple",
+    "name": "紫色",
+    "color": "#9C27B0"
+  },
+  "deepPurple": {
+    "label": "deepPurple",
+    "name": "深紫色",
+    "color": "#673AB7"
+  },
+  "indigo": {
+    "label": "indigo",
+    "name": "靛青色",
+    "color": "#3F51B5"
+  },
+  "blue": {
+    "label": "blue",
+    "name": "蓝色",
+    "color": "#2196F3"
+  },
+  "lightBlue": {
+    "label": "lightBlue",
+    "name": "淡蓝色",
+    "color": "#03A9F4"
+  },
+  "cyan": {
+    "label": "cyan",
+    "name": "青色",
+    "color": "#00BCD4"
+  },
+  "teal": {
+    "label": "teal",
+    "name": "水鸭青",
+    "color": "#009688"
+  },
+  "green": {
+    "label": "green",
+    "name": "绿色",
+    "color": "#4CAF50"
+  },
+  "lightGreen": {
+    "label": "lightGreen",
+    "name": "浅绿色",
+    "color": "#8BC34A"
+  },
+  "lime": {
+    "label": "lime",
+    "name": "柠檬绿",
+    "color": "#CDDC39"
+  },
+  "yellow": {
+    "label": "yellow",
+    "name": "黄色",
+    "color": "#FFEB3B"
+  },
+  "amber": {
+    "label": "amber",
+    "name": "琥珀色",
+    "color": "#FFC107"
+  },
+  "orange": {
+    "label": "orange",
+    "name": "橙色",
+    "color": "#FF9800"
+  },
+  "deepOrange": {
+    "label": "deepOrange",
+    "name": "深橙色",
+    "color": "#FF5722"
   },
   "brown": {
     "label": "brown",
     "name": "棕色",
     "color": "#795548"
   },
-  "indigo": {
-    "label": "indigo",
-    "name": "靛青色",
-    "color": "#3f51b5"
+  "grey": {
+    "label": "grey",
+    "name": "灰色",
+    "color": "#9E9E9E"
   },
-  "green": {
-    "label": "green",
-    "name": "绿色",
-    "color": "#2ecc71"
+  "blueGrey": {
+    "label": "blueGrey",
+    "name": "蓝灰色",
+    "color": "#607D8B"
   },
-  "purple": {
-    "label": "purple",
-    "name": "紫色",
-    "color": "#9c27b0"
-  },
-  "yellow": {
-    "label": "yellow",
-    "name": "黄色",
-    "color": "#FBC02D"
-  },
-  "teal": {
-    "label": "teal",
-    "name": "青色",
-    "color": "#009688"
+  "solid": {
+    "label": "solid",
+    "name": "纯色",
+    "color": "#9e9e9e"
   },
   "custom": {
     "label": "custom",

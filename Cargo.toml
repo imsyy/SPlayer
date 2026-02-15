@@ -1,5 +1,10 @@
 [workspace]
-members = ["native/smtc-for-splayer", "native/discord-rpc-for-splayer"]
+members = [
+  "native/external-media-integration",
+  "native/ferrous-opencc-wasm",
+  "native/taskbar-lyric",
+  "native/tools",
+]
 
 resolver = "3"
 
@@ -8,4 +13,4 @@ opt-level = 3
 debug = false
 lto = true
 codegen-units = 1
-panic = "abort"
+panic = "unwind"  # 考虑到 Electron 已经非常大了，我们牺牲一些空间来换取稳定性

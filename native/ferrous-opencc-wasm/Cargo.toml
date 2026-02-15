@@ -1,0 +1,15 @@
+[package]
+name = "ferrous-opencc-wasm"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+ferrous-opencc = { version = "0.3.1", features = ["wasm"] }
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }

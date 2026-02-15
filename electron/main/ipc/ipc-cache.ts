@@ -99,6 +99,14 @@ const initCacheIpc = (): void => {
     },
   );
 
+  // 清空所有缓存
+  ipcMain.handle("cache-clear-all", (): Promise<CacheIpcResult<null>> => {
+    return withErrorCatch(async () => {
+      await cacheService.clearAll();
+      return null;
+    });
+  });
+
   // 获取所有缓存类型的总大小
   ipcMain.handle("cache-size", (): Promise<CacheIpcResult<number>> => {
     return withErrorCatch(async () => {

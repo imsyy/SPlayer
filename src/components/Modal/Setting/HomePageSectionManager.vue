@@ -1,5 +1,17 @@
 <template>
   <div class="home-page-section-manager">
+    <n-card
+      :content-style="{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        padding: '16px',
+      }"
+      class="greeting-item"
+    >
+      <n-text class="name">显示主页问好</n-text>
+      <n-switch v-model:value="settingStore.showHomeGreeting" :round="false" />
+    </n-card>
     <div ref="sortableRef" class="sortable-list">
       <n-card
         v-for="item in settingStore.homePageSections"
@@ -23,6 +35,7 @@
 <script setup lang="ts">
 import { useSettingStore } from "@/stores";
 import { useSortable } from "@vueuse/integrations/useSortable";
+import type { Options } from "sortablejs";
 import SvgIcon from "@/components/Global/SvgIcon.vue";
 
 const settingStore = useSettingStore();
@@ -41,7 +54,7 @@ useSortable(sortableRef, settingStore.homePageSections, {
   animation: 150,
   handle: ".n-icon",
   onEnd: updateSortOrder,
-});
+} as Options);
 
 onMounted(() => {
   // 初始化排序值
@@ -50,6 +63,17 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+.greeting-item {
+  border-radius: 8px;
+  margin-bottom: 12px;
+  .name {
+    font-size: 16px;
+    line-height: normal;
+  }
+  .n-switch {
+    margin-left: auto;
+  }
+}
 .sortable-list {
   margin-top: 12px;
   display: flex;

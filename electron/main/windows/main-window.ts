@@ -1,8 +1,12 @@
-import { BrowserWindow, shell, app } from "electron";
-import { createWindow } from "./index";
-import { mainWinUrl } from "../utils/config";
+import { app, type BrowserWindow, shell } from "electron";
+import { processLog } from "../logger";
 import { useStore } from "../store";
-import { isLinux } from "../utils/config";
+import { isLinux, isWin, mainWinUrl } from "../utils/config";
+import { loadNativeModule } from "../utils/native-loader";
+import { createWindow } from "./index";
+
+type toolModule = typeof import("@native/tools");
+const tools: toolModule = loadNativeModule("tools.node", "tools");
 
 class MainWindow {
   private win: BrowserWindow | null = null;
@@ -48,6 +52,20 @@ class MainWindow {
       }
       return { action: "deny" };
     });
+
+    // 拦截页面导航
+    this.win.webContents.on("will-navigate", (event, url) => {
+      // 检查是否为图片文件（通过扩展名简单判断）
+      const imageExtensions = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp", ".ico"];
+      const isImage = imageExtensions.some((ext) => url.toLowerCase().split("?")[0].endsWith(ext));
+
+      // 如果是图片，阻止导航并下载
+      if (isImage) {
+        event.preventDefault();
+        this.win?.webContents.downloadURL(url);
+      }
+    });
+
     // 窗口显示时
     this.win?.on("show", () => {
       this.win?.webContents.send("lyricsScroll");
@@ -118,6 +136,24 @@ class MainWindow {
     this.win.loadURL(this.winURL);
     // 窗口事件
     this.event();
+
+    // 监听 Explorer 重启
+    if (isWin && tools && this.win) {
+      try {
+        const msgId = tools.getTaskbarCreatedMessageId();
+        if (msgId > 0) {
+          this.win.hookWindowMessage(msgId, () => {
+            processLog.info("[MainWindow] 监听到资源管理器重启");
+            // 把事件发射到 app 里不太好，但是我觉得也没有必要为了这一个事件创建一个事件总线
+            // TODO: 如果有了事件总线，通过那个事件总线发射这个事件
+            app.emit("explorer-restarted");
+          });
+        }
+      } catch (e) {
+        processLog.error("[MainWindow] 监听资源管理器重启时失败", e);
+      }
+    }
+
     return this.win;
   }
   /**

@@ -21,6 +21,8 @@ class LyricWindow {
     // 这里的标题设置是为了 Linux 能够为桌面歌词单独设置窗口规则
     this.win.webContents.on("did-finish-load", () => {
       this.win?.setTitle(`${appName} - 桌面歌词`);
+      // 强制重置缩放为 1.0，防止跟随主窗口缩放
+      this.win?.webContents.setZoomFactor(1.0);
     });
     // 歌词窗口缩放
     this.win?.on("resized", () => {
@@ -36,7 +38,7 @@ class LyricWindow {
       this.win = null;
       const mainWin = mainWindow?.getWin();
       if (mainWin) {
-        mainWin?.webContents.send("close-desktop-lyric");
+        mainWin?.webContents.send("desktop-lyric:close");
       }
     });
   }
@@ -60,6 +62,7 @@ class LyricWindow {
       x,
       y,
       transparent: true,
+      hasShadow: false,
       backgroundColor: "rgba(0, 0, 0, 0)",
       alwaysOnTop: true,
       resizable: true,
@@ -73,10 +76,16 @@ class LyricWindow {
       maximizable: false,
       // 窗口不能进入全屏状态
       fullscreenable: false,
+      webPreferences: {
+        zoomFactor: 1.0,
+        partition: "persist:desktop-lyric",
+      },
     });
     if (!this.win) return null;
     // 加载地址
-    this.win.loadURL(lyricWinUrl);
+    const url = new URL(lyricWinUrl);
+    url.searchParams.set("win", "desktop-lyric");
+    this.win.loadURL(url.toString());
     // 窗口事件
     this.event();
     return this.win;

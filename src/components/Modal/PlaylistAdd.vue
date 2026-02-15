@@ -17,7 +17,7 @@
             v-for="(item, index) in onlinePlaylists"
             :key="index"
             class="playlist"
-            @click="addToOnlinePlaylist(item?.id, index)"
+            @click="addToOnlinePlaylist(Number(item?.id), index)"
           >
             <template #prefix>
               <n-image

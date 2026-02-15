@@ -34,19 +34,25 @@ export function decryptQrc(encryptedQrc: string): string {
   try {
     decompressed = inflateSync(decryptedBuffer);
     return decompressed.toString("utf8");
-  } catch {}
+  } catch {
+    // zlib inflate 失败，尝试其他格式
+  }
 
   // 尝试 2: raw inflate (无 header)
   try {
     decompressed = inflateRawSync(decryptedBuffer);
     return decompressed.toString("utf8");
-  } catch {}
+  } catch {
+    // raw inflate 失败，尝试其他格式
+  }
 
   // 尝试 3: gzip unzip
   try {
     decompressed = unzipSync(decryptedBuffer);
     return decompressed.toString("utf8");
-  } catch {}
+  } catch {
+    // gzip unzip 失败，尝试其他格式
+  }
 
   // 尝试 4: 可能数据本身就不是压缩的
   const str = decryptedBuffer.toString("utf8");

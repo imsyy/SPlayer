@@ -4,11 +4,29 @@ import {
   QuantizerCelebi,
   Hct,
   Score,
+  argbFromHex,
+  type Theme,
 } from "@material/material-color-utilities";
-import { getMDColor, rgbToHex } from "@imsyy/color-utils";
+import { rgbToHex } from "@imsyy/color-utils";
 import { useSettingStore, useStatusStore } from "@/stores";
 import { argbToRgb } from "./helper";
 import { chunk } from "lodash-es";
+import { sendTaskbarThemeColor } from "@/core/player/PlayerIpc";
+
+// 单调主题（纯色模式）
+export const MONOTONOUS_THEME = {
+  main: { r: 239, g: 239, b: 239 },
+  light: {
+    primary: { r: 10, g: 10, b: 10 },
+    background: { r: 238, g: 238, b: 238 },
+    "surface-container": { r: 212, g: 212, b: 212 },
+  },
+  dark: {
+    primary: { r: 239, g: 239, b: 239 },
+    background: { r: 31, g: 31, b: 31 },
+    "surface-container": { r: 39, g: 39, b: 39 },
+  },
+};
 
 /**
  * 主色以 RGB 格式返回
@@ -19,6 +37,44 @@ const getAccentColor = (argb: number) => {
   const [r, g, b] = [...argbToRgb(argb)];
   // 返回 rgb
   return { r, g, b };
+};
+
+/**
+ * 生成主题配色方案
+ * @param theme Material Theme 对象
+ * @param variant 变体名称，默认为 'secondary'
+ */
+const getThemeSchema = (theme: Theme, variant: keyof Theme["palettes"] = "secondary") => {
+  const { hue, chroma } = theme.palettes[variant];
+  const getColor = (tone: number) => getAccentColor(Hct.from(hue, chroma, tone).toInt());
+
+  return {
+    main: getColor(90),
+    light: {
+      primary: getColor(10),
+      background: getColor(94),
+      "surface-container": getColor(90),
+    },
+    dark: {
+      primary: getColor(90),
+      background: getColor(20),
+      "surface-container": getColor(16),
+    },
+  };
+};
+
+/**
+ * 根据颜色生成主题
+ * @param color 颜色 Hex
+ * @param variant 变体名称
+ */
+export const getThemeFromColor = (
+  color: string,
+  variant: keyof Theme["palettes"] = "secondary",
+) => {
+  const argb = argbFromHex(color);
+  const theme = themeFromSourceColor(argb);
+  return getThemeSchema(theme, variant);
 };
 
 // 修改全局颜色
@@ -37,7 +93,8 @@ export const setColorSchemes = (
   mode: "dark" | "light",
 ): { [key: string]: string } => {
   const settingStore = useSettingStore();
-  const colorData = typeof color === "string" ? getMDColor(color) : color;
+  const colorData =
+    typeof color === "string" ? getThemeFromColor(color, settingStore.themeVariant) : color;
   if (!colorData) throw new Error("Color data not found");
   // 指定模式颜色数据
   const colorModeData = colorData[mode];
@@ -49,7 +106,6 @@ export const setColorSchemes = (
       mode === "dark" ? { r: 16, g: 16, b: 20 } : { r: 246, g: 246, b: 246 };
     colorModeData["surface-container"] =
       mode === "dark" ? { r: 24, g: 24, b: 28 } : { r: 255, g: 255, b: 255 };
-    console.log(colorModeData);
   }
   // 遍历颜色并修改
   for (const key in colorModeData) {
@@ -94,56 +150,17 @@ export const getCoverColorData = (dom: HTMLImageElement) => {
   const mostFrequentColors = sortedQuantizedColors.slice(0, 5).map((x) => argbToRgb(x[0]));
   // 如果最频繁的颜色差异很小，使用灰色强调色
   if (mostFrequentColors.every((x) => Math.max(...x) - Math.min(...x) < 5)) {
-    return {
-      main: { r: 239, g: 239, b: 239 },
-      light: {
-        primary: { r: 10, g: 10, b: 10 },
-        background: { r: 238, g: 238, b: 238 },
-        "surface-container": { r: 212, g: 212, b: 212 },
-      },
-      dark: {
-        primary: { r: 239, g: 239, b: 239 },
-        background: { r: 31, g: 31, b: 31 },
-        "surface-container": { r: 39, g: 39, b: 39 },
-      },
-    };
+    return MONOTONOUS_THEME;
   }
   // 使用 Score 库对颜色进行评分
   const ranked = Score.score(new Map(sortedQuantizedColors.slice(0, 50)));
   const topColor = ranked[0];
   const theme = themeFromSourceColor(topColor);
-  // 颜色主题
-  const variant = "secondary";
   // 移除 canvas
   canvas.remove();
+  const settingStore = useSettingStore();
   // 返回主题
-  return {
-    main: getAccentColor(
-      Hct.from(theme.palettes[variant].hue, theme.palettes[variant].chroma, 90).toInt(),
-    ),
-    light: {
-      primary: getAccentColor(
-        Hct.from(theme.palettes[variant].hue, theme.palettes[variant].chroma, 10).toInt(),
-      ),
-      background: getAccentColor(
-        Hct.from(theme.palettes[variant].hue, theme.palettes[variant].chroma, 94).toInt(),
-      ),
-      "surface-container": getAccentColor(
-        Hct.from(theme.palettes[variant].hue, theme.palettes[variant].chroma, 90).toInt(),
-      ),
-    },
-    dark: {
-      primary: getAccentColor(
-        Hct.from(theme.palettes[variant].hue, theme.palettes[variant].chroma, 90).toInt(),
-      ),
-      background: getAccentColor(
-        Hct.from(theme.palettes[variant].hue, theme.palettes[variant].chroma, 20).toInt(),
-      ),
-      "surface-container": getAccentColor(
-        Hct.from(theme.palettes[variant].hue, theme.palettes[variant].chroma, 16).toInt(),
-      ),
-    },
-  };
+  return getThemeSchema(theme, settingStore.themeVariant);
 };
 
 /**
@@ -166,7 +183,31 @@ export const getCoverColor = async (coverUrl: string) => {
     if (!settingStore.playerFollowCoverColor) {
       statusStore.songCoverTheme.main = { r: 239, g: 239, b: 239 };
     }
+    // 获取任务栏封面颜色
+    sendTaskbarCoverColor();
     // 移除元素
     image.remove();
   };
+};
+
+/**
+ * 发送任务栏封面颜色
+ * 从 statusStore.songCoverTheme 读取封面主色
+ */
+export const sendTaskbarCoverColor = () => {
+  const settingStore = useSettingStore();
+  if (!settingStore.taskbarLyricUseThemeColor) {
+    sendTaskbarThemeColor(null);
+    return;
+  }
+  const statusStore = useStatusStore();
+  const coverTheme = statusStore.songCoverTheme;
+  // 检查亮暗模式数据是否存在
+  if (!coverTheme?.dark?.primary || !coverTheme?.light?.primary) return;
+  const darkPrimary = coverTheme.dark.primary;
+  const lightPrimary = coverTheme.light.primary;
+  sendTaskbarThemeColor({
+    dark: rgbToHex(darkPrimary.r, darkPrimary.g, darkPrimary.b),
+    light: rgbToHex(lightPrimary.r, lightPrimary.g, lightPrimary.b),
+  });
 };

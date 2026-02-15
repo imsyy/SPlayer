@@ -26,6 +26,7 @@
 <script setup lang="ts">
 import { useSettingStore } from "@/stores";
 import { useSortable } from "@vueuse/integrations/useSortable";
+import type { Options } from "sortablejs";
 
 const settingStore = useSettingStore();
 
@@ -35,7 +36,7 @@ const sortableRef = ref<HTMLElement | null>(null);
 useSortable(sortableRef, settingStore.songUnlockServer, {
   animation: 150,
   handle: ".n-icon",
-});
+} as Options);
 </script>
 
 <style scoped lang="scss">

@@ -46,7 +46,12 @@
             })
           "
         >
-          <n-avatar :src="artistData?.cover || '/images/artist.jpg?asset'" class="cover" round />
+          <n-avatar
+            v-if="!settingStore.hiddenCovers.videoDetail"
+            :src="artistData?.cover || '/images/artist.jpg?asset'"
+            class="cover"
+            round
+          />
           <n-text class="name">{{ artistData?.name || "未知歌手" }}</n-text>
         </div>
         <n-flex class="control">
@@ -118,6 +123,8 @@
         :loading="commentLoading"
         :type="videoType === 'mv' ? 1 : 5"
         :loadMore="commentHasMore"
+        :res-id="videoId"
+        :hiddenCover="settingStore.hiddenCovers.videoDetail"
         @loadMore="loadMoreComment"
       />
     </div>
@@ -126,7 +133,7 @@
 
 <script setup lang="ts">
 import type { CoverType, CommentType } from "@/types/main";
-import { useStatusStore } from "@/stores";
+import { useStatusStore, useSettingStore } from "@/stores";
 import { videoDetail, videoUrl, videoDetailInfo } from "@/api/video";
 import { formatCommentList, formatCoverList } from "@/utils/format";
 import { isArray, isEmpty } from "lodash-es";
@@ -141,6 +148,7 @@ import { formatTimestamp } from "@/utils/time";
 const router = useRouter();
 const player = usePlayerController();
 const statusStore = useStatusStore();
+const settingStore = useSettingStore();
 
 // 是否激活
 const isActivated = ref<boolean>(false);

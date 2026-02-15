@@ -36,7 +36,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
             抱歉，由于被标记为 **${{ github.event.label.name }}**，该 Issue 将自动关闭
-            如果您认为该 Issue 仍然有效，请重新开启或者创建新的 Issue，我们会尽快确认并修复
+            如果您认为该 Issue 仍然有效，请创建新的 Issue，我们会尽快确认并修复
       # 有问题回复
       - name: Auto Reply
         if: github.event.action == 'labeled' && github.event.label.name == '有问题'
@@ -58,6 +58,17 @@ jobs:
           labels: "有问题, 过期"
           body: |
             🤝 您好 @${{ github.event.issue.user.login }}，感谢您的反馈！我们已经确认该问题，并将在下一个版本中修复
+      # 无法复现
+      - name: Auto Unreproducible
+        if: github.event.action == 'labeled' && github.event.label.name == '无法复现'
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: "create-comment"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: |
+            🤝 您好 @${{ github.event.issue.user.login }}，感谢您的反馈！
+            由于无法复现问题，我们无法修复
+            请确保您已经详细描述了问题的复现步骤，维护团队会尽快查看
       # 已修复
       - name: Auto Fixed
         if: github.event.action == 'labeled' && github.event.label.name == '已修复'
@@ -68,6 +79,6 @@ jobs:
           labels: "BUG"
           close-reason: "completed"
           body: |
-            🎉 您好 @${{ github.event.issue.user.login }}，该问题已修复，感谢您的反馈！
-
-            若您觉得仍存在问题，请重新开启或者创建新的 Issue，我们会尽快确认并修复
+            🎉 您好 @${{ github.event.issue.user.login }}，感谢您的反馈！
+            该问题已在当前开发版或下一个正式版中修复完成。
+            若您觉得仍存在问题，请创建新的 Issue，我们会尽快确认并修复

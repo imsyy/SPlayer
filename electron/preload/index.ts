@@ -19,6 +19,17 @@ if (process.contextIsolated) {
         import: () => ipcRenderer.invoke("store-import"),
       },
     });
+    // Expose logger API via preload
+    contextBridge.exposeInMainWorld("logger", {
+      info: (message: string, ...args: unknown[]) =>
+        ipcRenderer.send("renderer-log", "info", message, args),
+      warn: (message: string, ...args: unknown[]) =>
+        ipcRenderer.send("renderer-log", "warn", message, args),
+      error: (message: string, ...args: unknown[]) =>
+        ipcRenderer.send("renderer-log", "error", message, args),
+      debug: (message: string, ...args: unknown[]) =>
+        ipcRenderer.send("renderer-log", "debug", message, args),
+    });
   } catch (error) {
     console.error(error);
   }

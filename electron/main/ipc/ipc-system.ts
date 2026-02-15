@@ -29,7 +29,6 @@ const initSystemIpc = (): void => {
 
   // 退出应用
   ipcMain.on("quit-app", () => {
-    app.exit(0);
     app.quit();
   });
 

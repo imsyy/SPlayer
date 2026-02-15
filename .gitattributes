@@ -1,3 +1,6 @@
 *.sh text eol=lf
 
+auto-eslint.mjs text eol=lf
+native/**/*.d.ts text eol=lf
+
 src/assets/ffmpeg/decode-audio.js linguist-generated

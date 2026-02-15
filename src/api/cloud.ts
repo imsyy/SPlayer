@@ -82,15 +82,6 @@ export const importCloudSong = (
   return request({
     url: "/cloud/import",
     method: "POST",
-    params: {id,
-      song,
-      fileType,
-      fileSize,
-      bitrate,
-      md5,
-      artist,
-      album,
-      timestamp: Date.now(),
-    },
+    params: { id, song, fileType, fileSize, bitrate, md5, artist, album, timestamp: Date.now() },
   });
 };

@@ -22,7 +22,7 @@
           clearable
         />
       </n-form-item>
-      <n-form-item label="歌单分类" path="tags">
+      <n-form-item v-if="!isLocal" label="歌单分类" path="tags">
         <n-select
           v-model:value="updateFormData.tags"
           :options="tagList"
@@ -41,7 +41,7 @@
 import type { CoverType } from "@/types/main";
 import type { FormInst, FormRules, SelectOption } from "naive-ui";
 import { textRule } from "@/utils/rules";
-import { useDataStore } from "@/stores";
+import { useDataStore, useLocalStore } from "@/stores";
 import { debounce, isEmpty, size } from "lodash-es";
 import { updatePlaylist } from "@/api/playlist";
 import { updateUserLikePlaylist } from "@/utils/auth";
@@ -56,11 +56,14 @@ interface UpdateFormType {
 const props = defineProps<{
   id: number;
   data: CoverType;
+  /** 是否为本地歌单 */
+  isLocal?: boolean;
 }>();
 
 const emit = defineEmits<{ success: [] }>();
 
 const dataStore = useDataStore();
+const localStore = useLocalStore();
 
 // 是否为我喜欢
 const isLiked = computed(() => dataStore.userLikeData.playlists?.[0]?.id === props.id);
@@ -104,7 +107,23 @@ const toUpdatePlaylist = debounce(
     e.preventDefault();
     // 是否输入
     await updateFormRef.value?.validate((errors) => errors);
-    // 新建歌单
+
+    // 本地歌单
+    if (props.isLocal) {
+      const success = await localStore.updateLocalPlaylist(props.id, {
+        name: updateFormData.value.name,
+        description: updateFormData.value.desc,
+      });
+      if (success) {
+        emit("success");
+        window.$message.success("本地歌单编辑成功");
+      } else {
+        window.$message.error("本地歌单编辑失败");
+      }
+      return;
+    }
+
+    // 在线歌单
     const result = await updatePlaylist(
       props.id,
       updateFormData.value.name,

@@ -4,6 +4,7 @@ import {
   BaseAudioPlayer,
   type AudioEventType,
 } from "./BaseAudioPlayer";
+import type { EngineCapabilities } from "./IPlaybackEngine";
 
 /**
  * 基于 HTMLAudioElement 的播放器实现
@@ -16,11 +17,23 @@ export class AudioElementPlayer extends BaseAudioPlayer {
   private audioElement: HTMLAudioElement;
   /** MediaElementAudioSourceNode 用于连接 Web Audio API */
   private sourceNode: MediaElementAudioSourceNode | null = null;
+  /** ReplayGain 增益节点 */
+  private replayGainNode: GainNode | null = null;
+  /** 缓存的 ReplayGain 值 */
+  private currentReplayGain = 1;
 
   /** Seek 锁，用于在 seek 过程中返回稳定的 currentTime */
   private isInternalSeeking = false;
   /** 目标时间缓存，用于在 seek 过程中返回稳定的 currentTime */
   private targetSeekTime = 0;
+
+  /** 引擎能力描述 */
+  public override readonly capabilities: EngineCapabilities = {
+    supportsRate: true,
+    supportsSinkId: true,
+    supportsEqualizer: true,
+    supportsSpectrum: true,
+  };
 
   constructor() {
     super();
@@ -43,7 +56,13 @@ export class AudioElementPlayer extends BaseAudioPlayer {
     try {
       this.sourceNode = this.audioCtx.createMediaElementSource(this.audioElement);
 
-      this.sourceNode.connect(this.inputNode);
+      // 创建 ReplayGain 节点
+      this.replayGainNode = this.audioCtx.createGain();
+      this.replayGainNode.gain.value = this.currentReplayGain;
+
+      // 连接: Source -> ReplayGain -> Input
+      this.sourceNode.connect(this.replayGainNode);
+      this.replayGainNode.connect(this.inputNode);
     } catch (error) {
       console.error("[AudioElementPlayer] SourceNode 创建失败", error);
     }
@@ -96,11 +115,25 @@ export class AudioElementPlayer extends BaseAudioPlayer {
   }
 
   /**
+   * 设置 ReplayGain 增益
+   * @param gain 线性增益值
+   */
+  public setReplayGain(gain: number): void {
+    this.currentReplayGain = gain;
+    if (this.replayGainNode && this.audioCtx) {
+      const currentTime = this.audioCtx.currentTime;
+      this.replayGainNode.gain.cancelScheduledValues(currentTime);
+      this.replayGainNode.gain.setTargetAtTime(gain, currentTime, 0.1);
+    }
+  }
+
+  /**
    * 设置播放速率
    * @param value 速率值 (0.5 - 2.0)
    */
   public setRate(value: number): void {
     this.audioElement.playbackRate = value;
+    this.audioElement.defaultPlaybackRate = value;
   }
 
   /**
@@ -177,12 +210,12 @@ export class AudioElementPlayer extends BaseAudioPlayer {
     events.forEach((eventType) => {
       this.audioElement.addEventListener(eventType, (e) => {
         if (eventType === AUDIO_EVENTS.ERROR) {
-          this.emit(AUDIO_EVENTS.ERROR, {
+          this.dispatch(AUDIO_EVENTS.ERROR, {
             originalEvent: e,
             errorCode: this.getErrorCode(),
           });
         } else {
-          this.emit(eventType);
+          this.dispatch(eventType);
         }
       });
     });

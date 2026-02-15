@@ -9,7 +9,8 @@
         </n-text>
         <n-text v-if="currentTab === 'download-downloaded'" class="item" depth="3">
           <SvgIcon name="Download" :depth="3" />
-          <n-number-animation :from="0" :to="dataStore.downloadingSongs.length" /> 下载中
+          <n-number-animation :from="0" :to="dataStore.downloadingSongs.length" />
+          下载中
         </n-text>
         <n-text v-else class="item" depth="3">
           <SvgIcon name="DownloadDone" :depth="3" />
@@ -26,7 +27,7 @@
           strong
           secondary
           round
-          @click="player.updatePlayList(currentListData)"
+          @click="handlePlayAll"
         >
           <template #icon>
             <SvgIcon name="Play" />
@@ -97,13 +98,11 @@ const listData = ref<SongType[]>([]);
 
 const currentTab = ref<string>((route.name as string) || "download-downloaded");
 
-// 当前标签页的歌曲列表
-const currentListData = computed(() => {
-  if (currentTab.value === "download-downloading") {
-    return dataStore.downloadingSongs.map((item) => item.song);
+const handlePlayAll = () => {
+  if (currentTab.value === "download-downloaded") {
+    player.updatePlayList(listData.value);
   }
-  return listData.value;
-});
+};
 
 // 当前标签页的歌曲数量
 const currentCount = computed(() => {

@@ -3,6 +3,7 @@ import type { SongType } from "@/types/main";
 import { isElectron } from "@/utils/env";
 import { cloneDeep } from "lodash-es";
 import { SongLyric } from "@/types/lyric";
+import { sendTaskbarLyrics } from "@/core/player/PlayerIpc";
 
 interface MusicState {
   playSong: SongType;
@@ -106,6 +107,7 @@ export const useMusicStore = defineStore("music", {
       }
       // 更新歌词窗口数据
       if (isElectron) {
+        // 桌面歌词
         window.electron.ipcRenderer.send(
           "play-lyric-change",
           cloneDeep({
@@ -115,6 +117,8 @@ export const useMusicStore = defineStore("music", {
             yrcData: this.songLyric.yrcData ?? [],
           }),
         );
+        // 状态栏歌词
+        sendTaskbarLyrics(this.songLyric);
       }
     },
     // 获取歌曲封面

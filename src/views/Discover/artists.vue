@@ -6,8 +6,8 @@
         <n-tag
           v-for="(item, index) in artistInitials"
           :key="index"
-          :bordered="false"
-          :class="{ choose: item.key == artistInitialChoose }"
+          :type="item.key === artistInitialChoose ? 'primary' : 'default'"
+          :bordered="item.key === artistInitialChoose"
           round
           @click="artistQueryChange(item.key, artistTypeNamesChoose)"
         >
@@ -19,8 +19,8 @@
         <n-tag
           v-for="(item, index) in artistTypeNames"
           :key="item"
-          :class="{ choose: index == artistTypeNamesChoose }"
-          :bordered="false"
+          :type="index === artistTypeNamesChoose ? 'primary' : 'default'"
+          :bordered="index === artistTypeNamesChoose"
           round
           @click="artistQueryChange(artistInitialChoose, index)"
         >
@@ -28,7 +28,13 @@
         </n-tag>
       </n-flex>
     </div>
-    <ArtistList :data="artistsData" :loading="loading" :loadMore="hasMore" @loadMore="loadMore" />
+    <ArtistList
+      :data="artistsData"
+      :loading="loading"
+      :loadMore="hasMore"
+      :hiddenCover="settingStore.hiddenCovers.artist"
+      @loadMore="loadMore"
+    />
   </div>
 </template>
 
@@ -36,8 +42,10 @@
 import type { ArtistType } from "@/types/main";
 import { artistTypeList } from "@/api/artist";
 import { formatArtistsList } from "@/utils/format";
+import { useSettingStore } from "@/stores";
 
 const router = useRouter();
+const settingStore = useSettingStore();
 
 // 歌手标签数据
 const artistInitials = [

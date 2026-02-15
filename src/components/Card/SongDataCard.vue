@@ -19,12 +19,18 @@
         <div v-if="Array.isArray(data.artists)" class="artists text-hidden">
           <SvgIcon name="Artist" :depth="3" />
           <n-text v-for="ar in data.artists" :key="ar.id" class="ar">
-            {{ ar.name }}
+            {{ settingStore.hideBracketedContent ? removeBrackets(ar.name) : ar.name }}
           </n-text>
         </div>
         <div v-else class="artists text-hidden">
           <SvgIcon name="Artist" :depth="3" />
-          <n-text class="ar"> {{ data.artists || "未知艺术家" }} </n-text>
+          <n-text class="ar">
+            {{
+              settingStore.hideBracketedContent
+                ? removeBrackets(data.artists)
+                : data.artists || "未知艺术家"
+            }}
+          </n-text>
         </div>
         <div class="album text-hidden">
           <SvgIcon name="Album" :depth="3" />
@@ -47,6 +53,10 @@
 import type { SongType } from "@/types/main";
 import { coverLoaded } from "@/utils/helper";
 import { isObject } from "lodash-es";
+import { removeBrackets } from "@/utils/format";
+import { useSettingStore } from "@/stores";
+
+const settingStore = useSettingStore();
 
 defineProps<{
   data: SongType | null;

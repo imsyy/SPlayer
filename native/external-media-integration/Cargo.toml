@@ -1,0 +1,67 @@
+[package]
+name = "external-media-integration"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# N-API
+napi = { version = "3.8", features = ["tokio_rt", "napi9"] }
+napi-derive = "3.5"
+
+# Async Runtime
+tokio = { version = "1", features = ["full"] }
+
+# Log
+tracing = "0.1"
+tracing-appender = "0.2"
+tracing-subscriber = { version = "0.3", features = [
+    "env-filter",
+    "time",
+    "local-time",
+] }
+time = { version = "0.3", features = ["macros", "formatting", "local-offset"] }
+
+# Error & Serialize
+anyhow = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Utilities
+discord-rich-presence = "1.0"
+url = "2.5"
+walkdir = "2"
+lofty = "0.19"
+rayon = "1.10"
+
+[build-dependencies]
+napi-build = "2.3"
+
+# Windows
+[target.'cfg(target_os = "windows")'.dependencies.windows]
+version = "0.62"
+features = ["Media_Playback", "Storage_Streams"]
+
+# Linux
+[target.'cfg(target_os = "linux")'.dependencies]
+mpris-server = "0.9"
+tempfile = "3.24"
+
+# macOS
+[target.'cfg(target_os = "macos")'.dependencies]
+block2 = "0.6"
+objc2 = "0.6"
+objc2-app-kit = "0.3"
+objc2-foundation = "0.3"
+objc2-media-player = "0.3"
+
+# Clippy Lints
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+
+cast_possible_truncation = "allow"
+cast_precision_loss = "allow"
+doc_markdown = "allow"

@@ -26,6 +26,45 @@
             <n-form-item label="专辑" path="album">
               <n-input v-model:value="infoFormData.album" placeholder="请输入专辑名" clearable />
             </n-form-item>
+            <n-form-item label="专辑艺术家" path="albumArtist">
+              <n-input
+                v-model:value="infoFormData.albumArtist"
+                placeholder="请输入专辑艺术家"
+                clearable
+              />
+            </n-form-item>
+            <n-form-item label="流派" path="genre">
+              <n-input v-model:value="infoFormData.genre" placeholder="请输入流派" clearable />
+            </n-form-item>
+            <n-grid :cols="24" :x-gap="24">
+              <n-form-item-gi :span="8" label="年份" path="year">
+                <n-input-number
+                  v-model:value="infoFormData.year"
+                  :show-button="false"
+                  placeholder="年份"
+                  style="width: 100%"
+                  clearable
+                />
+              </n-form-item-gi>
+              <n-form-item-gi :span="8" label="音轨号" path="trackNumber">
+                <n-input-number
+                  v-model:value="infoFormData.trackNumber"
+                  :show-button="false"
+                  placeholder="音轨"
+                  style="width: 100%"
+                  clearable
+                />
+              </n-form-item-gi>
+              <n-form-item-gi :span="8" label="光盘号" path="discNumber">
+                <n-input-number
+                  v-model:value="infoFormData.discNumber"
+                  :show-button="false"
+                  placeholder="光盘"
+                  style="width: 100%"
+                  clearable
+                />
+              </n-form-item-gi>
+            </n-grid>
             <n-form-item label="别名" path="alia">
               <n-input v-model:value="infoFormData.alia" placeholder="请输入别名" clearable />
             </n-form-item>
@@ -148,6 +187,11 @@ interface InfoFormType {
   fileName: string;
   artist: string;
   album: string;
+  albumArtist?: string;
+  genre?: string;
+  year?: number;
+  trackNumber?: number;
+  discNumber?: number;
   alia?: string;
   lyric?: string;
   size?: number;
@@ -202,6 +246,11 @@ const getSongInfo = async () => {
     name: String(common.title ?? ""),
     artist: String(common.artist ?? ""),
     album: String(common.album ?? ""),
+    albumArtist: String(common.albumartist ?? ""),
+    genre: common.genre?.join(" / ") ?? "",
+    year: common.year,
+    trackNumber: common.track.no ?? undefined,
+    discNumber: common.disk.no ?? undefined,
     alia: String(common.comment?.[0]?.text ?? ""),
     lyric: String(lyric ?? ""),
     type: String(format.codec ?? ""),
@@ -214,7 +263,8 @@ const getSongInfo = async () => {
   // 获取封面
   const coverBuff = common.picture?.[0]?.data || "";
   const coverType = common.picture?.[0]?.format || "";
-  if (coverBuff) coverData.value = blobURLManager.createBlobURL(coverBuff as Buffer, coverType, path);
+  if (coverBuff)
+    coverData.value = blobURLManager.createBlobURL(coverBuff as Buffer, coverType, path);
 };
 
 // 在线匹配

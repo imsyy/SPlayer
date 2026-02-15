@@ -63,32 +63,37 @@ server.interceptors.request.use(
 server.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
+    // 超时/网络错误
+    if (
+      error.code === "ECONNABORTED" ||
+      error.message.includes("timeout") ||
+      error.message.includes("Network Error")
+    ) {
+      window.$message?.warning("网络请求超时，请检查网络连接");
+      // 返回 null 而非 reject，业务代码需要检查返回值
+      return Promise.resolve({ data: null });
+    }
+
     const { response } = error;
-    // 状态码处理
+    // 状态码处理（仅记录日志，不触发弹窗）
     switch (response?.status) {
       case 400:
-        console.error("客户端错误：", response.status, response.statusText);
-        // 执行客户端错误的处理逻辑
+        console.warn("客户端错误：", response.status, response.statusText);
         break;
       case 401:
-        console.error("未授权：", response.status, response.statusText);
-        // 执行未授权的处理逻辑
+        console.warn("未授权：", response.status, response.statusText);
         break;
       case 403:
-        console.error("禁止访问：", response.status, response.statusText);
-        // 执行禁止访问的处理逻辑
+        console.warn("禁止访问：", response.status, response.statusText);
         break;
       case 404:
-        console.error("未找到资源：", response.status, response.statusText);
-        // 执行未找到资源的处理逻辑
+        console.warn("未找到资源：", response.status, response.statusText);
         break;
       case 500:
-        console.error("服务器错误：", response.status, response.statusText);
-        // 执行服务器错误的处理逻辑
+        console.warn("服务器错误：", response.status, response.statusText);
         break;
       default:
-        // 处理其他状态码或错误条件
-        console.error("未处理的错误：", error.message);
+        console.warn("未处理的错误：", error.message);
     }
     // 返回错误
     return Promise.reject(error);

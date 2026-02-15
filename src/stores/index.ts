@@ -6,3 +6,6 @@ export { useDataStore } from "./data";
 
 // local-localforage
 export { useLocalStore } from "./local";
+
+// streaming-localforage
+export { useStreamingStore } from "./streaming";

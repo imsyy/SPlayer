@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <div class="welcome">
+    <div v-if="settingStore.showHomeGreeting" class="welcome">
       <n-h1>{{ greetings }}</n-h1>
       <n-text depth="3">由此开启好心情 ~</n-text>
     </div>

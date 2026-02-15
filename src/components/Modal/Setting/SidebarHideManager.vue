@@ -34,13 +34,11 @@ const settingStore = useSettingStore();
 const statusStore = useStatusStore();
 
 type SidebarHideKey = keyof typeof settingStore.sidebarHide;
-type SidebarHideItem = { label: string, key: SidebarHideKey };
+type SidebarHideItem = { label: string; key: SidebarHideKey };
 
-const when = (
-  condition: boolean, ...item: SidebarHideItem[]
-): SidebarHideItem[] => {
+const when = (condition: boolean, ...item: SidebarHideItem[]): SidebarHideItem[] => {
   return condition ? item : [];
-}
+};
 
 const sidebarItems: SidebarHideItem[] = [
   { label: "发现音乐", key: "hideDiscover" },
@@ -63,8 +61,6 @@ const updateSetting = (key: SidebarHideKey, val: boolean) => {
 
 <style scoped lang="scss">
 .list {
-  margin-top: 12px;
-  padding-right: 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;

@@ -11,6 +11,7 @@
               :height="160"
               :description="item.updateTip"
               size="normal"
+              :hiddenCover="settingStore.hiddenCovers.toplist"
               @click="router.push({ name: 'playlist', query: { id: item.id } })"
             >
               <template #info>
@@ -30,8 +31,8 @@
       <div v-else class="official-list">
         <n-grid cols="1 600:2 1000:3" x-gap="20" y-gap="20">
           <n-gi v-for="item in 4" :key="item">
-            <n-card class="loading">
-              <n-skeleton class="cover" />
+            <n-card class="loading" :class="{ 'no-cover': settingStore.hiddenCovers.toplist }">
+              <n-skeleton v-if="!settingStore.hiddenCovers.toplist" class="cover" />
               <div class="desc">
                 <n-skeleton text round :repeat="3" />
               </div>
@@ -41,7 +42,12 @@
       </div>
     </Transition>
     <n-divider style="margin-bottom: 0"> 精选榜 </n-divider>
-    <CoverList :data="topListData.selected" :loading="true" type="playlist" />
+    <CoverList
+      :data="topListData.selected"
+      :loading="true"
+      type="playlist"
+      :hiddenCover="settingStore.hiddenCovers.toplist"
+    />
   </div>
 </template>
 
@@ -49,8 +55,10 @@
 import { topPlaylist } from "@/api/playlist";
 import type { CoverType } from "@/types/main";
 import { formatCoverList } from "@/utils/format";
+import { useSettingStore } from "@/stores";
 
 const router = useRouter();
+const settingStore = useSettingStore();
 
 // 排行榜数据
 const topListData = ref<{
@@ -106,6 +114,15 @@ onMounted(getTopPlaylistData);
       width: 100%;
       :deep(.n-skeleton) {
         height: 20px;
+      }
+    }
+    &.no-cover {
+      :deep(.n-card__content) {
+        padding: 12px;
+      }
+      .desc {
+        justify-content: center;
+        gap: 12px;
       }
     }
   }

@@ -1,8 +1,14 @@
 <template>
   <Transition name="fade" mode="out-in">
     <n-flex v-if="data.length > 0" :size="20" :class="['comment-list', { transparent }]" vertical>
-      <n-flex v-for="(item, index) in data" :key="index" :size="20" class="comments">
-        <div v-if="!transparent" class="user">
+      <n-flex
+        v-for="(item, index) in data"
+        :key="index"
+        :size="0"
+        class="comments"
+        @dblclick="handleDoubleClick(item)"
+      >
+        <div v-if="!transparent && !hiddenCover" class="user">
           <div class="avatar">
             <n-image
               :src="
@@ -96,7 +102,10 @@ import { debounce } from "lodash-es";
 import { isLogin } from "@/utils/auth";
 import { openUserLogin } from "@/utils/modal";
 import emoji from "@/assets/data/emoji.json";
-import { commentLike } from "@/api/comment";
+import { commentLike, hugComment, getCommentHugList } from "@/api/comment";
+import { useDataStore } from "@/stores";
+
+const userStore = useDataStore();
 
 const props = defineProps<{
   data: CommentType[];
@@ -105,6 +114,9 @@ const props = defineProps<{
   loadMore?: boolean;
   // 透明
   transparent?: boolean;
+  // 资源 ID
+  resId: number | string;
+  hiddenCover?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -150,6 +162,52 @@ const likeComment = debounce(async (data: CommentType) => {
     window.$message.error(result.msg || "评论点赞失败");
   }
 }, 300);
+
+// 双击抱一抱
+const handleDoubleClick = debounce(async (item: CommentType) => {
+  if (!isLogin()) {
+    openUserLogin();
+    return;
+  }
+  // 本地歌曲不支持抱一抱
+  if (typeof props.resId !== "number") return;
+  try {
+    const result = await hugComment(userStore.userData.userId, item.id, props.resId);
+    if (result.code === 200) {
+      // 获取抱一抱列表以得到总数
+      try {
+        const listResult = await getCommentHugList(
+          userStore.userData.userId,
+          item.id,
+          props.resId,
+          1,
+          -1,
+          -1,
+          100,
+        );
+        const count =
+          listResult.data?.total ||
+          listResult.data?.count ||
+          listResult.data?.hugComments?.length ||
+          0;
+
+        if (count > 0) {
+          window.$message.success(`抱一抱成功，已有 ${count} 人向TA发送了抱一抱`);
+        } else {
+          window.$message.success("抱一抱成功");
+        }
+      } catch (e) {
+        console.error("Error fetching hug list:", e);
+        window.$message.success("抱一抱成功");
+      }
+    } else {
+      window.$message.error(result.msg || "抱一抱失败");
+    }
+  } catch (error) {
+    console.error("Hug comment error:", error);
+    window.$message.error("抱一抱失败");
+  }
+}, 300);
 </script>
 
 <style lang="scss" scoped>
@@ -172,6 +230,7 @@ const likeComment = debounce(async (data: CommentType) => {
       align-items: center;
       min-width: 60px;
       width: 60px;
+      margin-right: 12px;
       .avatar {
         position: relative;
         display: flex;
@@ -229,7 +288,7 @@ const likeComment = debounce(async (data: CommentType) => {
         border-radius: 8px;
         font-size: 13px;
         margin-top: 6px;
-        background-color: rgba(var(--primary), 0.12);
+        background-color: rgba(var(--main-cover-color), 0.12);
         .text {
           white-space: pre-wrap;
           user-select: text;

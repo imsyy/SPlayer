@@ -205,15 +205,15 @@ const isDetecting = ref(true);
 // --- 环境检测 ---
 const detectEnvironment = async () => {
   if (typeof window === "undefined") return;
-  
+
   const ua = navigator.userAgent.toLowerCase();
-  
+
   // 1. 基础 UA 检测
   if (ua.includes("win")) userPlatform.value = "windows";
   else if (ua.includes("mac")) userPlatform.value = "macos";
   else if (ua.includes("linux") || ua.includes("x11")) userPlatform.value = "linux";
-  else if (ua.includes("android")) userPlatform.value = "linux"; 
-  
+  else if (ua.includes("android")) userPlatform.value = "linux";
+
   // 基础架构检测
   if (ua.includes("arm64") || ua.includes("aarch64")) {
     userArch.value = "arm64";
@@ -231,13 +231,13 @@ const detectEnvironment = async () => {
         "architecture",
         "bitness",
       ]);
-      
+
       if (uaData.platform === "macOS") userPlatform.value = "macos";
       else if (uaData.platform === "Windows") userPlatform.value = "windows";
       else if (uaData.platform === "Linux") userPlatform.value = "linux";
 
       if (uaData.architecture === "arm") userArch.value = "arm64";
-      else if (uaData.architecture === "x86") userArch.value = "x64"; 
+      else if (uaData.architecture === "x86") userArch.value = "x64";
     } catch (e) {
       console.debug("UAData detection failed", e);
     }
@@ -279,13 +279,13 @@ const getExtensionName = (name: string) => {
 // 架构显示文案
 const getArchDisplay = (name: string, platformId: string) => {
   const n = name.toLowerCase();
-  
+
   if (n.includes("arm64") || n.includes("aarch64")) return "ARM64";
   if (n.includes("x64") || n.includes("x86_64") || n.includes("amd64")) return "x64";
   if (n.includes("ia32") || n.includes("x86")) return "32位 (x86)";
 
   if (platformId === "macos") return "macOS 通用";
-  
+
   return "标准架构 (x64)";
 };
 
@@ -301,7 +301,7 @@ const sortAssets = (assets: GitHubAsset[]) => {
   return assets.sort((a, b) => {
     const nA = a.name.toLowerCase();
     const nB = b.name.toLowerCase();
-    
+
     // 简单的权重系统
     let scoreA = 0;
     let scoreB = 0;
@@ -309,7 +309,7 @@ const sortAssets = (assets: GitHubAsset[]) => {
     // 优先 x64 (通常更通用)
     if (nA.includes("x64") || nA.includes("amd64")) scoreA += 10;
     if (nB.includes("x64") || nB.includes("amd64")) scoreB += 10;
-    
+
     // 优先 setup / dmg / appimage
     if (/\.(exe|dmg|appimage)$/i.test(nA)) scoreA += 5;
     if (/\.(exe|dmg|appimage)$/i.test(nB)) scoreB += 5;
@@ -341,52 +341,64 @@ const recommendedAssets = computed(() => {
   let result: GitHubAsset[] = [];
 
   if (p === "windows") {
-    const validAssets = assets.filter(f => {
+    const validAssets = assets.filter((f) => {
       const n = f.name.toLowerCase();
-      return (n.endsWith(".exe") || n.endsWith(".zip")) && 
-             !n.endsWith(".blockmap") && 
-             !n.includes("debug");
+      return (
+        (n.endsWith(".exe") || n.endsWith(".zip")) &&
+        !n.endsWith(".blockmap") &&
+        !n.includes("debug")
+      );
     });
 
-    const installable = validAssets.filter(f => !isPortable(f.name) && f.name.endsWith(".exe"));
-    const portable = validAssets.filter(f => isPortable(f.name) || f.name.endsWith(".zip"));
+    const installable = validAssets.filter((f) => !isPortable(f.name) && f.name.endsWith(".exe"));
+    const portable = validAssets.filter((f) => isPortable(f.name) || f.name.endsWith(".zip"));
 
     // 查找最佳匹配
-    let setupAsset = installable.find(f => isArchCompatible(f.name, arch));
-    let portableAsset = portable.find(f => isArchCompatible(f.name, arch));
-    
+    let setupAsset = installable.find((f) => isArchCompatible(f.name, arch));
+    let portableAsset = portable.find((f) => isArchCompatible(f.name, arch));
+
     // 如果是 x64 环境，确保没有错误地匹配到不带架构标识的 32 位包（如果有的话），优先匹配明确标有 x64 的
     if (arch === "x64") {
-        const setupX64 = installable.find(f => f.name.toLowerCase().includes("x64") || f.name.toLowerCase().includes("amd64"));
-        if (setupX64) setupAsset = setupX64;
+      const setupX64 = installable.find(
+        (f) => f.name.toLowerCase().includes("x64") || f.name.toLowerCase().includes("amd64"),
+      );
+      if (setupX64) setupAsset = setupX64;
 
-        const portableX64 = portable.find(f => (f.name.toLowerCase().includes("x64") || f.name.toLowerCase().includes("amd64")));
-        if (portableX64) portableAsset = portableX64;
+      const portableX64 = portable.find(
+        (f) => f.name.toLowerCase().includes("x64") || f.name.toLowerCase().includes("amd64"),
+      );
+      if (portableX64) portableAsset = portableX64;
     }
 
     if (setupAsset) result.push(setupAsset);
     if (portableAsset) result.push(portableAsset);
-
   } else if (p === "macos") {
     // macOS 策略:
     // 优先 DMG
-    const dmg = assets.find(f => {
+    const dmg = assets.find((f) => {
       const n = f.name.toLowerCase();
       return n.endsWith(".dmg") && !n.includes("blockmap") && isArchCompatible(f.name, arch);
     });
-    
+
     // 如果没有找到精确匹配 arm64 的 dmg (例如只有 universal 或 x64)，尝试找任意 dmg
-    const fallbackDmg = assets.find(f => f.name.toLowerCase().endsWith(".dmg") && !f.name.includes("blockmap"));
+    const fallbackDmg = assets.find(
+      (f) => f.name.toLowerCase().endsWith(".dmg") && !f.name.includes("blockmap"),
+    );
 
     if (dmg) result.push(dmg);
-    else if (fallbackDmg && p === "macos") result.push(fallbackDmg); 
-
+    else if (fallbackDmg && p === "macos") result.push(fallbackDmg);
   } else if (p === "linux") {
     // Linux 策略:
     // 优先 AppImage, 其次 Deb
-    const appImage = assets.find(f => f.name.toLowerCase().endsWith(".appimage") && isArchCompatible(f.name, arch));
-    const deb = assets.find(f => f.name.toLowerCase().endsWith(".deb") && isArchCompatible(f.name, arch));
-    const rpm = assets.find(f => f.name.toLowerCase().endsWith(".rpm") && isArchCompatible(f.name, arch));
+    const appImage = assets.find(
+      (f) => f.name.toLowerCase().endsWith(".appimage") && isArchCompatible(f.name, arch),
+    );
+    const deb = assets.find(
+      (f) => f.name.toLowerCase().endsWith(".deb") && isArchCompatible(f.name, arch),
+    );
+    const rpm = assets.find(
+      (f) => f.name.toLowerCase().endsWith(".rpm") && isArchCompatible(f.name, arch),
+    );
 
     if (appImage) result.push(appImage);
     else if (deb) result.push(deb);
@@ -395,7 +407,10 @@ const recommendedAssets = computed(() => {
 
   // 兜底：如果完全没找到推荐，且是 Windows，给一个最通用的
   if (result.length === 0 && p === "windows") {
-    const fallback = assets.find(f => f.name.toLowerCase().endsWith(".exe") && !f.name.includes("arm64") && !isPortable(f.name));
+    const fallback = assets.find(
+      (f) =>
+        f.name.toLowerCase().endsWith(".exe") && !f.name.includes("arm64") && !isPortable(f.name),
+    );
     if (fallback) result.push(fallback);
   }
 
@@ -406,7 +421,7 @@ const classifiedAssets = computed<PlatformGroup[]>(() => {
   if (!latestRelease.value) return [];
   const rawAssets = latestRelease.value.assets;
 
-  const validAssets = rawAssets.filter(f => {
+  const validAssets = rawAssets.filter((f) => {
     const n = f.name.toLowerCase();
     // 过滤掉 metadata 和 debug 文件
     return !n.endsWith(".blockmap") && !n.endsWith(".yml") && !n.includes("debug");
@@ -422,14 +437,18 @@ const classifiedAssets = computed<PlatformGroup[]>(() => {
           title: "安装程序",
           desc: "推荐 · 自动更新",
           assets: sortAssets(
-            validAssets.filter(f => /\.(exe|msi)$/i.test(f.name) && !isPortable(f.name))
+            validAssets.filter((f) => /\.(exe|msi)$/i.test(f.name) && !isPortable(f.name)),
           ),
         },
         {
           title: "绿色便携版",
           desc: "解压即用 · 数据随身",
           assets: sortAssets(
-            validAssets.filter(f => isPortable(f.name) || (f.name.endsWith(".zip") && !f.name.toLowerCase().includes("mac")))
+            validAssets.filter(
+              (f) =>
+                isPortable(f.name) ||
+                (f.name.endsWith(".zip") && !f.name.toLowerCase().includes("mac")),
+            ),
           ),
         },
       ],
@@ -442,14 +461,14 @@ const classifiedAssets = computed<PlatformGroup[]>(() => {
         {
           title: "磁盘镜像",
           desc: "推荐 · 拖拽安装",
-          assets: validAssets.filter(f => f.name.toLowerCase().endsWith(".dmg")),
+          assets: validAssets.filter((f) => f.name.toLowerCase().endsWith(".dmg")),
         },
         {
           title: "压缩归档",
           desc: "手动安装",
-          assets: validAssets.filter(f => {
-             const n = f.name.toLowerCase();
-             return n.endsWith(".zip") && (n.includes("mac") || n.includes("darwin"));
+          assets: validAssets.filter((f) => {
+            const n = f.name.toLowerCase();
+            return n.endsWith(".zip") && (n.includes("mac") || n.includes("darwin"));
           }),
         },
       ],
@@ -462,27 +481,27 @@ const classifiedAssets = computed<PlatformGroup[]>(() => {
         {
           title: "AppImage",
           desc: "通用运行包",
-          assets: sortAssets(validAssets.filter(f => f.name.toLowerCase().endsWith(".appimage"))),
+          assets: sortAssets(validAssets.filter((f) => f.name.toLowerCase().endsWith(".appimage"))),
         },
         {
           title: "Debian 包",
           desc: "Debian / Ubuntu / Linux Mint...",
-          assets: sortAssets(validAssets.filter(f => f.name.toLowerCase().endsWith(".deb"))),
+          assets: sortAssets(validAssets.filter((f) => f.name.toLowerCase().endsWith(".deb"))),
         },
         {
           title: "RPM 包",
           desc: "Red Hat / Fedora / AlmaLinux...",
-          assets: sortAssets(validAssets.filter(f => f.name.toLowerCase().endsWith(".rpm"))),
+          assets: sortAssets(validAssets.filter((f) => f.name.toLowerCase().endsWith(".rpm"))),
         },
         {
           title: "Pacman 包",
           desc: "Arch Linux / Manjaro...",
-          assets: sortAssets(validAssets.filter(f => f.name.toLowerCase().endsWith(".pacman"))),
+          assets: sortAssets(validAssets.filter((f) => f.name.toLowerCase().endsWith(".pacman"))),
         },
         {
           title: "其他格式",
           desc: "归档包",
-          assets: sortAssets(validAssets.filter(f => /\.(tar\.gz)$/i.test(f.name))),
+          assets: sortAssets(validAssets.filter((f) => /\.(tar\.gz)$/i.test(f.name))),
         },
       ],
     },
@@ -506,7 +525,7 @@ const formatFileSize = (bytes: number) =>
   bytes ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : "未知";
 const formatDate = (s: string) =>
   new Date(s).toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" });
-  
+
 // 注意：marked 在前端使用时建议配合 dompurify 防止 XSS。
 const renderMarkdown = (t: string) => marked.parse(t);
 
@@ -961,7 +980,7 @@ const scrollToPlatforms = () => {
     font-size: 1.2rem;
     padding: 4px 12px;
   }
-  
+
   .v-date {
     font-size: 0.85rem;
   }
@@ -990,7 +1009,7 @@ const scrollToPlatforms = () => {
 
   .recommend-card {
     padding: 1.25rem;
-    
+
     .card-header {
       flex-direction: column;
       align-items: flex-start;
@@ -1013,7 +1032,7 @@ const scrollToPlatforms = () => {
       gap: 12px;
       padding: 14px;
     }
-    
+
     .btn-title {
       font-size: 1rem;
     }
@@ -1024,7 +1043,7 @@ const scrollToPlatforms = () => {
       justify-content: flex-end;
     }
   }
-  
+
   .section-divider h2 {
     font-size: 1.5rem;
   }
@@ -1033,7 +1052,7 @@ const scrollToPlatforms = () => {
     .block-title h3 {
       font-size: 1.2rem;
     }
-    
+
     .files-grid {
       grid-template-columns: 1fr;
     }
@@ -1048,7 +1067,7 @@ const scrollToPlatforms = () => {
   .arch-guide {
     display: flex;
     flex-direction: column;
-    
+
     .guide-divider {
       display: none;
     }

@@ -25,23 +25,18 @@
       <n-flex class="left" align="flex-end">
         <n-button
           :focusable="false"
-          :disabled="loading || !cloudData?.length"
-          :loading="loading"
+          :disabled="showLoading || !cloudData?.length"
+          :loading="showLoading"
           type="primary"
           strong
           secondary
           round
-          v-debounce="() => player.updatePlayList(cloudData)"
+          v-debounce="() => player.updatePlayList(listDataShow)"
         >
           <template #icon>
             <SvgIcon name="Play" />
           </template>
-          {{
-            loading
-              ? `
-              正在更新... (${cloudData.length === cloudCount ? 0 : cloudData.length}/${cloudCount})`
-              : "播放"
-          }}
+          {{ showLoading ? `正在加载... (${cloudData.length}/${cloudCount})` : "播放" }}
         </n-button>
         <n-button :focusable="false" class="more" strong secondary circle @click="getAllCloudMusic">
           <template #icon>
@@ -78,6 +73,7 @@
         v-if="!searchValue || searchData?.length"
         :data="listDataShow"
         :loading="loading"
+        :doubleClickAction="searchData?.length ? 'add' : 'all'"
         @removeSong="handleRemoveSong"
       />
       <n-empty
@@ -126,6 +122,9 @@ const listDataShow = computed<SongType[]>(() => {
   if (searchValue.value && searchData.value.length) return searchData.value;
   return cloudData.value;
 });
+
+// 加载状态
+const showLoading = computed(() => cloudData.value.length === 0 && loading.value);
 
 // 是否处于云盘页面
 const isCloudPage = computed<boolean>(() => router.currentRoute.value.name === "cloud");

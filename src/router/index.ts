@@ -32,18 +32,18 @@ router.beforeEach((to, from, next) => {
   // console.log("前置守卫", to, from);
   // 进度条
   if (!isElectron && to.path !== from.path) {
-    window.$loadingBar.start();
+    window.$loadingBar?.start();
   }
   // 需要登录
   if (to.meta.needLogin && !isLogin()) {
-    if (!isElectron) window.$loadingBar.error();
-    window.$message.warning("请登录后使用");
+    if (!isElectron) window.$loadingBar?.error();
+    window.$message?.warning("请登录后使用");
     openUserLogin();
     return;
   }
   // 需要客户端
   else if (to.meta.needApp && !isElectron) {
-    window.$message.warning("该功能为客户端独占功能");
+    window.$message?.warning("该功能为客户端独占功能");
     next("/403");
   }
   next();
@@ -52,7 +52,7 @@ router.beforeEach((to, from, next) => {
 // 后置守卫
 router.afterEach((to, from) => {
   // 进度条
-  window.$loadingBar.finish();
+  window.$loadingBar?.finish();
   // 路由变化时重置滚动位置（排除仅 hash 变化的情况）
   if (to.fullPath.split("#")[0] !== from.fullPath.split("#")[0]) {
     const mainContent = document.getElementById("main-content");

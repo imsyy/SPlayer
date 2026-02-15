@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: 常见问题
+    url: https://ccnp30z5li2m.feishu.cn/wiki/JWDdw646Ti68EDklHF5cCjpQnUc
+    about: 这里可能有你想问的问题
   - name: 添加功能
     url: https://github.com/imsyy/SPlayer/discussions/new?category=%E6%83%B3%E6%B3%95-ideas
     about: 新的功能建议和提问答疑请到讨论区发起

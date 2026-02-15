@@ -12,10 +12,17 @@
     </n-tabs>
     <!-- 其他方式 -->
     <n-flex align="center" class="other">
-      <n-button :focusable="false" size="small" quaternary round @click="specialLogin('uid')">
+      <n-button
+        v-if="!disableUid"
+        :focusable="false"
+        size="small"
+        quaternary
+        round
+        @click="specialLogin('uid')"
+      >
         UID 登录
       </n-button>
-      <n-divider vertical />
+      <n-divider v-if="!disableUid" vertical />
       <n-button :focusable="false" size="small" quaternary round @click="specialLogin('cookie')">
         Cookie 登录
       </n-button>
@@ -38,8 +45,16 @@ import { LoginType } from "@/types/main";
 import LoginUID from "./LoginUID.vue";
 import LoginCookie from "./LoginCookie.vue";
 
+const props = defineProps<{
+  /** 强制登录 */
+  force?: boolean;
+  /** 禁用 UID 登录 */
+  disableUid?: boolean;
+}>();
+
 const emit = defineEmits<{
   close: [];
+  success: [];
 }>();
 
 const dataStore = useDataStore();
@@ -67,6 +82,7 @@ const saveLogin = async (loginData: any, type: LoginType = "qr") => {
     } else {
       await updateSpecialUserData(loginData?.profile);
     }
+    emit("success");
   } else {
     window.$message.error(loginData.msg ?? loginData.message ?? "账号或密码错误，请重试");
   }
@@ -94,7 +110,7 @@ const specialLogin = (type: "uid" | "cookie" = "uid") => {
 };
 
 onBeforeMount(() => {
-  if (dataStore.userLoginStatus) {
+  if (dataStore.userLoginStatus && !props.force) {
     window.$message.warning("已登录，请勿再次操作");
     emit("close");
   }

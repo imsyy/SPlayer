@@ -5,8 +5,8 @@
       <n-tag
         v-for="(item, index) in plTypeName"
         :key="index"
-        :bordered="false"
-        :class="['tag', { choose: index === plTypeChoose }]"
+        :bordered="index === plTypeChoose"
+        :type="index === plTypeChoose ? 'primary' : 'default'"
         round
         @click="changeType(index)"
       >
@@ -14,15 +14,22 @@
       </n-tag>
     </n-flex>
     <Transition name="fade" mode="out-in">
-      <CoverList :key="plTypeChoose" :data="listData" :loading="true" type="playlist" />
+      <CoverList
+        :key="plTypeChoose"
+        :data="listData"
+        :loading="true"
+        type="playlist"
+        :hiddenCover="settingStore.hiddenCovers.like"
+      />
     </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useDataStore } from "@/stores";
+import { useDataStore, useSettingStore } from "@/stores";
 
 const dataStore = useDataStore();
+const settingStore = useSettingStore();
 
 // 歌单分类
 const plTypeChoose = ref(0);

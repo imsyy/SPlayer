@@ -29,6 +29,7 @@ export default defineConfig({
         items: [
           { text: "下载", link: "/download" },
           { text: "使用指南", link: "/guide" },
+          { text: "流媒体服务", link: "/streaming" },
         ],
       },
       {

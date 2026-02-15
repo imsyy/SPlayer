@@ -7,6 +7,7 @@
         :loading="loading"
         :loadMore="hasMore"
         type="playlist"
+        :hiddenCover="settingStore.hiddenCovers.playlist"
         @loadMore="loadMore"
       />
       <n-empty
@@ -27,10 +28,13 @@
 import type { CoverType } from "@/types/main";
 import { searchResult } from "@/api/search";
 import { formatCoverList } from "@/utils/format";
+import { useSettingStore } from "@/stores";
 
 const props = defineProps<{
   keyword: string;
 }>();
+
+const settingStore = useSettingStore();
 
 // 搜索数据
 const hasMore = ref<boolean>(true);

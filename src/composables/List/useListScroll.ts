@@ -9,7 +9,12 @@ export const useListScroll = () => {
    */
   const handleListScroll = useThrottleFn(
     (e: Event) => {
-      const scrollTop = (e.target as HTMLElement).scrollTop;
+      const target = e.target as HTMLElement;
+      const { scrollTop, scrollHeight, clientHeight } = target;
+      // 如果当前未处于滚动状态，且内容高度不足以支撑收缩后的布局，则不触发滚动状态
+      if (!listScrolling.value && scrollHeight - clientHeight < 150) {
+        return;
+      }
       listScrolling.value = scrollTop > 10;
     },
     100,

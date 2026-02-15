@@ -1,0 +1,12 @@
+{
+  "name": "ferrous-opencc-wasm",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "wasm-pack build --target web",
+    "build:debug": "wasm-pack build --target web --dev"
+  },
+  "devDependencies": {
+    "wasm-pack": "^0.13.1"
+  }
+}

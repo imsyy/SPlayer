@@ -3,6 +3,7 @@
     <SongList
       :data="songData"
       :loading="loading"
+      disableHeightTransition
       loadMore
       @reachBottom="reachBottom"
       @scroll="emit('scroll', $event)"

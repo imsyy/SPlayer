@@ -64,6 +64,9 @@
             deleteSongs(
               playListId,
               checkSongData.map((item) => item.id),
+              {
+                songName: checkSongData.length === 1 ? checkSongData[0].name : undefined,
+              },
             )
           "
         >

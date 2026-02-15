@@ -10,7 +10,6 @@
       :config="listConfig"
       :play-button-text="playButtonText"
       :more-options="moreOptions"
-      :show-comment-tab="true"
       @update:search-value="handleSearchUpdate"
       @play-all="playAllSongs"
       @tab-change="handleTabChange"
@@ -141,7 +140,7 @@ const playButtonText = computed(() => {
 
 // 更多操作
 const moreOptions = computed<DropdownOption[]>(() => [
-    {
+  {
     label: "刷新缓存",
     key: "refresh",
     props: {
@@ -255,8 +254,8 @@ const handleTabChange = (value: "songs" | "comments") => {
 
 // 播放全部歌曲
 const playAllSongs = useDebounceFn(() => {
-  if (!detailData.value || !listData.value?.length) return;
-  playAllSongsAction(listData.value);
+  if (!detailData.value || !displayData.value?.length) return;
+  playAllSongsAction(displayData.value);
 }, 300);
 
 onBeforeRouteUpdate((to) => {

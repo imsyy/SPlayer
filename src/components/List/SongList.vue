@@ -4,34 +4,83 @@
     <div v-if="!isEmpty(listData)" ref="songListRef" class="song-list">
       <Transition name="fade" mode="out-in">
         <div
-          :key="listKey + '_' + statusStore.listSort"
-          :style="{ height: height === 'auto' ? 'auto' : `${height || songListHeight}px` }"
+          :key="listKey"
+          :style="{
+            height: height === 'auto' ? 'auto' : `${height || songListHeight}px`,
+            transition: disableHeightTransition ? 'transform 0.3s, opacity 0.3s' : undefined,
+          }"
           class="virtual-list-wrapper"
         >
           <!-- 悬浮顶栏 -->
           <div class="list-header song-card sticky-header">
             <n-text class="num">#</n-text>
-            <n-dropdown
+            <n-popover
               v-if="!disabledSort"
-              :options="sortMenuOptions"
               trigger="click"
               placement="bottom-start"
-              @select="sortSelect"
+              :show-arrow="false"
+              style="padding: 0"
             >
-              <div class="title has-sort">
-                <n-text>标题</n-text>
-                <n-text v-if="statusStore.listSort !== 'default'" class="sort" depth="3">
-                  {{ sortOptions[statusStore.listSort].name }}
-                </n-text>
+              <template #trigger>
+                <div class="title has-sort">
+                  <n-text>标题</n-text>
+                  <n-text v-if="statusStore.listSortField !== 'default'" class="sort" depth="3">
+                    {{ sortFieldOptions[statusStore.listSortField].name }}
+                  </n-text>
+                </div>
+              </template>
+              <div class="sort-menu">
+                <div class="group">
+                  <div class="label">排序字段</div>
+                  <n-radio-group
+                    v-model:value="statusStore.listSortField"
+                    name="sortField"
+                    @update:value="(val) => handleSortFieldChange(val)"
+                  >
+                    <n-flex :vertical="true" size="small">
+                      <n-radio v-for="(option, key) in sortFieldOptions" :key="key" :value="key">
+                        {{ option.name }}
+                      </n-radio>
+                    </n-flex>
+                  </n-radio-group>
+                </div>
+                <n-divider vertical style="height: auto; margin: 0 12px" />
+                <div class="group">
+                  <div class="label">排序方式</div>
+                  <n-radio-group
+                    v-model:value="statusStore.listSortOrder"
+                    name="sortOrder"
+                    @update:value="(val) => handleSortOrderChange(val)"
+                  >
+                    <n-flex :vertical="true" size="small">
+                      <n-radio v-for="(option, key) in sortOrderOptions" :key="key" :value="key">
+                        {{ option.name }}
+                      </n-radio>
+                    </n-flex>
+                  </n-radio-group>
+                </div>
               </div>
-            </n-dropdown>
+            </n-popover>
             <n-text v-else class="title">标题</n-text>
-            <n-text v-if="type !== 'radio' && !hiddenAlbum" class="album">专辑</n-text>
-            <n-text v-if="type !== 'radio'" class="actions">操作</n-text>
-            <n-text v-if="type === 'radio'" class="meta date">更新日期</n-text>
-            <n-text v-if="type === 'radio'" class="meta">播放量</n-text>
-            <n-text class="meta">时长</n-text>
-            <n-text v-if="data?.[0].size && !hiddenSize" class="meta size">大小</n-text>
+            <n-text
+              v-if="
+                type !== 'radio' && !hiddenAlbum && !isSmallScreen && settingStore.showSongAlbum
+              "
+              class="album"
+            >
+              专辑
+            </n-text>
+            <n-text v-if="type !== 'radio' && settingStore.showSongOperations" class="actions">
+              操作
+            </n-text>
+            <n-text v-if="type === 'radio' && !isSmallScreen" class="meta date">更新日期</n-text>
+            <n-text v-if="type === 'radio' && !isSmallScreen" class="meta">播放量</n-text>
+            <n-text v-if="!isSmallScreen && settingStore.showSongDuration" class="meta">
+              时长
+            </n-text>
+            <n-text v-if="data?.[0].size && !hiddenSize && !isSmallScreen" class="meta size">
+              大小
+            </n-text>
           </div>
           <!-- 虚拟列表 -->
           <VirtualScroll
@@ -48,25 +97,13 @@
                 v-if="item.type === 'song'"
                 :song="item.data"
                 :index="index"
-                :hiddenCover="hiddenCover"
+                :hiddenCover="hiddenCover || settingStore.hiddenCovers.list"
                 :hiddenAlbum="hiddenAlbum"
                 :hiddenSize="hiddenSize"
-                @dblclick.stop="
-                  doubleClickAction === 'add'
-                    ? player.addNextSong(item.data, true)
-                    : player.updatePlayList(listData, item.data, playListId)
-                "
-                @contextmenu.stop="
-                  songListMenuRef?.openDropdown(
-                    $event,
-                    listData,
-                    item.data,
-                    index,
-                    type,
-                    playListId,
-                    isDailyRecommend,
-                  )
-                "
+                @click.stop="handleSongClick(item.data)"
+                @dblclick.stop="handleSongPlay(item.data)"
+                @contextmenu.stop="handleShowMenu($event, item.data, index)"
+                @show-menu="handleShowMenu($event, item.data, index)"
               />
               <!-- 加载更多 -->
               <div v-else-if="item.type === 'footer'" class="load-more">
@@ -81,7 +118,12 @@
         </div>
       </Transition>
       <!-- 右键菜单 -->
-      <SongListMenu ref="songListMenuRef" @removeSong="removeSong" />
+      <SongListMenu
+        ref="songListMenuRef"
+        :hiddenCover="hiddenCover || settingStore.hiddenCovers.list"
+        @removeSong="removeSong"
+      />
+      <MobileSongMenu ref="mobileSongMenuRef" @removeSong="removeSong" />
       <!-- 列表操作 -->
       <Teleport to="body">
         <Transition name="fade" mode="out-in">
@@ -108,14 +150,14 @@
 </template>
 
 <script setup lang="ts">
-import type { DropdownOption } from "naive-ui";
-import { SongType, SortType } from "@/types/main";
-import { useMusicStore, useStatusStore } from "@/stores";
-import { entries, isEmpty } from "lodash-es";
-import { sortOptions } from "@/utils/meta";
-import { renderIcon } from "@/utils/helper";
+import { SongType, SortField, SortOrder } from "@/types/main";
+import { useMusicStore, useStatusStore, useSettingStore } from "@/stores";
+import { isEmpty } from "lodash-es";
+import { sortFieldOptions, sortOrderOptions } from "@/utils/meta";
 import { usePlayerController } from "@/core/player/PlayerController";
+import { useMobile } from "@/composables/useMobile";
 import SongListMenu from "@/components/Menu/SongListMenu.vue";
+import MobileSongMenu from "@/components/Menu/MobileSongMenu.vue";
 import VirtualScroll from "@/components/UI/VirtualScroll.vue";
 
 const props = withDefaults(
@@ -150,6 +192,8 @@ const props = withDefaults(
     doubleClickAction?: "all" | "add";
     /** 列表版本 */
     listVersion?: string | number;
+    /** 禁用高度过渡动画 */
+    disableHeightTransition?: boolean;
   }>(),
   {
     type: "song",
@@ -171,7 +215,25 @@ const emit = defineEmits<{
 
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
+const settingStore = useSettingStore();
 const player = usePlayerController();
+const { isSmallScreen } = useMobile();
+
+// 处理移动端单击播放
+const handleSongClick = (song: SongType) => {
+  if (isSmallScreen.value) {
+    handleSongPlay(song);
+  }
+};
+
+// 处理歌曲播放
+const handleSongPlay = (song: SongType) => {
+  if (props.doubleClickAction === "add") {
+    player.addNextSong(song, true);
+  } else {
+    player.updatePlayList(listData.value, song, props.playListId);
+  }
+};
 
 // 列表状态
 const scrollTop = ref<number>(0);
@@ -186,41 +248,90 @@ const floatToolShow = ref<boolean>(true);
 
 // 右键菜单
 const songListMenuRef = ref<InstanceType<typeof SongListMenu> | null>(null);
+const mobileSongMenuRef = ref<InstanceType<typeof MobileSongMenu> | null>(null);
+
+const handleShowMenu = (e: MouseEvent, song: SongType, index: number) => {
+  if (isSmallScreen.value) {
+    mobileSongMenuRef.value?.open(song, index, props.playListId, props.isDailyRecommend);
+  } else {
+    songListMenuRef.value?.openDropdown(
+      e,
+      listData.value,
+      song,
+      index,
+      props.playListId,
+      props.isDailyRecommend,
+    );
+  }
+};
 
 // 列表数据
 const listData = computed<SongType[]>(() => {
   if (props.disabledSort) return props.data;
-  // 创建副本用于排序（避免修改原数组）
-  const data = [...props.data];
-  // 排序
-  switch (statusStore.listSort) {
-    case "titleAZ":
-      return data.sort((a, b) => a.name.localeCompare(b.name));
-    case "titleZA":
-      return data.sort((a, b) => b.name.localeCompare(a.name));
-    case "arAZ":
-      return data.sort((a, b) => {
-        const artistA = Array.isArray(a.artists) ? a.artists[0].name : a.artists;
-        const artistB = Array.isArray(b.artists) ? b.artists[0].name : b.artists;
-        return artistA.localeCompare(artistB);
-      });
-    case "arZA":
-      return data.sort((a, b) => {
-        const artistA = Array.isArray(a.artists) ? a.artists[0].name : a.artists;
-        const artistB = Array.isArray(b.artists) ? b.artists[0].name : b.artists;
-        return artistB.localeCompare(artistA);
-      });
-    case "timeDown":
-      return data.sort((a, b) => b.duration - a.duration);
-    case "timeUp":
-      return data.sort((a, b) => a.duration - b.duration);
-    case "dateDown":
-      return data.sort((a, b) => (b.updateTime || 0) - (a.updateTime || 0));
-    case "dateUp":
-      return data.sort((a, b) => (a.updateTime || 0) - (b.updateTime || 0));
-    default:
-      return data;
+  // 若未启用排序或默认排序
+  if (statusStore.listSortField === "default" || statusStore.listSortOrder === "default") {
+    return props.data;
   }
+
+  // 创建副本用于排序
+  const data = [...props.data];
+  const field = statusStore.listSortField;
+  const order = statusStore.listSortOrder;
+  const isAsc = order === "asc";
+
+  // 使用 Intl.Collator 进行排序，支持数字敏感排序 (numeric: true)
+  // 这解决了 1.mp3, 10.mp3, 2.mp3 的问题
+  const collator = new Intl.Collator("zh-CN", { numeric: true });
+
+  return data.sort((a, b) => {
+    let result = 0;
+    switch (field) {
+      case "title":
+        result = collator.compare(a.name || "", b.name || "");
+        break;
+      case "artist": {
+        const artistA = Array.isArray(a.artists)
+          ? a.artists[0]?.name || ""
+          : (a.artists as string) || "";
+        const artistB = Array.isArray(b.artists)
+          ? b.artists[0]?.name || ""
+          : (b.artists as string) || "";
+        result = collator.compare(artistA, artistB);
+        break;
+      }
+      case "album": {
+        const albumA = typeof a.album === "string" ? a.album : a.album?.name || "";
+        const albumB = typeof b.album === "string" ? b.album : b.album?.name || "";
+        result = collator.compare(albumA, albumB);
+        break;
+      }
+      case "trackNumber":
+        // 增加对 undefined/null 的处理，视为 0
+        result = (a.trackNumber || 0) - (b.trackNumber || 0);
+        break;
+      case "filename": {
+        const fileNameA = a.path?.split(/[\\/]/).pop() || "";
+        const fileNameB = b.path?.split(/[\\/]/).pop() || "";
+        result = collator.compare(fileNameA, fileNameB);
+        break;
+      }
+      case "duration":
+        result = (a.duration || 0) - (b.duration || 0);
+        break;
+      case "size":
+        result = (a.size || 0) - (b.size || 0);
+        break;
+      case "createTime":
+        result = (a.createTime || 0) - (b.createTime || 0);
+        break;
+      case "updateTime":
+        result = (a.updateTime || 0) - (b.updateTime || 0);
+        break;
+      default:
+        break;
+    }
+    return isAsc ? result : -result;
+  });
 });
 
 // 虚拟列表项类型
@@ -254,13 +365,13 @@ const listKey = computed(() => {
   }
   // 使用 playListId 作为主要 key
   if (props.playListId) {
-    return `playlist-${props.playListId}-${statusStore.listSort}`;
+    return `playlist-${props.playListId}-${statusStore.listSortField}-${statusStore.listSortOrder}`;
   }
   // 对于本地音乐和没有特定ID的列表，使用数据的哈希值确保唯一性
   // 这样当数据内容变化时，key会改变，触发虚拟列表重新渲染
   // const dataHash = props.data?.map((song) => song.id).join("-") || "";
   // return `type-${props.type}-${dataHash}`;
-  return `list-${props.listVersion}-${props.type}-${statusStore.listSort}`;
+  return `list-${props.listVersion}-${props.type}-${statusStore.listSortField}-${statusStore.listSortOrder}`;
 });
 
 // 列表是否具有播放歌曲
@@ -270,16 +381,6 @@ const hasPlaySong = computed(() => {
 
 // 列表元素高度
 const { height: songListHeight, stop: stopCalcHeight } = useElementSize(songListRef);
-
-// 列表排序菜单
-const sortMenuOptions = computed<DropdownOption[]>(() =>
-  entries(sortOptions).map(([key, { name, show, icon }]) => ({
-    key,
-    label: name,
-    show: show === "all" ? true : show === props.type ? true : false,
-    icon: renderIcon(icon),
-  })),
-);
 
 // 列表滚动
 const onScroll = (e: Event) => {
@@ -309,9 +410,8 @@ const scrollToCurrentSong = () => {
   }
 };
 
-// 排序更改
-const sortSelect = (key: SortType) => {
-  statusStore.listSort = key;
+// 更新列表播放顺序
+const updatePlayListOrder = () => {
   // 更新列表
   if (musicStore.playPlaylistId === props.playListId) {
     player.updatePlayList(listData.value, musicStore.playSong, props.playListId, {
@@ -327,6 +427,30 @@ const sortSelect = (key: SortType) => {
       listRef.value?.scrollToIndex(0);
     }
   });
+};
+
+// 排序更改
+const handleSortFieldChange = (val: SortField) => {
+  // 单击已选择的字段 -> 切换升降序
+  if (statusStore.listSortField === val && val !== "default") {
+    statusStore.listSortOrder = statusStore.listSortOrder === "asc" ? "desc" : "asc";
+  } else {
+    statusStore.listSortField = val;
+    // 如果切换到具体的字段且当前顺序是默认，自动切换到降序(对于时间相关)或升序(对于文本)
+    if (statusStore.listSortOrder === "default") {
+      if (val === "createTime" || val === "updateTime" || val === "duration") {
+        statusStore.listSortOrder = "desc";
+      } else {
+        statusStore.listSortOrder = "asc";
+      }
+    }
+  }
+  updatePlayListOrder();
+};
+
+const handleSortOrderChange = (val: SortOrder) => {
+  statusStore.listSortOrder = val;
+  updatePlayListOrder();
 };
 
 // 删除指定索引
@@ -373,7 +497,7 @@ onBeforeUnmount(() => {
     padding: 8px 12px;
     // margin-right: 4px;
     border: 1px solid transparent;
-    background-color: var(--background-hex);
+    // background-color: var(--background-hex);
     .n-text {
       opacity: 0.6;
     }
@@ -493,6 +617,32 @@ onBeforeUnmount(() => {
   .n-float-button {
     height: 42px;
     border: 1px solid rgba(var(--primary), 0.28);
+  }
+}
+.sort-menu {
+  display: flex;
+  padding: 12px;
+  .group {
+    display: flex;
+    flex-direction: column;
+    .label {
+      font-size: 12px;
+      opacity: 0.6;
+      margin-bottom: 8px;
+      padding-left: 4px;
+    }
+    .n-radio-group {
+      width: 120px;
+      .n-radio {
+        --n-font-size: 13px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+        &:hover {
+          background-color: var(--n-color-target);
+        }
+      }
+    }
   }
 }
 </style>

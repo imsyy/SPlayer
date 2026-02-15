@@ -3,9 +3,15 @@
     <Transition name="fade" mode="out-in">
       <div v-show="statusStore.playerMetaShow" class="control-content" @click.stop>
         <n-flex class="left" align="center">
+          <!-- 收起 -->
+          <div class="menu-icon" @click.stop="statusStore.showFullPlayer = false">
+            <SvgIcon name="Down" />
+          </div>
           <!-- 喜欢歌曲 -->
           <div
-            v-if="musicStore.playSong.type !== 'radio'"
+            v-if="
+              musicStore.playSong.type !== 'radio' && settingStore.fullscreenPlayerElements.like
+            "
             class="menu-icon"
             @click="toLikeSong(musicStore.playSong, !dataStore.isLikeSong(musicStore.playSong.id))"
           >
@@ -15,6 +21,7 @@
           </div>
           <!-- 添加到歌单 -->
           <div
+            v-if="settingStore.fullscreenPlayerElements.addToPlaylist"
             class="menu-icon"
             @click.stop="openPlaylistAdd([musicStore.playSong], !!musicStore.playSong.path)"
           >
@@ -23,14 +30,22 @@
           <!-- 下载 -->
           <div
             class="menu-icon"
-            v-if="!musicStore.playSong.path && statusStore.isDeveloperMode"
+            v-if="
+              !musicStore.playSong.path &&
+              statusStore.isDeveloperMode &&
+              settingStore.fullscreenPlayerElements.download
+            "
             @click.stop="openDownloadSong(musicStore.playSong)"
           >
             <SvgIcon name="Download" />
           </div>
           <!-- 显示评论 -->
           <div
-            v-if="!musicStore.playSong.path && !statusStore.pureLyricMode"
+            v-if="
+              !musicStore.playSong.path &&
+              !statusStore.pureLyricMode &&
+              settingStore.fullscreenPlayerElements.comments
+            "
             class="menu-icon"
             @click.stop="statusStore.showPlayerComment = !statusStore.showPlayerComment"
           >
@@ -107,7 +122,7 @@
         </div>
         <n-flex class="right" align="center" justify="end">
           <!-- 功能区 -->
-          <PlayerRightMenu player />
+          <PlayerRightMenu />
         </n-flex>
       </div>
     </Transition>
@@ -117,7 +132,7 @@
 <script setup lang="ts">
 import { usePlayerController } from "@/core/player/PlayerController";
 import { useSongManager } from "@/core/player/SongManager";
-import { useDataStore, useMusicStore, useStatusStore } from "@/stores";
+import { useDataStore, useMusicStore, useStatusStore, useSettingStore } from "@/stores";
 import { toLikeSong } from "@/utils/auth";
 import { useTimeFormat } from "@/composables/useTimeFormat";
 import { openDownloadSong, openPlaylistAdd } from "@/utils/modal";
@@ -125,6 +140,7 @@ import { openDownloadSong, openPlaylistAdd } from "@/utils/modal";
 const dataStore = useDataStore();
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
+const settingStore = useSettingStore();
 
 const songManager = useSongManager();
 const player = usePlayerController();
@@ -134,6 +150,8 @@ const { timeDisplay, toggleTimeFormat } = useTimeFormat();
 
 <style lang="scss" scoped>
 .player-control {
+  position: absolute;
+  bottom: 0;
   width: 100%;
   height: 80px;
   overflow: hidden;
@@ -146,7 +164,7 @@ const { timeDisplay, toggleTimeFormat } = useTimeFormat();
   }
   .left,
   .right {
-    opacity: 0;
+    opacity: 1;
     height: 100%;
     padding: 0 30px;
     transition: opacity 0.3s;
@@ -172,10 +190,17 @@ const { timeDisplay, toggleTimeFormat } = useTimeFormat();
         transform: scale(1);
       }
     }
-    :deep(.n-badge-sup) {
-      background-color: rgba(var(--main-cover-color), 0.14);
-      .n-base-slot-machine {
+    :deep(.right-menu) {
+      .n-badge-sup {
+        background-color: rgba(var(--main-cover-color), 0.14);
+        .n-base-slot-machine {
+          color: rgb(var(--main-cover-color));
+        }
+      }
+      .quality-tag {
         color: rgb(var(--main-cover-color));
+        background-color: transparent !important;
+        border-color: rgba(var(--main-cover-color), 0.1) !important;
       }
     }
   }
@@ -203,7 +228,6 @@ const { timeDisplay, toggleTimeFormat } = useTimeFormat();
           transform 0.3s;
         cursor: pointer;
         margin: 0 4px;
-
         .n-icon {
           color: rgb(var(--main-cover-color));
         }
@@ -222,7 +246,6 @@ const { timeDisplay, toggleTimeFormat } = useTimeFormat();
         --n-color-hover: rgba(var(--main-cover-color), 0.2);
         --n-color-focus: rgba(var(--main-cover-color), 0.2);
         --n-color-pressed: rgba(var(--main-cover-color), 0.12);
-        backdrop-filter: blur(10px);
         margin: 0 12px;
         transition:
           background-color 0.3s,
@@ -266,13 +289,5 @@ const { timeDisplay, toggleTimeFormat } = useTimeFormat();
       opacity: 1;
     }
   }
-}
-// slider
-.n-slider {
-  --n-rail-color: rgba(var(--main-cover-color), 0.14);
-  --n-rail-color-hover: rgba(var(--main-cover-color), 0.3);
-  --n-fill-color: rgb(var(--main-cover-color));
-  --n-handle-color: rgb(var(--main-cover-color));
-  --n-fill-color-hover: rgb(var(--main-cover-color));
 }
 </style>

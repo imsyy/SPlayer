@@ -245,6 +245,9 @@ watchDebounced(
       padding: 10px;
     }
   }
+  @media (max-width: 768px) {
+    width: 100%;
+  }
   .direct {
     display: flex;
     align-items: center;

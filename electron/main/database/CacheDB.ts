@@ -83,6 +83,12 @@ export class CacheDB {
     this.db.prepare("DELETE FROM kv_cache WHERE type = ?").run(type);
   }
 
+  /** 清空所有缓存并回收空间 */
+  clearAll() {
+    this.db.exec("DELETE FROM kv_cache");
+    this.db.exec("VACUUM");
+  }
+
   /** 列出某类缓存 */
   list(type: string): Omit<CacheEntry, "data">[] {
     return this.db

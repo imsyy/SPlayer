@@ -13,10 +13,20 @@
     <n-tabs class="tabs" type="segment" animated>
       <!-- 类别热门 -->
       <n-tab-pane name="type-hot" tab="热门">
-        <CoverList :data="radioHotData" :loading="true" type="radio" />
+        <CoverList
+          :data="radioHotData"
+          :loading="true"
+          type="radio"
+          :hiddenCover="settingStore.hiddenCovers.radio"
+        />
       </n-tab-pane>
       <n-tab-pane name="type-rec" tab="推荐">
-        <CoverList :data="radioRecData" :loading="true" type="radio" />
+        <CoverList
+          :data="radioRecData"
+          :loading="true"
+          type="radio"
+          :hiddenCover="settingStore.hiddenCovers.radio"
+        />
       </n-tab-pane>
     </n-tabs>
   </div>
@@ -26,8 +36,10 @@
 import { radioCatHot, radioCatRecommend } from "@/api/radio";
 import type { CoverType } from "@/types/main";
 import { formatCoverList } from "@/utils/format";
+import { useSettingStore } from "@/stores";
 
 const router = useRouter();
+const settingStore = useSettingStore();
 
 // 播客数据
 const radioId = ref<number>(Number(router.currentRoute.value.query.id as string));

@@ -2,9 +2,13 @@ import { useIntersectionObserver } from "@vueuse/core";
 import { debounce, throttle } from "lodash-es";
 import { DirectiveBinding } from "vue";
 
+interface HTMLElementWithDebounce extends HTMLElement {
+  _debouncedFn?: EventListener;
+}
+
 // 防抖指令
 export const debounceDirective = {
-  mounted(el: HTMLElement, binding: DirectiveBinding) {
+  mounted(el: HTMLElementWithDebounce, binding: DirectiveBinding) {
     if (typeof binding.value !== "function") {
       console.warn("v-debounce directive expects a function as the value");
       return;
@@ -17,19 +21,23 @@ export const debounceDirective = {
     });
 
     el.addEventListener("click", debouncedFn);
-    (el as any)._debouncedFn = debouncedFn;
+    el._debouncedFn = debouncedFn;
   },
-  beforeUnmount(el: HTMLElement) {
-    if ((el as any)._debouncedFn) {
-      el.removeEventListener("click", (el as any)._debouncedFn);
-      delete (el as any)._debouncedFn;
+  beforeUnmount(el: HTMLElementWithDebounce) {
+    if (el._debouncedFn) {
+      el.removeEventListener("click", el._debouncedFn);
+      delete el._debouncedFn;
     }
   },
 };
 
+interface HTMLElementWithThrottle extends HTMLElement {
+  _throttledFn?: EventListener;
+}
+
 // 节流指令
 export const throttleDirective = {
-  mounted(el: HTMLElement, binding: DirectiveBinding) {
+  mounted(el: HTMLElementWithThrottle, binding: DirectiveBinding) {
     if (typeof binding.value !== "function") {
       console.warn("v-throttle directive expects a function as the value");
       return;
@@ -42,19 +50,19 @@ export const throttleDirective = {
     });
 
     el.addEventListener("click", throttledFn);
-    (el as any)._throttledFn = throttledFn;
+    el._throttledFn = throttledFn;
   },
-  beforeUnmount(el: HTMLElement) {
-    if ((el as any)._throttledFn) {
-      el.removeEventListener("click", (el as any)._throttledFn);
-      delete (el as any)._throttledFn;
+  beforeUnmount(el: HTMLElementWithThrottle) {
+    if (el._throttledFn) {
+      el.removeEventListener("click", el._throttledFn);
+      delete el._throttledFn;
     }
   },
 };
 
 // 元素可见
 export const visibleDirective = {
-  mounted(el: HTMLElement, binding: any) {
+  mounted(el: HTMLElement, binding: DirectiveBinding) {
     const { modifiers, value } = binding;
 
     const handleIntersection = (entries: IntersectionObserverEntry[]) => {

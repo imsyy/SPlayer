@@ -1,14 +1,19 @@
 <template>
   <div class="update-app">
     <n-flex :size="10" class="version" align="center">
-      <n-tag :bordered="false" type="primary">
+      <n-tag type="primary">
         {{ packageJson?.version || "v0.0.0" }}
       </n-tag>
       <SvgIcon name="Right" />
-      <n-tag :bordered="false" type="warning">
+      <n-tag type="warning">
         {{ data?.version || "v0.0.0" }}
       </n-tag>
+      <n-tag v-if="isPrerelease" type="error"> 测试版 </n-tag>
     </n-flex>
+    <!-- 测试版警告 -->
+    <n-alert v-if="isPrerelease" type="warning" :bordered="false" class="prerelease-warning">
+      当前更新为测试版本，可能包含未完成的功能或已知问题，请谨慎更新
+    </n-alert>
     <n-scrollbar style="max-height: 500px">
       <div
         v-if="data?.releaseNotes"
@@ -21,8 +26,22 @@
     <n-flex class="menu" justify="end">
       <n-button strong secondary @click="emit('close')"> 取消 </n-button>
       <n-button type="warning" strong secondary @click="goDownload"> 前往下载 </n-button>
-      <n-button :loading="downloadStatus" type="primary" @click="startDownload">
-        {{ downloadStatus ? `下载中 ${downloadProgress}%` : "立即更新" }}
+      <!-- 已下载完成：显示立即安装 -->
+      <n-button v-if="statusStore.updateDownloaded" type="success" strong @click="doInstall">
+        立即安装
+      </n-button>
+      <!-- 下载中：显示进度 -->
+      <n-button
+        v-else
+        :loading="statusStore.updateDownloading"
+        type="primary"
+        @click="startDownload"
+      >
+        {{
+          statusStore.updateDownloading
+            ? `下载中 ${statusStore.updateDownloadProgress}%`
+            : "立即更新"
+        }}
       </n-button>
     </n-flex>
   </div>
@@ -30,15 +49,20 @@
 
 <script setup lang="ts">
 import type { UpdateInfoType } from "@/types/main";
+import { useStatusStore } from "@/stores";
 import packageJson from "@/../package.json";
 
-defineProps<{ data: UpdateInfoType }>();
+const props = defineProps<{ data: UpdateInfoType }>();
 
 const emit = defineEmits<{ close: [] }>();
 
-// 下载更新数据
-const downloadStatus = ref<boolean>(false);
-const downloadProgress = ref<number>(0);
+const statusStore = useStatusStore();
+
+// 检测是否为预发布版本（alpha/beta/rc 等）
+const isPrerelease = computed(() => {
+  const version = props.data?.version || "";
+  return /-(alpha|beta|rc|dev|canary|nightly)/i.test(version);
+});
 
 // 处理markdown中的链接点击
 const handleMarkdownClick = (event: MouseEvent) => {
@@ -51,26 +75,14 @@ const handleMarkdownClick = (event: MouseEvent) => {
   }
 };
 
-// 开始更新
-const startDownload = async () => {
-  downloadStatus.value = true;
+// 开始下载更新
+const startDownload = () => {
   window.electron.ipcRenderer.send("start-download-update");
-  // 监听状态
-  window.electron.ipcRenderer.on("download-progress", (_, progress) => {
-    downloadProgress.value = Number((progress?.percent || 0).toFixed(2));
-  });
-  // 更新错误
-  window.electron.ipcRenderer.on("update-error", (_, error) => {
-    downloadStatus.value = false;
-    console.error("Error updating:", error);
-    window.$message.error("更新过程出现错误");
-  });
-  // 更新完成
-  window.electron.ipcRenderer.on("update-downloaded", () => {
-    emit("close");
-    downloadStatus.value = false;
-    window.$message.success("更新下载完成");
-  });
+};
+
+// 安装更新
+const doInstall = () => {
+  window.electron.ipcRenderer.send("install-update");
 };
 
 // 前往下载
@@ -84,17 +96,25 @@ const goDownload = () => {
 .update-app {
   .version {
     margin-bottom: 20px;
+
     .n-tag {
       border-radius: 6px;
     }
+
     .time {
       margin-left: auto;
       font-size: 13px;
     }
   }
+
   .menu {
     margin-top: 20px;
   }
+
+  .prerelease-warning {
+    margin-bottom: 12px;
+  }
+
   .markdown-body {
     margin-top: 0 !important;
   }

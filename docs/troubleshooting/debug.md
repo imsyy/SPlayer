@@ -33,7 +33,7 @@
 
 原生模块日志：
 
-- SMTC 日志：`%APPDATA%\SPlayer\logs\smtc\`
+- 外部媒体集成模块日志：`%APPDATA%\SPlayer\logs\external-media-integration\`
 
 ## 常见错误类型
 

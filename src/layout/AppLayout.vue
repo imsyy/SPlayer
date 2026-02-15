@@ -1,5 +1,46 @@
 <template>
   <div id="app-layout">
+    <!-- 背景图 -->
+    <Transition name="fade">
+      <div
+        v-if="
+          (statusStore.themeBackgroundMode === 'image' ||
+            statusStore.themeBackgroundMode === 'video') &&
+          statusStore.backgroundImageUrl
+        "
+        :key="statusStore.backgroundImageUrl"
+        class="background-container"
+      >
+        <div
+          v-if="statusStore.themeBackgroundMode === 'image'"
+          class="background-image"
+          :style="{
+            backgroundImage: `url(${statusStore.backgroundImageUrl})`,
+            transform: `scale(${statusStore.backgroundConfig.scale})`,
+            filter: `blur(${statusStore.backgroundConfig.blur}px)`,
+          }"
+        />
+        <video
+          v-else-if="statusStore.themeBackgroundMode === 'video'"
+          class="background-image"
+          :src="statusStore.backgroundImageUrl"
+          autoplay
+          loop
+          muted
+          :style="{
+            objectFit: 'cover',
+            transform: `scale(${statusStore.backgroundConfig.scale})`,
+            filter: `blur(${statusStore.backgroundConfig.blur}px)`,
+          }"
+        />
+        <div
+          class="background-mask"
+          :style="{
+            backgroundColor: `rgba(0, 0, 0, ${statusStore.backgroundConfig.maskOpacity / 100})`,
+          }"
+        />
+      </div>
+    </Transition>
     <!-- 主框架 -->
     <n-layout
       id="main"
@@ -11,6 +52,7 @@
     >
       <!-- 侧边栏 -->
       <n-layout-sider
+        v-if="isDesktop"
         id="main-sider"
         :style="{
           height:
@@ -47,7 +89,7 @@
             display: 'grid',
             gridTemplateRows: '1fr',
             minHeight: '100%',
-            padding: '0 24px',
+            padding: isMobile ? '0 16px' : '0 24px',
           }"
           position="absolute"
           embedded
@@ -69,25 +111,31 @@
       </n-layout>
     </n-layout>
     <!-- 播放列表 -->
-    <MainPlayList />
+    <SongPlayList />
     <!-- 全局播放器 -->
     <MainPlayer />
     <!-- 全屏播放器 -->
-    <FullPlayer />
+    <PlayerProvider>
+      <FullPlayer />
+    </PlayerProvider>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useMusicStore, useStatusStore, useSettingStore } from "@/stores";
+import { useMusicStore, useStatusStore, useSettingStore, useDataStore } from "@/stores";
 import { useBlobURLManager } from "@/core/resource/BlobURLManager";
 import { isElectron } from "@/utils/env";
-import init from "@/utils/init";
+import { useMobile } from "@/composables/useMobile";
+import { useInit } from "@/composables/useInit";
 
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
 const settingStore = useSettingStore();
+const dataStore = useDataStore();
 
 const blobURLManager = useBlobURLManager();
+
+const { isDesktop, isMobile } = useMobile();
 
 // 主内容
 const contentRef = ref<HTMLElement | null>(null);
@@ -95,12 +143,31 @@ const contentRef = ref<HTMLElement | null>(null);
 // 主内容高度
 const { height: contentHeight } = useElementSize(contentRef);
 
+// 加载背景图
+const loadBackgroundImage = async () => {
+  if (statusStore.backgroundImageUrl) return;
+  if (statusStore.themeBackgroundMode === "image" || statusStore.themeBackgroundMode === "video") {
+    const blob = await dataStore.getBackgroundImage();
+    if (blob) {
+      const arrayBuffer = await blob.arrayBuffer();
+      statusStore.backgroundImageUrl = blobURLManager.createBlobURL(
+        arrayBuffer,
+        blob.type,
+        "background-image",
+      );
+    }
+  }
+};
+
 watchEffect(() => {
   statusStore.mainContentHeight = contentHeight.value;
 });
 
+// 初始化
+useInit();
+
 onMounted(() => {
-  init();
+  loadBackgroundImage();
   if (!isElectron) {
     window.addEventListener("beforeunload", (event) => {
       event.preventDefault();
@@ -118,7 +185,38 @@ onMounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
+
+.background-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  .background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transform-origin: center center;
+  }
+  .background-mask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
 #main {
   flex: 1;
   height: 100%;
@@ -144,9 +242,6 @@ onMounted(() => {
     }
   }
   &.show-player {
-    // #main-sider {
-    //   margin-bottom: 80px;
-    // }
     #main-content {
       bottom: 80px;
     }

@@ -56,3 +56,41 @@ export const commentLike = (id: number, t: 1 | 2 = 1, type: 0 | 1 | 2 | 3 | 4 | 
     params: { id, t, type, timestamp: Date.now() },
   });
 };
+
+/**
+ * 抱一抱评论
+ * @param {number} uid - 用户 id
+ * @param {number} cid - 评论 id
+ * @param {number} sid - 资源 id
+ */
+export const hugComment = (uid: number, cid: number, sid: number) => {
+  return request({
+    url: "/hug/comment",
+    params: { uid, cid, sid, timestamp: Date.now() },
+  });
+};
+
+/**
+ * 评论抱一抱列表
+ * @param {number} uid - 用户 id
+ * @param {number} cid - 评论 id
+ * @param {number} sid - 资源 id
+ * @param {number} page - 页数
+ * @param {number} cursor - 上一页返回的 cursor
+ * @param {number} idCursor - 上一页返回的 idCursor
+ * @param {number} pageSize - 每页页数
+ */
+export const getCommentHugList = (
+  uid: number,
+  cid: number,
+  sid: number,
+  page: number = 1,
+  cursor: number = -1,
+  idCursor: number = -1,
+  pageSize: number = 100,
+) => {
+  return request({
+    url: "/comment/hug/list",
+    params: { uid, cid, sid, page, cursor, idCursor, pageSize, timestamp: Date.now() },
+  });
+};

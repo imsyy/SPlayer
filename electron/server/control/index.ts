@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { appVersion, appName } from "../../main/utils/config";
+import { getTrackInfoFromRenderer } from "../../main/utils/track-info";
 import mainWindow from "../../main/windows/main-window";
 
 /**
@@ -201,7 +202,6 @@ export const initControlAPI = async (fastify: FastifyInstance) => {
       // 获取当前播放信息
       fastify.get("/song-info", async (_request, reply) => {
         try {
-          const { getTrackInfoFromRenderer } = await import("../../main/utils/track-info");
           const trackInfo = await getTrackInfoFromRenderer();
           return reply.send({
             code: 200,

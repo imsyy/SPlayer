@@ -195,7 +195,7 @@ export class CacheService {
       if (existsSync(dbPath)) dbTotal += (await stat(dbPath)).size;
       if (existsSync(dbPath + "-wal")) dbTotal += (await stat(dbPath + "-wal")).size;
       if (existsSync(dbPath + "-shm")) dbTotal += (await stat(dbPath + "-shm")).size;
-    } catch (e) {
+    } catch {
       // ignore
     }
 
@@ -342,7 +342,7 @@ export class CacheService {
       try {
         const now = new Date();
         await utimes(target, now, now);
-      } catch (e) {
+      } catch {
         // 忽略 utimes 失败
       }
 
@@ -384,6 +384,39 @@ export class CacheService {
       await rm(dir, { recursive: true, force: true });
       if (!existsSync(dir)) await mkdir(dir, { recursive: true });
 
+      this.fileSizes[type] = 0;
+    }
+  }
+
+  /**
+   * 清空所有缓存
+   * 软清空：保留 DB 文件，仅清空数据和媒体文件
+   */
+  public async clearAll(): Promise<void> {
+    await this.init();
+
+    // 清空 DB 数据并回收空间
+    try {
+      this.db?.clearAll();
+    } catch (e) {
+      cacheLog.error("Failed to clear database:", e);
+    }
+
+    // 删除文件缓存目录内容
+    const fileTypes: CacheResourceType[] = ["music", "local-data"];
+    for (const type of fileTypes) {
+      const basePath = this.getCacheBasePath();
+      const dir = join(basePath, this.CACHE_SUB_DIR[type]);
+
+      try {
+        if (existsSync(dir)) {
+          // 删除目录并重建
+          await rm(dir, { recursive: true, force: true });
+          await mkdir(dir, { recursive: true });
+        }
+      } catch (e) {
+        cacheLog.error(`Failed to clear directory ${type}:`, e);
+      }
       this.fileSizes[type] = 0;
     }
   }

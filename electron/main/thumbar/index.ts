@@ -68,7 +68,7 @@ class createThumbar implements Thumbar {
   private _pause: ThumbarButton;
   // 当前播放状态
   private _isPlaying: boolean = false;
-  
+
   constructor(win: BrowserWindow) {
     // 初始化数据
     this._win = win;
@@ -83,14 +83,14 @@ class createThumbar implements Thumbar {
     // 监听主题变化
     this.initThemeListener();
   }
-  
+
   // 初始化主题监听器
   private initThemeListener() {
     nativeTheme.on("updated", () => {
       this.refreshThumbarButtons();
     });
   }
-  
+
   // 刷新工具栏按钮（主题变化时）
   private refreshThumbarButtons() {
     // 重新创建按钮
@@ -102,14 +102,14 @@ class createThumbar implements Thumbar {
     // 更新工具栏
     this.updateThumbar(this._isPlaying);
   }
-  
+
   // 更新工具栏
   updateThumbar(playing: boolean = false, clean: boolean = false) {
     this._isPlaying = playing;
     if (clean) return this.clearThumbar();
     this._win.setThumbarButtons([this._prev, playing ? this._pause : this._play, this._next]);
   }
-  
+
   // 清除工具栏
   clearThumbar() {
     this._win.setThumbarButtons([]);

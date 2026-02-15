@@ -5,6 +5,7 @@
       :loading="loading"
       :loadMore="hasMore"
       type="album"
+      :hiddenCover="settingStore.hiddenCovers.album"
       @loadMore="loadMore"
     />
   </div>
@@ -14,10 +15,13 @@
 import type { CoverType } from "@/types/main";
 import { artistAblums } from "@/api/artist";
 import { formatCoverList } from "@/utils/format";
+import { useSettingStore } from "@/stores";
 
 const props = defineProps<{
   id: number;
 }>();
+
+const settingStore = useSettingStore();
 
 // 歌曲数据
 const loading = ref<boolean>(true);

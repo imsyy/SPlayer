@@ -1,6 +1,9 @@
 import request from "@/utils/request";
 
-// 获取歌单详情
+/**
+ * 获取歌单详情
+ * @param {number} id - 歌单 id
+ */
 export const playlistDetail = (id: number) => {
   return request({
     url: "/playlist/detail",
@@ -13,7 +16,12 @@ export const playlistDetail = (id: number) => {
   });
 };
 
-// 获取歌单所有歌曲
+/**
+ * 获取歌单所有歌曲
+ * @param {number} id - 歌单 id
+ * @param {number} [limit=50] - 返回数量，默认 50
+ * @param {number} [offset=0] - 偏移数量，默认 0
+ */
 export const playlistAllSongs = (id: number, limit: number = 50, offset: number = 0) => {
   return request({
     url: "/playlist/track/all",

@@ -1,49 +1,54 @@
 <template>
-  <div ref="textContainerRef" :key="text.length" class="text-container">
-    <!-- 空白占位符 -->
-    <span class="empty">{{ text }}</span>
+  <div ref="textContainerRef" class="text-container">
     <div ref="scrollWrapperRef" class="scroll-wrapper">
-      <span ref="textRef" class="text">{{ text }}</span>
-      <span v-if="isTextOverflowing" ref="textCloneRef" class="text">{{ text }}</span>
+      <div ref="textRef" class="text">
+        <slot>{{ text }}</slot>
+      </div>
+      <div v-if="isTextOverflowing" class="text clone">
+        <slot>{{ text }}</slot>
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 const props = defineProps<{
-  text: string;
-  // 滚动速度
+  text?: string;
+  // 滚动速度 (px/frame)
   speed?: number;
   // 延迟时间
   delay?: number;
+  // 两个内容之间的间距 (px)
+  gap?: number;
 }>();
 
+const gap = props.gap ?? 50;
+
 const textRef = ref<HTMLElement | null>(null);
-const textCloneRef = ref<HTMLElement | null>(null);
 const textContainerRef = ref<HTMLElement | null>(null);
 const scrollWrapperRef = ref<HTMLElement | null>(null);
 
 // 是否超出宽度
 const isTextOverflowing = ref(false);
 
-// 容器宽度
 const { width: textContainerWidth } = useElementSize(textContainerRef);
-// 文本宽度
 const { width: textWidth } = useElementSize(textRef);
 
 // 检查文本是否超出宽度
 const checkTextWidth = () => {
-  if (textRef.value && textContainerRef.value) {
-    const currentTextWidth = textRef.value.offsetWidth;
-    const currentContainerWidth = textContainerWidth.value;
-    // 判断阈值
-    isTextOverflowing.value = currentTextWidth > currentContainerWidth + 2;
+  if (textWidth.value && textContainerWidth.value) {
+    isTextOverflowing.value = textWidth.value > textContainerWidth.value;
   }
-  // 更新状态
   updateScroll();
+  // 触发一次重绘，解决某些情况下宽度计算不准确的问题
+  if (scrollWrapperRef.value) {
+    scrollWrapperRef.value.style.display = "none";
+    scrollWrapperRef.value.offsetHeight;
+    scrollWrapperRef.value.style.display = "";
+  }
 };
 
-// 文本宽度变化时更新滚动状态
+// 更新滚动状态
 const updateScroll = () => {
   if (isTextOverflowing.value) {
     startScrolling();
@@ -52,34 +57,28 @@ const updateScroll = () => {
   }
 };
 
-// 滚动动画定时器
 let animationId: number | null = null;
 let scrollTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
 // 开始滚动
 const startScrolling = () => {
-  // 先停止之前的滚动
   stopScrolling();
-  if (!textRef.value || !textContainerRef.value || !scrollWrapperRef.value || !textCloneRef.value)
-    return;
-  // 设置滚动速度（ 单位：像素/帧 ）
+  if (!textRef.value || !textContainerRef.value || !scrollWrapperRef.value) return;
   const scrollSpeed = props.speed || 0.5;
 
   let currentPos = 0;
-  // 滚动动画
   const scroll = () => {
-    if (!textRef.value || !textContainerRef.value || !scrollWrapperRef.value || !textCloneRef.value)
-      return;
-    if (currentPos <= -textRef.value.scrollWidth - 120) {
+    if (!textRef.value || !textContainerRef.value || !scrollWrapperRef.value) return;
+    // 当滚动到足以显示完整克隆内容时重置
+    if (currentPos <= -textRef.value.scrollWidth - gap) {
       currentPos = 0;
     } else {
       currentPos -= scrollSpeed;
     }
-    // 设置滚动位置
     scrollWrapperRef.value.style.transform = `translateX(${currentPos}px)`;
     animationId = requestAnimationFrame(scroll);
   };
-  // 延迟滚动
+  // 延迟启动滚动
   scrollTimeoutId = setTimeout(() => {
     scroll();
   }, props.delay || 3000);
@@ -101,7 +100,7 @@ const stopScrolling = () => {
 };
 
 watch(
-  () => [props.text, textContainerWidth.value, textWidth.value, textCloneRef.value],
+  () => [props.text, textContainerWidth.value, textWidth.value],
   () => {
     nextTick(checkTextWidth);
   },
@@ -123,25 +122,22 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .text-container {
   position: relative;
-  display: inline-block;
+  display: block;
   overflow: hidden;
   width: 100%;
-  .empty {
-    opacity: 0;
-    white-space: nowrap;
-  }
   .scroll-wrapper {
-    position: absolute;
-    top: 0;
-    left: 0;
-    display: inline-flex;
+    position: relative;
+    display: flex;
+    width: fit-content;
     white-space: nowrap;
     will-change: transform;
+    min-width: 100%;
     .text {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
       white-space: nowrap;
-      &:nth-of-type(2) {
-        margin-left: 120px;
+      &.clone {
+        padding-left: v-bind("gap + 'px'");
       }
     }
   }

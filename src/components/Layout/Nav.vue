@@ -2,36 +2,81 @@
   <n-layout-header class="nav">
     <!-- 页面导航 -->
     <n-flex class="page-control">
-      <n-button :focusable="false" tertiary circle @click="router.go(-1)">
+      <Logo v-if="!isDesktop" :size="40" @click="router.push('/')" />
+      <template v-if="!isSmallScreen">
+        <n-button :focusable="false" tertiary circle @click="router.go(-1)">
+          <template #icon>
+            <SvgIcon name="NavigateBefore" :size="26" />
+          </template>
+        </n-button>
+        <n-button :focusable="false" tertiary circle @click="router.go(1)">
+          <template #icon>
+            <SvgIcon name="NavigateNext" :size="26" />
+          </template>
+        </n-button>
+      </template>
+      <!-- 有可用更新 -->
+      <n-button
+        v-if="statusStore.updateAvailable"
+        :focusable="false"
+        :title="updateBtnTitle"
+        tertiary
+        circle
+        @click="handleUpdateClick"
+      >
         <template #icon>
-          <SvgIcon name="NavigateBefore" :size="26" />
-        </template>
-      </n-button>
-      <n-button :focusable="false" tertiary circle @click="router.go(1)">
-        <template #icon>
-          <SvgIcon name="NavigateNext" :size="26" />
+          <SvgIcon name="Update" />
         </template>
       </n-button>
     </n-flex>
     <!-- 主内容 -->
-    <n-flex class="nav-main">
+    <n-flex :wrap="false" justify="end" class="nav-main">
       <!-- 搜索 -->
       <SearchInp v-if="settingStore.useOnlineService" />
       <!-- 可拖拽 -->
-      <div class="nav-drag" />
-      <!-- 用户 -->
-      <User v-if="settingStore.useOnlineService" />
-      <!-- 设置菜单 -->
-      <n-dropdown :options="setOptions" trigger="click" show-arrow @select="setSelect">
-        <n-button :focusable="false" title="设置" tertiary circle>
+      <div v-if="isDesktop" class="nav-drag" />
+      <n-flex align="center">
+        <!-- 用户 -->
+        <User v-if="settingStore.useOnlineService" />
+        <!-- 设置菜单 -->
+        <n-dropdown :options="setOptions" trigger="click" @select="setSelect">
+          <n-button :focusable="false" title="设置" tertiary circle>
+            <template #icon>
+              <SvgIcon name="Settings" />
+            </template>
+          </n-button>
+        </n-dropdown>
+        <!-- 移动端菜单 -->
+        <n-button
+          v-if="!isDesktop"
+          :focusable="false"
+          tertiary
+          circle
+          @click="showAside = !showAside"
+        >
           <template #icon>
-            <SvgIcon name="Settings" />
+            <SvgIcon name="Menu" />
           </template>
         </n-button>
-      </n-dropdown>
+        <n-drawer v-model:show="showAside" :width="240" placement="left">
+          <n-drawer-content :body-content-style="{ padding: 0 }" :native-scrollbar="false">
+            <template #header>
+              <n-flex align="center" justify="center" class="aside-logo">
+                <Logo />
+                <n-text>SPlayer</n-text>
+              </n-flex>
+            </template>
+            <Menu @menu-click="showAside = false" />
+          </n-drawer-content>
+        </n-drawer>
+      </n-flex>
     </n-flex>
     <!-- 客户端控制 -->
-    <n-flex v-if="isElectron && useBorderless" align="center" class="client-control">
+    <n-flex
+      v-if="isElectron && !isSmallScreen && useBorderless"
+      align="center"
+      class="client-control"
+    >
       <n-divider class="divider" vertical />
       <div class="min-button-wrapper" @click="min" title="最小化">
         <n-button :focusable="false" title="最小化" tertiary circle @click.stop="min">
@@ -99,23 +144,42 @@
 
 <script setup lang="ts">
 import type { DropdownOption } from "naive-ui";
-import { useSettingStore } from "@/stores";
+import { useSettingStore, useStatusStore } from "@/stores";
 import { renderIcon } from "@/utils/helper";
-import { openSetting } from "@/utils/modal";
+import { openSetting, openThemeConfig, openScalingModal, openUpdateApp } from "@/utils/modal";
 import { isDev, isElectron } from "@/utils/env";
+import { useMobile } from "@/composables/useMobile";
 
 const router = useRouter();
 const settingStore = useSettingStore();
+const statusStore = useStatusStore();
+const { isDesktop, isSmallScreen } = useMobile();
+
+// 更新按钮提示
+const updateBtnTitle = computed(() => {
+  if (statusStore.updateDownloaded) return "更新已就绪，点击查看";
+  if (statusStore.updateDownloading) {
+    return `下载中 ${Math.round(statusStore.updateDownloadProgress)}%`;
+  }
+  return `发现新版本 ${statusStore.updateInfo?.version || ""}`;
+});
+
+// 点击更新按钮
+const handleUpdateClick = () => {
+  if (statusStore.updateInfo) {
+    openUpdateApp(statusStore.updateInfo);
+  }
+};
 
 const showCloseModal = ref(false);
 // 是否记住
 const rememberNotAsk = ref(false);
-
 // 是否启用无边框窗口
 const useBorderless = ref(true);
-
 // 当前窗口状态
 const isMax = ref(false);
+// 是否显示侧边栏
+const showAside = ref(false);
 
 // 最小化
 const min = () => window.electron.ipcRenderer.send("win-min");
@@ -158,6 +222,7 @@ const setOptions = computed<DropdownOption[]>(() => [
           ? "深色模式"
           : "跟随系统",
     key: "themeMode",
+    disabled: !!statusStore.backgroundImageUrl,
     icon: renderIcon(
       settingStore.themeMode === "auto"
         ? "LightTheme"
@@ -165,6 +230,17 @@ const setOptions = computed<DropdownOption[]>(() => [
           ? "DarkTheme"
           : "AutoTheme",
     ),
+  },
+  {
+    label: "主题配置",
+    key: "themeConfig",
+    icon: renderIcon("Palette"),
+  },
+  {
+    key: "zoom",
+    label: "界面缩放",
+    icon: renderIcon("ZoomIn"),
+    show: isElectron,
   },
   {
     key: "divider-1",
@@ -197,13 +273,17 @@ const setSelect = (key: string) => {
     case "themeMode":
       settingStore.setThemeMode();
       break;
+    case "themeConfig":
+      openThemeConfig();
+      break;
+    case "zoom":
+      openScalingModal();
+      break;
     case "setting":
       openSetting();
       break;
     case "dev-tools":
       window.electron.ipcRenderer.send("open-dev-tools");
-      break;
-    default:
       break;
   }
 };
@@ -238,6 +318,7 @@ onMounted(async () => {
     -webkit-app-region: no-drag;
   }
   .nav-main {
+    position: relative;
     flex: 1;
     align-items: center;
     height: 100%;
@@ -283,6 +364,15 @@ onMounted(async () => {
 }
 .tip {
   font-size: 16px;
+}
+.aside-logo {
+  .n-text {
+    width: 90px;
+    font-size: 22px;
+    font-family: "logo";
+    margin-top: 2px;
+    line-height: 40px;
+  }
 }
 .checkbox {
   display: flex;

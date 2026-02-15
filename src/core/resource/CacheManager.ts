@@ -106,6 +106,13 @@ class CacheManager {
   }
 
   /**
+   * 清空所有缓存
+   */
+  clearAll(): Promise<CacheResult<null>> {
+    return this.invoke("cache-clear-all");
+  }
+
+  /**
    * 获取所有缓存类型的总大小（字节）
    */
   getSize(): Promise<CacheResult<number>> {

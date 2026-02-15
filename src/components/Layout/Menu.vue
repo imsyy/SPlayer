@@ -7,7 +7,7 @@
     :class="{ cover: settingStore.menuShowCover }"
     :indent="0"
     :root-indent="26"
-    :collapsed="statusStore.menuCollapsed"
+    :collapsed="statusStore.menuCollapsed && isDesktop"
     :collapsed-width="64"
     :collapsed-icon-size="22"
     :options="menuOptions"
@@ -17,7 +17,9 @@
 </template>
 
 <script setup lang="ts">
+import { useMobile } from "@/composables/useMobile";
 import { usePlayerController } from "@/core/player/PlayerController";
+import { useSongManager } from "@/core/player/SongManager";
 import {
   useDataStore,
   useLocalStore,
@@ -44,6 +46,8 @@ import {
 } from "naive-ui";
 import { RouterLink, useRouter } from "vue-router";
 
+const emit = defineEmits<{ (e: "menu-click", key: string): void }>();
+
 const router = useRouter();
 const dataStore = useDataStore();
 const localStore = useLocalStore();
@@ -51,11 +55,23 @@ const musicStore = useMusicStore();
 const statusStore = useStatusStore();
 const settingStore = useSettingStore();
 const player = usePlayerController();
+const songManager = useSongManager();
+
+const { isDesktop } = useMobile();
 
 // 菜单数据
 const menuRef = ref<MenuInst | null>(null);
 const menuActiveKey = ref<string | number>((router.currentRoute.value.name as string) || "home");
-const playlistMode = ref<"online" | "local">("online");
+
+// 刷新私人漫游
+const handleRefreshFM = async (e: Event) => {
+  e.stopPropagation();
+  await songManager.refreshPersonalFM();
+  // 刷新后如果处于私人漫游模式，则重新播放
+  if (statusStore.personalFmMode && musicStore.personalFMSong?.id) {
+    player.playSong();
+  }
+};
 
 // 菜单内容
 const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
@@ -84,7 +100,18 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
         },
         {
           key: "personal-fm",
-          label: "私人漫游",
+          label: () =>
+            h("div", { class: "user-liked roaming-label" }, [
+              h(NText, null, () => "私人漫游"),
+              h(NButton, {
+                type: "tertiary",
+                round: true,
+                strong: true,
+                secondary: true,
+                renderIcon: renderIcon("Refresh"),
+                onClick: handleRefreshFM,
+              }),
+            ]),
           show: isLogin() !== 0 && !settingStore.sidebarHide.hidePersonalFM,
           icon: renderIcon("Radio", {
             style: {
@@ -158,6 +185,13 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
           icon: renderIcon("Download"),
         },
         {
+          key: "streaming",
+          link: "streaming",
+          label: "流媒体",
+          show: settingStore.streamingEnabled,
+          icon: renderIcon("Stream"),
+        },
+        {
           key: "local",
           link: "local",
           label: "本地歌曲",
@@ -182,7 +216,7 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
           label: () =>
             h("div", { class: "user-list" }, [
               h(NText, { depth: 3 }, () =>
-                playlistMode.value === "online" ? "创建的歌单" : "本地歌单",
+                statusStore.playlistMode === "online" ? "创建的歌单" : "本地歌单",
               ),
               h(
                 NPopselect,
@@ -191,10 +225,10 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
                     { label: "在线歌单", value: "online" },
                     { label: "本地歌单", value: "local" },
                   ],
-                  value: playlistMode.value,
+                  value: statusStore.playlistMode,
                   trigger: "click",
                   onUpdateValue: (value: "online" | "local") => {
-                    playlistMode.value = value;
+                    statusStore.playlistMode = value;
                   },
                 },
                 () =>
@@ -215,12 +249,12 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
                 renderIcon: renderIcon("Add"),
                 onclick: (event: Event) => {
                   event.stopPropagation();
-                  openCreatePlaylist(playlistMode.value === "local");
+                  openCreatePlaylist(statusStore.playlistMode === "local");
                 },
               }),
             ]),
           children:
-            playlistMode.value === "online"
+            statusStore.playlistMode === "online"
               ? [...createPlaylist.value]
               : [...localPlaylistMenu.value],
         },
@@ -362,6 +396,7 @@ const renderMenuLabel = (option: MenuOption) => {
 
 // 菜单项更改
 const menuUpdate = (key: string, item: MenuOption) => {
+  emit("menu-click", key);
   // 私人漫游
   if (key === "personal-fm") {
     if (!musicStore.personalFMSong?.id) {
@@ -388,7 +423,7 @@ const menuUpdate = (key: string, item: MenuOption) => {
   } else if (typeof key === "string" && key.startsWith("local-")) {
     // 检查是否为本地歌单（16位数字ID）
     const localId = key.replace("local-", "");
-    const isLocalPlaylist = /^\d{16}$/.test(localId);
+    const isLocalPlaylist = localStore.isLocalPlaylist(localId);
     if (isLocalPlaylist) {
       router.push({
         name: "playlist",
@@ -429,6 +464,7 @@ const checkMenuItem = () => {
     { prefix: "local-", name: "local", skipInLocalMode: true },
     { prefix: "like-", name: "like", exclude: "like-songs" },
     { prefix: "download-", name: "download" },
+    { prefix: "streaming-", name: "streaming" },
   ];
   for (const item of prefixMap) {
     if (item.skipInLocalMode && !settingStore.useOnlineService) continue;
@@ -455,7 +491,7 @@ const checkMenuItem = () => {
         (playlist) => playlist?.id === playlistId,
       );
       // 是否为本地歌单
-      const isLocalPlaylist = playlistId.toString().length === 16;
+      const isLocalPlaylist = localStore.isLocalPlaylist(playlistId);
       if (!playlistId) menuActiveKey.value = "home";
       if (isUserPlaylist) {
         menuActiveKey.value = Number(playlistId);
@@ -559,6 +595,19 @@ watch(
     min-width: 34px;
     margin-right: 12px;
     border-radius: 8px;
+  }
+}
+.roaming-label {
+  .n-button {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  &:hover {
+    .n-button {
+      opacity: 1;
+      pointer-events: auto;
+    }
   }
 }
 </style>

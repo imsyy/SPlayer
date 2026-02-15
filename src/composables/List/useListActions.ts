@@ -17,7 +17,7 @@ export const useListActions = () => {
     // 如果是单曲循环模式，自动切换为顺序播放
     if (statusStore.repeatMode === "one") {
       statusStore.repeatMode = "list";
-      player.syncSmtcPlayMode();
+      player.syncMediaPlayMode();
     }
 
     await player.updatePlayList(songs, undefined, playListId);

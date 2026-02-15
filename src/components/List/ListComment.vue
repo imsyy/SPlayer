@@ -18,6 +18,7 @@
               :data="commentHotData"
               :loading="commentHotData?.length === 0"
               :type="type"
+              :res-id="id"
             />
           </template>
           <div class="placeholder">
@@ -31,6 +32,7 @@
             :loading="commentLoading"
             :type="type"
             :load-more="commentHasMore"
+            :res-id="id"
             @load-more="handleLoadMore"
           />
           <div class="placeholder" />

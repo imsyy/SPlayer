@@ -70,6 +70,15 @@ class BlobURLManager {
   }
 
   /**
+   * 获取 Blob URL
+   * @param key - 要获取的键
+   * @returns Blob URL
+   */
+  getBlobURL(key: string): string | null {
+    return this.blobURLs.get(key) || null;
+  }
+
+  /**
    * 清理 Blob URL
    * @param key - 要清理的 Blob URL 对应的键
    */

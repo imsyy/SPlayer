@@ -5,7 +5,7 @@
         <n-tag
           v-for="(item, index) in newTypeNames"
           :key="index"
-          :class="{ choose: index === newTypeChoose }"
+          :type="index === newTypeChoose ? 'primary' : 'default'"
           :bordered="false"
           round
           @click="newQueryChange(index, newAreaChoose)"
@@ -17,8 +17,8 @@
         <n-tag
           v-for="(item, index) in newAreaNames"
           :key="index"
-          :class="{ choose: index === newAreaChoose }"
-          :bordered="false"
+          :type="index === newAreaChoose ? 'primary' : 'default'"
+          :bordered="index === newAreaChoose"
           round
           @click="newQueryChange(newTypeChoose, index)"
         >
@@ -35,12 +35,14 @@
         :loadMore="hasMore"
         @loadMore="loadMore"
         type="album"
+        :hiddenCover="settingStore.hiddenCovers.new"
       />
       <SongList
         v-else-if="newTypeChoose === 1"
         :data="newSongData"
         :loading="loading"
         disabledSort
+        :hiddenCover="settingStore.hiddenCovers.new"
       />
     </Transition>
   </div>
@@ -50,8 +52,10 @@
 import { newAlbumsAll, newSongs } from "@/api/rec";
 import type { CoverType, SongType } from "@/types/main";
 import { formatCoverList, formatSongsList } from "@/utils/format";
+import { useSettingStore } from "@/stores";
 
 const router = useRouter();
+const settingStore = useSettingStore();
 
 // 分类数据
 const newTypeNames = ["新碟上架", "新歌速递"];

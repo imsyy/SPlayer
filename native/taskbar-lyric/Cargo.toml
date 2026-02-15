@@ -1,0 +1,60 @@
+[package]
+name = "taskbar-lyric"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+anyhow = "1"
+napi = "3.8"
+napi-derive = "3.5"
+winreg = "0.55"
+
+# Log
+tracing = "0.1"
+tracing-appender = "0.2"
+tracing-subscriber = { version = "0.3", features = [
+  "env-filter",
+  "time",
+  "local-time",
+] }
+time = { version = "0.3", features = ["macros", "formatting", "local-offset"] }
+windows-core = "0.62.2"
+
+[dependencies.windows]
+version = "0.62"
+features = [
+  "Win32_Foundation",
+  "Win32_UI_WindowsAndMessaging",
+  "Win32_System_Registry",
+  "Win32_System_Threading",
+  "Win32_Security",
+  "Win32_System_Com",
+  "Win32_UI_Accessibility",
+  "Win32_System_Variant",
+  "Win32_System_Ole",
+]
+
+[build-dependencies]
+napi-build = "2.3"
+
+
+[dev-dependencies]
+serial_test = "3.3"
+
+# Clippy Lints
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+
+cast_possible_truncation = "allow"
+cast_precision_loss = "allow"
+cast_sign_loss = "allow"
+cast_possible_wrap = "allow"
+
+doc_markdown = "allow"
+missing_panics_doc = "allow"
+significant_drop_tightening = "allow"
+missing_errors_doc = "allow"
