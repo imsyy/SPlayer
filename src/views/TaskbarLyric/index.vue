@@ -700,6 +700,7 @@ $radius: 4px;
   align-items: center;
   justify-content: center;
   height: 100%;
+  max-width: 120px;
   gap: 6px;
   overflow: hidden;
   z-index: 10;

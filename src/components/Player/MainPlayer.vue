@@ -245,6 +245,7 @@ import { copyData, coverLoaded, renderIcon } from "@/utils/helper";
 import {
   openAutoClose,
   openChangeRate,
+  openCopySongInfo,
   openDownloadSong,
   openJumpArtist,
   openPlaylistAdd,
@@ -309,6 +310,15 @@ const songMoreOptions = computed<DropdownOption[]>(() => {
             onClick: () => copyData(song.id),
           },
           icon: renderIcon("Copy", { size: 18 }),
+        },
+        {
+          key: "copy-song-info",
+          label: "复制更多信息",
+          show: !isLocal && isSong,
+          props: {
+            onClick: () => openCopySongInfo(song.id),
+          },
+          icon: renderIcon("FormatList", { size: 18 }),
         },
         {
           key: "share",

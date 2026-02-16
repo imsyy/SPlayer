@@ -41,6 +41,7 @@ import { formatSongsList } from "@/utils/format";
 import SearchInpMenu from "@/components/Menu/SearchInpMenu.vue";
 
 const router = useRouter();
+const route = useRoute();
 const dataStore = useDataStore();
 const statusStore = useStatusStore();
 const settingStore = useSettingStore();
@@ -65,12 +66,30 @@ const searchInputToFocus = () => {
   statusStore.searchFocus = true;
 };
 
+// 根据路由更新搜索框内容
+const syncSearchInput = () => {
+  // 如果当前是搜索页，则同步搜索页的搜索词到搜索框，如果是其他页面，则清空搜索框
+  if (String(route.name).startsWith("search") && route.query.keyword) {
+    statusStore.searchInputValue = String(route.query.keyword);
+  } else {
+    statusStore.searchInputValue = "";
+  }
+};
+
 // 关闭搜索焦点（点击遮罩时）
 const closeSearchFocus = () => {
   statusStore.searchFocus = false;
-  // 如果设置开启，关闭搜索焦点时清空搜索框
-  if (settingStore.clearSearchOnBlur) {
-    statusStore.searchInputValue = "";
+
+  const mode = settingStore.searchInputBehavior;
+  switch (mode) {
+    case "clear":
+      statusStore.searchInputValue = "";
+      break;
+    case "sync":
+      syncSearchInput();
+      break;
+    default:
+      break;
   }
 };
 
@@ -110,8 +129,8 @@ const toSearch = async (key: any, type: string = "keyword") => {
   // 关闭搜索框
   statusStore.searchFocus = false;
   searchInputRef.value?.blur();
-  // 如果设置开启，搜索后清空搜索框
-  if (settingStore.clearSearchOnBlur) {
+  // 如果搜索框行为设置是清空模式，则搜索后清空搜索框
+  if (settingStore.searchInputBehavior === "clear") {
     statusStore.searchInputValue = "";
   }
   // 未输入内容且不存在推荐
@@ -177,6 +196,15 @@ const toSearch = async (key: any, type: string = "keyword") => {
 watch([() => settingStore.enableSearchKeyword, () => settingStore.useOnlineService], () => {
   updatePlaceholder();
 });
+
+// 监听路由变化，同步搜索词
+watch(
+  [() => route.fullPath, () => settingStore.searchInputBehavior],
+  () => {
+    if (settingStore.searchInputBehavior === "sync") syncSearchInput();
+  },
+  { immediate: true },
+);
 
 onMounted(() => {
   // 确保在线服务开启

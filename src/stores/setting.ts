@@ -52,6 +52,10 @@ export interface SettingState {
   taskbarLyricPosition: "automatic" | "left" | "right";
   /** 任务栏歌词自动收缩 */
   taskbarLyricAutoShrink: boolean;
+  /** 任务栏歌词边距 */
+  taskbarLyricMargin: number;
+  /** 任务栏歌词最小宽度 */
+  taskbarLyricMinWidth: number;
   /** 暂停时显示任务栏歌词 */
   taskbarLyricShowWhenPaused: boolean;
   /** 任务栏歌词动画模式 */
@@ -154,14 +158,14 @@ export interface SettingState {
   proxyPort: number;
   /** 歌曲音质 */
   songLevel:
-    | "standard"
-    | "higher"
-    | "exhigh"
-    | "lossless"
-    | "hires"
-    | "jyeffect"
-    | "sky"
-    | "jymaster";
+  | "standard"
+  | "higher"
+  | "exhigh"
+  | "lossless"
+  | "hires"
+  | "jyeffect"
+  | "sky"
+  | "jymaster";
   /** 播放设备 */
   playDevice: "default" | string;
   /** 音频引擎: element (原生) 或 ffmpeg */
@@ -413,8 +417,8 @@ export interface SettingState {
   };
   /** 启用搜索关键词获取 */
   enableSearchKeyword: boolean;
-  /** 失焦后自动清空搜索框 */
-  clearSearchOnBlur: boolean;
+  /** 搜索框行为 */
+  searchInputBehavior: "normal" | "clear" | "sync";
   /** 显示主页问好 */
   showHomeGreeting: boolean;
   /** 首页栏目顺序和显示配置 */
@@ -512,6 +516,8 @@ export const useSettingStore = defineStore("setting", {
     taskbarLyricMaxWidth: 30,
     taskbarLyricPosition: "automatic",
     taskbarLyricAutoShrink: false,
+    taskbarLyricMargin: 10,
+    taskbarLyricMinWidth: 10,
     taskbarLyricShowWhenPaused: true,
     taskbarLyricAnimationMode: "slide-blur",
     taskbarLyricSingleLineMode: false,
@@ -703,7 +709,7 @@ export const useSettingStore = defineStore("setting", {
       musicTagEditor: true,
     },
     enableSearchKeyword: true,
-    clearSearchOnBlur: false,
+    searchInputBehavior: "normal",
     showHomeGreeting: true,
     homePageSections: [
       { key: "playlist", name: "专属歌单", visible: true, order: 0 },
@@ -810,12 +816,11 @@ export const useSettingStore = defineStore("setting", {
       }
       window.$message.info(
         `已切换至
-        ${
-          this.themeMode === "auto"
-            ? "跟随系统"
-            : this.themeMode === "light"
-              ? "浅色模式"
-              : "深色模式"
+        ${this.themeMode === "auto"
+          ? "跟随系统"
+          : this.themeMode === "light"
+            ? "浅色模式"
+            : "深色模式"
         }`,
         {
           showIcon: false,

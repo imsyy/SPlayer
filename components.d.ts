@@ -25,6 +25,7 @@ declare module 'vue' {
     CommentList: typeof import('./src/components/List/CommentList.vue')['default']
     ContextMenuManager: typeof import('./src/components/Modal/Setting/ContextMenuManager.vue')['default']
     CopyLyrics: typeof import('./src/components/Modal/CopyLyrics.vue')['default']
+    CopySongInfo: typeof import('./src/components/Modal/CopySongInfo.vue')['default']
     CoverList: typeof import('./src/components/List/CoverList.vue')['default']
     CoverManager: typeof import('./src/components/Modal/Setting/CoverManager.vue')['default']
     CoverMenu: typeof import('./src/components/Menu/CoverMenu.vue')['default']

@@ -13,6 +13,7 @@ import { renderIcon, copyData } from "@/utils/helper";
 import { deleteCloudSong, importCloudSong } from "@/api/cloud";
 import {
   openCloudMatch,
+  openCopySongInfo,
   openDownloadSong,
   openPlaylistAdd,
   openSongInfoEditor,
@@ -247,6 +248,15 @@ export const useSongMenu = () => {
               onClick: () => copyData(song.id),
             },
             icon: renderIcon("Copy", { size: 18 }),
+          },
+          {
+            key: "copy-song-info",
+            label: "复制更多信息",
+            show: !isLocal && type === "song",
+            props: {
+              onClick: () => openCopySongInfo(song.id),
+            },
+            icon: renderIcon("FormatList", { size: 18 }),
           },
           {
             key: "share",

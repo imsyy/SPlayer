@@ -14,6 +14,8 @@ const getTaskbarConfig = (): TaskbarConfig => {
     maxWidth: store.get("taskbar.maxWidth", 300),
     position: store.get("taskbar.position", "automatic"),
     autoShrink: store.get("taskbar.autoShrink", false),
+    margin: store.get("taskbar.margin", 10),
+    minWidth: store.get("taskbar.minWidth", 10),
     enabled: store.get("taskbar.enabled", false),
     showWhenPaused: store.get("taskbar.showWhenPaused", true),
     showCover: store.get("taskbar.showCover", true),
@@ -80,7 +82,9 @@ const initTaskbarIpc = () => {
         if (
           newConfig.maxWidth !== oldConfig.maxWidth ||
           newConfig.position !== oldConfig.position ||
-          newConfig.autoShrink !== oldConfig.autoShrink
+          newConfig.autoShrink !== oldConfig.autoShrink ||
+          newConfig.margin !== oldConfig.margin ||
+          newConfig.minWidth !== oldConfig.minWidth
         ) {
           updateWindowLayout(true);
         }

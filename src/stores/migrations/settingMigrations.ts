@@ -6,7 +6,7 @@ import type { SettingState } from "../setting";
 /**
  * 当前设置 Schema 版本号
  */
-export const CURRENT_SETTING_SCHEMA_VERSION = 9;
+export const CURRENT_SETTING_SCHEMA_VERSION = 10;
 
 /**
  * 迁移函数类型
@@ -178,5 +178,12 @@ export const settingMigrations: Record<number, MigrationFunction> = {
       enableQQMusicLyric: preferQM,
       lyricPriority: preferQM ? "qm" : "auto",
     };
+  },
+  10: (state) => {
+    interface OldSettingState extends Partial<SettingState> {
+      clearSearchOnBlur?: boolean;
+    }
+    const oldState = state as OldSettingState;
+    return oldState.clearSearchOnBlur === true ? { searchInputBehavior: "clear" } : {};
   },
 };

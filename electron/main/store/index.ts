@@ -53,6 +53,10 @@ export interface StoreType {
     showWhenPaused?: boolean;
     /** 自动收缩 */
     autoShrink?: boolean;
+    /** 边距 */
+    margin?: number;
+    /** 最小宽度 (百分比) */
+    minWidth?: number;
   };
   /** 代理 */
   proxy: string;
@@ -113,6 +117,8 @@ export const useStore = () => {
         position: "automatic",
         showWhenPaused: true,
         autoShrink: false,
+        margin: 10,
+        minWidth: 10,
       },
       macos: {
         statusBarLyric: {

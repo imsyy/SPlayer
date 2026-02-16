@@ -325,13 +325,18 @@ export const useGeneralSettings = (): SettingConfig => {
             }),
           },
           {
-            key: "clearSearchOnBlur",
-            label: "失焦自动清空搜索框",
-            type: "switch",
-            description: "搜索框失去焦点后自动清空内容",
+            key: "searchInputBehavior",
+            label: "搜索框行为",
+            type: "select",
+            description: "自定义搜索框的行为模式",
+            options: [
+              { label: "保留搜索词", value: "normal" },
+              { label: "失焦后清空", value: "clear" },
+              { label: "同步搜索词", value: "sync" },
+            ],
             value: computed({
-              get: () => settingStore.clearSearchOnBlur,
-              set: (v) => (settingStore.clearSearchOnBlur = v),
+              get: () => settingStore.searchInputBehavior,
+              set: (v) => (settingStore.searchInputBehavior = v),
             }),
           },
           {

@@ -4,6 +4,7 @@ import { ipcMain } from "electron";
 import { useStore } from "../store";
 import { getMainTray } from "../tray";
 import mainWindow from "../windows/main-window";
+import { getCurrentSongTitle } from "./ipc-tray";
 
 let macLyricLines: LyricLine[] = [];
 let macCurrentTime = 0;
@@ -29,7 +30,7 @@ const stopInterpolation = () => {
 /**
  * 启动插值计时器
  */
-const startInterpolation = (store: ReturnType<typeof useStore>) => {
+const startInterpolation = () => {
   stopInterpolation(); // 先停止任何已存在的计时器
   macLastUpdateTime = Date.now(); // 在启动新的插值计时器时，重置 macLastUpdateTime
   interpolationTimer = setInterval(() => {
@@ -37,7 +38,7 @@ const startInterpolation = (store: ReturnType<typeof useStore>) => {
     const elapsedTime = now - macLastUpdateTime;
     macCurrentTime += elapsedTime;
     macLastUpdateTime = now;
-    updateMacStatusBarLyric(store);
+    updateMacStatusBarLyric();
   }, LYRIC_UPDATE_INTERVAL);
 };
 
@@ -65,28 +66,41 @@ const findCurrentLyricIndex = (
 
 /**
  * 更新 macOS 状态栏歌词（只在新行时才更新）
+ * @param forceUpdate 是否强制更新，即便歌词行索引未变化
  */
-const updateMacStatusBarLyric = (store: ReturnType<typeof useStore>) => {
+const updateMacStatusBarLyric = (
+  forceUpdate: boolean = false,
+) => {
+  const store = useStore();
   const tray = getMainTray();
   if (!tray) return;
 
-  const showWhenPaused = store.get("taskbar.showWhenPaused") ?? true;
-  if (!macIsPlaying && !showWhenPaused) {
-    // 如果不显示，则清空标题
-    tray.setMacStatusBarLyricTitle("");
+  // 检查 macOS 状态栏歌词功能是否启用
+  const isMacosLyricEnabled = store.get("macos.statusBarLyric.enabled") ?? false;
+  if (!isMacosLyricEnabled) {
+    // 如果功能被禁用，则确保托盘标题显示为当前歌曲名，并立即返回
+    tray.setTitle(getCurrentSongTitle());
     return;
   }
 
-  // 如果歌词为空，则清空标题并返回
+  const showWhenPaused = store.get("taskbar.showWhenPaused") ?? true;
+  if (!macIsPlaying && !showWhenPaused) {
+    // 如果当前未播放且设置不允许暂停时显示歌词，则清空标题
+    tray.setTitle("");
+    return;
+  }
+
+  // 如果歌词数据为空，则清空标题并返回
   if (macLyricLines.length === 0) {
-    tray.setMacStatusBarLyricTitle("");
+    tray.setTitle("");
     return;
   }
 
   const currentLyricIndex = findCurrentLyricIndex(macCurrentTime, macLyricLines, macOffset);
 
-  // 如果行索引没有变化，不更新
-  if (currentLyricIndex === macLastLyricIndex) return;
+  // 如果不是强制更新模式，并且歌词行索引没有变化，则跳过更新
+  // `forceUpdate` 用于在启动时或拖动进度条时，即使行索引未变，也强制更新
+  if (!forceUpdate && currentLyricIndex === macLastLyricIndex) return;
   macLastLyricIndex = currentLyricIndex;
 
   const currentLyric =
@@ -97,64 +111,68 @@ const updateMacStatusBarLyric = (store: ReturnType<typeof useStore>) => {
           .trim()
       : "";
 
-  tray.setMacStatusBarLyricTitle(currentLyric);
+  tray.setTitle(currentLyric);
 };
 
 export const initMacStatusBarIpc = () => {
   const store = useStore();
 
-  // 初始化时读取新的 macOS 专属设置
+  // 初始化时读取 macOS 专属设置
   const isMacosLyricEnabled = store.get("macos.statusBarLyric.enabled") ?? false;
   const tray = getMainTray();
-  tray?.setMacStatusBarLyricShow(isMacosLyricEnabled); // 根据新设置初始化显示状态
+  
+  // 根据初始设置状态更新托盘显示
+  // 如果禁用，设置回歌曲标题
+  if (!isMacosLyricEnabled) {
+    tray?.setTitle(getCurrentSongTitle());
+  }
 
   // 新增 macOS 专属设置切换监听
   ipcMain.on("macos-lyric:toggle", (_event, show: boolean) => {
-    store.set("macos.statusBarLyric.enabled", show); // 更新 store
+    store.set("macos.statusBarLyric.enabled", show);
     const tray = getMainTray();
+    const mainWin = mainWindow.getWin();
 
-    // 触发 "mac-toggle-statusbar-lyric" 事件，让 ipc-tray 响应
-    ipcMain.emit("mac-toggle-statusbar-lyric", null, show);
+    // 强制更新托盘菜单，以响应新的开启/关闭状态
+    tray?.initTrayMenu();
 
-    const mainWin = mainWindow.getWin(); // 获取主窗口实例
     if (mainWin && !mainWin.isDestroyed()) {
       // 发送更新给渲染进程，同步 Pinia store
       mainWin.webContents.send("setting:update-macos-lyric-enabled", show);
       if (show) {
-        mainWin.webContents.send(TASKBAR_IPC_CHANNELS.REQUEST_DATA); // 请求新数据
+        mainWin.webContents.send(TASKBAR_IPC_CHANNELS.REQUEST_DATA);
       } else {
-        tray?.setMacStatusBarLyricTitle(""); // 关闭时清空歌词
-        stopInterpolation(); // 关闭时停止计时器
+        // 关闭时，将标题恢复为歌曲名，并停止歌词插值计时器
+        tray?.setTitle(getCurrentSongTitle());
+        stopInterpolation(); 
       }
     } else if (!show) {
-      // 如果主窗口不可用且正在关闭，也清空歌词
-      tray?.setMacStatusBarLyricTitle("");
-      stopInterpolation(); // 关闭时停止计时器
+      // 如果主窗口不可用且正在关闭，也恢复标题并停止计时器
+      tray?.setTitle(getCurrentSongTitle());
+      stopInterpolation();
     }
   });
 
   ipcMain.on(TASKBAR_IPC_CHANNELS.SYNC_STATE, (_event, payload: SyncStatePayload) => {
     switch (payload.type) {
       case "lyrics-loaded": {
+        // 仅更新歌词数据，不立即更新状态栏显示
         macLyricLines = payload.data.lines;
         macLastLyricIndex = -1;
-        // 确保新歌词到达后立即更新状态栏显示
-        const mainWin = mainWindow.getWin();
-        if (mainWin && !mainWin.isDestroyed()) {
-          updateMacStatusBarLyric(useStore());
-        }
         break;
       }
 
       case "playback-state":
         macIsPlaying = payload.data.isPlaying;
-        if (!macIsPlaying) {
+        // 不在这里直接更新歌词，依赖 SYNC_TICK 来驱动
+        if (!macIsPlaying) { // 如果是暂停状态，则停止插值器并进行一次最终更新
           stopInterpolation();
-          updateMacStatusBarLyric(store);
+          updateMacStatusBarLyric();
         }
         break;
 
       case "full-hydration":
+        // 接收完整的状态，但歌词更新仍然依赖 SYNC_TICK
         if (payload.data.lyrics) {
           macLyricLines = payload.data.lyrics.lines;
           macLastLyricIndex = -1;
@@ -167,14 +185,11 @@ export const initMacStatusBarIpc = () => {
             macOffset = offset;
           }
         }
-        updateMacStatusBarLyric(store);
-        if (macIsPlaying) {
-          startInterpolation(store);
-        }
         break;
     }
   });
 
+  // macOS 状态栏歌词专用进度更新
   ipcMain.on(TASKBAR_IPC_CHANNELS.SYNC_TICK, (_, payload: SyncTickPayload) => {
     const [currentTime, _duration, offset] = payload;
 
@@ -193,10 +208,10 @@ export const initMacStatusBarIpc = () => {
       macOffset = offset;
     }
     // 收到精确进度或误差较大同步后，立即更新一次歌词显示
-    updateMacStatusBarLyric(store);
     // 如果此时是播放状态，确保插值器运行
+    updateMacStatusBarLyric(true);
     if (macIsPlaying) {
-      startInterpolation(store);
+      startInterpolation();
     }
   });
 

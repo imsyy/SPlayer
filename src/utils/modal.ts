@@ -533,6 +533,24 @@ export const openCopyLyrics = async () => {
   });
 };
 
+/** 打开歌曲详情复制弹窗 */
+export const openCopySongInfo = async (songId: number) => {
+  const { default: CopySongInfo } = await import("@/components/Modal/CopySongInfo.vue");
+  const modal = window.$modal.create({
+    preset: "card",
+    transformOrigin: "center",
+    autoFocus: false,
+    style: { width: "500px" },
+    title: "歌曲详情复制",
+    content: () => {
+      return h(CopySongInfo, {
+        songId,
+        onClose: () => modal.destroy(),
+      });
+    },
+  });
+};
+
 /** 打开 AMLL 服务器配置弹窗 */
 export const openAMLLServer = async () => {
   const { default: AMLLServer } = await import("@/components/Modal/Setting/AMLLServer.vue");
