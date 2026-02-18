@@ -1073,10 +1073,11 @@ class PlayerController {
     const musicStore = useMusicStore();
     const statusStore = useStatusStore();
 
+    const wasPersonalFm = statusStore.personalFmMode;
     // 关闭特殊模式
     if (statusStore.personalFmMode) statusStore.personalFmMode = false;
 
-    if (musicStore.playSong.id === song.id) {
+    if (!wasPersonalFm && musicStore.playSong.id === song.id) {
       await this.play();
       window.$message.success("已开始播放");
       return;
