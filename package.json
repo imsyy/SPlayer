@@ -80,7 +80,6 @@
     "pinia-plugin-persistedstate": "^4.7.1",
     "plyr": "^3.8.4",
     "sortablejs": "^1.15.7",
-    "tools": "link:native\\tools",
     "ws": "^8.19.0"
   },
   "devDependencies": {
