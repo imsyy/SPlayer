@@ -179,8 +179,6 @@ export const useStatusStore = defineStore("status", {
     playListShow: false,
     showFullPlayer: false,
     playerMetaShow: true,
-    automixFxSeq: 0,
-    automixEndedSeq: 0,
     currentTime: 0,
     duration: 0,
     progress: 0,
@@ -248,6 +246,8 @@ export const useStatusStore = defineStore("status", {
       pointB: null,
     },
     playlistMode: "online",
+    automixFxSeq: 0,
+    automixEndedSeq: 0,
   }),
   getters: {
     // 播放音量图标
