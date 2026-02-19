@@ -135,9 +135,6 @@ importers:
       sortablejs:
         specifier: ^1.15.7
         version: 1.15.7
-      tools:
-        specifier: link:native\tools
-        version: link:native/tools
       ws:
         specifier: ^8.19.0
         version: 8.19.0
