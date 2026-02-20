@@ -9,9 +9,10 @@ import { usePlayerController } from "./PlayerController";
 import {
   enableDiscordRpc,
   sendMediaMetadata,
-  sendMediaPlaybackRate,
   sendMediaPlayMode,
   sendMediaPlayState,
+  sendMediaPlaybackRate,
+  sendMediaVolume,
   sendMediaTimeline,
   updateDiscordConfig,
 } from "./PlayerIpc";
@@ -76,6 +77,11 @@ class MediaSessionManager {
       case "SetRate":
         if (event.rate != null) {
           player.setRate(event.rate);
+        }
+        break;
+      case "SetVolume":
+        if (event.volume != null) {
+          player.setVolume(event.volume);
         }
         break;
     }
@@ -325,6 +331,12 @@ class MediaSessionManager {
 
     if (this.shouldUseNativeMedia()) {
       sendMediaPlaybackRate(rate);
+    }
+  }
+
+  public updateVolume(volume: number) {
+    if (this.shouldUseNativeMedia()) {
+      sendMediaVolume(volume);
     }
   }
 

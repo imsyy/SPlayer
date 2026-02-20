@@ -236,6 +236,16 @@ export const sendMediaPlaybackRate = (rate: number) => {
 };
 
 /**
+ * @description 通过外部媒体集成模块更新媒体控件的音量
+ * @note 仅在 Electron 上有效
+ * @param volume - 音量，范围是 0.0（静音）到 1.0（最大音量）
+ * @see {@link EmiModule.updateVolume 外部媒体集成模块的 `updateVolume` 方法}
+ */
+export const sendMediaVolume = (volume: number) => {
+  if (isElectron) window.electron.ipcRenderer.send("media-update-volume", { volume });
+};
+
+/**
  * @description 通过外部媒体集成模块更新媒体控件和 Discord RPC 的播放状态
  * @note 仅在 Electron 上有效
  * @param currentTime - 当前的播放进度，单位是毫秒

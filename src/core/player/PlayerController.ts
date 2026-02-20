@@ -2266,6 +2266,9 @@ class PlayerController {
 
     // 统一调用 audioManager
     audioManager.setVolume(statusStore.playVolume);
+
+    // 更新系统集成音量
+    mediaSessionManager.updateVolume(statusStore.playVolume);
   }
 
   /** 切换静音 */

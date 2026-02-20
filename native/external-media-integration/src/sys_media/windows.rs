@@ -427,6 +427,10 @@ impl SystemMediaControls for WindowsImpl {
         });
     }
 
+    fn update_volume(&self, _volume: f64) {
+        // 未实现
+    }
+
     fn update_timeline(&self, payload: TimelinePayload) {
         // trace!(current_time, total_time, "正在更新 SMTC 时间线");
 

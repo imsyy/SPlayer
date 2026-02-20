@@ -48,6 +48,9 @@ pub trait SystemMediaControls: Send + Sync {
 
     /// 更新播放速率
     fn update_playback_rate(&self, rate: f64);
+    
+    /// 更新音量
+    fn update_volume(&self, volume: f64);
 
     /// 更新进度条/时间轴
     ///
@@ -116,6 +119,7 @@ impl SystemMediaControls for NoOpControls {
     fn update_metadata(&self, _: MetadataPayload) {}
     fn update_playback_status(&self, _: PlayStatePayload) {}
     fn update_playback_rate(&self, _: f64) {}
+    fn update_volume(&self, _: f64) {}
     fn update_timeline(&self, _: TimelinePayload) {}
     fn update_play_mode(&self, _: PlayModePayload) {}
 }

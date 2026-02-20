@@ -14,6 +14,7 @@ pub enum SystemMediaEventType {
     ToggleShuffle,
     ToggleRepeat,
     SetRate,
+    SetVolume,
     /// 绝对位置，毫秒
     Seek,
 }
@@ -24,6 +25,7 @@ pub struct SystemMediaEvent {
     pub type_: SystemMediaEventType,
     pub position_ms: Option<f64>,
     pub rate: Option<f64>,
+    pub volume: Option<f64>,
 }
 
 impl SystemMediaEvent {
@@ -32,6 +34,7 @@ impl SystemMediaEvent {
             type_: t,
             position_ms: None,
             rate: None,
+            volume: None,
         }
     }
     pub const fn seek(pos: f64) -> Self {
@@ -39,6 +42,7 @@ impl SystemMediaEvent {
             type_: SystemMediaEventType::Seek,
             position_ms: Some(pos),
             rate: None,
+            volume: None,
         }
     }
     pub const fn set_rate(rate: f64) -> Self {
@@ -46,6 +50,15 @@ impl SystemMediaEvent {
             type_: SystemMediaEventType::SetRate,
             position_ms: None,
             rate: Some(rate),
+            volume: None,
+        }
+    }
+    pub const fn set_volume(volume: f64) -> Self {
+        Self {
+            type_: SystemMediaEventType::SetVolume,
+            position_ms: None,
+            rate: None,
+            volume: Some(volume),
         }
     }
 }
