@@ -21,6 +21,15 @@ export interface AudioErrorDetail {
   message?: string;
 }
 
+export interface AutomationPoint {
+  timeOffset: number;
+  volume: number;
+  lowCut: number;
+  highCut: number;
+}
+
+export type FadeCurve = "linear" | "exponential" | "equalPower";
+
 /**
  * 播放选项
  */
@@ -31,6 +40,8 @@ export interface PlayOptions {
   fadeIn?: boolean;
   /** 渐入时长（秒） */
   fadeDuration?: number;
+  /** 淡入曲线类型 */
+  fadeCurve?: FadeCurve;
   /** 初始播放位置（秒） */
   seek?: number;
 }
@@ -43,6 +54,10 @@ export interface PauseOptions {
   fadeOut?: boolean;
   /** 渐出时长（秒） */
   fadeDuration?: number;
+  /** 淡出曲线类型 */
+  fadeCurve?: FadeCurve;
+  /** 是否保持 Context 运行（用于 Crossfade） */
+  keepContextRunning?: boolean;
 }
 
 /**
@@ -102,6 +117,8 @@ export interface IPlaybackEngine {
    */
   setVolume(value: number): void;
 
+  rampVolumeTo?(value: number, duration: number, curve?: FadeCurve): void;
+
   /**
    * 获取当前音量
    * @returns 音量值 (0.0 - 1.0)
@@ -138,6 +155,36 @@ export interface IPlaybackEngine {
   getFilterGains?(): number[];
 
   /**
+   * 设置高通滤波器频率
+   * @param frequency 截止频率 (Hz)
+   * @param rampTime 渐变时间 (s)
+   */
+  setHighPassFilter?(frequency: number, rampTime?: number): void;
+
+  setHighPassQ?(q: number): void;
+
+  setHighPassFilterAt?(frequency: number, when: number): void;
+
+  rampHighPassFilterToAt?(frequency: number, when: number): void;
+
+  setHighPassQAt?(q: number, when: number): void;
+
+  /**
+   * 设置低通滤波器频率
+   * @param frequency 截止频率 (Hz)
+   * @param rampTime 渐变时间 (s)
+   */
+  setLowPassFilter?(frequency: number, rampTime?: number): void;
+
+  setLowPassQ?(q: number): void;
+
+  setLowPassFilterAt?(frequency: number, when: number): void;
+
+  rampLowPassFilterToAt?(frequency: number, when: number): void;
+
+  setLowPassQAt?(q: number, when: number): void;
+
+  /**
    * 获取频谱数据
    */
   getFrequencyData?(): Uint8Array;
@@ -152,6 +199,12 @@ export interface IPlaybackEngine {
    * @param gain 线性增益值 (1.0 为原始音量)
    */
   setReplayGain?(gain: number): void;
+
+  /**
+   * 设置音高偏移
+   * @param semitones 半音偏移量
+   */
+  setPitchShift?(semitones: number): void;
 
   /**
    * 获取最后一次错误码

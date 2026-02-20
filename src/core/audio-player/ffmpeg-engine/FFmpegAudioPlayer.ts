@@ -157,6 +157,9 @@ export class FFmpegAudioPlayer extends BaseAudioPlayer {
     this.dispatch("loadstart");
 
     this.init();
+    if (this.audioCtx && this.audioCtx.state === "running") {
+      await this.audioCtx.suspend().catch(() => undefined);
+    }
 
     try {
       if (this.worker) {
@@ -185,6 +188,10 @@ export class FFmpegAudioPlayer extends BaseAudioPlayer {
           type: "INIT",
           file: file,
           chunkSize: 4096 * 8,
+        });
+        this.isWorkerPaused = true;
+        await this.requestWorker({ type: "PAUSE" }).catch(() => {
+          this.isWorkerPaused = false;
         });
       } else {
         await this.loadSrc(url as string);
@@ -233,6 +240,10 @@ export class FFmpegAudioPlayer extends BaseAudioPlayer {
 
       this.runFetchLoop(url, 0, this.fileSize);
       await initWorkerPromise;
+      this.isWorkerPaused = true;
+      await this.requestWorker({ type: "PAUSE" }).catch(() => {
+        this.isWorkerPaused = false;
+      });
     } catch (e) {
       const err = toError(e);
       console.error("[Player] LoadSrc error:", err);

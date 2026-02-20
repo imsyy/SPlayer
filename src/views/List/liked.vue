@@ -46,7 +46,7 @@ import { SongType } from "@/types/main";
 import { songDetail } from "@/api/song";
 import { playlistDetail, playlistAllSongs } from "@/api/playlist";
 import { formatCoverList, formatSongsList } from "@/utils/format";
-import { renderIcon, copyData } from "@/utils/helper";
+import { renderIcon, copyData, getShareUrl } from "@/utils/helper";
 import { isObject } from "lodash-es";
 import { useDataStore } from "@/stores";
 import { openBatchList, openUpdatePlaylist } from "@/utils/modal";
@@ -146,7 +146,7 @@ const moreOptions = computed<DropdownOption[]>(() => [
     props: {
       onClick: () =>
         copyData(
-          `https://music.163.com/#/playlist?id=${playlistId.value}`,
+          getShareUrl("playlist", playlistId.value),
           "已复制分享链接到剪贴板",
         ),
     },

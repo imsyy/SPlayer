@@ -241,7 +241,7 @@ import { useDataStore, useMusicStore, useSettingStore, useStatusStore } from "@/
 import { toLikeSong } from "@/utils/auth";
 import { useTimeFormat } from "@/composables/useTimeFormat";
 import { useSwipe } from "@vueuse/core";
-import { copyData, coverLoaded, renderIcon } from "@/utils/helper";
+import { copyData, coverLoaded, renderIcon, getShareUrl } from "@/utils/helper";
 import {
   openAutoClose,
   openChangeRate,
@@ -327,7 +327,7 @@ const songMoreOptions = computed<DropdownOption[]>(() => {
           props: {
             onClick: () =>
               copyData(
-                `https://music.163.com/#/${song.type}?id=${song.id}`,
+                getShareUrl(song.type, song.id),
                 "已复制分享链接到剪切板",
               ),
           },

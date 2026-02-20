@@ -266,9 +266,8 @@ class TaskbarLyricWindow {
         ? Math.min(maxWidthSetting, this.contentWidth) * scaleFactor
         : maxWidthSetting * scaleFactor;
       const minWidthPercent = Math.min(Math.max(store.get("taskbar.minWidth", 10), 0), 50);
-      const MIN_WIDTH_PHYSICAL = Math.round(
-        (primaryDisplay.workAreaSize.width * minWidthPercent) / 100,
-      ) * scaleFactor;
+      const MIN_WIDTH_PHYSICAL =
+        Math.round((primaryDisplay.workAreaSize.width * minWidthPercent) / 100) * scaleFactor;
 
       let targetBounds: Electron.Rectangle = {
         x: 0,

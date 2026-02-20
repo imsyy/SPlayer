@@ -68,6 +68,8 @@ export interface SettingState {
   taskbarLyricFontWeight: number;
   /** 是否使用在线服务 */
   useOnlineService: boolean;
+  /** 分享链接格式 */
+  shareUrlFormat: "web" | "mobile";
   /** 启动时检查更新 */
   checkUpdateOnStart: boolean;
   /** 隐藏 VIP 标签 */
@@ -158,14 +160,14 @@ export interface SettingState {
   proxyPort: number;
   /** 歌曲音质 */
   songLevel:
-  | "standard"
-  | "higher"
-  | "exhigh"
-  | "lossless"
-  | "hires"
-  | "jyeffect"
-  | "sky"
-  | "jymaster";
+    | "standard"
+    | "higher"
+    | "exhigh"
+    | "lossless"
+    | "hires"
+    | "jyeffect"
+    | "sky"
+    | "jymaster";
   /** 播放设备 */
   playDevice: "default" | string;
   /** 音频引擎: element (原生) 或 ffmpeg */
@@ -473,6 +475,10 @@ export interface SettingState {
   disableAiAudio: boolean;
   /** Fuck DJ: 开启后自动跳过 DJ 歌曲 */
   disableDjMode: boolean;
+  /** 启用自动混音 */
+  enableAutomix: boolean;
+  /** 自动混音最大分析时间 (秒) */
+  automixMaxAnalyzeTime: number;
   /** 启用全局错误弹窗 */
   enableGlobalErrorDialog: boolean;
   /** macOS 专属设置 */
@@ -509,6 +515,7 @@ export const useSettingStore = defineStore("setting", {
     routeAnimation: "slide",
     playerExpandAnimation: "up",
     useOnlineService: true,
+    shareUrlFormat: "web",
     showCloseAppTip: true,
     closeAppMethod: "hide",
     showTaskbarProgress: false,
@@ -747,6 +754,8 @@ export const useSettingStore = defineStore("setting", {
     streamingEnabled: false,
     disableAiAudio: false,
     disableDjMode: false,
+    enableAutomix: false,
+    automixMaxAnalyzeTime: 60,
     enableGlobalErrorDialog: true,
     macos: {
       statusBarLyric: {
@@ -816,11 +825,12 @@ export const useSettingStore = defineStore("setting", {
       }
       window.$message.info(
         `已切换至
-        ${this.themeMode === "auto"
-          ? "跟随系统"
-          : this.themeMode === "light"
-            ? "浅色模式"
-            : "深色模式"
+        ${
+          this.themeMode === "auto"
+            ? "跟随系统"
+            : this.themeMode === "light"
+              ? "浅色模式"
+              : "深色模式"
         }`,
         {
           showIcon: false,

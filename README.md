@@ -7,11 +7,12 @@
 
 <br />
 
-![Stars](https://img.shields.io/github/stars/imsyy/SPlayer?style=flat)
-![Version](https://img.shields.io/github/v/release/imsyy/SPlayer)
+[![Stars](https://img.shields.io/github/stars/imsyy/SPlayer?style=flat)](https://github.com/imsyy/SPlayer/stargazers)
+[![Version](https://img.shields.io/github/v/release/imsyy/SPlayer)](https://github.com/imsyy/SPlayer/releases)
 [![Build Release](https://github.com/imsyy/SPlayer/actions/workflows/release.yml/badge.svg)](https://github.com/imsyy/SPlayer/actions/workflows/release.yml)
-![License](https://img.shields.io/github/license/imsyy/SPlayer)
-![Issues](https://img.shields.io/github/issues/imsyy/SPlayer)
+[![License](https://img.shields.io/github/license/imsyy/SPlayer)](https://github.com/imsyy/SPlayer/blob/dev/LICENSE)
+[![Issues](https://img.shields.io/github/issues/imsyy/SPlayer)](https://github.com/imsyy/SPlayer/issues)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/imsyy/SPlayer)
 
 </div>
 

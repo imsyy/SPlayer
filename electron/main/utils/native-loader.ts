@@ -16,6 +16,9 @@ export function loadNativeModule(fileName: string, devDirName: string) {
   if (app.isPackaged) {
     nativeModulePath = path.join(process.resourcesPath, "native", fileName);
   } else {
+    // 适配 tools 模块的路径结构 (native/tools/tools.node)
+    // 其他模块可能是 (native/xxx/xxx.node) 或者 (native/xxx/index.node)
+    // 这里简单约定 devDirName 就是 native 下的一级目录名
     nativeModulePath = path.join(process.cwd(), "native", devDirName, fileName);
   }
 

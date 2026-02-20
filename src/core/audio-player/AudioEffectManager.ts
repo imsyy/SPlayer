@@ -10,6 +10,11 @@ export class AudioEffectManager {
   /** 均衡器节点数组 */
   private filters: BiquadFilterNode[] = [];
 
+  /** AutoMIX 专用滤波器：高通 (用于切入时过滤低频) */
+  private highPassFilter: BiquadFilterNode | null = null;
+  /** AutoMIX 专用滤波器：低通 (用于切出时过滤低频) */
+  private lowPassFilter: BiquadFilterNode | null = null;
+
   /** 平滑后的低频音量 */
   private smoothedLowFreqVolume: number = 0;
 
@@ -38,16 +43,37 @@ export class AudioEffectManager {
       filter.gain.value = 0; // 默认平坦
       return filter;
     });
+
+    // 创建 AutoMIX 滤波器
+    this.highPassFilter = this.audioCtx.createBiquadFilter();
+    this.highPassFilter.type = "highpass";
+    this.highPassFilter.frequency.value = 0; // 默认关闭 (直通)
+    this.highPassFilter.Q.value = 0.707;
+
+    this.lowPassFilter = this.audioCtx.createBiquadFilter();
+    this.lowPassFilter.type = "lowpass";
+    this.lowPassFilter.frequency.value = 22000; // 默认关闭 (直通)
+    this.lowPassFilter.Q.value = 0.707;
   }
 
   /**
    * 将效果链连接到音频管线中
-   * 链路: Input -> Filter[0] -> ... -> Filter[9] -> Analyser -> Output(Return)
+   * 链路: Input -> HighPass -> LowPass -> Filter[0]... -> Analyser -> Output
    * @param inputNode 输入音频节点 (通常是 SourceNode)
    * @returns 链条的最后一个节点 (AnalyserNode)，供调用者连接到 GainNode 或 Destination
    */
   public connect(inputNode: AudioNode): AudioNode {
     let currentNode = inputNode;
+
+    // 连接 AutoMIX 滤波器
+    if (this.highPassFilter) {
+      currentNode.connect(this.highPassFilter);
+      currentNode = this.highPassFilter;
+    }
+    if (this.lowPassFilter) {
+      currentNode.connect(this.lowPassFilter);
+      currentNode = this.lowPassFilter;
+    }
 
     // 串联所有滤波器
     for (const filter of this.filters) {
@@ -65,6 +91,101 @@ export class AudioEffectManager {
   }
 
   /**
+   * 设置高通滤波器频率
+   * @param frequency 截止频率 (Hz)
+   * @param rampTime 渐变时间 (s)
+   */
+  public setHighPassFilter(frequency: number, rampTime: number = 0) {
+    if (!this.highPassFilter) return;
+    const currentTime = this.audioCtx.currentTime;
+    this.highPassFilter.frequency.cancelScheduledValues(currentTime);
+
+    if (frequency <= 0) {
+      this.highPassFilter.type = "allpass";
+      this.highPassFilter.frequency.setValueAtTime(10, currentTime);
+      return;
+    }
+
+    this.highPassFilter.type = "highpass";
+    const targetFreq = Math.max(10, Math.min(22000, frequency));
+
+    if (rampTime > 0) {
+      this.highPassFilter.frequency.exponentialRampToValueAtTime(
+        targetFreq,
+        currentTime + rampTime,
+      );
+    } else {
+      this.highPassFilter.frequency.setValueAtTime(targetFreq, currentTime);
+    }
+  }
+
+  public setHighPassFilterAt(frequency: number, when: number) {
+    if (!this.highPassFilter) return;
+    const time = Math.max(when, this.audioCtx.currentTime);
+    const targetFreq = frequency <= 0 ? 10 : Math.max(10, Math.min(22000, frequency));
+
+    this.highPassFilter.type = "highpass";
+    this.highPassFilter.frequency.cancelScheduledValues(time);
+    this.highPassFilter.frequency.setValueAtTime(targetFreq, time);
+  }
+
+  public rampHighPassFilterToAt(frequency: number, when: number) {
+    if (!this.highPassFilter) return;
+    const time = Math.max(when, this.audioCtx.currentTime);
+    const targetFreq = frequency <= 0 ? 10 : Math.max(10, Math.min(22000, frequency));
+
+    this.highPassFilter.type = "highpass";
+    this.highPassFilter.frequency.exponentialRampToValueAtTime(targetFreq, time);
+  }
+
+  /**
+   * 设置低通滤波器频率
+   * @param frequency 截止频率 (Hz)
+   * @param rampTime 渐变时间 (s)
+   */
+  public setLowPassFilter(frequency: number, rampTime: number = 0) {
+    if (!this.lowPassFilter) return;
+    const currentTime = this.audioCtx.currentTime;
+    this.lowPassFilter.frequency.cancelScheduledValues(currentTime);
+
+    if (frequency <= 0 || frequency >= 22000) {
+      this.lowPassFilter.type = "allpass";
+      this.lowPassFilter.frequency.setValueAtTime(22000, currentTime);
+      return;
+    }
+
+    this.lowPassFilter.type = "lowpass";
+    const targetFreq = Math.max(10, Math.min(22000, frequency));
+
+    if (rampTime > 0) {
+      this.lowPassFilter.frequency.exponentialRampToValueAtTime(targetFreq, currentTime + rampTime);
+    } else {
+      this.lowPassFilter.frequency.setValueAtTime(targetFreq, currentTime);
+    }
+  }
+
+  public setLowPassFilterAt(frequency: number, when: number) {
+    if (!this.lowPassFilter) return;
+    const time = Math.max(when, this.audioCtx.currentTime);
+    const targetFreq =
+      frequency <= 0 || frequency >= 22000 ? 22000 : Math.max(10, Math.min(22000, frequency));
+
+    this.lowPassFilter.type = "lowpass";
+    this.lowPassFilter.frequency.cancelScheduledValues(time);
+    this.lowPassFilter.frequency.setValueAtTime(targetFreq, time);
+  }
+
+  public rampLowPassFilterToAt(frequency: number, when: number) {
+    if (!this.lowPassFilter) return;
+    const time = Math.max(when, this.audioCtx.currentTime);
+    const targetFreq =
+      frequency <= 0 || frequency >= 22000 ? 22000 : Math.max(10, Math.min(22000, frequency));
+
+    this.lowPassFilter.type = "lowpass";
+    this.lowPassFilter.frequency.exponentialRampToValueAtTime(targetFreq, time);
+  }
+
+  /**
    * 设置均衡器增益
    * @param index 频段索引 (0-9)
    * @param value 增益值 (-40 ~ 40)
@@ -73,6 +194,38 @@ export class AudioEffectManager {
     if (this.filters[index]) {
       this.filters[index].gain.value = value;
     }
+  }
+
+  public setHighPassQ(q: number) {
+    if (!this.highPassFilter) return;
+    const safeQ = Math.max(0.1, Math.min(10, q));
+    const currentTime = this.audioCtx.currentTime;
+    this.highPassFilter.Q.cancelScheduledValues(currentTime);
+    this.highPassFilter.Q.setValueAtTime(safeQ, currentTime);
+  }
+
+  public setHighPassQAt(q: number, when: number) {
+    if (!this.highPassFilter) return;
+    const time = Math.max(when, this.audioCtx.currentTime);
+    const safeQ = Math.max(0.1, Math.min(10, q));
+    this.highPassFilter.Q.cancelScheduledValues(time);
+    this.highPassFilter.Q.setValueAtTime(safeQ, time);
+  }
+
+  public setLowPassQ(q: number) {
+    if (!this.lowPassFilter) return;
+    const safeQ = Math.max(0.1, Math.min(10, q));
+    const currentTime = this.audioCtx.currentTime;
+    this.lowPassFilter.Q.cancelScheduledValues(currentTime);
+    this.lowPassFilter.Q.setValueAtTime(safeQ, currentTime);
+  }
+
+  public setLowPassQAt(q: number, when: number) {
+    if (!this.lowPassFilter) return;
+    const time = Math.max(when, this.audioCtx.currentTime);
+    const safeQ = Math.max(0.1, Math.min(10, q));
+    this.lowPassFilter.Q.cancelScheduledValues(time);
+    this.lowPassFilter.Q.setValueAtTime(safeQ, time);
   }
 
   /**
@@ -132,6 +285,8 @@ export class AudioEffectManager {
    */
   public disconnect() {
     this.filters.forEach((f) => f.disconnect());
+    this.highPassFilter?.disconnect();
+    this.lowPassFilter?.disconnect();
     this.analyserNode?.disconnect();
   }
 }

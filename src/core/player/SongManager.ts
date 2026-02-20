@@ -46,6 +46,55 @@ class SongManager {
   /** 预载下一首歌曲播放信息 */
   private nextPrefetch: AudioSource | undefined;
 
+  public peekPrefetch(id: number): AudioSource | undefined {
+    if (!this.nextPrefetch) return;
+    if (this.nextPrefetch.id !== id) return;
+    return this.nextPrefetch;
+  }
+
+  public async getMusicCachePath(
+    id: number | string,
+    quality?: QualityType | string,
+  ): Promise<string | null> {
+    const settingStore = useSettingStore();
+    if (!isElectron || !settingStore.cacheEnabled || !settingStore.songCacheEnabled) return null;
+    try {
+      return await window.electron.ipcRenderer.invoke("music-cache-check", id, quality);
+    } catch {
+      return null;
+    }
+  }
+
+  public async ensureMusicCachePath(
+    id: number | string,
+    url: string | undefined,
+    quality?: QualityType | string,
+  ): Promise<string | null> {
+    const existing = await this.getMusicCachePath(id, quality);
+    if (existing) return existing;
+    if (!url) return null;
+
+    const settingStore = useSettingStore();
+    if (!isElectron || !settingStore.cacheEnabled || !settingStore.songCacheEnabled) return null;
+    try {
+      const result: unknown = await window.electron.ipcRenderer.invoke(
+        "music-cache-download",
+        id,
+        url,
+        quality || "standard",
+      );
+      if (result && typeof result === "object") {
+        const record = result as Record<string, unknown>;
+        if (record.success === true && typeof record.path === "string") {
+          return record.path;
+        }
+      }
+    } catch {
+      return null;
+    }
+    return await this.getMusicCachePath(id);
+  }
+
   /**
    * 预加载封面图片
    * @param song 歌曲信息
@@ -274,8 +323,16 @@ class SongManager {
       // 预加载歌词
       lyricManager.prefetchLyric(nextSong);
 
-      // 本地歌曲跳过
-      if (nextSong.path) return;
+      // 本地歌曲
+      if (nextSong.path) {
+        // 预分析音频 (Automix)
+        if (isElectron && settingStore.enableAutomix) {
+          window.electron.ipcRenderer.invoke("analyze-audio-head", nextSong.path).catch((e) => {
+            console.warn("[Prefetch] Analysis failed:", e);
+          });
+        }
+        return;
+      }
 
       // 流媒体歌曲
       if (nextSong.type === "streaming" && nextSong.streamUrl) {

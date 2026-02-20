@@ -12,6 +12,14 @@ interface ColumnDef {
   default?: string | number | null;
 }
 
+/** 分析结果表定义 */
+const ANALYSIS_SCHEMA: Record<string, ColumnDef> = {
+  path: { type: "TEXT", constraints: "PRIMARY KEY" },
+  data: { type: "TEXT", constraints: "NOT NULL" }, // JSON string of AudioAnalysis
+  mtime: { type: "REAL" },
+  size: { type: "INTEGER" },
+};
+
 /** 声明式表结构定义 */
 const TRACKS_SCHEMA: Record<string, ColumnDef> = {
   id: { type: "TEXT", constraints: "PRIMARY KEY" },
@@ -93,8 +101,17 @@ export class LocalMusicDB {
         })
         .join(", ");
 
+      const analysisColumnsSQL = Object.entries(ANALYSIS_SCHEMA)
+        .map(([name, def]) => {
+          const parts = [name, def.type];
+          if (def.constraints) parts.push(def.constraints);
+          return parts.join(" ");
+        })
+        .join(", ");
+
       this.db.exec(`
         CREATE TABLE IF NOT EXISTS tracks (${columnsSQL});
+        CREATE TABLE IF NOT EXISTS audio_analysis (${analysisColumnsSQL});
         CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);
       `);
 
@@ -105,6 +122,24 @@ export class LocalMusicDB {
       console.error("Failed to initialize SQLite DB:", e);
       throw e;
     }
+  }
+
+  /** 获取音频分析结果 */
+  public getAnalysis(path: string): { data: string; mtime: number; size: number } | undefined {
+    if (!this.db) return undefined;
+    return this.db.prepare("SELECT * FROM audio_analysis WHERE path = ?").get(path) as
+      | { data: string; mtime: number; size: number }
+      | undefined;
+  }
+
+  /** 保存音频分析结果 */
+  public saveAnalysis(path: string, data: string, mtime: number, size: number) {
+    if (!this.db) return;
+    this.db
+      .prepare(
+        "INSERT OR REPLACE INTO audio_analysis (path, data, mtime, size) VALUES (?, ?, ?, ?)",
+      )
+      .run(path, data, mtime, size);
   }
 
   /** 自动同步表结构 - 检测并添加缺失的列 */

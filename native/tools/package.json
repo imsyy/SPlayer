@@ -2,6 +2,7 @@
   "name": "tools",
   "version": "0.1.0",
   "main": "tools.node",
+  "types": "index.d.ts",
   "napi": {
     "binaryName": "tools"
   },

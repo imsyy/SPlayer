@@ -161,7 +161,12 @@ export const formatFileSize = (bytes: number): string => {
  */
 export const copyData = async (text: any, message?: string) => {
   if (!text) return;
-  const content = typeof text === "string" ? text.trim() : JSON.stringify(text, null, 2);
+  const content =
+    typeof text === "string"
+      ? text.trim()
+      : Array.isArray(text)
+        ? text.join("\n")
+        : JSON.stringify(text, null, 2);
   if (navigator.clipboard && window.isSecureContext) {
     try {
       await navigator.clipboard.writeText(content);
@@ -469,4 +474,21 @@ export const handleSongQuality = (
     }
   }
   return undefined;
+};
+
+/**
+ * 获取分享链接
+ * @param type 资源类型 (song, playlist, album, artist, mv, etc.)
+ * @param id 资源 ID
+ * @returns 分享链接
+ */
+export const getShareUrl = (type: string, id: number | string): string => {
+  const settingStore = useSettingStore();
+  const { shareUrlFormat } = settingStore;
+
+  if (shareUrlFormat === "mobile") {
+    return `https://y.music.163.com/m/${type}?id=${id}`;
+  }
+
+  return `https://music.163.com/#/${type}?id=${id}`;
 };

@@ -87,7 +87,7 @@ import {
   updatePlaylistPrivacy,
 } from "@/api/playlist";
 import { formatCoverList, formatSongsList } from "@/utils/format";
-import { renderIcon, copyData } from "@/utils/helper";
+import { renderIcon, copyData, getShareUrl } from "@/utils/helper";
 import { isLogin, toLikePlaylist, updateUserLikePlaylist } from "@/utils/auth";
 import { useDataStore, useLocalStore } from "@/stores";
 import { openBatchList, openUpdatePlaylist } from "@/utils/modal";
@@ -229,7 +229,7 @@ const moreOptions = computed<DropdownOption[]>(() => [
     props: {
       onClick: () =>
         copyData(
-          `https://music.163.com/#/playlist?id=${playlistId.value}`,
+          getShareUrl("playlist", playlistId.value),
           "已复制分享链接到剪贴板",
         ),
     },

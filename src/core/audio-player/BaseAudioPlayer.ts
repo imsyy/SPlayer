@@ -1,6 +1,7 @@
 import { TypedEventTarget } from "@/utils/TypedEventTarget";
 import { AudioEffectManager } from "./AudioEffectManager";
-import type { EngineCapabilities, IPlaybackEngine } from "./IPlaybackEngine";
+import type { EngineCapabilities, IPlaybackEngine, FadeCurve } from "./IPlaybackEngine";
+import { getSharedAudioContext, getSharedMasterInput } from "./SharedAudioContext";
 
 /** 扩充 AudioContext 接口以支持 setSinkId (实验性 API) */
 export interface IExtendedAudioContext extends AudioContext {
@@ -74,6 +75,8 @@ export abstract class BaseAudioPlayer
   protected isInitialized = false;
   /** 目标音量 (0-1) */
   protected volume: number = 1;
+  /** ReplayGain 增益 (1.0 = 0dB) */
+  protected replayGain: number = 1.0;
   /** 存储淡出暂停的定时器 ID */
   private fadeTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -92,11 +95,12 @@ export abstract class BaseAudioPlayer
     if (this.isInitialized) return;
 
     try {
-      this.audioCtx = new AudioContext() as IExtendedAudioContext;
+      this.audioCtx = getSharedAudioContext();
 
-      if (this.audioCtx.state === "running") {
-        this.audioCtx.suspend().catch(console.warn);
-      }
+      // 在共享 Context 环境下，初始化不应挂起上下文
+      // if (this.audioCtx.state === "running") {
+      //   this.audioCtx.suspend().catch(console.warn);
+      // }
 
       this.inputNode = this.audioCtx.createGain();
       this.inputNode.gain.value = 1; // 直通
@@ -109,7 +113,7 @@ export abstract class BaseAudioPlayer
       // AudioEffectManager.connect 接受输入节点，内部串联后返回输出节点
       const processedNode = this.effectManager.connect(this.inputNode);
       processedNode.connect(this.gainNode);
-      this.gainNode.connect(this.audioCtx.destination);
+      this.gainNode.connect(getSharedMasterInput());
 
       // 应用初始音量
       this.gainNode.gain.value = this.volume;
@@ -128,12 +132,23 @@ export abstract class BaseAudioPlayer
    */
   public destroy(): void {
     if (this.audioCtx) {
-      this.audioCtx.close().catch(console.warn);
+      // 共享 Context，不要关闭
+      // this.audioCtx.close().catch(console.warn);
       this.audioCtx = null;
     }
-    this.gainNode = null;
-    this.inputNode = null;
-    this.effectManager = null;
+    // 断开节点连接
+    if (this.gainNode) {
+      this.gainNode.disconnect();
+      this.gainNode = null;
+    }
+    if (this.inputNode) {
+      this.inputNode.disconnect();
+      this.inputNode = null;
+    }
+    if (this.effectManager) {
+      this.effectManager.disconnect();
+      this.effectManager = null;
+    }
     this.isInitialized = false;
   }
 
@@ -150,7 +165,13 @@ export abstract class BaseAudioPlayer
    */
   public async play(
     url?: string,
-    options: { fadeIn?: boolean; fadeDuration?: number; autoPlay?: boolean; seek?: number } = {},
+    options: {
+      fadeIn?: boolean;
+      fadeDuration?: number;
+      fadeCurve?: FadeCurve;
+      autoPlay?: boolean;
+      seek?: number;
+    } = {},
   ) {
     this.cancelPendingPause();
     const shouldPlay = options.autoPlay ?? true;
@@ -173,7 +194,13 @@ export abstract class BaseAudioPlayer
     }
 
     const duration = options.fadeIn ? (options.fadeDuration ?? 0.5) : 0;
-    this.applyFadeTo(this.volume, duration);
+
+    // 修复：如果是渐入，强制从 0 开始
+    if (duration > 0 && this.gainNode && this.audioCtx) {
+      this.gainNode.gain.setValueAtTime(0, this.audioCtx.currentTime);
+    }
+
+    this.applyFadeTo(this.volume * this.replayGain, duration, options.fadeCurve);
 
     try {
       await this.doPlay();
@@ -183,11 +210,22 @@ export abstract class BaseAudioPlayer
     }
   }
 
-  public async resume(options?: { fadeIn?: boolean; fadeDuration?: number }): Promise<void> {
+  public async resume(options?: {
+    fadeIn?: boolean;
+    fadeDuration?: number;
+    fadeCurve?: FadeCurve;
+  }): Promise<void> {
     await this.play(undefined, options);
   }
 
-  public async pause(options: { fadeOut?: boolean; fadeDuration?: number } = {}) {
+  public async pause(
+    options: {
+      fadeOut?: boolean;
+      fadeDuration?: number;
+      fadeCurve?: FadeCurve;
+      keepContextRunning?: boolean;
+    } = {},
+  ) {
     this.cancelPendingPause();
 
     const duration = options.fadeOut ? (options.fadeDuration ?? 0.5) : 0;
@@ -195,7 +233,7 @@ export abstract class BaseAudioPlayer
     const performPause = async () => {
       await this.doPause();
 
-      if (this.audioCtx && this.audioCtx.state === "running") {
+      if (this.audioCtx && this.audioCtx.state === "running" && !options.keepContextRunning) {
         try {
           await this.audioCtx.suspend();
         } catch (e) {
@@ -207,7 +245,7 @@ export abstract class BaseAudioPlayer
     };
 
     if (duration > 0) {
-      this.applyFadeTo(0, duration);
+      this.applyFadeTo(0, duration, options.fadeCurve);
 
       this.fadeTimer = setTimeout(() => {
         performPause();
@@ -237,9 +275,9 @@ export abstract class BaseAudioPlayer
     await this.doSeek(time);
 
     if (!immediate) {
-      this.applyFadeTo(this.volume, SEEK_FADE_TIME);
+      this.applyFadeTo(this.volume * this.replayGain, SEEK_FADE_TIME);
     } else {
-      this.applyFadeTo(this.volume, 0);
+      this.applyFadeTo(this.volume * this.replayGain, 0);
     }
   }
 
@@ -270,7 +308,21 @@ export abstract class BaseAudioPlayer
    */
   public setVolume(value: number) {
     this.volume = Math.max(0, Math.min(1, value));
-    this.applyFadeTo(this.volume, 0);
+    this.applyFadeTo(this.volume * this.replayGain, 0);
+  }
+
+  public rampVolumeTo(value: number, duration: number, curve?: FadeCurve) {
+    this.volume = Math.max(0, Math.min(1, value));
+    this.applyFadeTo(this.volume * this.replayGain, duration, curve);
+  }
+
+  /**
+   * 设置 ReplayGain 增益
+   * @param gain 线性增益值
+   */
+  public setReplayGain(gain: number) {
+    this.replayGain = gain;
+    this.applyFadeTo(this.volume * this.replayGain, 0.1);
   }
 
   /**
@@ -285,22 +337,65 @@ export abstract class BaseAudioPlayer
    * 应用音量渐变
    * @param targetValue 目标音量
    * @param duration 持续时间 (秒)
+   * @param curve 渐变曲线
    */
-  protected applyFadeTo(targetValue: number, duration: number) {
+  protected applyFadeTo(targetValue: number, duration: number, curve: FadeCurve = "linear") {
     if (!this.gainNode || !this.audioCtx) return;
 
     const currentTime = this.audioCtx.currentTime;
     // 取消之前计划的音量变化
     this.gainNode.gain.cancelScheduledValues(currentTime);
-    // 设定当前值为起点 ，防止爆音
-    this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, currentTime);
 
-    if (duration > 0) {
-      // 线性渐变到目标值
-      this.gainNode.gain.linearRampToValueAtTime(targetValue, currentTime + duration);
+    // 设定当前值为起点 ，防止爆音
+    const currentValue = this.gainNode.gain.value;
+    this.gainNode.gain.setValueAtTime(currentValue, currentTime);
+
+    if (duration <= 0) {
+      const safeStartTime = currentTime + 0.02;
+      if (Number.isFinite(safeStartTime) && safeStartTime > currentTime) {
+        this.gainNode.gain.linearRampToValueAtTime(targetValue, safeStartTime);
+      } else {
+        this.gainNode.gain.setValueAtTime(targetValue, currentTime);
+      }
+      return;
+    }
+
+    // 稍微延后一点点开始 Ramp，给 AudioContext 内部队列一点喘息时间
+    const safeStartTime = currentTime + 0.02;
+    this.gainNode.gain.setValueAtTime(currentValue, safeStartTime);
+
+    if (curve === "equalPower") {
+      const steps = Math.max(2, Math.floor(duration * 60));
+      const curveData = new Float32Array(steps);
+
+      for (let i = 0; i < steps; i++) {
+        const t = i / (steps - 1);
+        let val = 0;
+
+        if (targetValue > currentValue) {
+          const factor = Math.sin((t * Math.PI) / 2);
+          val = currentValue + (targetValue - currentValue) * factor;
+        } else {
+          const factor = Math.cos((t * Math.PI) / 2);
+          val = targetValue + (currentValue - targetValue) * factor;
+        }
+        curveData[i] = val;
+      }
+      this.gainNode.gain.setValueCurveAtTime(curveData, safeStartTime, duration);
+    } else if (curve === "exponential") {
+      let safeTarget = targetValue;
+      if (safeTarget <= 0.001) safeTarget = 0.001;
+
+      if (currentValue < 0.001) {
+        this.gainNode.gain.linearRampToValueAtTime(targetValue, safeStartTime + duration);
+      } else {
+        this.gainNode.gain.exponentialRampToValueAtTime(safeTarget, safeStartTime + duration);
+        if (targetValue === 0) {
+          this.gainNode.gain.setValueAtTime(0, safeStartTime + duration);
+        }
+      }
     } else {
-      // 立即设置
-      this.gainNode.gain.setValueAtTime(targetValue, currentTime);
+      this.gainNode.gain.linearRampToValueAtTime(targetValue, safeStartTime + duration);
     }
   }
 
@@ -346,6 +441,48 @@ export abstract class BaseAudioPlayer
   /** 设置滤波器增益 */
   public setFilterGain(index: number, value: number) {
     this.effectManager?.setFilterGain(index, value);
+  }
+
+  /** 设置高通滤波器频率 */
+  public setHighPassFilter(frequency: number, rampTime: number = 0) {
+    this.effectManager?.setHighPassFilter(frequency, rampTime);
+  }
+
+  public setHighPassQ(q: number) {
+    this.effectManager?.setHighPassQ(q);
+  }
+
+  public setHighPassFilterAt(frequency: number, when: number) {
+    this.effectManager?.setHighPassFilterAt(frequency, when);
+  }
+
+  public rampHighPassFilterToAt(frequency: number, when: number) {
+    this.effectManager?.rampHighPassFilterToAt(frequency, when);
+  }
+
+  public setHighPassQAt(q: number, when: number) {
+    this.effectManager?.setHighPassQAt(q, when);
+  }
+
+  /** 设置低通滤波器频率 */
+  public setLowPassFilter(frequency: number, rampTime: number = 0) {
+    this.effectManager?.setLowPassFilter(frequency, rampTime);
+  }
+
+  public setLowPassQ(q: number) {
+    this.effectManager?.setLowPassQ(q);
+  }
+
+  public setLowPassFilterAt(frequency: number, when: number) {
+    this.effectManager?.setLowPassFilterAt(frequency, when);
+  }
+
+  public rampLowPassFilterToAt(frequency: number, when: number) {
+    this.effectManager?.rampLowPassFilterToAt(frequency, when);
+  }
+
+  public setLowPassQAt(q: number, when: number) {
+    this.effectManager?.setLowPassQAt(q, when);
   }
 
   /** 获取滤波器增益 */

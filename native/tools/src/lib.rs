@@ -5,9 +5,11 @@
 //! 注意：若使用了针对特点平台的条件编译，必须在这里重新导出一个在全平台下可用的函数，
 //! 即使它在其他平台是空操作以防止 JS 端在其他平台编译时找不到对应的函数声明
 
+mod analysis;
 mod download;
 mod scanner;
 
+pub use analysis::*;
 pub use download::*;
 use napi_derive::napi;
 pub use scanner::scan_music_library;

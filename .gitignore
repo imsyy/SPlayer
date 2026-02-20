@@ -35,3 +35,5 @@ target
 # Docs
 docs/.vitepress/cache
 docs/.vitepress/dist
+
+.trae/*

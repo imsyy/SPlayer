@@ -9,7 +9,7 @@ import {
 } from "@/stores";
 import { useDownloadManager } from "@/core/resource/DownloadManager";
 import { usePlayerController } from "@/core/player/PlayerController";
-import { renderIcon, copyData } from "@/utils/helper";
+import { renderIcon, copyData, getShareUrl } from "@/utils/helper";
 import { deleteCloudSong, importCloudSong } from "@/api/cloud";
 import {
   openCloudMatch,
@@ -264,7 +264,7 @@ export const useSongMenu = () => {
             show: !isLocal && type !== "streaming",
             props: {
               onClick: () =>
-                copyData(`https://music.163.com/#/${type}?id=${song.id}`, "已复制分享链接到剪切板"),
+                copyData(getShareUrl(type, song.id), "已复制分享链接到剪贴板"),
             },
             icon: renderIcon("Share", { size: 18 }),
           },

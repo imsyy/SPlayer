@@ -65,7 +65,7 @@ import type { DropdownOption } from "naive-ui";
 import { songDetail } from "@/api/song";
 import { albumDetail } from "@/api/album";
 import { formatCoverList, formatSongsList } from "@/utils/format";
-import { renderIcon, copyData } from "@/utils/helper";
+import { renderIcon, copyData, getShareUrl } from "@/utils/helper";
 import { openBatchList } from "@/utils/modal";
 import { useDataStore } from "@/stores";
 import { toLikeAlbum } from "@/utils/auth";
@@ -163,7 +163,10 @@ const moreOptions = computed<DropdownOption[]>(() => [
     key: "copy",
     props: {
       onClick: () =>
-        copyData(`https://music.163.com/#/album?id=${albumId.value}`, "已复制分享链接到剪贴板"),
+        copyData(
+          getShareUrl("album", albumId.value),
+          "已复制分享链接到剪贴板",
+        ),
     },
     icon: renderIcon("Share"),
   },

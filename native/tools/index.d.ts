@@ -6,6 +6,55 @@ export declare class DownloadTask {
   download(url: string, filePath: string, metadata: SongMetadata | undefined | null, threadCount: number, referer: string | undefined | null, onProgress: ((err: Error | null, arg: DownloadProgress) => any), enableHttp2: boolean): Promise<void>
 }
 
+export interface AdvancedTransition {
+  startTimeCurrent: number
+  startTimeNext: number
+  duration: number
+  pitch_shift_semitones: number
+  playback_rate: number
+  automation_current: Array<AutomationPoint>
+  automation_next: Array<AutomationPoint>
+  strategy: string
+}
+
+export declare function analyzeAudioFile(path: string, maxAnalyzeTime?: number | undefined | null): AudioAnalysis | null
+
+export declare function analyzeAudioFileHead(path: string, maxAnalyzeTime?: number | undefined | null): AudioAnalysis | null
+
+export interface AudioAnalysis {
+  duration: number
+  bpm?: number
+  bpm_confidence?: number
+  fade_in_pos: number
+  fade_out_pos: number
+  first_beat_pos?: number
+  loudness?: number
+  drop_pos?: number
+  version: number
+  analyze_window: number
+  cut_in_pos?: number
+  cut_out_pos?: number
+  mix_center_pos: number
+  mix_start_pos: number
+  mix_end_pos: number
+  energy_profile: Array<number>
+  vocal_in_pos?: number
+  vocal_out_pos?: number
+  vocal_last_in_pos?: number
+  outro_energy_level?: number
+  key_root?: number
+  key_mode?: number
+  key_confidence?: number
+  camelot_key?: string
+}
+
+export interface AutomationPoint {
+  timeOffset: number
+  volume: number
+  lowCut: number
+  highCut: number
+}
+
 export interface DownloadProgress {
   percent: number
   transferredBytes: number
@@ -54,6 +103,21 @@ export interface SongMetadata {
   year?: number
   trackNumber?: number
   discNumber?: number
+}
+
+export declare function suggestLongMix(currentPath: string, nextPath: string): AdvancedTransition | null
+
+export declare function suggestTransition(currentPath: string, nextPath: string): TransitionProposal | null
+
+export interface TransitionProposal {
+  duration: number
+  current_track_mix_out: number
+  next_track_mix_in: number
+  mix_type: string
+  filter_strategy: string
+  compatibility_score: number
+  key_compatible: boolean
+  bpm_compatible: boolean
 }
 
 export declare function writeMusicMetadata(filePath: string, metadata: SongMetadata, coverPath?: string | undefined | null): Promise<void>

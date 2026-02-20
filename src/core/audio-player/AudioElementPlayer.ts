@@ -17,10 +17,6 @@ export class AudioElementPlayer extends BaseAudioPlayer {
   private audioElement: HTMLAudioElement;
   /** MediaElementAudioSourceNode 用于连接 Web Audio API */
   private sourceNode: MediaElementAudioSourceNode | null = null;
-  /** ReplayGain 增益节点 */
-  private replayGainNode: GainNode | null = null;
-  /** 缓存的 ReplayGain 值 */
-  private currentReplayGain = 1;
 
   /** Seek 锁，用于在 seek 过程中返回稳定的 currentTime */
   private isInternalSeeking = false;
@@ -54,15 +50,14 @@ export class AudioElementPlayer extends BaseAudioPlayer {
     if (!this.audioCtx || !this.inputNode) return;
 
     try {
-      this.sourceNode = this.audioCtx.createMediaElementSource(this.audioElement);
+      if (!this.sourceNode) {
+        this.sourceNode = this.audioCtx.createMediaElementSource(this.audioElement);
+      } else {
+        this.sourceNode.disconnect();
+      }
 
-      // 创建 ReplayGain 节点
-      this.replayGainNode = this.audioCtx.createGain();
-      this.replayGainNode.gain.value = this.currentReplayGain;
-
-      // 连接: Source -> ReplayGain -> Input
-      this.sourceNode.connect(this.replayGainNode);
-      this.replayGainNode.connect(this.inputNode);
+      // 连接: Source -> Input
+      this.sourceNode.connect(this.inputNode);
     } catch (error) {
       console.error("[AudioElementPlayer] SourceNode 创建失败", error);
     }
@@ -115,25 +110,44 @@ export class AudioElementPlayer extends BaseAudioPlayer {
   }
 
   /**
-   * 设置 ReplayGain 增益
-   * @param gain 线性增益值
-   */
-  public setReplayGain(gain: number): void {
-    this.currentReplayGain = gain;
-    if (this.replayGainNode && this.audioCtx) {
-      const currentTime = this.audioCtx.currentTime;
-      this.replayGainNode.gain.cancelScheduledValues(currentTime);
-      this.replayGainNode.gain.setTargetAtTime(gain, currentTime, 0.1);
-    }
-  }
-
-  /**
    * 设置播放速率
    * @param value 速率值 (0.5 - 2.0)
    */
   public setRate(value: number): void {
     this.audioElement.playbackRate = value;
     this.audioElement.defaultPlaybackRate = value;
+  }
+
+  /**
+   * 设置音高偏移
+   * @param semitones 半音偏移量
+   */
+  public setPitchShift(semitones: number): void {
+    // HTML5 Audio preservesPitch property
+    // true (default) = time stretch (pitch constant, speed changes)
+    // false = pitch shift (pitch changes with speed)
+
+    // We want to change pitch without changing speed?
+    // No, standard Web Audio doesn't support independent pitch shift natively without libraries like SoundTouch.
+    // However, if we want to change pitch to match keys:
+    // If we use playbackRate to change pitch, speed also changes.
+    // If preservesPitch = false, playbackRate changes both pitch and speed (like a vinyl record).
+
+    // If the request is to SHIFT pitch while keeping speed constant: NOT SUPPORTED by HTML5 Audio directly.
+    // But if the request is "we have set playbackRate to sync BPM, now we want to correct Pitch":
+    // That's complex.
+
+    // For now, let's assume 'preservesPitch' control.
+    // If semitones != 0, we might want to disable pitch preservation if we are using rate to shift pitch?
+    // Actually, 'preservesPitch' only affects what happens when playbackRate != 1.
+
+    // If we want independent pitch shifting, we can't do it with just AudioElement.
+    // But we can implement the interface method to avoid crashes.
+
+    if ("preservesPitch" in this.audioElement) {
+      const el = this.audioElement as HTMLAudioElement & { preservesPitch: boolean };
+      el.preservesPitch = semitones === 0;
+    }
   }
 
   /**

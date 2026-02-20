@@ -166,7 +166,7 @@
 import type { SongType, MetaData } from "@/types/main";
 import { songDetail } from "@/api/song";
 import { formatSongsList } from "@/utils/format";
-import { copyData } from "@/utils/helper";
+import { copyData, getShareUrl } from "@/utils/helper";
 import { msToTime, formatTimestamp } from "@/utils/time";
 
 const props = defineProps<{ songId: number; onClose: () => void }>();
@@ -201,7 +201,7 @@ const publishTime = computed(() => {
 });
 
 const songLink = computed(() => {
-  return songInfo.value?.id ? `https://music.163.com/#/song?id=${songInfo.value.id}` : "";
+  return songInfo.value?.id ? getShareUrl("song", songInfo.value.id) : "";
 });
 
 // 获取歌曲详情
@@ -243,7 +243,7 @@ const handleCopyAll = () => {
     `链接：${songLink.value}`,
   ].filter((line) => line);
 
-  copyData(lines.join("\n"), "已复制全部信息");
+  copyData(lines, "已复制全部信息");
 };
 
 onMounted(() => {

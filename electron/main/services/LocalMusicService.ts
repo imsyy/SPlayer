@@ -161,10 +161,22 @@ export class LocalMusicService {
     return this.db?.getTracksInPath(dirPath) || [];
   }
 
-  /** 获取所有音乐 */
+  /** 获取所有歌曲 */
   async getAllTracks(): Promise<MusicTrack[]> {
     await this.ensureInitialized();
     if (!this.db) return [];
     return this.db.getAllTracks();
+  }
+
+  /** 获取音频分析结果 */
+  async getAnalysis(path: string) {
+    await this.ensureInitialized();
+    return this.db?.getAnalysis(path);
+  }
+
+  /** 保存音频分析结果 */
+  async saveAnalysis(path: string, data: string, mtime: number, size: number) {
+    await this.ensureInitialized();
+    this.db?.saveAnalysis(path, data, mtime, size);
   }
 }

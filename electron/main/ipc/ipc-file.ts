@@ -1,6 +1,7 @@
 import { app, dialog, ipcMain, shell } from "electron";
-import { access, mkdir, unlink, writeFile } from "node:fs/promises";
-import { isAbsolute, join, relative, resolve } from "node:path";
+import { access, mkdir, unlink, writeFile, stat } from "node:fs/promises";
+import { isAbsolute, join, normalize, relative, resolve } from "node:path";
+import { Worker } from "node:worker_threads";
 import { ipcLog } from "../logger";
 import { LocalMusicService } from "../services/LocalMusicService";
 import { DownloadService } from "../services/DownloadService";
@@ -15,6 +16,110 @@ const localMusicService = new LocalMusicService();
 const downloadService = new DownloadService();
 /** 音乐元数据服务 */
 const musicMetadataService = new MusicMetadataService();
+
+const analysisInFlight = new Map<string, Promise<unknown | null>>();
+
+const normalizeAnalysisKey = (filePath: string) => {
+  const p = normalize(resolve(filePath));
+  return process.platform === "win32" ? p.toLowerCase() : p;
+};
+
+const resolveToolsNativeModulePath = () => {
+  if (app.isPackaged) {
+    return join(process.resourcesPath, "native", "tools.node");
+  }
+  return join(process.cwd(), "native", "tools", "tools.node");
+};
+
+const runToolsJobInWorker = async (payload: Record<string, unknown>) => {
+  const worker = new Worker(new URL("./workers/audio-analysis.worker.js", import.meta.url), {});
+
+  try {
+    const jobType = typeof payload.type === "string" ? payload.type : "unknown";
+    const nativeModulePath = resolveToolsNativeModulePath();
+    await access(nativeModulePath).catch(() => {
+      ipcLog.warn(`[AudioAnalysis] tools.node 不存在: ${nativeModulePath}`);
+      throw new Error("TOOLS_NATIVE_MODULE_MISSING");
+    });
+    if (
+      jobType === "analyzeHead" ||
+      jobType === "suggestTransition" ||
+      jobType === "suggestLongMix"
+    ) {
+      ipcLog.info(`[AudioAnalysis] Worker 启动: ${jobType}`);
+    }
+    const result = await new Promise<unknown | null>((resolvePromise) => {
+      const cleanup = () => {
+        worker.removeAllListeners("message");
+        worker.removeAllListeners("error");
+        worker.removeAllListeners("exit");
+        worker.terminate().catch(() => {});
+      };
+
+      worker.once(
+        "message",
+        (resp: { ok: true; result?: unknown } | { ok: false; error?: string }) => {
+          cleanup();
+          if (resp && resp.ok) {
+            resolvePromise(resp.result ?? null);
+            return;
+          }
+          if (resp && !resp.ok && resp.error) {
+            ipcLog.warn(`[AudioAnalysis] Worker 分析失败: ${resp.error}`);
+          }
+          resolvePromise(null);
+        },
+      );
+
+      worker.once("error", (err) => {
+        cleanup();
+        const message = err instanceof Error ? err.message : String(err);
+        ipcLog.warn(`[AudioAnalysis] Worker 线程错误: ${message}`);
+        resolvePromise(null);
+      });
+
+      worker.once("exit", (code) => {
+        cleanup();
+        if (code !== 0) {
+          ipcLog.warn(`[AudioAnalysis] Worker 异常退出: code=${code}`);
+        }
+        resolvePromise(null);
+      });
+
+      worker.postMessage({ ...payload, nativeModulePath });
+    });
+
+    if (
+      jobType === "analyzeHead" ||
+      jobType === "suggestTransition" ||
+      jobType === "suggestLongMix"
+    ) {
+      ipcLog.info(`[AudioAnalysis] Worker 完成: ${jobType} (${result ? "ok" : "null"})`);
+    }
+    return result;
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    ipcLog.warn(`[AudioAnalysis] 启动分析失败: ${message}`);
+    worker.terminate().catch(() => {});
+    return null;
+  }
+};
+
+const runAnalysisInWorker = async (filePath: string, maxTime: number) => {
+  return await runToolsJobInWorker({ type: "analyze", filePath, maxTime });
+};
+
+const runHeadAnalysisInWorker = async (filePath: string, maxTime: number) => {
+  return await runToolsJobInWorker({ type: "analyzeHead", filePath, maxTime });
+};
+
+const runSuggestTransitionInWorker = async (currentPath: string, nextPath: string) => {
+  return await runToolsJobInWorker({ type: "suggestTransition", currentPath, nextPath });
+};
+
+const runSuggestLongMixInWorker = async (currentPath: string, nextPath: string) => {
+  return await runToolsJobInWorker({ type: "suggestLongMix", currentPath, nextPath });
+};
 
 /** 获取封面目录路径 */
 const getCoverDir = (): string => {
@@ -255,6 +360,169 @@ const initFileIpc = (): void => {
       const relativePath = relative(existingPath, resolvedSelectedDir);
       return relativePath && !relativePath.startsWith("..") && !isAbsolute(relativePath);
     });
+  });
+
+  // 音频分析
+  ipcMain.handle(
+    "analyze-audio",
+    async (_, filePath: string, options?: { maxAnalyzeTimeSec?: number }) => {
+      try {
+        const fileStat = await stat(filePath).catch(() => null);
+        if (!fileStat) return null;
+
+        const maxTime = options?.maxAnalyzeTimeSec ?? 60;
+        const CURRENT_VERSION = 11; // 与 Rust 保持一致
+        const fileKey = normalizeAnalysisKey(filePath);
+
+        // 1. Check Cache
+        const candidateKeys = new Set<string>([fileKey, filePath]);
+        if (process.platform === "win32") {
+          candidateKeys.add(filePath.replaceAll("/", "\\").toLowerCase());
+          candidateKeys.add(filePath.replaceAll("\\", "/").toLowerCase());
+        }
+
+        for (const key of candidateKeys) {
+          const cached = await localMusicService.getAnalysis(key);
+          if (!cached || cached.mtime !== fileStat.mtimeMs || cached.size !== fileStat.size)
+            continue;
+          try {
+            const data = JSON.parse(cached.data);
+            if (
+              data &&
+              data.version === CURRENT_VERSION &&
+              data.analyze_window &&
+              Math.abs(data.analyze_window - maxTime) < 1.0
+            ) {
+              if (key !== fileKey) {
+                await localMusicService.saveAnalysis(
+                  fileKey,
+                  cached.data,
+                  fileStat.mtimeMs,
+                  fileStat.size,
+                );
+              }
+              return data;
+            }
+          } catch (e) {
+            void e;
+          }
+        }
+
+        // 2. Analyze
+        const requestKey = `${fileKey}|${maxTime}`;
+        const inFlight = analysisInFlight.get(requestKey);
+        if (inFlight) return await inFlight;
+
+        const promise = (async () => {
+          const result = await runAnalysisInWorker(filePath, maxTime);
+          if (!result) return null;
+          try {
+            await localMusicService.saveAnalysis(
+              fileKey,
+              JSON.stringify(result),
+              fileStat.mtimeMs,
+              fileStat.size,
+            );
+          } catch (e) {
+            void e;
+          }
+          return result;
+        })().finally(() => {
+          analysisInFlight.delete(requestKey);
+        });
+
+        analysisInFlight.set(requestKey, promise);
+        return await promise;
+      } catch (err) {
+        console.error("Audio analysis failed:", err);
+        return null;
+      }
+    },
+  );
+
+  ipcMain.handle(
+    "analyze-audio-head",
+    async (_, filePath: string, options?: { maxAnalyzeTimeSec?: number }) => {
+      try {
+        const fileStat = await stat(filePath).catch(() => null);
+        if (!fileStat) return null;
+
+        const maxTime = options?.maxAnalyzeTimeSec ?? 60;
+        const CURRENT_VERSION = 11;
+        const fileKey = normalizeAnalysisKey(filePath);
+        const headKey = `${fileKey}|head|${maxTime}`;
+
+        const cached = await localMusicService.getAnalysis(headKey);
+        if (cached && cached.mtime === fileStat.mtimeMs && cached.size === fileStat.size) {
+          try {
+            const data = JSON.parse(cached.data);
+            if (data && data.version === CURRENT_VERSION && data.analyze_window) {
+              ipcLog.info(`[AudioAnalysis] Head 命中缓存: ${headKey}`);
+              return data;
+            }
+          } catch (e) {
+            void e;
+          }
+        }
+
+        const requestKey = `${headKey}|request`;
+        const inFlight = analysisInFlight.get(requestKey);
+        if (inFlight) return await inFlight;
+
+        const promise = (async () => {
+          ipcLog.info(`[AudioAnalysis] Head 开始分析: ${headKey}`);
+          const result = await runHeadAnalysisInWorker(filePath, maxTime);
+          if (!result) return null;
+          try {
+            await localMusicService.saveAnalysis(
+              headKey,
+              JSON.stringify(result),
+              fileStat.mtimeMs,
+              fileStat.size,
+            );
+          } catch (e) {
+            void e;
+          }
+          return result;
+        })().finally(() => {
+          analysisInFlight.delete(requestKey);
+        });
+
+        analysisInFlight.set(requestKey, promise);
+        return await promise;
+      } catch (err) {
+        console.error("Audio head analysis failed:", err);
+        return null;
+      }
+    },
+  );
+
+  ipcMain.handle("suggest-transition", async (_, currentPath: string, nextPath: string) => {
+    try {
+      const a = await stat(currentPath).catch(() => null);
+      if (!a) return null;
+      const b = await stat(nextPath).catch(() => null);
+      if (!b) return null;
+      ipcLog.info(`[AudioAnalysis] SuggestTransition: ${currentPath} -> ${nextPath}`);
+      return await runSuggestTransitionInWorker(currentPath, nextPath);
+    } catch (err) {
+      console.error("Suggest transition failed:", err);
+      return null;
+    }
+  });
+
+  ipcMain.handle("suggest-long-mix", async (_, currentPath: string, nextPath: string) => {
+    try {
+      const a = await stat(currentPath).catch(() => null);
+      if (!a) return null;
+      const b = await stat(nextPath).catch(() => null);
+      if (!b) return null;
+      ipcLog.info(`[AudioAnalysis] SuggestLongMix: ${currentPath} -> ${nextPath}`);
+      return await runSuggestLongMixInWorker(currentPath, nextPath);
+    } catch (err) {
+      console.error("Suggest long mix failed:", err);
+      return null;
+    }
   });
 };
 

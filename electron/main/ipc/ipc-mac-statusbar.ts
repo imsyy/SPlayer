@@ -68,9 +68,7 @@ const findCurrentLyricIndex = (
  * 更新 macOS 状态栏歌词（只在新行时才更新）
  * @param forceUpdate 是否强制更新，即便歌词行索引未变化
  */
-const updateMacStatusBarLyric = (
-  forceUpdate: boolean = false,
-) => {
+const updateMacStatusBarLyric = (forceUpdate: boolean = false) => {
   const store = useStore();
   const tray = getMainTray();
   if (!tray) return;
@@ -120,7 +118,7 @@ export const initMacStatusBarIpc = () => {
   // 初始化时读取 macOS 专属设置
   const isMacosLyricEnabled = store.get("macos.statusBarLyric.enabled") ?? false;
   const tray = getMainTray();
-  
+
   // 根据初始设置状态更新托盘显示
   // 如果禁用，设置回歌曲标题
   if (!isMacosLyricEnabled) {
@@ -144,7 +142,7 @@ export const initMacStatusBarIpc = () => {
       } else {
         // 关闭时，将标题恢复为歌曲名，并停止歌词插值计时器
         tray?.setTitle(getCurrentSongTitle());
-        stopInterpolation(); 
+        stopInterpolation();
       }
     } else if (!show) {
       // 如果主窗口不可用且正在关闭，也恢复标题并停止计时器
@@ -165,7 +163,8 @@ export const initMacStatusBarIpc = () => {
       case "playback-state":
         macIsPlaying = payload.data.isPlaying;
         // 不在这里直接更新歌词，依赖 SYNC_TICK 来驱动
-        if (!macIsPlaying) { // 如果是暂停状态，则停止插值器并进行一次最终更新
+        if (!macIsPlaying) {
+          // 如果是暂停状态，则停止插值器并进行一次最终更新
           stopInterpolation();
           updateMacStatusBarLyric();
         }
