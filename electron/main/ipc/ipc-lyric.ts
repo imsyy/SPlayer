@@ -113,8 +113,12 @@ const initLyricIpc = (): void => {
         }
         // 绑定主窗口事件监听
         bindMainWinEvents();
+        // 初始状态设置
+        if (isLocked) {
+          lyricWin?.setIgnoreMouseEvents(true, { forward: true });
+        }
       } else {
-        lyricWin.show();
+        lyricWin.showInactive();
       }
       if (isWinAlive(lyricWin)) {
         lyricWin.setAlwaysOnTop(true, "screen-saver");

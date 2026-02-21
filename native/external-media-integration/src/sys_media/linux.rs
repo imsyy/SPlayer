@@ -280,6 +280,10 @@ async fn handle_command(
         MprisCommand::UpdateTimeline(payload) => {
             let pos = Time::from_millis(payload.current_time as i64);
             player.set_position(pos);
+            // seek 操作时发出 Seeked D-Bus 信号，通知外部客户端立即刷新进度
+            if payload.seeked.unwrap_or(false) {
+                player.seeked(pos).await.ok();
+            }
         }
 
         MprisCommand::UpdatePlayMode(payload) => {

@@ -240,11 +240,12 @@ export const sendMediaPlaybackRate = (rate: number) => {
  * @note 仅在 Electron 上有效
  * @param currentTime - 当前的播放进度，单位是毫秒
  * @param totalTime - 总时长，单位是毫秒
+ * @param seeked - 是否为 seek 操作触发的更新
  * @see {@link EmiModule.updateTimeline 外部媒体集成模块的 `updateTimeline` 方法}
  */
-export const sendMediaTimeline = (currentTime: number, totalTime: number) => {
+export const sendMediaTimeline = (currentTime: number, totalTime: number, seeked?: boolean) => {
   if (isElectron) {
-    window.electron.ipcRenderer.send("media-update-timeline", { currentTime, totalTime });
+    window.electron.ipcRenderer.send("media-update-timeline", { currentTime, totalTime, seeked });
   }
 };
 

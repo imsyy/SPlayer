@@ -11,6 +11,9 @@ import { useEventListener } from "@vueuse/core";
 import { debounce } from "lodash-es";
 import { onMounted, watch } from "vue";
 
+/** 最终聚焦主窗口的延迟时间（毫秒） */
+const FINAL_FOCUS_DELAY_MS = 500;
+
 /**
  * 应用初始化时需要执行的操作
  */
@@ -77,6 +80,13 @@ export const useInit = () => {
       // 启动时，如果启用macOS歌词，发送初始数据
       if (isMac && settingStore.macos.statusBarLyric.enabled) {
         window.electron.ipcRenderer.send(TASKBAR_IPC_CHANNELS.REQUEST_DATA);
+      }
+
+      // 确保主窗口在最后获得焦点
+      if (statusStore.showDesktopLyric) {
+        setTimeout(() => {
+          window.electron.ipcRenderer.send("win-show-main");
+        }, FINAL_FOCUS_DELAY_MS);
       }
 
       // 监听任务栏歌词设置

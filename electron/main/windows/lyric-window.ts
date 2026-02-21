@@ -15,7 +15,7 @@ class LyricWindow {
     if (!this.win) return;
     // 准备好显示
     this.win.on("ready-to-show", () => {
-      this.win?.show();
+      this.win?.showInactive();
     });
     // 页面加载完成后设置标题
     // 这里的标题设置是为了 Linux 能够为桌面歌词单独设置窗口规则

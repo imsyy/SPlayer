@@ -103,6 +103,7 @@ import { useDataStore, useSettingStore, useStatusStore, useMusicStore } from "@/
 import { isElectron } from "@/utils/env";
 import { renderIcon } from "@/utils/helper";
 import { openAutoClose, openChangeRate, openEqualizer, openABLoop } from "@/utils/modal";
+import { useAudioManager } from "@/core/player/AudioManager";
 import type { DropdownOption } from "naive-ui";
 import { useQualityControl } from "@/composables/useQualityControl";
 
@@ -144,12 +145,14 @@ const handleClickOutside = (e: MouseEvent) => {
 };
 
 // 更多功能
+const audioManager = useAudioManager();
+
 const controlsOptions = computed<DropdownOption[]>(() => [
   {
     label: "均衡器",
     key: "equalizer",
     icon: renderIcon("Eq"),
-    disabled: settingStore.playbackEngine === "mpv",
+    disabled: !audioManager.capabilities.supportsEqualizer,
   },
   {
     label: "自动关闭",
@@ -164,7 +167,7 @@ const controlsOptions = computed<DropdownOption[]>(() => [
   {
     label: "播放速度",
     key: "rate",
-    disabled: settingStore.playbackEngine === "mpv",
+    disabled: !audioManager.capabilities.supportsRate,
     icon: renderIcon("PlayRate"),
   },
 ]);
@@ -173,8 +176,8 @@ const controlsOptions = computed<DropdownOption[]>(() => [
 const handleControls = (key: string) => {
   switch (key) {
     case "equalizer":
-      if (settingStore.playbackEngine === "mpv") {
-        window.$message.warning("MPV 引擎不支持均衡器功能");
+      if (!audioManager.capabilities.supportsEqualizer) {
+        window.$message.warning("当前引擎不支持均衡器功能");
         return;
       }
       openEqualizer();

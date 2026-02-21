@@ -155,6 +155,8 @@ export interface TimelinePayload {
   currentTime: number
   /** 单位是毫秒 */
   totalTime: number
+  /** 是否为 seek 操作触发的更新 */
+  seeked?: boolean
 }
 
 /**

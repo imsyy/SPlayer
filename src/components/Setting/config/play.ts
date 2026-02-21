@@ -136,6 +136,10 @@ export const usePlaySettings = (): SettingConfig => {
       positiveText: "重启",
       negativeText: "取消",
       onPositiveClick: () => {
+        // 切换引擎类型时重置为目标引擎的默认设备，避免跨引擎设备 ID 不兼容
+        if (targetPlaybackEngine !== settingStore.playbackEngine) {
+          settingStore.playDevice = targetPlaybackEngine === "mpv" ? "auto" : "default";
+        }
         settingStore.playbackEngine = targetPlaybackEngine;
         settingStore.audioEngine = targetAudioEngine;
         if (isElectron) {
@@ -165,8 +169,14 @@ export const usePlaySettings = (): SettingConfig => {
             }),
           );
 
-          // 初始化选中为当前 mpv 设备
-          if (!settingStore.playDevice || settingStore.playDevice === "default") {
+          // 验证已保存的设备是否在当前设备列表中
+          const deviceIds = result.devices.map((d: { id: string }) => d.id);
+          const savedValid =
+            settingStore.playDevice &&
+            settingStore.playDevice !== "default" &&
+            deviceIds.includes(settingStore.playDevice);
+
+          if (!savedValid) {
             const current = await window.electron.ipcRenderer.invoke(
               "mpv-get-current-audio-device",
             );
@@ -179,7 +189,7 @@ export const usePlaySettings = (): SettingConfig => {
         }
       } catch (e) {
         console.error("获取 MPV 音频设备失败:", e);
-        if (!settingStore.playDevice || settingStore.playDevice === "default") {
+        if (!settingStore.playDevice) {
           settingStore.playDevice = "auto";
         }
       }
@@ -198,6 +208,14 @@ export const usePlaySettings = (): SettingConfig => {
         label: device.label,
         value: device.deviceId,
       }));
+
+      // 验证已保存的设备是否在当前设备列表中
+      if (
+        settingStore.playDevice &&
+        !outputData.some((d) => d.deviceId === settingStore.playDevice)
+      ) {
+        settingStore.playDevice = "default";
+      }
     } catch (e) {
       console.error("获取 WebAudio 设备失败", e);
     }
@@ -224,9 +242,13 @@ export const usePlaySettings = (): SettingConfig => {
       return;
     }
 
-    player.toggleOutputDevice(deviceId);
-    settingStore.playDevice = deviceId;
-    window.$message.success(`已切换输出设备为 ${label}`);
+    try {
+      await player.toggleOutputDevice(deviceId);
+      settingStore.playDevice = deviceId;
+      window.$message.success(`已切换输出设备为 ${label}`);
+    } catch (e) {
+      window.$message.error(`切换输出设备失败: ${e}`);
+    }
   };
   // 监听播放引擎变化以刷新设备列表
   watch(

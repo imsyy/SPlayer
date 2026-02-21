@@ -572,13 +572,28 @@ class PlayerController {
     }
     // 更新任务栏歌词窗口的元数据
     // 注意：getPlayerInfoObj 内部读取 musicStore.playSong，所以上面必须先赋值
-    const { name, artist } = getPlayerInfoObj() || {};
+    const { name, artist, album } = getPlayerInfoObj() || {};
     const coverUrl = song.coverSize?.s || song.cover || "";
     playerIpc.sendTaskbarMetadata({
       title: name || "",
       artist: artist || "",
       cover: coverUrl,
     });
+
+    // 主动通知桌面歌词和 macOS 状态栏歌词 确保 AutoMix 平滑过渡时也触发更新
+    if (isElectron) {
+      const playTitle = `${name} - ${artist}`;
+      playerIpc.sendSongChange(playTitle, name || "", artist || "", album || "");
+
+      if (isMac) {
+        playerIpc.sendTaskbarProgressData({
+          currentTime: startSeek,
+          duration: song.duration,
+          offset: statusStore.getSongOffset(song.id),
+        });
+      }
+    }
+
     // 获取歌词
     lyricManager.handleLyric(song);
     console.log(`🎧 [${song.id}] 最终播放信息:`, audioSource);
@@ -2299,8 +2314,9 @@ class PlayerController {
       console.warn("⚠️ 无效的播放速率:", rate);
       return;
     }
-    if (audioManager.engineType === "mpv") {
-      console.warn("⚠️ MPV 引擎不支持倍速播放");
+
+    if (!audioManager.capabilities.supportsRate) {
+      console.warn("⚠️ 当前引擎不支持倍速播放");
       return;
     }
     const safeRate = Math.max(0.2, Math.min(rate, 2.0));
@@ -2590,15 +2606,11 @@ class PlayerController {
    * 切换输出设备
    * @param deviceId 设备 ID
    */
-  public toggleOutputDevice(deviceId?: string) {
+  public async toggleOutputDevice(deviceId?: string) {
     const settingStore = useSettingStore();
     const audioManager = useAudioManager();
     const device = deviceId ?? settingStore.playDevice;
-    try {
-      audioManager.setSinkId(deviceId ?? device);
-    } catch (error) {
-      console.error("AudioManager: 设置输出设备失败", error);
-    }
+    await audioManager.setSinkId(device);
   }
 
   /**

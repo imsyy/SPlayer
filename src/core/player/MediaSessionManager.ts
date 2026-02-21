@@ -295,8 +295,8 @@ class MediaSessionManager {
     if (this.shouldUseNativeMedia()) {
       if (immediate) {
         this.throttledSendTimeline.cancel();
-        // 取消节流就会立刻触发一次更新了，所以不再发送一个多余的事件
-        // sendMediaTimeline(position, duration);
+        // 绝对位置更新，避免 Seek 操作的进度更新被限流丢弃
+        sendMediaTimeline(position, duration, true);
       } else {
         this.throttledSendTimeline(position, duration);
       }

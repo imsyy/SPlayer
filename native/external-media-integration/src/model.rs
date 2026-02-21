@@ -160,6 +160,10 @@ pub struct TimelinePayload {
 
     /// 单位是毫秒
     pub total_time: f64,
+
+    /// 是否为 seek 操作触发的更新
+    #[napi(js_name = "seeked")]
+    pub seeked: Option<bool>,
 }
 
 #[napi(object)]
