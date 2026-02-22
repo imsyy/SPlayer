@@ -96,13 +96,14 @@
 
 <script setup lang="ts">
 import { useMobile } from "@/composables/useMobile";
-import { useStatusStore, useMusicStore, useSettingStore } from "@/stores";
+import { useStatusStore, useMusicStore, useSettingStore, useShortcutStore } from "@/stores";
 import { usePlayerController } from "@/core/player/PlayerController";
 import { isElectron } from "@/utils/env";
 
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
 const settingStore = useSettingStore();
+const shortcutStore = useShortcutStore();
 const player = usePlayerController();
 
 const { isTablet } = useMobile();
@@ -219,6 +220,17 @@ watch(
 // 键盘控制
 const onKeydown = (e: KeyboardEvent) => {
   if (e.code === "Space") {
+    // 如果按下了修饰键，则不响应（避免与快捷键冲突）
+    if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
+
+    // 如果播放/暂停快捷键被设置为了 Space，则交给全局快捷键处理，此处不响应
+    if (
+      shortcutStore.shortcutList.playOrPause.shortcut === "Space" ||
+      shortcutStore.shortcutList.playOrPause.globalShortcut === "Space"
+    ) {
+      return;
+    }
+
     const activeElement = document.activeElement as HTMLElement;
     // 如果焦点在输入框、文本域或任何可编辑元素上，则不响应
     if (
