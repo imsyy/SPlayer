@@ -7,6 +7,7 @@ import type { LyricPriority, SongLyric } from "@/types/lyric";
 import type { SongType } from "@/types/main";
 import { isElectron } from "@/utils/env";
 import { applyBracketReplacement } from "@/utils/lyric/lyricFormat";
+import { applyProfanityUncensor } from "@/utils/lyric/lyricProfanity";
 import {
   alignLyrics,
   isWordLevelFormat,
@@ -810,6 +811,7 @@ class LyricManager {
     if (this.activeLyricReq !== req) return;
     // 应用括号替换
     lyricData = applyBracketReplacement(lyricData);
+    lyricData = applyProfanityUncensor(lyricData);
     // 规范化时间
     this.normalizeLyricLines(lyricData.yrcData);
     this.normalizeLyricLines(lyricData.lrcData);

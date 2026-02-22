@@ -511,6 +511,16 @@ export const usePlaySettings = (): SettingConfig => {
             }),
           },
           {
+            key: "uncensorMaskedProfanity",
+            label: "Fuck *** Mode",
+            type: "switch",
+            description: "把歌词里的 f**k 等屏蔽词还原为原词",
+            value: computed({
+              get: () => settingStore.uncensorMaskedProfanity,
+              set: (v) => (settingStore.uncensorMaskedProfanity = v),
+            }),
+          },
+          {
             key: "audioEngine",
             label: "音频处理引擎",
             type: "select",

@@ -108,6 +108,7 @@ export interface SettingState {
   hideBracketedContent: boolean;
   /** 替换歌词括号内容 */
   replaceLyricBrackets: boolean;
+  uncensorMaskedProfanity: boolean;
   /** 歌词括号替换预设 */
   bracketReplacementPreset: "dash" | "angleBrackets" | "cornerBrackets" | "custom";
   /** 自定义歌词括号替换内容 */
@@ -597,6 +598,7 @@ export const useSettingStore = defineStore("setting", {
     lyricAlignRight: false,
     hideBracketedContent: false,
     replaceLyricBrackets: false,
+    uncensorMaskedProfanity: false,
     bracketReplacementPreset: "dash",
     customBracketReplacement: "-",
     enableExcludeLyrics: true,
