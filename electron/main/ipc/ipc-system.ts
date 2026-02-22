@@ -42,7 +42,7 @@ const initSystemIpc = (): void => {
   // 获取系统全部字体
   ipcMain.handle("get-all-fonts", async () => {
     try {
-      const fonts = await getFonts();
+      const fonts = await getFonts({ disableQuoting: true });
       return fonts;
     } catch (error) {
       ipcLog.error(`❌ Failed to get all system fonts: ${error}`);

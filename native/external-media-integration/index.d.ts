@@ -137,6 +137,7 @@ export interface SystemMediaEvent {
   type: SystemMediaEventType
   positionMs?: number
   rate?: number
+  volume?: number
 }
 
 export type SystemMediaEventType =  'Play'|
@@ -147,6 +148,7 @@ export type SystemMediaEventType =  'Play'|
 'ToggleShuffle'|
 'ToggleRepeat'|
 'SetRate'|
+'SetVolume'|
 /** 绝对位置，毫秒 */
 'Seek';
 
@@ -215,3 +217,12 @@ export declare function updatePlayState(payload: PlayStatePayload): void
  * Discord RPC 实现的进度更新有节流，调用此函数无需担心 Discord RPC 的速率限制
  */
 export declare function updateTimeline(payload: TimelinePayload): void
+
+/**
+ * 更新音量
+ *
+ * ### 备注
+ *
+ * 只会更新媒体控件的信息，不会更新 Discord RPC 上的信息
+ */
+export declare function updateVolume(volume: number): void

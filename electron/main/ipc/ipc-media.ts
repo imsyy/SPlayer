@@ -87,6 +87,16 @@ const initMediaIpc = () => {
     }
   });
 
+  // 音量更新
+  ipcMain.on("media-update-volume", (_, payload: { volume: number }) => {
+    if (!emi) return;
+    try {
+      emi.updateVolume(payload.volume);
+    } catch (e) {
+      processLog.error("[Media] 更新音量失败", e);
+    }
+  });
+
   // 进度更新
   ipcMain.on("media-update-timeline", (_, payload: TimelinePayload) => {
     if (!emi) return;

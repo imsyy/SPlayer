@@ -263,6 +263,7 @@ const jumpPage = debounce(
   max-width: 50vh;
   margin-top: 24px;
   padding: 0 2px;
+  mix-blend-mode: plus-lighter;
   .n-icon {
     color: rgb(var(--main-cover-color));
   }

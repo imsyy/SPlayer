@@ -32,6 +32,7 @@ pub enum MprisCommand {
     UpdateMetadata(MetadataPayload),
     UpdatePlaybackStatus(PlayStatePayload),
     UpdatePlaybackRate(f64),
+    UpdateVolume(f64),
     UpdateTimeline(TimelinePayload),
     UpdatePlayMode(PlayModePayload),
     Enable,
@@ -151,6 +152,13 @@ fn setup_mpris_signals(
     player.connect_set_rate(move |_, new_rate| {
         debug!(?new_rate, "收到 set_rate 命令");
         d(SystemMediaEvent::set_rate(new_rate));
+    });
+
+    // 音量
+    let d = dispatch.clone();
+    player.connect_set_volume(move |_, new_volume| {
+        debug!(?new_volume, "收到 set_volume 命令");
+        d(SystemMediaEvent::set_volume(new_volume));
     });
 
     // 相对跳转
@@ -275,6 +283,10 @@ async fn handle_command(
 
         MprisCommand::UpdatePlaybackRate(rate) => {
             player.set_rate(rate).await.ok();
+        }
+
+        MprisCommand::UpdateVolume(volume) => {
+            player.set_volume(volume).await.ok();
         }
 
         MprisCommand::UpdateTimeline(payload) => {
@@ -405,6 +417,10 @@ impl SystemMediaControls for LinuxImpl {
 
     fn update_playback_rate(&self, rate: f64) {
         self.send_command(MprisCommand::UpdatePlaybackRate(rate));
+    }
+
+    fn update_volume(&self, volume: f64) {
+        self.send_command(MprisCommand::UpdateVolume(volume));
     }
 
     fn update_timeline(&self, payload: TimelinePayload) {

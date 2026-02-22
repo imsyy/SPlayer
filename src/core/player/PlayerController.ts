@@ -1,5 +1,5 @@
-import { AudioErrorCode } from "@/core/audio-player/BaseAudioPlayer";
 import { AudioScheduler } from "@/core/audio-player/AudioScheduler";
+import { AudioErrorCode } from "@/core/audio-player/BaseAudioPlayer";
 import type { AutomationPoint } from "@/core/audio-player/IPlaybackEngine";
 import { getSharedAudioContext } from "@/core/audio-player/SharedAudioContext";
 import { useDataStore, useMusicStore, useSettingStore, useStatusStore } from "@/stores";
@@ -2281,6 +2281,9 @@ class PlayerController {
 
     // 统一调用 audioManager
     audioManager.setVolume(statusStore.playVolume);
+
+    // 更新系统集成音量
+    mediaSessionManager.updateVolume(statusStore.playVolume);
   }
 
   /** 切换静音 */
@@ -2546,6 +2549,35 @@ class PlayerController {
     // 若为当前播放
     if (isCurrentPlay) {
       this.playSong({ autoPlay: statusStore.playStatus });
+    }
+  }
+
+  public async moveSong(fromIndex: number, toIndex: number) {
+    const dataStore = useDataStore();
+    const statusStore = useStatusStore();
+
+    if (fromIndex === toIndex) return;
+    if (fromIndex < 0 || fromIndex >= dataStore.playList.length) return;
+    if (toIndex < 0 || toIndex >= dataStore.playList.length) return;
+
+    const list = [...dataStore.playList];
+    const [movedSong] = list.splice(fromIndex, 1);
+    list.splice(toIndex, 0, movedSong);
+
+    let newPlayIndex = statusStore.playIndex;
+    if (statusStore.playIndex === fromIndex) {
+      newPlayIndex = toIndex;
+    } else if (fromIndex < statusStore.playIndex && toIndex >= statusStore.playIndex) {
+      newPlayIndex--;
+    } else if (fromIndex > statusStore.playIndex && toIndex <= statusStore.playIndex) {
+      newPlayIndex++;
+    }
+
+    statusStore.playIndex = newPlayIndex;
+    await dataStore.setPlayList(list);
+
+    if (statusStore.shuffleMode === "off") {
+      await dataStore.setOriginalPlayList([...list]);
     }
   }
 

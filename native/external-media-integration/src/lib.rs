@@ -137,6 +137,16 @@ pub fn update_playback_rate(rate: f64) {
     sys_media::get_platform_controls().update_playback_rate(rate);
 }
 
+/// 更新音量
+///
+/// ### 备注
+///
+/// 只会更新媒体控件的信息，不会更新 Discord RPC 上的信息
+#[napi]
+pub fn update_volume(volume: f64) {
+    sys_media::get_platform_controls().update_volume(volume);
+}
+
 /// 更新进度信息
 ///
 /// 同时也会更新 Discord 的进度信息 (如果启用了 Discord RPC)

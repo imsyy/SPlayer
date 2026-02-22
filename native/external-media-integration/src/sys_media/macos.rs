@@ -507,6 +507,10 @@ impl SystemMediaControls for MacosImpl {
         }
     }
 
+    fn update_volume(&self, _volume: f64) {
+        // 未实现
+    }
+
     fn update_timeline(&self, payload: TimelinePayload) {
         let current_secs = payload.current_time / 1000.0;
         let total_secs = payload.total_time / 1000.0;

@@ -1,7 +1,7 @@
-import { cloneDeep } from "lodash-es";
 import type { LyricLine } from "@applemusic-like-lyrics/lyric";
-import { extractLyricContent } from "./qrc-parser";
+import { cloneDeep } from "lodash-es";
 import { parseLrc } from "./parseLrc";
+import { extractLyricContent } from "./qrc-parser";
 
 /**
  * LRC 格式类型
@@ -27,7 +27,7 @@ const LINE_TIME_REGEX = /^\[(\d{2}):(\d{2})\.(\d{1,})\]/;
 
 // QRC 解析相关正则 - 提前编译
 const QRC_LINE_PATTERN = /^\[(\d+),(\d+)\](.*)$/;
-const QRC_WORD_PATTERN = /([^(]*)\((\d+),(\d+)\)/g;
+const QRC_WORD_PATTERN = /(.*?)\((\d+),(\d+)\)/g;
 
 const DEFAULT_WORD_DURATION = 1000;
 const ALIGN_TOLERANCE_MS = 300;
