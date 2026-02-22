@@ -220,13 +220,15 @@ watch(
 // 键盘控制
 const onKeydown = (e: KeyboardEvent) => {
   if (e.code === "Space") {
-    // 如果按下了修饰键，则不响应（避免与快捷键冲突）
-    if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
-
-    // 如果播放/暂停快捷键被设置为了 Space，则交给全局快捷键处理，此处不响应
+    // 如果按下了修饰键，或播放/暂停快捷键被设置为了 Space，则不响应（避免与快捷键冲突）
+    const { shortcut, globalShortcut } = shortcutStore.shortcutList.playOrPause;
     if (
-      shortcutStore.shortcutList.playOrPause.shortcut === "Space" ||
-      shortcutStore.shortcutList.playOrPause.globalShortcut === "Space"
+      e.ctrlKey ||
+      e.shiftKey ||
+      e.altKey ||
+      e.metaKey ||
+      shortcut === "Space" ||
+      globalShortcut === "Space"
     ) {
       return;
     }
