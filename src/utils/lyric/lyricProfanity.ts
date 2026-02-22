@@ -1,4 +1,3 @@
-import { useSettingStore } from "@/stores";
 import type { SongLyric } from "@/types/lyric";
 import type { LyricLine } from "@applemusic-like-lyrics/lyric";
 import { cloneDeep } from "lodash-es";
@@ -33,9 +32,8 @@ const processLine = (line: LyricLine) => {
   if (line.romanLyric) line.romanLyric = replaceMaskedProfanity(line.romanLyric);
 };
 
-export const applyProfanityUncensor = (lyricData: SongLyric): SongLyric => {
-  const settingStore = useSettingStore();
-  if (!settingStore.uncensorMaskedProfanity) return lyricData;
+export const applyProfanityUncensor = (lyricData: SongLyric, uncensor: boolean): SongLyric => {
+  if (!uncensor) return lyricData;
 
   const newLyricData = cloneDeep(lyricData);
   newLyricData.lrcData?.forEach(processLine);

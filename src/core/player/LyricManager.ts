@@ -807,11 +807,12 @@ class LyricManager {
   private setFinalLyric(lyricData: SongLyric, req: number) {
     const musicStore = useMusicStore();
     const statusStore = useStatusStore();
+    const settingStore = useSettingStore();
     // 若非本次
     if (this.activeLyricReq !== req) return;
     // 应用括号替换
     lyricData = applyBracketReplacement(lyricData);
-    lyricData = applyProfanityUncensor(lyricData);
+    lyricData = applyProfanityUncensor(lyricData, settingStore.uncensorMaskedProfanity);
     // 规范化时间
     this.normalizeLyricLines(lyricData.yrcData);
     this.normalizeLyricLines(lyricData.lrcData);
