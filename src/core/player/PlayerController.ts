@@ -1759,7 +1759,7 @@ class PlayerController {
       // 计算歌词索引
       const songId = musicStore.playSong?.id;
       const offset = statusStore.getSongOffset(songId);
-      const useYrc = !!(settingStore.showYrc && musicStore.songLyric.yrcData?.length);
+      const useYrc = !!(settingStore.showWordLyrics && musicStore.songLyric.yrcData?.length);
       let rawLyrics: LyricLine[] = [];
       if (useYrc) {
         rawLyrics = toRaw(musicStore.songLyric.yrcData);

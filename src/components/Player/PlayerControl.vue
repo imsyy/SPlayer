@@ -182,38 +182,38 @@ watch(
 );
 
 watch(
-    () => statusStore.automixEndedSeq,
-    (seq, prev) => {
-      if (!seq || seq === prev) return;
-      if (showAutomixLabel.value) {
-        if (automixFxTimer !== null) {
-          window.clearTimeout(automixFxTimer);
-        }
-        automixFxTimer = window.setTimeout(() => {
-          showAutomixLabel.value = false;
-          showAutomixFx.value = false;
-          automixFxTimer = null;
-        }, 2000); // 混音结束后保留 2 秒再淡出
+  () => statusStore.automixEndedSeq,
+  (seq, prev) => {
+    if (!seq || seq === prev) return;
+    if (showAutomixLabel.value) {
+      if (automixFxTimer !== null) {
+        window.clearTimeout(automixFxTimer);
       }
-    },
-  );
+      automixFxTimer = window.setTimeout(() => {
+        showAutomixLabel.value = false;
+        showAutomixFx.value = false;
+        automixFxTimer = null;
+      }, 2000); // 混音结束后保留 2 秒再淡出
+    }
+  },
+);
 
-  // 监听歌曲变化，延迟关闭混音显示和辉光
-  watch(
-    () => musicStore.playSong?.id,
-    (_newId, _oldId) => {
-      if (showAutomixLabel.value) {
-        if (automixFxTimer !== null) {
-          window.clearTimeout(automixFxTimer);
-        }
-        automixFxTimer = window.setTimeout(() => {
-          showAutomixLabel.value = false;
-          showAutomixFx.value = false;
-          automixFxTimer = null;
-        }, 2000); // 切歌后保留 2 秒再淡出
+// 监听歌曲变化，延迟关闭混音显示和辉光
+watch(
+  () => musicStore.playSong?.id,
+  (_newId, _oldId) => {
+    if (showAutomixLabel.value) {
+      if (automixFxTimer !== null) {
+        window.clearTimeout(automixFxTimer);
       }
-    },
-  );
+      automixFxTimer = window.setTimeout(() => {
+        showAutomixLabel.value = false;
+        showAutomixFx.value = false;
+        automixFxTimer = null;
+      }, 2000); // 切歌后保留 2 秒再淡出
+    }
+  },
+);
 
 const onFxAnimationEnd = () => {
   // 移除之前的单次动画结束逻辑，因为现在是 infinite 循环，直到 showAutomixFx 为 false

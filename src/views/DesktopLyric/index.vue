@@ -103,7 +103,11 @@
         >
           <!-- 逐字歌词渲染 -->
           <template
-            v-if="lyricConfig.showYrc && lyricData?.yrcData?.length && line.line?.words?.length > 1"
+            v-if="
+              lyricConfig.showWordLyrics &&
+              lyricData?.yrcData?.length &&
+              line.line?.words?.length > 1
+            "
           >
             <span
               class="scroll-content"
@@ -200,7 +204,9 @@ const LYRIC_LOOKAHEAD = 300;
 // 实时歌词索引
 const currentLyricIndex = computed(() => {
   const lyrics =
-    lyricConfig.showYrc && lyricData?.yrcData?.length ? lyricData.yrcData : lyricData.lrcData;
+    lyricConfig.showWordLyrics && lyricData?.yrcData?.length
+      ? lyricData.yrcData
+      : lyricData.lrcData;
   // 边界检查
   if (!lyrics || !lyrics.length) return -1;
   return calculateLyricIndex(playSeekMs.value, lyrics, 0, 2);
@@ -312,7 +318,9 @@ const renderLyricLines = computed<RenderLine[]>(() => {
   }
 
   const lyrics =
-    lyricConfig.showYrc && lyricData?.yrcData?.length ? lyricData.yrcData : lyricData.lrcData;
+    lyricConfig.showWordLyrics && lyricData?.yrcData?.length
+      ? lyricData.yrcData
+      : lyricData.lrcData;
   // 无歌曲名且无歌词
   if (!lyricData.playName && !lyrics?.length) {
     return placeholder("SPlayer Desktop Lyric");

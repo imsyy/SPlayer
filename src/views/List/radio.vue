@@ -169,11 +169,7 @@ const moreOptions = computed<DropdownOption[]>(() => [
     label: "复制分享链接",
     key: "copy",
     props: {
-      onClick: () =>
-        copyData(
-          getShareUrl("djradio", radioId.value),
-          "已复制分享链接到剪贴板",
-        ),
+      onClick: () => copyData(getShareUrl("djradio", radioId.value), "已复制分享链接到剪贴板"),
     },
     icon: renderIcon("Share"),
   },

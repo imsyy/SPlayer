@@ -308,7 +308,7 @@ watch(
             player.scrollToIndex = Math.min(...player.bufferedLines);
           } else {
             const foundIndex = player.processedLines.findIndex(
-              (line: any) => line.startTime >= time
+              (line: any) => line.startTime >= time,
             );
             player.scrollToIndex = foundIndex === -1 ? player.processedLines.length : foundIndex;
           }
@@ -321,7 +321,7 @@ watch(
       playerRef.value?.setCurrentTime(time, false);
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 // 渐变宽度

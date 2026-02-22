@@ -168,7 +168,7 @@ const player = usePlayerController();
 
 // 当前歌词模式
 const lyricMode = computed(() => {
-  if (settingStore.showYrc) {
+  if (settingStore.showWordLyrics) {
     if (statusStore.usingTTMLLyric) return "TTML";
     if (musicStore.isHasYrc) {
       // 如果是从QQ音乐获取的歌词，显示QRC

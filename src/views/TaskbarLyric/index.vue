@@ -51,6 +51,8 @@
                   class="line-text"
                   :style="{ transformOrigin: state.isCenter ? 'center left' : 'center right' }"
                   :text="item.text"
+                  :words="item.words"
+                  :currentTime="state.currentTime"
                   :isActive="item.isPrimary"
                   :mode="
                     item.itemType === 'main' && !currentLyricText && !isHovering
@@ -77,7 +79,7 @@ import {
   type SyncTickPayload,
   type TaskbarConfig,
 } from "@/types/shared";
-import type { LyricLine } from "@applemusic-like-lyrics/lyric";
+import type { LyricLine, LyricWord } from "@applemusic-like-lyrics/lyric";
 import type { CSSProperties } from "vue";
 import LyricScroll from "./LyricScroll.vue";
 
@@ -96,6 +98,7 @@ interface DisplayItem {
   text: string;
   isPrimary: boolean;
   itemType: "main" | "sub" | "next";
+  words?: LyricWord[];
 }
 
 const state = reactive({
@@ -249,6 +252,7 @@ const displayItems = computed<DisplayItem[]>(() => {
     text: currentText,
     isPrimary: true,
     itemType: "main",
+    words: settingStore.taskbarLyricShowWordLyrics ? currentLine.words : undefined,
   });
 
   if (subText) {
@@ -442,6 +446,7 @@ const configMap: Partial<Record<keyof TaskbarConfig, keyof typeof settingStore>>
   fontWeight: "taskbarLyricFontWeight",
   showTranslation: "showTran",
   showRomaji: "showRoma",
+  showWordLyrics: "taskbarLyricShowWordLyrics",
   showWhenPaused: "taskbarLyricShowWhenPaused",
 };
 

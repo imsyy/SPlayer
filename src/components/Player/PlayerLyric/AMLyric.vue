@@ -82,7 +82,7 @@ const amLyricsData = computed(() => {
   const { songLyric } = musicStore;
   if (!songLyric) return [];
   // 优先使用逐字歌词(YRC/TTML)
-  const useYrc = songLyric.yrcData?.length && settingStore.showYrc;
+  const useYrc = songLyric.yrcData?.length && settingStore.showWordLyrics;
   const lyrics = useYrc ? songLyric.yrcData : songLyric.lrcData;
   // 简单检查歌词有效性
   if (!Array.isArray(lyrics) || lyrics.length === 0) return [];

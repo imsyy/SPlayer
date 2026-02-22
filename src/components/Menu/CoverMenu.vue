@@ -100,11 +100,7 @@ const openDropdown = async (
           label: `分享${type === "playlist" ? "歌单" : type === "album" ? "专辑" : type === "video" ? "视频" : "电台"}链接`,
           show: item.id !== 0 && item.id?.toString().length < 16,
           props: {
-            onClick: () =>
-              copyData(
-                getShareUrl(type, item.id),
-                "已复制分享链接到剪贴板",
-              ),
+            onClick: () => copyData(getShareUrl(type, item.id), "已复制分享链接到剪贴板"),
           },
           icon: renderIcon("Share", { size: 18 }),
         },

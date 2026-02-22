@@ -156,7 +156,7 @@ const player = usePlayerController();
 const lyricScrollContainer = ref<HTMLElement | null>(null);
 
 // 是否为逐字歌词模式
-const isYrcMode = computed(() => settingStore.showYrc && musicStore.isHasYrc);
+const isYrcMode = computed(() => settingStore.showWordLyrics && musicStore.isHasYrc);
 
 // 获取当前使用的歌词数据
 const currentLyricData = computed(() => {

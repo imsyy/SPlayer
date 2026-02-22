@@ -9,7 +9,7 @@ const config: LyricConfig = {
   fontSize: 24,
   fontWeight: 400,
   showTran: true,
-  showYrc: true,
+  showWordLyrics: true,
   isDoubleLine: true,
   position: "both",
   limitBounds: false,

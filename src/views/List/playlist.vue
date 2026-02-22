@@ -227,11 +227,7 @@ const moreOptions = computed<DropdownOption[]>(() => [
     key: "copy",
     show: !isLocalPlaylist.value,
     props: {
-      onClick: () =>
-        copyData(
-          getShareUrl("playlist", playlistId.value),
-          "已复制分享链接到剪贴板",
-        ),
+      onClick: () => copyData(getShareUrl("playlist", playlistId.value), "已复制分享链接到剪贴板"),
     },
     icon: renderIcon("Share"),
   },
