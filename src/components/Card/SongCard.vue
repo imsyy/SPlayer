@@ -38,17 +38,15 @@
               }"
               class="name-text"
             >
-              {{
-                settingStore.hideBracketedContent
+              <span class="user-select-text" v-text="settingStore.hideBracketedContent
                   ? removeBrackets(song?.name)
-                  : song?.name || "未知曲目"
-              }}
+                  : song?.name || '未知曲目'"/>
               <n-text
                 v-if="song.alia?.length && !settingStore.hideBracketedContent"
                 class="alia"
                 depth="3"
               >
-                ({{ song.alia }})
+                (<span class="user-select-text" v-text="song.alia"/>)
               </n-text>
             </n-ellipsis>
           </div>
@@ -113,7 +111,7 @@
             </n-tag>
             <!-- 歌手 -->
             <template v-if="settingStore.showSongArtist">
-              <div v-if="Array.isArray(song.artists)" class="artists">
+              <div v-if="Array.isArray(song.artists)" class="artists user-select-text">
                 <n-text
                   v-for="ar in song.artists"
                   :key="ar.id"
@@ -126,7 +124,7 @@
               <div v-else-if="song.type === 'radio'" class="artists">
                 <n-text class="ar"> 电台节目 </n-text>
               </div>
-              <div v-else class="artists" @click="openJumpArtist(song.artists)">
+              <div v-else class="artists user-select-text" @click="openJumpArtist(song.artists)">
                 <n-text class="ar">
                   {{
                     settingStore.hideBracketedContent
@@ -146,7 +144,7 @@
       >
         <n-text
           v-if="isObject(song.album)"
-          class="album-text"
+          class="album-text user-select-text"
           @click="
             router.push({
               name: 'album',
@@ -156,7 +154,7 @@
         >
           {{ albumName }}
         </n-text>
-        <n-text v-else class="album-text">
+        <n-text v-else class="album-text user-select-text">
           {{ albumName }}
         </n-text>
       </div>

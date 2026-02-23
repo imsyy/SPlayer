@@ -26,7 +26,7 @@
           />
         </div>
         <div class="data">
-          <div class="name text-hidden">
+          <div class="name text-hidden user-select-text">
             <n-text class="name-text">{{
               settingStore.hideBracketedContent
                 ? removeBrackets(artistDetailData.name)

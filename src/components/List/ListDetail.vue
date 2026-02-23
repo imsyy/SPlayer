@@ -34,7 +34,7 @@
           </div>
         </div>
         <div class="data">
-          <n-h2 class="name text-hidden">
+          <n-h2 class="name text-hidden user-select-text">
             <n-ellipsis
               v-if="config.titleType === 'ellipsis'"
               :line-clamp="1"
