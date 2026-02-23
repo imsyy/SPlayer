@@ -104,7 +104,9 @@ audio {
 }
 
 // user-select-text
-.user-select-text {
+*:has(> .user-select-text),
+.user-select-text,
+.user-select-text * {
   user-select: text;
   -webkit-user-select: text;
 }
