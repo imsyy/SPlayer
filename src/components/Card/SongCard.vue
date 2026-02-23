@@ -65,7 +65,7 @@
             <!-- 原唱翻唱 -->
             <template v-if="settingStore.showSongOriginalTag">
               <n-tag v-if="song.originCoverType === 1" :bordered="false" type="primary" round>
-                原
+                原唱
               </n-tag>
               <n-tag v-if="song.originCoverType === 2" :bordered="false" type="info" round>
                 翻唱
