@@ -34,16 +34,20 @@
           </div>
         </div>
         <div class="data">
-          <n-h2 class="name user-select-text" @click="handleTitleClick">
+          <n-h2 class="name user-select-text">
             <n-ellipsis
               v-if="config.titleType === 'ellipsis'"
               :line-clamp="1"
               :tooltip="{ placement: 'bottom' }"
             >
-              {{ titleText }}
+              <span @click="handleTitleClick">
+                {{ titleText }}
+              </span>
             </n-ellipsis>
             <template v-else>
-              {{ titleText }}
+              <span @click="handleTitleClick">
+                {{ titleText }}
+              </span>
               <!-- 隐私歌单 -->
               <n-popover v-if="detailData?.privacy === 10" :show-arrow="false" placement="right">
                 <template #trigger>
