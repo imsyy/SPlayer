@@ -38,15 +38,20 @@
               }"
               class="name-text"
             >
-              <span class="user-select-text" v-text="settingStore.hideBracketedContent
-                  ? removeBrackets(song?.name)
-                  : song?.name || '未知曲目'"/>
+              <span
+                class="user-select-text"
+                v-text="
+                  settingStore.hideBracketedContent
+                    ? removeBrackets(song?.name)
+                    : song?.name || '未知曲目'
+                "
+              />
               <n-text
                 v-if="song.alia?.length && !settingStore.hideBracketedContent"
-                class="alia"
+                class="alia user-select-text"
                 depth="3"
               >
-                (<span class="user-select-text" v-text="song.alia"/>)
+                {{ song.alia }}
               </n-text>
             </n-ellipsis>
           </div>
@@ -357,6 +362,14 @@ const albumName = computed(() => {
         align-items: center;
         line-height: normal;
         font-size: 16px;
+        .alia {
+          &::before {
+            content: " (";
+          }
+          &::after {
+            content: ") ";
+          }
+        }
       }
       .desc {
         min-width: 0;

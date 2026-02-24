@@ -26,14 +26,14 @@
           />
         </div>
         <div class="data">
-          <div class="name text-hidden user-select-text">
+          <div class="name user-select-text">
             <n-text class="name-text">{{
               settingStore.hideBracketedContent
                 ? removeBrackets(artistDetailData.name)
                 : artistDetailData.name || "未知艺术家"
             }}</n-text>
-            <n-text v-if="artistDetailData?.alia" class="name-alias" depth="3">
-              {{ artistDetailData.alia || "未知艺术家" }}
+            <n-text v-if="artistDetailData?.alias?.length" class="name-alias" depth="3">
+              <span v-for="(alia, index) in artistDetailData.alias" :key="index" v-text="alia"/>
             </n-text>
           </div>
           <n-collapse-transition :show="!listScrolling" class="collapse">
@@ -359,7 +359,6 @@ watch(
         &:first-child {
           width: 60%;
           margin-top: 0;
-          height: 40px;
         }
       }
       .description {
@@ -370,18 +369,20 @@ watch(
       .name {
         font-size: 30px;
         font-weight: bold;
-        height: 48px;
         transition:
           font-size 0.3s var(--n-bezier),
           color 0.3s var(--n-bezier);
         .name-alias {
           &::before {
-            content: "（";
+            content: " (";
             margin-right: 6px;
           }
           &::after {
-            content: "）";
+            content: ") ";
             margin-left: 6px;
+          }
+          span:not(:last-child)::after {
+            content: "; ";
           }
         }
       }
@@ -391,8 +392,6 @@ watch(
         padding-left: 4px;
       }
       .collapse {
-        position: absolute;
-        top: 48px;
         margin: 8px 0;
       }
       .meta {

@@ -159,6 +159,7 @@ export type CoverType = {
   updateTime?: number;
   loading?: boolean;
   updateTip?: string;
+  alias?: string[];
   tracks?: {
     first: string;
     second: string;
@@ -189,7 +190,7 @@ export type ArtistType = {
   name: string;
   cover: string;
   coverSize?: CoverSize;
-  alia?: string;
+  alias?: string[];
   identify?: string;
   description?: string;
   albumSize?: number;

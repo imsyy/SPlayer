@@ -145,6 +145,7 @@ export const formatCoverList = (data: any[]): CoverType[] => {
       duration: msToTime(item.duration || item.dt || item.playTime),
       createTime: item.createTime || item.publishTime,
       updateTime: item.updateTime || item.trackNumberUpdateTime || item.trackUpdateTime,
+      alias: [item.alias, item.transNames].flat().filter(Boolean),
       // 热榜特殊数据
       tracks: item.tracks,
     };
@@ -163,7 +164,7 @@ export const formatArtistsList = (data: any[]): ArtistType[] => {
     id: item.id,
     name: item.name,
     ...getCoverUrl(item),
-    alia: item.alias?.[0],
+    alias: [item.alias, item.transNames].flat().filter(Boolean),
     identify: item?.identifyTag?.[0],
     description: item.description || item.briefDesc,
     albumSize: item.albumSize,

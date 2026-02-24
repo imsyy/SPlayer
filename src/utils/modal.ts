@@ -446,7 +446,7 @@ export const openDescModal = (content: string, title: string = "歌单简介") =
         { style: { maxHeight: "400px" } },
         {
           default: () =>
-            h("div", { style: { whiteSpace: "pre-wrap" } }, { default: () => content }),
+            h("div", { style: { whiteSpace: "pre-wrap", userSelect: "text" } }, { default: () => content }),
         },
       );
     },

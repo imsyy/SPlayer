@@ -198,10 +198,10 @@ const getAlbumDetail = async (id: number, refresh: boolean = false) => {
       backgroundCheck(id, cached);
       return;
     }
-  }
 
-  if (!refresh && detailData.value?.id !== id) {
-    resetData(true);
+    if (detailData.value?.id !== id) {
+      resetData(true);
+    }
   }
   // 获取专辑详情
   const detail = await albumDetail(id);
