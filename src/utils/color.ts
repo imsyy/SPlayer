@@ -45,20 +45,60 @@ const getAccentColor = (argb: number) => {
  * @param variant 变体名称，默认为 'secondary'
  */
 const getThemeSchema = (theme: Theme, variant: keyof Theme["palettes"] = "secondary") => {
-  const { hue, chroma } = theme.palettes[variant];
-  const getColor = (tone: number) => getAccentColor(Hct.from(hue, chroma, tone).toInt());
+  // 获取基于主色的 HCT 属性
+  const hct = Hct.fromInt(theme.source);
+  
+  /**
+   * 辅助色饱和度增强逻辑
+   */
+  let targetHue = hct.hue;
+  let targetChroma = hct.chroma;
 
+  const palette = theme.palettes[variant];
+  
+  if (variant === "primary") {
+    targetHue = hct.hue;
+    targetChroma = hct.chroma;
+  } else if (variant === "secondary") {
+    targetHue = palette.hue;
+    targetChroma = Math.max(hct.chroma * 0.7, 45);
+  } else if (variant === "tertiary") {
+    targetHue = palette.hue;
+    targetChroma = Math.max(hct.chroma * 0.8, 60);
+  } else if (variant === "neutral") {
+    targetHue = hct.hue;
+    targetChroma = 15;
+  } else if (variant === "neutralVariant") {
+    targetHue = hct.hue;
+    targetChroma = 20;
+  } else if (variant === "error") {
+    targetHue = (hct.hue + 180) % 360;
+    targetChroma = Math.max(hct.chroma, 80);
+  }
+
+  // 获取指定属性的颜色
+  const getColor = (tone: number) => getAccentColor(Hct.from(targetHue, targetChroma, tone).toInt());
+
+  /**
+   * 界面辅助色生成逻辑
+   */
+  const getHelperColor = (tone: number, chroma: number = 4) => 
+    getAccentColor(Hct.from(hct.hue, chroma, tone).toInt());
+
+  const isPrimary = variant === "primary";
+  const sourceRgb = getAccentColor(theme.source);
+  
   return {
-    main: getColor(90),
+    main: isPrimary ? sourceRgb : getColor(80),
     light: {
-      primary: getColor(10),
-      background: getColor(94),
-      "surface-container": getColor(90),
+      primary: isPrimary ? sourceRgb : getColor(40),
+      background: getHelperColor(98, 2),
+      "surface-container": getHelperColor(94, 4),
     },
     dark: {
-      primary: getColor(90),
-      background: getColor(20),
-      "surface-container": getColor(16),
+      primary: isPrimary ? sourceRgb : getColor(80),
+      background: getAccentColor(Hct.from(hct.hue, 0, 10).toInt()),
+      "surface-container": getAccentColor(Hct.from(hct.hue, 2, 14).toInt()),
     },
   };
 };
