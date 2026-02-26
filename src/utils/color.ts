@@ -83,17 +83,20 @@ const getThemeSchema = (theme: Theme, variant: keyof Theme["palettes"] = "second
 
   const isPrimary = variant === "primary";
   const sourceRgb = getAccentColor(theme.source);
-  const darkPrimary = isPrimary ? sourceRgb : getColor(80);
   
   return {
-    main: darkPrimary,
+    /**
+     * 全屏播放器 UI 显示逻辑
+     * 使用 Tone 85，确保在深色背景下具有极高亮度的同时，保留足够的饱和度空间来体现色彩
+     */
+    main: getAccentColor(Hct.from(targetHue, Math.max(targetChroma, 48), 85).toInt()),
     light: {
       primary: isPrimary ? sourceRgb : getColor(40),
       background: getHelperColor(98, 2),
       "surface-container": getHelperColor(94, 4),
     },
     dark: {
-      primary: darkPrimary,
+      primary: isPrimary ? sourceRgb : getColor(80),
       background: getHelperColor(10, 0),
       "surface-container": getHelperColor(14, 2),
     },
