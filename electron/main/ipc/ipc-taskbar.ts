@@ -120,17 +120,31 @@ const initTaskbarIpc = () => {
 
   ipcMain.on(TASKBAR_IPC_CHANNELS.REQUEST_DATA, () => {
     const mainWin = mainWindow.getWin();
-    if (mainWin && !mainWin.isDestroyed()) {
+    if (!mainWin || mainWin.isDestroyed()) return;
+
+    const forwardRequest = () => {
+      if (mainWin.isDestroyed()) return;
       mainWin.webContents.send(TASKBAR_IPC_CHANNELS.REQUEST_DATA);
+
+      taskbarLyricWindow.updateLayout(false);
+
+      const isDark = nativeTheme.shouldUseDarkColors;
+      taskbarLyricWindow.send(TASKBAR_IPC_CHANNELS.SYNC_STATE, {
+        type: "system-theme",
+        data: { isDark },
+      } as SyncStatePayload);
+    };
+
+    // 启动时任务栏歌词窗口可能先于主窗口渲染进程完成加载，
+    // 此时主窗口的 IPC 监听器（initIpc）尚未注册，需要等待加载完成后再转发
+    if (!mainWin.webContents.isLoading()) {
+      forwardRequest();
+    } else {
+      mainWin.webContents.once("did-finish-load", () => {
+        // 额外延迟以确保 Vue 应用已挂载并注册 IPC 监听器
+        setTimeout(forwardRequest, 500);
+      });
     }
-
-    taskbarLyricWindow.updateLayout(false);
-
-    const isDark = nativeTheme.shouldUseDarkColors;
-    taskbarLyricWindow.send(TASKBAR_IPC_CHANNELS.SYNC_STATE, {
-      type: "system-theme",
-      data: { isDark },
-    } as SyncStatePayload);
   });
 
   ipcMain.on("taskbar:fade-done", () => {
