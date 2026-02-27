@@ -629,7 +629,18 @@ class LyricManager {
       try {
         const ttmlContent = typeof ttml === "string" ? ttml : "";
         if (ttmlContent) {
-          ttmlLines = parseTTML(this.cleanTTMLTranslations(ttmlContent)).lines || [];
+          console.log("[本地歌词] TTML原始长度:", ttmlContent.length);
+          console.log(
+            "[本地歌词] 包含replacement zh-Hant:",
+            ttmlContent.includes('type=\"replacement\"') && ttmlContent.includes("zh-Hant"),
+          );
+          const cleaned = this.cleanTTMLTranslations(ttmlContent);
+          console.log("[本地歌词] TTML清理后长度:", cleaned.length);
+          console.log(
+            "[本地歌词] 清理后包含replacement zh-Hant:",
+            cleaned.includes('type=\"replacement\"') && cleaned.includes("zh-Hant"),
+          );
+          ttmlLines = parseTTML(cleaned).lines || [];
           console.log("检测到本地TTML歌词覆盖", ttmlLines);
         }
       } catch (err) {
