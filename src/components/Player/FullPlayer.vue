@@ -122,7 +122,7 @@ const noLrc = computed<boolean>(() => {
 
 /** 是否处于纯净模式 */
 const pureLyricMode = computed<boolean>(
-  () => (statusStore.pureLyricMode && musicStore.isHasLrc) || musicStore.playSong.type === "radio",
+  () => statusStore.pureLyricMode && musicStore.isHasLrc,
 );
 
 /* 是否显示全屏封面 */
