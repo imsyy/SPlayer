@@ -227,6 +227,8 @@ export interface SettingState {
   smtcOpen: boolean;
   /** 歌词模糊 */
   lyricsBlur: boolean;
+  /** 歌词混合模式 */
+  lyricsBlendMode: "screen" | "plus-lighter";
   /** 播放试听 */
   playSongDemo: boolean;
   /** 显示搜索历史 */
@@ -596,6 +598,7 @@ export const useSettingStore = defineStore("setting", {
     lyricTransition: "slide",
     lyricsPosition: "flex-start",
     lyricsBlur: false,
+    lyricsBlendMode: "screen",
     lyricsScrollOffset: 0.25,
     lyricHorizontalOffset: 10,
     lyricAlignRight: false,

@@ -63,6 +63,13 @@ export const useInit = () => {
         statusStore.autoClose.endTime = 0;
       }
     }
+
+    // 监听设置变化以更新 ReplayGain
+    watch(
+      () => [settingStore.enableReplayGain, settingStore.replayGainMode],
+      () => player.applyReplayGain(),
+    );
+
     if (isElectron) {
       // 注册全局快捷键
       shortcutStore.registerAllShortcuts();

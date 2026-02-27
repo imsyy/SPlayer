@@ -1,12 +1,8 @@
 import { TypedEventTarget } from "@/utils/TypedEventTarget";
+import type { IExtendedAudioContext } from "@/types/audio/context";
 import { AudioEffectManager } from "./AudioEffectManager";
 import type { EngineCapabilities, IPlaybackEngine, FadeCurve } from "./IPlaybackEngine";
-import { getSharedAudioContext, getSharedMasterInput } from "./SharedAudioContext";
-
-/** 扩充 AudioContext 接口以支持 setSinkId (实验性 API) */
-export interface IExtendedAudioContext extends AudioContext {
-  setSinkId(deviceId: string): Promise<void>;
-}
+import { getSharedAudioContext, getSharedMasterInput } from "../automix/SharedAudioContext";
 
 export interface AudioErrorDetail {
   originalEvent: Event;
@@ -96,17 +92,9 @@ export abstract class BaseAudioPlayer
 
     try {
       this.audioCtx = getSharedAudioContext();
-
-      // 在共享 Context 环境下，初始化不应挂起上下文
-      // if (this.audioCtx.state === "running") {
-      //   this.audioCtx.suspend().catch(console.warn);
-      // }
-
       this.inputNode = this.audioCtx.createGain();
       this.inputNode.gain.value = 1; // 直通
-
       this.gainNode = this.audioCtx.createGain();
-
       this.effectManager = new AudioEffectManager(this.audioCtx);
 
       // 连接链路: Input -> EQ/Spectrum -> MasterGain -> Speaker

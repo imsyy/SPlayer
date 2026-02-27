@@ -10,14 +10,12 @@ import type {
   IPlaybackEngine,
   PauseOptions,
   PlayOptions,
-  AutomationPoint,
 } from "../audio-player/IPlaybackEngine";
 import { MpvPlayer, useMpvPlayer } from "../audio-player/MpvPlayer";
-import { getSharedAudioContext } from "../audio-player/SharedAudioContext";
+import { getSharedAudioContext } from "../automix/SharedAudioContext";
 
 /**
  * 音频管理器
- *
  * 统一的音频播放接口，根据设置选择播放引擎
  */
 class AudioManager extends TypedEventTarget<AudioEventMap> implements IPlaybackEngine {
@@ -146,10 +144,6 @@ class AudioManager extends TypedEventTarget<AudioEventMap> implements IPlaybackE
       rate?: number;
       replayGain?: number;
       fadeCurve?: FadeCurve;
-      pitchShift?: number;
-      playbackRate?: number;
-      automationCurrent?: AutomationPoint[];
-      automationNext?: AutomationPoint[];
     },
   ): Promise<void> {
     // MPV 不支持 Web Audio API 级别的 Crossfade，回退到普通播放
@@ -164,153 +158,83 @@ class AudioManager extends TypedEventTarget<AudioEventMap> implements IPlaybackE
       });
       return;
     }
-
     console.log(
       `🔀 [AudioManager] Starting Crossfade (duration: ${options.duration}s, type: ${options.mixType})`,
     );
-
     // 清理之前的 pending
     this.clearPendingSwitch();
     this.isCrossfading = true;
-
-    // 1. 创建新引擎 (保持同类型)
+    // 创建新引擎 (保持同类型)
     let newEngine: IPlaybackEngine;
     if (this.engineType === "ffmpeg") {
       newEngine = new FFmpegAudioPlayer();
     } else {
       newEngine = new AudioElementPlayer();
     }
-
     newEngine.init();
     this.pendingEngine = newEngine;
-
-    // 2. 预设状态
+    // 预设状态
     newEngine.setVolume(0);
     if (this.engine.capabilities.supportsRate) {
-      // 优先使用传入的 playbackRate
-      const targetRate = options.playbackRate ?? options.rate ?? this.getRate();
+      // 优先使用传入的速率
+      const targetRate = options.rate ?? this.getRate();
       newEngine.setRate(targetRate);
     }
-
-    // Apply Pitch Shift (if supported)
-    if (options.pitchShift !== undefined && options.pitchShift !== 0) {
-      // TODO: Implement pitch shift in IPlaybackEngine (requires SoundTouch or Detune)
-      // For now, Web Audio API 'detune' can be used if exposed
-      if (newEngine instanceof AudioElementPlayer || newEngine instanceof FFmpegAudioPlayer) {
-        // 暂时无法直接设置 pitch shift，需要在 BaseAudioPlayer 中实现
-        // 这里先留空，等待后续实现
-      }
-    }
-
-    // Apply ReplayGain to new engine
+    // 将回放增益应用于新引擎
     if (options.replayGain !== undefined) {
       newEngine.setReplayGain?.(options.replayGain);
     }
-
-    // Bass Swap Filter Setup
+    // 低频互换滤波设置
     if (options.mixType === "bassSwap") {
       this.engine.setHighPassQ?.(1.0);
       newEngine.setHighPassQ?.(1.0);
       newEngine.setHighPassFilter?.(400, 0);
     }
-
     const fadeCurve = options.fadeCurve ?? "equalPower";
-
-    // 3. 启动新引擎
+    // 启动新引擎
     await newEngine.play(url, {
       autoPlay: true,
       seek: options.seek,
       fadeIn: false,
     });
-
+    // 新引擎逐渐增加音量
     if (newEngine.rampVolumeTo) {
       newEngine.rampVolumeTo(this._masterVolume, options.duration, fadeCurve);
     } else {
       newEngine.setVolume(this._masterVolume);
     }
-
-    // Apply Automation Curves (Mashup Mode)
-    if (options.automationCurrent && options.automationNext) {
-      // 使用精确的自动化曲线
-      const ctx = getSharedAudioContext();
-      const startTime = ctx.currentTime;
-
-      // 应用 Current 曲线 (Volume & Filter)
-      options.automationCurrent.forEach((point) => {
-        if (point.timeOffset >= 0 && point.timeOffset <= options.duration) {
-          // Volume
-          this.engine.rampVolumeTo?.(point.volume * this._masterVolume, 0.1, "linear"); // 简化处理，实际应使用 rampAt
-          // Low Cut (High Pass Filter)
-          // DJ EQ Low Cut usually goes up to 200-400Hz.
-          // Let's map 0.0 -> 10Hz, 1.0 -> 400Hz
-          const targetFreq = point.lowCut * 400;
-          this.engine.setHighPassFilter?.(targetFreq, 0.1);
-        }
-      });
-
-      // 应用 Next 曲线
-      options.automationNext.forEach((point) => {
-        if (point.timeOffset >= 0 && point.timeOffset <= options.duration) {
-          // Volume
-          // newEngine 已经有 rampVolumeTo 处理了整体淡入，这里叠加自动化可能冲突
-          // 暂时忽略 Next 的 Volume 自动化，依赖 rampVolumeTo
-
-          // Low Cut
-          const targetFreq = point.lowCut * 400;
-          newEngine.setHighPassFilter?.(targetFreq, 0.1);
-        }
-      });
-
-      // 调度更精细的自动化需要 setHighPassFilterAt 支持
-      if (this.engine.setHighPassFilterAt && newEngine.setHighPassFilterAt) {
-        options.automationCurrent.forEach((point) => {
-          const t = startTime + point.timeOffset;
-          // 映射 low_cut 到频率 (0 -> 10Hz, 1 -> 400Hz)
-          const freq = Math.max(10, point.lowCut * 400);
-          this.engine.setHighPassFilterAt?.(freq, t);
-
-          // Volume 自动化 (如果需要精确控制)
-          // this.engine.setVolumeAt(point.volume, t);
-        });
-
-        options.automationNext.forEach((point) => {
-          const t = startTime + point.timeOffset;
-          const freq = Math.max(10, point.lowCut * 400);
-          newEngine.setHighPassFilterAt?.(freq, t);
-        });
-      }
-    } else if (options.mixType === "bassSwap") {
+    if (options.mixType === "bassSwap") {
+      // 针对 DJ 风格的互换低频滤镜：首先计算过滤转换的中间点与释放点
       const mid = options.duration * 0.5;
+      // 混音衰减预留，不超过0.6s
       const release = Math.min(0.6, options.duration * 0.25);
-
       const t0 = getSharedAudioContext().currentTime + 0.02;
       const tMid = t0 + mid;
       const tReleaseEnd = tMid + release;
       const tEnd = t0 + options.duration;
       const bypassFreq = 10;
-
+      // 对于待退出的旧引擎，逐渐增加高通滤波，切除其低频 (让出低音空间)
       if (this.engine.setHighPassFilterAt && this.engine.rampHighPassFilterToAt) {
         this.engine.setHighPassFilterAt(bypassFreq, t0);
         this.engine.rampHighPassFilterToAt(400, tMid);
       } else {
         this.engine.setHighPassFilter?.(400, mid);
       }
-
+      // 对于待进入的新引擎，最初先切除低频，然后在淡入达到一半时迅速恢复其低频 (Bass Swap的Drop听感)
       if (newEngine.setHighPassFilterAt && newEngine.rampHighPassFilterToAt) {
         newEngine.setHighPassFilterAt(400, t0);
         newEngine.setHighPassFilterAt(400, tMid);
         newEngine.rampHighPassFilterToAt(bypassFreq, tReleaseEnd);
         newEngine.setHighPassFilterAt(bypassFreq, tEnd + 0.05);
       }
-
+      // 设置高通滤波的Q值，0.707是最佳的
       if (newEngine.setHighPassQAt) {
         newEngine.setHighPassQAt(0.707, tEnd + 0.05);
       } else {
         newEngine.setHighPassQ?.(0.707);
       }
     }
-
-    // 4. 旧引擎淡出 (Fade Out, Equal Power, Keep Context)
+    // 旧引擎淡出并保持上下文运行
     const oldEngine = this.engine;
     oldEngine.pause({
       fadeOut: true,
@@ -318,7 +242,6 @@ class AudioManager extends TypedEventTarget<AudioEventMap> implements IPlaybackE
       fadeCurve,
       keepContextRunning: true,
     });
-
     const commitSwitch = () => {
       console.log("🔀 [AudioManager] Committing Crossfade Switch");
       if (this.cleanupListeners) {
@@ -330,27 +253,20 @@ class AudioManager extends TypedEventTarget<AudioEventMap> implements IPlaybackE
       this.pendingEngine = null; // Cleared from pending, now active
       this.isCrossfading = false;
       this.bindEngineEvents();
-
       // 触发 UI 切换回调
-      if (options.onSwitch) {
-        try {
-          options.onSwitch();
-        } catch {
-          // ignore
-        }
+      try {
+        options.onSwitch?.();
+      } catch (e) {
+        console.error("🔀 [AudioManager] onSwitch callback failed:", e);
       }
-
-      // 触发一次 update 以刷新 UI
+      // 触发一次 update 事件以刷新 UI 进度和播放状态
       this.dispatch(AUDIO_EVENTS.TIME_UPDATE, undefined);
       this.dispatch(AUDIO_EVENTS.PLAY, undefined);
-
       if (options.mixType !== "bassSwap") {
         this.engine.setHighPassFilter?.(0, 0);
       }
     };
-
     const switchDelay = options.uiSwitchDelay ?? 0;
-
     if (switchDelay > 0) {
       this.pendingSwitchTimer = setTimeout(() => {
         this.pendingSwitchTimer = null;
@@ -359,14 +275,8 @@ class AudioManager extends TypedEventTarget<AudioEventMap> implements IPlaybackE
     } else {
       commitSwitch();
     }
-
     // 销毁旧引擎
-    setTimeout(
-      () => {
-        oldEngine.destroy();
-      },
-      options.duration * 1000 + 1000,
-    );
+    setTimeout(() => oldEngine.destroy(), options.duration * 1000 + 1000);
   }
 
   /**

@@ -340,6 +340,20 @@ export const useLyricSettings = (): SettingConfig => {
             }),
           },
           {
+            key: "lyricsBlendMode",
+            label: "歌词混合模式",
+            type: "select",
+            description: "全屏歌词区域的颜色混合模式",
+            options: [
+              { label: "Screen", value: "screen" },
+              { label: "Plus Lighter", value: "plus-lighter" },
+            ],
+            value: computed({
+              get: () => settingStore.lyricsBlendMode,
+              set: (v) => (settingStore.lyricsBlendMode = v),
+            }),
+          },
+          {
             key: "lyricOffsetStep",
             label: "歌词时延调节步长",
             type: "input-number",

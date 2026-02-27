@@ -19,7 +19,6 @@ import {
 
 /**
  * 媒体会话管理器，负责不同平台的媒体控制集成
- *
  * 在 Electron 平台上会使用原生插件，Web 平台上会使用 Navigator.mediaSession
  */
 class MediaSessionManager {

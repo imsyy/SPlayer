@@ -312,7 +312,7 @@ onMounted(() => {
     align-items: flex-end;
     &:last-child {
       height: 0;
-      padding-top: 50%;
+      padding-top: 40px;
     }
     .title {
       display: flex;

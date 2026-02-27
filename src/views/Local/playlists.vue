@@ -1,14 +1,16 @@
 <template>
   <div class="local-playlists">
-    <!-- 歌单列表 -->
-    <CoverList
-      :data="playlistData"
-      :loading="false"
-      type="playlist"
-      :show-size="false"
-      empty-description="暂无本地歌单"
-      :hiddenCover="settingStore.hiddenCovers.playlist"
-    />
+    <n-scrollbar>
+      <!-- 歌单列表 -->
+      <CoverList
+        :data="playlistData"
+        :loading="false"
+        :show-size="false"
+        :hiddenCover="settingStore.hiddenCovers.playlist"
+        type="playlist"
+        empty-description="暂无本地歌单"
+      />
+    </n-scrollbar>
   </div>
 </template>
 
@@ -16,6 +18,8 @@
 import type { CoverType } from "@/types/main";
 import { useLocalStore, useSettingStore } from "@/stores";
 import CoverList from "@/components/List/CoverList.vue";
+
+defineOptions({ inheritAttrs: false });
 
 const localStore = useLocalStore();
 const settingStore = useSettingStore();
@@ -36,9 +40,9 @@ const playlistData = computed<CoverType[]>(() => {
 
 <style lang="scss" scoped>
 .local-playlists {
-  height: 100%;
-  padding-bottom: 20px;
-  overflow-y: auto;
+  flex: 1;
+  max-height: calc((var(--layout-height) - 132) * 1px);
+  overflow: hidden;
   .cover-list {
     padding: 4px;
   }

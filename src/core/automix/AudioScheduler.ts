@@ -1,26 +1,45 @@
-import type { IExtendedAudioContext } from "./BaseAudioPlayer";
-
+import type { IExtendedAudioContext } from "@/types/audio/context";
 import SchedulerWorker from "./scheduler.worker?worker";
 
+/**
+ * 音频调度器时钟源
+ */
 export type AudioSchedulerClockSource = "worker" | "main";
 
+/**
+ * 音频调度器选项
+ */
 export type AudioSchedulerOptions = {
   intervalMs?: number;
   scheduleHorizonSec?: number;
 };
 
+/**
+ * 调度任务类型
+ */
 type ScheduledJobKind = "schedule" | "run";
 
+/**
+ * 调度任务
+ */
 type ScheduledJob = {
+  /** 任务ID */
   id: string;
+  /** 任务组ID */
   groupId: string;
+  /** 任务时间 */
   time: number;
+  /** 任务类型 */
   kind: ScheduledJobKind;
+  /** 任务是否已取消 */
   cancelled: boolean;
   action: (when: number) => void;
   cleanup?: () => void;
 };
 
+/**
+ * 音频调度器
+ */
 export class AudioScheduler {
   private readonly intervalMs: number;
   private readonly scheduleHorizonSec: number;
@@ -42,14 +61,25 @@ export class AudioScheduler {
     this.scheduleHorizonSec = opts.scheduleHorizonSec ?? 1.5;
   }
 
+  /**
+   * 获取时钟源
+   * @returns 时钟源
+   */
   public getClockSource(): AudioSchedulerClockSource {
     return this.clockSource;
   }
 
+  /**
+   * 设置 tick 处理程序
+   * @param handler tick 处理程序
+   */
   public setTickHandler(handler: (() => void) | null): void {
     this.tickHandler = handler;
   }
 
+  /**
+   * 启动调度器
+   */
   public start(): void {
     this.stop();
 
@@ -71,6 +101,9 @@ export class AudioScheduler {
     this.clockSource = "main";
   }
 
+  /**
+   * 停止调度器
+   */
   public stop(): void {
     if (this.worker) {
       try {
@@ -88,11 +121,24 @@ export class AudioScheduler {
     this.clockSource = "main";
   }
 
+  /**
+   * 创建任务组ID
+   * @param prefix 任务组ID前缀
+   * @returns 任务组ID
+   */
   public createGroupId(prefix = "g"): string {
     this.groupCounter += 1;
     return `${prefix}-${this.groupCounter}`;
   }
 
+  /**
+   * 调度任务
+   * @param groupId 任务组ID
+   * @param time 任务时间
+   * @param action 任务动作
+   * @param cleanup 任务清理
+   * @returns 任务ID
+   */
   public scheduleAt(
     groupId: string,
     time: number,
@@ -113,6 +159,14 @@ export class AudioScheduler {
     return id;
   }
 
+  /**
+   * 立即执行任务
+   * @param groupId 任务组ID
+   * @param time 任务时间
+   * @param action 任务动作
+   * @param cleanup 任务清理
+   * @returns 任务ID
+   */
   public runAt(
     groupId: string,
     time: number,
@@ -133,6 +187,10 @@ export class AudioScheduler {
     return id;
   }
 
+  /**
+   * 取消任务
+   * @param id 任务ID
+   */
   public cancelJob(id: string): void {
     const job = this.jobs.get(id);
     if (!job) return;
@@ -144,6 +202,10 @@ export class AudioScheduler {
     }
   }
 
+  /**
+   * 清除任务组
+   * @param groupId 任务组ID
+   */
   public clearGroup(groupId: string): void {
     for (const job of this.jobs.values()) {
       if (job.groupId !== groupId) continue;
@@ -157,6 +219,9 @@ export class AudioScheduler {
     }
   }
 
+  /**
+   * 清除所有任务
+   */
   public clearAll(): void {
     for (const job of this.jobs.values()) {
       job.cancelled = true;
@@ -169,6 +234,9 @@ export class AudioScheduler {
     this.jobs.clear();
   }
 
+  /**
+   * tick 处理
+   */
   private tick(): void {
     this.tickHandler?.();
     const now = this.audioContext.currentTime;

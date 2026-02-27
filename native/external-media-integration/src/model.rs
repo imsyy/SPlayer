@@ -53,6 +53,7 @@ impl SystemMediaEvent {
             volume: None,
         }
     }
+    #[allow(dead_code)]
     pub const fn set_volume(volume: f64) -> Self {
         Self {
             type_: SystemMediaEventType::SetVolume,

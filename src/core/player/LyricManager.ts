@@ -28,6 +28,10 @@ interface LyricFetchResult {
   };
 }
 
+/**
+ * 歌词管理器
+ * 负责歌词的获取、缓存、预加载等操作
+ */
 class LyricManager {
   /**
    * 在线歌词请求序列

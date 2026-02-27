@@ -68,7 +68,12 @@
             <div
               v-if="statusStore.personalFmMode"
               class="btn-icon"
-              v-debounce="() => songManager.personalFMTrash(musicStore.personalFMSong?.id)"
+              v-debounce="
+                () =>
+                  songManager.personalFMTrash(musicStore.personalFMSong?.id, () =>
+                    player.nextOrPrev('next'),
+                  )
+              "
             >
               <SvgIcon class="icon" :size="18" name="ThumbDown" />
             </div>

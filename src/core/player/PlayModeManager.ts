@@ -13,7 +13,6 @@ import * as playerIpc from "./PlayerIpc";
 
 /**
  * 播放模式管理器
- *
  * 负责循环模式、随机模式的切换逻辑及状态同步
  */
 export class PlayModeManager {

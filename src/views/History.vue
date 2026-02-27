@@ -39,7 +39,6 @@
         v-if="dataStore.historyList.length > 0"
         :data="dataStore.historyList"
         :loading="true"
-        hiddenCover
         hiddenSize
       />
       <n-empty

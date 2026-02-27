@@ -103,7 +103,7 @@
     "@vitejs/plugin-vue": "^6.0.4",
     "ajv": "^8.17.1",
     "crypto-js": "^4.2.0",
-    "electron": "38.2.2",
+    "electron": "39.4.0",
     "electron-builder": "^26.7.0",
     "electron-log": "^5.4.3",
     "electron-vite": "^5.0.0",

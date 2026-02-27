@@ -42,6 +42,10 @@ export type AudioSource = {
   source?: AudioSourceType;
 };
 
+/**
+ * 歌曲管理器
+ * 负责歌曲的获取、缓存、预加载等操作
+ */
 class SongManager {
   /** 预载下一首歌曲播放信息 */
   private nextPrefetch: AudioSource | undefined;
@@ -305,24 +309,55 @@ class SongManager {
       const statusStore = useStatusStore();
       const settingStore = useSettingStore();
       const lyricManager = useLyricManager();
-
-      // 无列表或私人FM模式直接跳过
-      const playList = dataStore.playList;
-      if (!playList?.length || statusStore.personalFmMode) {
+      const musicStore = useMusicStore();
+      // 私人FM模式：预载FM列表中的下一首
+      if (statusStore.personalFmMode) {
+        const fmList = musicStore.personalFM.list;
+        const fmIndex = musicStore.personalFM.playIndex;
+        // 当前批次已是最后一首，提前拉取下一批追加到列表
+        if (fmIndex >= fmList.length - 1) {
+          try {
+            const res = await personalFm();
+            const newList = formatSongsList(res.data);
+            if (newList?.length) {
+              musicStore.personalFM.list = [...fmList, ...newList];
+            }
+          } catch (e) {
+            console.warn("⚠️ 预拉取下一批私人FM失败", e);
+            return;
+          }
+        }
+        const nextSong = musicStore.personalFM.list[fmIndex + 1];
+        if (!nextSong?.id) return;
+        this.prefetchCover(nextSong);
+        lyricManager.prefetchLyric(nextSong);
+        const { url, isTrial, quality } = await this.getOnlineUrl(nextSong.id, false);
+        if (url && !isTrial) {
+          this.nextPrefetch = {
+            id: nextSong.id,
+            url,
+            isUnlocked: false,
+            quality,
+            source: "official",
+          };
+          return this.nextPrefetch;
+        }
         return;
       }
-
+      // 无播放列表直接跳过
+      const playList = dataStore.playList;
+      if (!playList?.length) {
+        return;
+      }
       // 计算下一首（循环到首）
       let nextIndex = statusStore.playIndex + 1;
       if (nextIndex >= playList.length) nextIndex = 0;
       const nextSong = playList[nextIndex];
       if (!nextSong) return;
-
       // 预加载封面图片
       this.prefetchCover(nextSong);
       // 预加载歌词
       lyricManager.prefetchLyric(nextSong);
-
       // 本地歌曲
       if (nextSong.path) {
         // 预分析音频 (Automix)
@@ -333,7 +368,6 @@ class SongManager {
         }
         return;
       }
-
       // 流媒体歌曲
       if (nextSong.type === "streaming" && nextSong.streamUrl) {
         this.nextPrefetch = {
@@ -348,7 +382,6 @@ class SongManager {
       // 在线歌曲：优先官方，其次解灰
       const songId = nextSong.type === "radio" ? nextSong.dj?.id : nextSong.id;
       if (!songId) return;
-
       // 是否可解锁
       const canUnlock = isElectron && nextSong.type !== "radio" && settingStore.useSongUnlock;
       // 先请求官方地址
@@ -563,7 +596,7 @@ class SongManager {
   /**
    * 私人 FM 垃圾桶
    */
-  public async personalFMTrash(id: number) {
+  public async personalFMTrash(id: number, onSuccess?: () => void) {
     if (!isLogin()) {
       openUserLogin(true);
       return;
@@ -573,6 +606,7 @@ class SongManager {
     try {
       await personalFmToTrash(id);
       window.$message.success("已移至垃圾桶");
+      onSuccess?.();
     } catch (error) {
       window.$message.error("移至垃圾桶失败，请重试");
       console.error("❌ 私人 FM 垃圾桶失败", error);

@@ -127,16 +127,16 @@
       <!-- 列表操作 -->
       <Teleport to="body">
         <Transition name="fade" mode="out-in">
-          <n-float-button-group v-if="floatToolShow" class="list-menu">
-            <Transition name="fade" mode="out-in">
-              <n-float-button v-if="scrollTop > 100" width="42" @click="scrollToTop">
+          <div v-if="floatToolShow" class="list-menu">
+            <n-float-button-group position="relative">
+              <n-float-button v-if="hasPlaySong >= 0" width="42" @click="scrollToCurrentSong">
+                <SvgIcon :size="22" name="Location" />
+              </n-float-button>
+              <n-float-button :class="{ hidden: scrollTop <= 100 }" width="42" @click="scrollToTop">
                 <SvgIcon :size="22" name="Up" />
               </n-float-button>
-            </Transition>
-            <n-float-button v-if="hasPlaySong >= 0" width="42" @click="scrollToCurrentSong">
-              <SvgIcon :size="22" name="Location" />
-            </n-float-button>
-          </n-float-button-group>
+            </n-float-button-group>
+          </div>
         </Transition>
       </Teleport>
     </div>
@@ -405,9 +405,16 @@ const scrollToTop = () => {
 
 // 滚动到当前播放歌曲
 const scrollToCurrentSong = () => {
-  if (hasPlaySong.value >= 0) {
-    listRef.value?.scrollToIndex(hasPlaySong.value);
-  }
+  if (hasPlaySong.value < 0) return;
+  // 内部滚动
+  listRef.value?.scrollToIndex(hasPlaySong.value);
+  // 自动高度时回退
+  nextTick(() => {
+    const el = listRef.value?.contentRef?.querySelector<HTMLElement>(
+      `[data-index="${hasPlaySong.value}"]`,
+    );
+    if (el) el.scrollIntoView({ block: "center" });
+  });
 };
 
 // 更新列表播放顺序
@@ -614,9 +621,17 @@ onBeforeUnmount(() => {
   position: fixed;
   right: 40px;
   bottom: 120px;
+  z-index: 10;
+  pointer-events: none;
   .n-float-button {
     height: 42px;
     border: 1px solid rgba(var(--primary), 0.28);
+    pointer-events: auto;
+    transition: opacity 0.3s;
+    &.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
   }
 }
 .sort-menu {

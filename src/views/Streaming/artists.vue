@@ -31,6 +31,8 @@ import { useStreamingStore } from "@/stores";
 import { some } from "lodash-es";
 import { usePlayerController } from "@/core/player/PlayerController";
 
+defineOptions({ inheritAttrs: false });
+
 const streamingStore = useStreamingStore();
 const player = usePlayerController();
 

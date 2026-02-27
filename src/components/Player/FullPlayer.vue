@@ -97,13 +97,11 @@
 <script setup lang="ts">
 import { useMobile } from "@/composables/useMobile";
 import { useStatusStore, useMusicStore, useSettingStore } from "@/stores";
-import { usePlayerController } from "@/core/player/PlayerController";
 import { isElectron } from "@/utils/env";
 
 const musicStore = useMusicStore();
 const statusStore = useStatusStore();
 const settingStore = useSettingStore();
-const player = usePlayerController();
 
 const { isTablet } = useMobile();
 
@@ -216,34 +214,6 @@ watch(
   },
 );
 
-// 键盘控制
-const onKeydown = (e: KeyboardEvent) => {
-  if (e.code === "Space") {
-    const activeElement = document.activeElement as HTMLElement;
-    // 如果焦点在输入框、文本域或任何可编辑元素上，则不响应
-    if (
-      activeElement &&
-      (activeElement.tagName === "INPUT" ||
-        activeElement.tagName === "TEXTAREA" ||
-        activeElement.isContentEditable)
-    ) {
-      return;
-    }
-    e.preventDefault();
-    player.playOrPause();
-  }
-};
-
-// 监听全屏状态
-watchEffect((onCleanup) => {
-  if (statusStore.showFullPlayer) {
-    window.addEventListener("keydown", onKeydown);
-    onCleanup(() => {
-      window.removeEventListener("keydown", onKeydown);
-    });
-  }
-});
-
 onMounted(() => {
   mainCoverColor.value = statusStore.mainColor;
   // 阻止息屏
@@ -323,7 +293,7 @@ onBeforeUnmount(() => {
       height: 100%;
       display: flex;
       flex-direction: column;
-      mix-blend-mode: plus-lighter;
+      mix-blend-mode: v-bind('settingStore.lyricsBlendMode');
       transition:
         width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
         opacity 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);

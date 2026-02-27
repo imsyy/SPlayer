@@ -20,10 +20,10 @@ importers:
         version: 0.3.0
       '@electron-toolkit/preload':
         specifier: ^3.0.2
-        version: 3.0.2(electron@38.2.2)
+        version: 3.0.2(electron@39.4.0)
       '@electron-toolkit/utils':
         specifier: ^4.0.0
-        version: 4.0.0(electron@38.2.2)
+        version: 4.0.0(electron@39.4.0)
       '@imsyy/color-utils':
         specifier: ^1.0.2
         version: 1.0.2
@@ -194,8 +194,8 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
       electron:
-        specifier: 38.2.2
-        version: 38.2.2
+        specifier: 39.4.0
+        version: 39.4.0
       electron-builder:
         specifier: ^26.7.0
         version: 26.7.0(electron-builder-squirrel-windows@26.0.12)
@@ -3222,8 +3222,8 @@ packages:
     resolution: {integrity: sha512-bO3y10YikuUwUuDUQRM4KfwNkKhnpVO7IPdbsrejwN9/AABJzzTQ4GeHwyzNSrVO+tEH3/Np255a3sVZpZDjvg==}
     engines: {node: '>=8.0.0'}
 
-  electron@38.2.2:
-    resolution: {integrity: sha512-OXSaVNXDlonXDjMRsFNQo1j5tzTKwKXh5/m46IjAFccBcZJZMISI+EjSI07oexIuhvKM8AZLuFuihVn4YjWWrA==}
+  electron@39.4.0:
+    resolution: {integrity: sha512-NCK/FTAqgG/N+09OXFES6bubamgPZs7TEPIjWZIrbEnm8GzEwxC22ZG6SEPid2DmJnJmBurJ6M0G4EShdSc28Q==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
 
@@ -6080,17 +6080,17 @@ snapshots:
 
   '@docsearch/js@4.5.4': {}
 
-  '@electron-toolkit/preload@3.0.2(electron@38.2.2)':
+  '@electron-toolkit/preload@3.0.2(electron@39.4.0)':
     dependencies:
-      electron: 38.2.2
+      electron: 39.4.0
 
   '@electron-toolkit/tsconfig@2.0.0(@types/node@24.10.13)':
     dependencies:
       '@types/node': 24.10.13
 
-  '@electron-toolkit/utils@4.0.0(electron@38.2.2)':
+  '@electron-toolkit/utils@4.0.0(electron@39.4.0)':
     dependencies:
-      electron: 38.2.2
+      electron: 39.4.0
 
   '@electron/asar@3.2.18':
     dependencies:
@@ -8882,7 +8882,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  electron@38.2.2:
+  electron@39.4.0:
     dependencies:
       '@electron/get': 2.0.3
       '@types/node': 22.19.11
