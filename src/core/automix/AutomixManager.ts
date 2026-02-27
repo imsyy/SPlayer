@@ -510,7 +510,7 @@ export class AutomixManager {
 
     const { duration } = audioManager;
     if (!duration || duration <= 0) return;
-    let rawTime = audioManager.currentTime;
+    const rawTime = audioManager.currentTime;
     if (!Number.isFinite(rawTime) || rawTime < 0) return;
     const timeLeft = duration - rawTime;
     if (timeLeft < 0) return;
