@@ -18,13 +18,13 @@ export const MONOTONOUS_THEME = {
   main: { r: 239, g: 239, b: 239 },
   light: {
     primary: { r: 10, g: 10, b: 10 },
-    background: { r: 238, g: 238, b: 238 },
-    "surface-container": { r: 212, g: 212, b: 212 },
+    background: { r: 255, g: 255, b: 255 },
+    "surface-container": { r: 246, g: 246, b: 246 },
   },
   dark: {
     primary: { r: 239, g: 239, b: 239 },
-    background: { r: 31, g: 31, b: 31 },
-    "surface-container": { r: 39, g: 39, b: 39 },
+    background: { r: 16, g: 16, b: 20 },
+    "surface-container": { r: 24, g: 24, b: 28 },
   },
 };
 
@@ -75,12 +75,6 @@ const getThemeSchema = (theme: Theme, variant: keyof Theme["palettes"] = "second
 
   const getColor = (tone: number) => getAccentColor(Hct.from(targetHue, targetChroma, tone).toInt());
 
-  /**
-   * 生成辅助色
-   */
-  const getHelperColor = (tone: number, chroma: number = 4) => 
-    getAccentColor(Hct.from(hct.hue, chroma, tone).toInt());
-
   const isPrimary = variant === "primary";
   const sourceRgb = getAccentColor(theme.source);
   
@@ -92,13 +86,14 @@ const getThemeSchema = (theme: Theme, variant: keyof Theme["palettes"] = "second
     main: getAccentColor(Hct.from(targetHue, Math.max(targetChroma, 48), 85).toInt()),
     light: {
       primary: isPrimary ? sourceRgb : getColor(40),
-      background: getHelperColor(98, 2),
-      "surface-container": getHelperColor(94, 4),
+      background: { r: 255, g: 255, b: 255 },
+      "surface-container": { r: 246, g: 246, b: 246 },
     },
     dark: {
       primary: isPrimary ? sourceRgb : getColor(80),
-      background: getHelperColor(10, 0),
-      "surface-container": getHelperColor(14, 2),
+      // 使用深邃的中性黑灰
+      background: { r: 16, g: 16, b: 20 },
+      "surface-container": { r: 24, g: 24, b: 28 },
     },
   };
 };
@@ -139,14 +134,7 @@ export const setColorSchemes = (
   // 指定模式颜色数据
   const colorModeData = colorData[mode];
   const modifiedColorModeData: { [key: string]: string } = {};
-  // 是否全局应用
-  if (!settingStore.themeGlobalColor && colorModeData) {
-    // 修改关键颜色
-    colorModeData.background =
-      mode === "dark" ? { r: 16, g: 16, b: 20 } : { r: 246, g: 246, b: 246 };
-    colorModeData["surface-container"] =
-      mode === "dark" ? { r: 24, g: 24, b: 28 } : { r: 255, g: 255, b: 255 };
-  }
+
   // 遍历颜色并修改
   for (const key in colorModeData) {
     const color = colorModeData[key];

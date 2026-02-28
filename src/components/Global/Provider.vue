@@ -293,6 +293,7 @@ const applyThemeBackgroundMode = () => {
 watch(
   () => [
     settingStore.themeColorType,
+    settingStore.themeVariant,
     settingStore.themeFollowCover,
     settingStore.themeGlobalColor,
     settingStore.globalFont,
