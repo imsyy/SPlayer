@@ -192,6 +192,8 @@ export interface SettingState {
   autoPlay: boolean;
   /** 预载下一首 */
   useNextPrefetch: boolean;
+  /** 无缝播放 */
+  useGaplessPlayback: boolean;
   /** 渐入渐出 */
   songVolumeFade: boolean;
   /** 渐入渐出时间 */
@@ -565,6 +567,7 @@ export const useSettingStore = defineStore("setting", {
     audioEngine: "element",
     autoPlay: false,
     useNextPrefetch: true,
+    useGaplessPlayback: false,
     songVolumeFade: true,
     songVolumeFadeTime: 300,
     enableReplayGain: false,

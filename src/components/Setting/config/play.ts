@@ -351,6 +351,41 @@ export const usePlaySettings = (): SettingConfig => {
             }),
           },
           {
+            key: "useGaplessPlayback",
+            label: "无缝播放",
+            type: "switch",
+            tags: [{ text: "Beta", type: "warning" }],
+            description: computed(() =>
+              settingStore.playbackEngine === "web-audio" && settingStore.audioEngine === "element"
+                ? "歌曲结束时无缝衔接下一首，避免间隙"
+                : "无缝播放仅在使用 Web Audio 引擎时可用",
+            ),
+            value: computed({
+              get: () => settingStore.useGaplessPlayback,
+              set: (v) => {
+                if (v) {
+                  window.$dialog.warning({
+                    title: "启用无缝播放 (Beta)",
+                    content:
+                      "无缝播放会预解码下一首歌曲的音频数据，每首歌曲约占用 50-150MB 内存。如果设备内存较小，可能影响性能。",
+                    positiveText: "开启",
+                    negativeText: "取消",
+                    onPositiveClick: () => {
+                      settingStore.useGaplessPlayback = true;
+                    },
+                  });
+                } else {
+                  settingStore.useGaplessPlayback = v;
+                }
+              },
+            }),
+            disabled: computed(
+              () =>
+                settingStore.playbackEngine !== "web-audio" ||
+                settingStore.audioEngine !== "element",
+            ),
+          },
+          {
             key: "memoryLastSeek",
             label: "记忆上次播放位置",
             type: "switch",
