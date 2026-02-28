@@ -6,7 +6,7 @@ import type { SettingState } from "../setting";
 /**
  * 当前设置 Schema 版本号
  */
-export const CURRENT_SETTING_SCHEMA_VERSION = 11;
+export const CURRENT_SETTING_SCHEMA_VERSION = 12;
 
 /**
  * 迁移函数类型
@@ -189,6 +189,15 @@ export const settingMigrations: Record<number, MigrationFunction> = {
   11: () => {
     return {
       uncensorMaskedProfanity: false,
+    };
+  },
+  12: (state) => {
+    interface OldSettingState extends Partial<SettingState> {
+      enableAutomix?: boolean;
+    }
+    const oldState = state as OldSettingState;
+    return {
+      songTransitionMode: oldState.enableAutomix ? "automix" : "off",
     };
   },
 };

@@ -349,6 +349,11 @@ export const usePlaySettings = (): SettingConfig => {
               get: () => settingStore.useNextPrefetch,
               set: (v) => (settingStore.useNextPrefetch = v),
             }),
+            forceIf: {
+              condition: computed(() => settingStore.useGaplessPlayback),
+              forcedValue: true,
+              forcedDescription: "无缝播放已启用，需要保持预载开启",
+            },
           },
           {
             key: "memoryLastSeek",
@@ -425,19 +430,32 @@ export const usePlaySettings = (): SettingConfig => {
             ],
           },
           {
-            key: "enableAutomix",
-            label: "启用自动混音",
-            type: "switch",
+            key: "songTransitionMode",
+            label: "切歌过渡模式",
+            type: "select",
             tags: [{ text: "Beta", type: "warning" }],
             description: computed(() =>
               settingStore.playbackEngine === "web-audio"
-                ? "是否启用自动混音功能"
-                : "自动混音功能仅在使用 Web Audio 引擎时可用",
+                ? "选择歌曲切换时的过渡方式"
+                : "过渡模式仅在使用 Web Audio 引擎时可用",
             ),
+            options: computed(() => [
+              { label: "关闭", value: "off" },
+              {
+                label: "自动混音 (Auto Mix)",
+                value: "automix",
+                disabled: !isElectron,
+              },
+              {
+                label: "无缝播放 (Gapless)",
+                value: "gapless",
+                disabled: settingStore.audioEngine !== "element",
+              },
+            ]),
             value: computed({
-              get: () => settingStore.enableAutomix,
+              get: () => settingStore.songTransitionMode,
               set: (v) => {
-                if (v) {
+                if (v === "automix") {
                   window.$dialog.warning({
                     title: "启用自动混音 (Beta)",
                     content:
@@ -445,30 +463,47 @@ export const usePlaySettings = (): SettingConfig => {
                     positiveText: "开启",
                     negativeText: "取消",
                     onPositiveClick: () => {
-                      settingStore.enableAutomix = true;
+                      settingStore.songTransitionMode = "automix";
+                    },
+                  });
+                } else if (v === "gapless") {
+                  window.$dialog.warning({
+                    title: "启用无缝播放 (Beta)",
+                    content:
+                      "无缝播放会预解码下一首歌曲的音频数据，每首歌曲约占用 50-150MB 内存。如果设备内存较小，可能影响性能。该功能目前处于预览状态，有任何问题请提交 Issues。",
+                    positiveText: "开启",
+                    negativeText: "取消",
+                    onPositiveClick: () => {
+                      settingStore.songTransitionMode = "gapless";
                     },
                   });
                 } else {
-                  settingStore.enableAutomix = v;
+                  settingStore.songTransitionMode = v;
                 }
               },
             }),
             disabled: computed(() => settingStore.playbackEngine !== "web-audio"),
-            children: [
-              {
-                key: "automixMaxAnalyzeTime",
-                label: "最大分析时间",
-                type: "input-number",
-                description: "单位秒，越长越精准但更耗时 (建议 60s)",
-                min: 5,
-                max: 300,
-                suffix: "s",
-                value: computed({
-                  get: () => settingStore.automixMaxAnalyzeTime,
-                  set: (v) => (settingStore.automixMaxAnalyzeTime = v),
-                }),
-              },
-            ],
+            condition: () => settingStore.songTransitionMode !== "off",
+            children: computed(() => {
+              if (settingStore.songTransitionMode === "automix") {
+                return [
+                  {
+                    key: "automixMaxAnalyzeTime",
+                    label: "最大分析时间",
+                    type: "input-number" as const,
+                    description: "单位秒，越长越精准但更耗时 (建议 60s)",
+                    min: 5,
+                    max: 300,
+                    suffix: "s",
+                    value: computed({
+                      get: () => settingStore.automixMaxAnalyzeTime,
+                      set: (v: number) => (settingStore.automixMaxAnalyzeTime = v),
+                    }),
+                  },
+                ];
+              }
+              return [];
+            }),
           },
         ],
       },

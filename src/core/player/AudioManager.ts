@@ -12,6 +12,8 @@ import type {
   PlayOptions,
 } from "../audio-player/IPlaybackEngine";
 import { MpvPlayer, useMpvPlayer } from "../audio-player/MpvPlayer";
+import { AudioBufferPlayer } from "../gapless/AudioBufferPlayer";
+import { useGaplessManager } from "../gapless/GaplessManager";
 import { getSharedAudioContext } from "../automix/SharedAudioContext";
 
 /**
@@ -32,6 +34,8 @@ class AudioManager extends TypedEventTarget<AudioEventMap> implements IPlaybackE
 
   /** 主音量 (用于 Crossfade 初始化) */
   private _masterVolume: number = 1.0;
+  /** ReplayGain 缓存 (引擎切换时同步) */
+  private _replayGain: number = 1.0;
 
   /** 当前引擎类型：element | ffmpeg | mpv */
   public readonly engineType: "element" | "ffmpeg" | "mpv";
@@ -113,6 +117,7 @@ class AudioManager extends TypedEventTarget<AudioEventMap> implements IPlaybackE
    */
   public destroy(): void {
     this.clearPendingSwitch();
+    useGaplessManager().clear();
     if (this.cleanupListeners) {
       this.cleanupListeners();
       this.cleanupListeners = null;
@@ -124,6 +129,15 @@ class AudioManager extends TypedEventTarget<AudioEventMap> implements IPlaybackE
    * 加载并播放音频
    */
   public async play(url?: string, options?: PlayOptions): Promise<void> {
+    // 如果当前引擎是 AudioBufferPlayer 且需要加载新 URL，恢复默认引擎
+    if (url && this.engine instanceof AudioBufferPlayer) {
+      this.restoreDefaultEngine();
+    }
+    // 如果 gapless 预载的 URL 与当前不匹配，清除预载
+    const gaplessManager = useGaplessManager();
+    if (url && gaplessManager.url && gaplessManager.url !== url) {
+      gaplessManager.clear();
+    }
     await this.engine.play(url, options);
   }
 
@@ -301,6 +315,70 @@ class AudioManager extends TypedEventTarget<AudioEventMap> implements IPlaybackE
     this.engine.stop();
   }
 
+  /**
+   * 恢复默认播放引擎
+   * 当从 AudioBufferPlayer 切回正常播放时调用
+   */
+  private restoreDefaultEngine() {
+    const oldEngine = this.engine;
+    let newEngine: IPlaybackEngine;
+    if (this.engineType === "ffmpeg") {
+      newEngine = new FFmpegAudioPlayer();
+    } else {
+      newEngine = new AudioElementPlayer();
+    }
+    newEngine.init();
+    if (this.cleanupListeners) {
+      this.cleanupListeners();
+      this.cleanupListeners = null;
+    }
+    this.engine = newEngine;
+    this.bindEngineEvents();
+    this.engine.setVolume(this._masterVolume);
+    this.engine.setReplayGain?.(this._replayGain);
+    try {
+      oldEngine.destroy();
+    } catch {
+      // ignore
+    }
+    console.log("[AudioManager] 已从 AudioBufferPlayer 恢复默认引擎");
+  }
+
+  /**
+   * 提交无缝过渡
+   * 将 GaplessManager 中预调度的 AudioBufferPlayer 接管为当前引擎
+   * @returns 是否成功提交
+   */
+  public commitGaplessTransition(): boolean {
+    const gaplessManager = useGaplessManager();
+    const newPlayer = gaplessManager.commit();
+    if (!newPlayer) return false;
+    const oldEngine = this.engine;
+    if (this.cleanupListeners) {
+      this.cleanupListeners();
+      this.cleanupListeners = null;
+    }
+    this.engine = newPlayer;
+    this.bindEngineEvents();
+    const audioCtx = getSharedAudioContext();
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume().catch(() => {});
+    }
+    this.engine.setVolume(this._masterVolume);
+    this.engine.setReplayGain?.(this._replayGain);
+    this.dispatch(AUDIO_EVENTS.PLAY, undefined);
+    this.dispatch(AUDIO_EVENTS.TIME_UPDATE, undefined);
+    setTimeout(() => {
+      try {
+        oldEngine.destroy();
+      } catch {
+        // ignore
+      }
+    }, 100);
+    console.log("[AudioManager] 已提交无缝过渡");
+    return true;
+  }
+
   private clearPendingSwitch() {
     if (this.pendingSwitchTimer) {
       clearTimeout(this.pendingSwitchTimer);
@@ -332,6 +410,7 @@ class AudioManager extends TypedEventTarget<AudioEventMap> implements IPlaybackE
    * @param gain 线性增益值
    */
   public setReplayGain(gain: number): void {
+    this._replayGain = gain;
     this.engine.setReplayGain?.(gain);
   }
 

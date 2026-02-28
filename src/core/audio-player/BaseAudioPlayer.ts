@@ -182,13 +182,19 @@ export abstract class BaseAudioPlayer
     }
 
     const duration = options.fadeIn ? (options.fadeDuration ?? 0.5) : 0;
+    const target = this.volume * this.replayGain;
 
-    // 修复：如果是渐入，强制从 0 开始
+    // 渐入时直接操作 gainNode，绕过 applyFadeTo 避免 cancelScheduledValues 取消刚设置的值
     if (duration > 0 && this.gainNode && this.audioCtx) {
-      this.gainNode.gain.setValueAtTime(0, this.audioCtx.currentTime);
+      const ct = this.audioCtx.currentTime;
+      this.gainNode.gain.cancelScheduledValues(ct);
+      this.gainNode.gain.setValueAtTime(0, ct);
+      const safeStart = ct + 0.02;
+      this.gainNode.gain.setValueAtTime(0, safeStart);
+      this.gainNode.gain.linearRampToValueAtTime(target, safeStart + duration);
+    } else {
+      this.applyFadeTo(target, 0);
     }
-
-    this.applyFadeTo(this.volume * this.replayGain, duration, options.fadeCurve);
 
     try {
       await this.doPlay();
@@ -274,8 +280,8 @@ export abstract class BaseAudioPlayer
    */
   public stop() {
     this.cancelPendingPause();
-    // 捕获可能产生的异步错误
-    Promise.resolve(this.pause({ fadeOut: false })).catch(() => {});
+    // 使用 keepContextRunning 防止挂起共享 AudioContext
+    Promise.resolve(this.pause({ fadeOut: false, keepContextRunning: true })).catch(() => {});
     Promise.resolve(this.doSeek(0)).catch(() => {});
   }
 

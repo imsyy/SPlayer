@@ -14,6 +14,7 @@ import { calculateProgress } from "@/utils/time";
 import type { LyricLine } from "@applemusic-like-lyrics/lyric";
 import { type DebouncedFunc, throttle } from "lodash-es";
 import { useBlobURLManager } from "../resource/BlobURLManager";
+import { useGaplessManager } from "../gapless/GaplessManager";
 import { useAudioManager } from "./AudioManager";
 import { useAutomixManager } from "@/core/automix/AutomixManager";
 import { useLyricManager } from "./LyricManager";
@@ -257,6 +258,7 @@ class PlayerController {
     // 重置过渡状态
     this.isTransitioning = false;
     useAutomixManager().resetNextAnalysisCache();
+    useGaplessManager().clear();
     this.currentAnalysisKey = null;
     this.currentAudioSource = null;
     // 生成新的请求标识
@@ -575,7 +577,6 @@ class PlayerController {
     const dataStore = useDataStore();
     const musicStore = useMusicStore();
     const settingStore = useSettingStore();
-    const songManager = useSongManager();
     // 记录播放历史 (非电台)
     if (song.type !== "radio") dataStore.setHistory(song);
     // 更新歌曲数据
@@ -589,7 +590,9 @@ class PlayerController {
     }
 
     // 预载下一首
-    if (settingStore.useNextPrefetch) songManager.prefetchNextSong();
+    if (settingStore.useNextPrefetch) {
+      this.refreshNextPreload();
+    }
 
     // Last.fm Scrobbler
     if (settingStore.lastfm.enabled && settingStore.isLastfmConfigured) {
@@ -597,6 +600,62 @@ class PlayerController {
       const durationInSeconds = song.duration > 0 ? Math.floor(song.duration / 1000) : undefined;
       lastfmScrobbler.startPlaying(name || "", artist || "", album, durationInSeconds);
     }
+  }
+
+  /**
+   * 统一的下一首预载入口
+   * 1. 始终触发 URL 预取 (prefetchNextSong) — 用于所有模式
+   * 2. 当无缝播放启用时，额外触发 AudioBuffer 预载
+   */
+  public refreshNextPreload() {
+    const settingStore = useSettingStore();
+    if (!settingStore.useNextPrefetch) return;
+    const songManager = useSongManager();
+    // 始终执行 URL 预取
+    songManager.prefetchNextSong().then((prefetch) => {
+      // gapless 额外触发 AudioBuffer 预解码
+      if (
+        !prefetch?.url ||
+        !settingStore.useGaplessPlayback ||
+        useAudioManager().engineType !== "element"
+      )
+        return;
+      const nextInfo = this.getNextSongInfo();
+      if (!nextInfo || prefetch.id !== nextInfo.song.id) return;
+      useGaplessManager().preload(prefetch.url, nextInfo.index, nextInfo.song.name);
+    });
+  }
+
+  /**
+   * 处理无缝过渡切歌
+   * 引擎已由 AudioManager.commitGaplessTransition 切换，这里只做 UI 和状态同步
+   */
+  private async handleGaplessSwitch(preloadedIndex: number) {
+    const statusStore = useStatusStore();
+    const dataStore = useDataStore();
+    const audioManager = useAudioManager();
+    statusStore.playIndex = preloadedIndex;
+    const song = dataStore.playList[preloadedIndex];
+    if (!song) {
+      console.warn("[Gapless] 无法获取预载索引对应的歌曲");
+      return;
+    }
+    this.setupSongUI(song, 0);
+    // 同步速率
+    const rate = statusStore.playRate;
+    if (rate !== 1.0) {
+      audioManager.setRate(rate);
+    }
+    // 同步 EQ
+    if (isElectron && statusStore.eqEnabled) {
+      const bands = statusStore.eqBands;
+      if (bands && bands.length === 10) {
+        bands.forEach((val, idx) => audioManager.setFilterGain(idx, val));
+      }
+    }
+    statusStore.playLoading = false;
+    await this.afterPlaySetup(song);
+    console.log(`[${song.id}] 无缝过渡完成: ${song.name}`);
   }
 
   /**
@@ -715,6 +774,10 @@ class PlayerController {
     audioManager.addEventListener("pause", () => {
       statusStore.playStatus = false;
       useAutomixManager().resetAutomixScheduling("IDLE");
+      // 仅在非无缝过渡调度时取消（歌曲自然结束会先触发 pause 再触发 ended）
+      if (!useGaplessManager().isScheduled) {
+        useGaplessManager().cancel();
+      }
       playerIpc.sendMediaPlayState("Paused");
       mediaSessionManager.updatePlaybackStatus(false);
       if (!isElectron) window.document.title = "SPlayer";
@@ -728,6 +791,7 @@ class PlayerController {
     // 拖动进度条
     audioManager.addEventListener("seeking", () => {
       useAutomixManager().resetAutomixScheduling("MONITORING");
+      useGaplessManager().cancel();
     });
     // 播放结束
     audioManager.addEventListener("ended", () => {
@@ -737,7 +801,16 @@ class PlayerController {
       lastfmScrobbler.stop();
       // 检查定时关闭
       if (this.checkAutoClose()) return;
-      // 自动播放下一首
+      // 无缝过渡
+      const gaplessManager = useGaplessManager();
+      if (gaplessManager.isScheduled) {
+        const nextIndex = gaplessManager.nextIndex;
+        if (audioManager.commitGaplessTransition()) {
+          this.handleGaplessSwitch(nextIndex);
+          return;
+        }
+      }
+      // 回退到标准切歌
       this.nextOrPrev("next", true, true);
     });
     // 进度更新
@@ -753,6 +826,32 @@ class PlayerController {
       const currentTime = Math.floor(rawTime * 1000);
       const duration = Math.floor(audioManager.duration * 1000) || statusStore.duration;
       useAutomixManager().updateAutomixMonitoring();
+      // 无缝播放：懒校验 + 调度（复用 automix 监控循环模式）
+      if (
+        settingStore.useGaplessPlayback &&
+        audioManager.engineType === "element" &&
+        statusStore.repeatMode !== "one" &&
+        duration > 0
+      ) {
+        const gaplessManager = useGaplessManager();
+        const nextInfo = this.getNextSongInfo();
+        // 懒校验：预载的下一首是否仍然匹配
+        if (
+          gaplessManager.nextIndex >= 0 &&
+          nextInfo &&
+          gaplessManager.nextIndex !== nextInfo.index
+        ) {
+          gaplessManager.clear();
+          this.refreshNextPreload();
+        }
+        // 调度：剩余 ≤2s
+        const remaining = (duration - currentTime) / 1000;
+        if (remaining > 0 && remaining <= 2.0) {
+          if (gaplessManager.isReady && !gaplessManager.isScheduled) {
+            gaplessManager.schedule(remaining, statusStore.playVolume);
+          }
+        }
+      }
       // 计算歌词索引
       const songId = musicStore.playSong?.id;
       const offset = statusStore.getSongOffset(songId);
@@ -927,8 +1026,8 @@ class PlayerController {
     if (statusStore.playStatus) return;
     // 清除 MPV 强制暂停状态（如果是 MPV 引擎）
     audioManager.clearForcePaused();
-    // 如果没有源，尝试重新初始化当前歌曲
-    if (!audioManager.src) {
+    // 如果没有源（兼容 AudioBufferPlayer 的空 src），尝试重新初始化当前歌曲
+    if (!audioManager.src && !(audioManager.duration > 0)) {
       await this.playSong({
         autoPlay: true,
         seek: statusStore.currentTime,
@@ -1158,6 +1257,34 @@ class PlayerController {
     const aliaStr = (Array.isArray(alia) ? alia.join("") : alia || "").toUpperCase();
     const fullText = name + aliaStr;
     return DJ_MODE_KEYWORDS.some((k) => fullText.includes(k.toUpperCase()));
+  }
+
+  /**
+   * 获取下一首歌曲信息（共享）
+   * automix、gapless、prefetchNextSong 均可使用
+   * 处理单曲循环、DJ 跳过等逻辑
+   */
+  public getNextSongInfo(): { song: SongType; index: number } | null {
+    const dataStore = useDataStore();
+    const statusStore = useStatusStore();
+    if (dataStore.playList.length === 0) return null;
+    if (statusStore.repeatMode === "one") {
+      const current = dataStore.playList[statusStore.playIndex];
+      return current ? { song: current, index: statusStore.playIndex } : null;
+    }
+    if (dataStore.playList.length <= 1) return null;
+    let nextIndex = statusStore.playIndex;
+    let attempts = 0;
+    while (attempts < dataStore.playList.length) {
+      nextIndex++;
+      if (nextIndex >= dataStore.playList.length) nextIndex = 0;
+      const nextSong = dataStore.playList[nextIndex];
+      if (!this.shouldSkipSong(nextSong)) {
+        return { song: nextSong, index: nextIndex };
+      }
+      attempts++;
+    }
+    return null;
   }
 
   /**

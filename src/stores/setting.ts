@@ -495,8 +495,8 @@ export interface SettingState {
   disableAiAudio: boolean;
   /** Fuck DJ: 开启后自动跳过 DJ 歌曲 */
   disableDjMode: boolean;
-  /** 启用自动混音 */
-  enableAutomix: boolean;
+  /** 切歌过渡模式 */
+  songTransitionMode: "off" | "automix" | "gapless";
   /** 自动混音最大分析时间 (秒) */
   automixMaxAnalyzeTime: number;
   /** 启用全局错误弹窗 */
@@ -784,7 +784,7 @@ export const useSettingStore = defineStore("setting", {
     streamingEnabled: false,
     disableAiAudio: false,
     disableDjMode: false,
-    enableAutomix: false,
+    songTransitionMode: "off" as "off" | "automix" | "gapless",
     automixMaxAnalyzeTime: 60,
     enableGlobalErrorDialog: true,
     macos: {
@@ -807,6 +807,18 @@ export const useSettingStore = defineStore("setting", {
     isLastfmConfigured(state): boolean {
       const { lastfm } = state;
       return Boolean(lastfm.apiKey && lastfm.apiSecret);
+    },
+    /**
+     * 是否启用自动混音（向后兼容 getter）
+     */
+    enableAutomix(state): boolean {
+      return state.songTransitionMode === "automix";
+    },
+    /**
+     * 是否启用无缝播放（向后兼容 getter）
+     */
+    useGaplessPlayback(state): boolean {
+      return state.songTransitionMode === "gapless";
     },
   },
   actions: {

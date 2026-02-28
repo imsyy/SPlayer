@@ -1063,37 +1063,7 @@ export class AutomixManager {
   }
 
   public getNextSongForAutomix(): { song: SongType; index: number } | null {
-    const dataStore = useDataStore();
-    const statusStore = useStatusStore();
-    const playerController = usePlayerController();
-
-    if (dataStore.playList.length === 0) return null;
-
-    // 单曲循环模式下，下一首就是当前这首
-    if (statusStore.repeatMode === "one") {
-      const currentSong = dataStore.playList[statusStore.playIndex];
-      if (currentSong) {
-        return { song: currentSong, index: statusStore.playIndex };
-      }
-    }
-
-    if (dataStore.playList.length <= 1) return null;
-
-    let nextIndex = statusStore.playIndex;
-    let attempts = 0;
-    const maxAttempts = dataStore.playList.length;
-
-    while (attempts < maxAttempts) {
-      nextIndex++;
-      if (nextIndex >= dataStore.playList.length) nextIndex = 0;
-
-      const nextSong = dataStore.playList[nextIndex];
-      if (!playerController.shouldSkipSong(nextSong)) {
-        return { song: nextSong, index: nextIndex };
-      }
-      attempts++;
-    }
-    return null;
+    return usePlayerController().getNextSongInfo();
   }
 }
 
