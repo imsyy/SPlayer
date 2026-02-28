@@ -14,6 +14,7 @@ import { calculateProgress } from "@/utils/time";
 import type { LyricLine } from "@applemusic-like-lyrics/lyric";
 import { type DebouncedFunc, throttle } from "lodash-es";
 import { useBlobURLManager } from "../resource/BlobURLManager";
+import { useGaplessManager } from "../gapless/GaplessManager";
 import { useAudioManager } from "./AudioManager";
 import { useAutomixManager } from "@/core/automix/AutomixManager";
 import { useLyricManager } from "./LyricManager";
@@ -348,6 +349,7 @@ class PlayerController {
     const audioManager = useAudioManager();
     const playSongData = getPlaySongData();
     if (!playSongData || playSongData.path) return;
+    useGaplessManager().clear();
     // 如果未指定 autoPlay，则保持当前播放状态
     const shouldAutoPlay = autoPlay ?? statusStore.playStatus;
     try {
@@ -388,6 +390,7 @@ class PlayerController {
     const audioManager = useAudioManager();
     const playSongData = musicStore.playSong;
     if (!playSongData || playSongData.path) return;
+    useGaplessManager().clear();
     try {
       statusStore.playLoading = true;
       // 清除预取缓存
@@ -589,7 +592,26 @@ class PlayerController {
     }
 
     // 预载下一首
-    if (settingStore.useNextPrefetch) songManager.prefetchNextSong();
+    if (settingStore.useNextPrefetch) {
+      songManager.prefetchNextSong().then((prefetch) => {
+        // 无缝播放预载
+        if (
+          prefetch?.url &&
+          settingStore.useGaplessPlayback &&
+          !settingStore.enableAutomix &&
+          useAudioManager().engineType === "element"
+        ) {
+          const sStore = useStatusStore();
+          const dStore = useDataStore();
+          const playList = dStore.playList;
+          let nextIdx = sStore.playIndex + 1;
+          if (nextIdx >= playList.length) nextIdx = 0;
+          if (playList.length > 0) {
+            useGaplessManager().preload(prefetch.url, nextIdx);
+          }
+        }
+      });
+    }
 
     // Last.fm Scrobbler
     if (settingStore.lastfm.enabled && settingStore.isLastfmConfigured) {
@@ -737,7 +759,16 @@ class PlayerController {
       lastfmScrobbler.stop();
       // 检查定时关闭
       if (this.checkAutoClose()) return;
-      // 自动播放下一首
+      // 无缝过渡
+      const gaplessManager = useGaplessManager();
+      if (gaplessManager.isScheduled) {
+        const nextIndex = gaplessManager.nextIndex;
+        if (audioManager.commitGaplessTransition()) {
+          this.handleGaplessSwitch(nextIndex);
+          return;
+        }
+      }
+      // 回退到标准切歌
       this.nextOrPrev("next", true, true);
     });
     // 进度更新
@@ -753,6 +784,22 @@ class PlayerController {
       const currentTime = Math.floor(rawTime * 1000);
       const duration = Math.floor(audioManager.duration * 1000) || statusStore.duration;
       useAutomixManager().updateAutomixMonitoring();
+      // 无缝播放调度：剩余时间 ≤ 2s 时调度过渡
+      if (
+        settingStore.useGaplessPlayback &&
+        !settingStore.enableAutomix &&
+        audioManager.engineType === "element" &&
+        statusStore.repeatMode !== "one" &&
+        duration > 0
+      ) {
+        const remaining = (duration - currentTime) / 1000;
+        if (remaining > 0 && remaining <= 2.0) {
+          const gaplessManager = useGaplessManager();
+          if (gaplessManager.isReady && !gaplessManager.isScheduled) {
+            gaplessManager.schedule(remaining, statusStore.playVolume);
+          }
+        }
+      }
       // 计算歌词索引
       const songId = musicStore.playSong?.id;
       const offset = statusStore.getSongOffset(songId);
@@ -829,6 +876,7 @@ class PlayerController {
     const songManager = useSongManager();
     // 清除预加载缓存
     songManager.clearPrefetch();
+    useGaplessManager().clear();
     // 当前歌曲 ID
     const currentSongId = musicStore.playSong?.id || 0;
     // 检查是否为同一首歌
@@ -927,8 +975,8 @@ class PlayerController {
     if (statusStore.playStatus) return;
     // 清除 MPV 强制暂停状态（如果是 MPV 引擎）
     audioManager.clearForcePaused();
-    // 如果没有源，尝试重新初始化当前歌曲
-    if (!audioManager.src) {
+    // 如果没有源（兼容 AudioBufferPlayer 的空 src），尝试重新初始化当前歌曲
+    if (!audioManager.src && !(audioManager.duration > 0)) {
       await this.playSong({
         autoPlay: true,
         seek: statusStore.currentTime,
@@ -958,6 +1006,8 @@ class PlayerController {
     const statusStore = useStatusStore();
     const settingStore = useSettingStore();
     const audioManager = useAudioManager();
+    // 取消无缝播放调度
+    useGaplessManager().cancel();
     // 计算渐出时间
     const fadeTime = settingStore.getFadeTime ? settingStore.getFadeTime / 1000 : 0;
     audioManager.pause({ fadeOut: !!fadeTime, fadeDuration: fadeTime });
@@ -1036,7 +1086,50 @@ class PlayerController {
     await this.playSong({ autoPlay: play });
   }
 
-  /** 获取总时长 (ms) */
+  /**
+   * 处理无缝过渡切歌
+   * 引擎已由 AudioManager.commitGaplessTransition 切换，这里只做 UI 和状态同步
+   * @param preloadedIndex 预载的下一首索引
+   */
+  private async handleGaplessSwitch(preloadedIndex: number) {
+    const statusStore = useStatusStore();
+    const dataStore = useDataStore();
+    const audioManager = useAudioManager();
+
+    // 更新播放索引
+    statusStore.playIndex = preloadedIndex;
+
+    // 获取歌曲数据
+    const song = dataStore.playList[preloadedIndex];
+    if (!song) {
+      console.warn("[Gapless] 无法获取预载索引对应的歌曲");
+      return;
+    }
+
+    // 更新 UI
+    this.setupSongUI(song, 0);
+
+    // 同步速率
+    const rate = statusStore.playRate;
+    if (rate !== 1.0) {
+      audioManager.setRate(rate);
+    }
+
+    // 同步 EQ
+    if (isElectron && statusStore.eqEnabled) {
+      const bands = statusStore.eqBands;
+      if (bands && bands.length === 10) {
+        bands.forEach((val, idx) => audioManager.setFilterGain(idx, val));
+      }
+    }
+
+    // 后置处理（歌词、预载下一首等）
+    statusStore.playLoading = false;
+    await this.afterPlaySetup(song);
+
+    console.log(`🔗 [${song.id}] 无缝过渡完成: ${song.name}`);
+  }
+
   public getDuration(): number {
     const statusStore = useStatusStore();
     const audioManager = useAudioManager();
@@ -1061,6 +1154,8 @@ class PlayerController {
     if (this.onTimeUpdate) {
       this.onTimeUpdate.cancel();
     }
+    // 取消无缝播放调度
+    useGaplessManager().cancel();
     const statusStore = useStatusStore();
     const audioManager = useAudioManager();
     const safeTime = Math.max(0, Math.min(time, this.getDuration()));
@@ -1184,6 +1279,7 @@ class PlayerController {
     const statusStore = useStatusStore();
     const musicStore = useMusicStore();
     if (!data || !data.length) return;
+    useGaplessManager().clear();
     // 处理随机模式
     let processedData = [...data];
     if (statusStore.shuffleMode === "on") {
@@ -1248,6 +1344,7 @@ class PlayerController {
     const dataStore = useDataStore();
     const musicStore = useMusicStore();
     const statusStore = useStatusStore();
+    useGaplessManager().clear();
     const wasPersonalFm = statusStore.personalFmMode;
     // 关闭特殊模式
     if (statusStore.personalFmMode) statusStore.personalFmMode = false;
@@ -1316,6 +1413,7 @@ class PlayerController {
   public removeSongIndex(index: number) {
     const dataStore = useDataStore();
     const statusStore = useStatusStore();
+    useGaplessManager().clear();
     // 获取数据
     const { playList } = dataStore;
     // 若超出播放列表
@@ -1355,6 +1453,7 @@ class PlayerController {
     const statusStore = useStatusStore();
     // 若索引相同
     if (fromIndex === toIndex) return;
+    useGaplessManager().clear();
     // 若索引超出播放列表
     if (fromIndex < 0 || fromIndex >= dataStore.playList.length) return;
     if (toIndex < 0 || toIndex >= dataStore.playList.length) return;
@@ -1449,6 +1548,7 @@ class PlayerController {
    * @param mode 可选，直接设置目标模式。如果不传，则按 List -> One -> Off 顺序轮转
    */
   public toggleRepeat(mode?: RepeatModeType) {
+    useGaplessManager().clear();
     this.playModeManager.toggleRepeat(mode);
   }
 
@@ -1460,6 +1560,7 @@ class PlayerController {
    */
   public async toggleShuffle(mode?: ShuffleModeType) {
     const statusStore = useStatusStore();
+    useGaplessManager().clear();
     const currentMode = statusStore.shuffleMode;
     // 预判下一个模式
     const nextMode = mode ?? this.playModeManager.calculateNextShuffleMode(currentMode);
