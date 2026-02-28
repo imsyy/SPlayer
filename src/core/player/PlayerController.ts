@@ -578,7 +578,6 @@ class PlayerController {
     const dataStore = useDataStore();
     const musicStore = useMusicStore();
     const settingStore = useSettingStore();
-    const songManager = useSongManager();
     // 记录播放历史 (非电台)
     if (song.type !== "radio") dataStore.setHistory(song);
     // 更新歌曲数据
@@ -593,25 +592,7 @@ class PlayerController {
 
     // 预载下一首
     if (settingStore.useNextPrefetch) {
-      songManager.prefetchNextSong().then((prefetch) => {
-        // 无缝播放预载
-        if (
-          prefetch?.url &&
-          settingStore.useGaplessPlayback &&
-          !settingStore.enableAutomix &&
-          useAudioManager().engineType === "element"
-        ) {
-          const sStore = useStatusStore();
-          const dStore = useDataStore();
-          const playList = dStore.playList;
-          let nextIdx = sStore.playIndex + 1;
-          if (nextIdx >= playList.length) nextIdx = 0;
-          if (playList.length > 0) {
-            const nextSong = playList[nextIdx];
-            useGaplessManager().preload(prefetch.url, nextIdx, nextSong?.name);
-          }
-        }
-      });
+      this.refreshGaplessPreload();
     }
 
     // Last.fm Scrobbler
@@ -620,6 +601,37 @@ class PlayerController {
       const durationInSeconds = song.duration > 0 ? Math.floor(song.duration / 1000) : undefined;
       lastfmScrobbler.startPlaying(name || "", artist || "", album, durationInSeconds);
     }
+  }
+
+  /**
+   * 刷新无缝播放预载
+   * 当播放列表发生变更时调用，确保预载的下一首歌曲始终正确
+   */
+  public refreshGaplessPreload() {
+    const settingStore = useSettingStore();
+    if (
+      !settingStore.useNextPrefetch ||
+      !settingStore.useGaplessPlayback ||
+      settingStore.enableAutomix ||
+      useAudioManager().engineType !== "element"
+    ) {
+      return;
+    }
+
+    const songManager = useSongManager();
+    songManager.prefetchNextSong().then((prefetch) => {
+      if (!prefetch?.url) return;
+      const sStore = useStatusStore();
+      const dStore = useDataStore();
+      const playList = dStore.playList;
+      if (playList.length === 0) return;
+      let nextIdx = sStore.playIndex + 1;
+      if (nextIdx >= playList.length) nextIdx = 0;
+      const nextSong = playList[nextIdx];
+      // 校验：prefetch 的歌曲 ID 必须与当前播放列表的下一首匹配，否则丢弃
+      if (nextSong && prefetch.id !== nextSong.id) return;
+      useGaplessManager().preload(prefetch.url, nextIdx, nextSong?.name);
+    });
   }
 
   /**
@@ -1368,6 +1380,8 @@ class PlayerController {
       await this.togglePlayIndex(songIndex, true);
     } else {
       window.$message.success("已添加至下一首播放");
+      // 刷新预载
+      this.refreshGaplessPreload();
     }
   }
 
@@ -1441,6 +1455,9 @@ class PlayerController {
     // 若为当前播放
     if (isCurrentPlay) {
       this.playSong({ autoPlay: statusStore.playStatus });
+    } else {
+      // 非当前播放歌曲被移除，刷新预载
+      this.refreshGaplessPreload();
     }
   }
 
@@ -1479,6 +1496,8 @@ class PlayerController {
     if (statusStore.shuffleMode === "off") {
       await dataStore.setOriginalPlayList([...list]);
     }
+    // 刷新预载
+    this.refreshGaplessPreload();
   }
 
   /**

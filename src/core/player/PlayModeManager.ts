@@ -7,6 +7,7 @@ import { isElectron } from "@/utils/env";
 import { formatSongsList } from "@/utils/format";
 import { shuffleArray } from "@/utils/helper";
 import { openUserLogin } from "@/utils/modal";
+import { usePlayerController } from "./PlayerController";
 import axios from "axios";
 import type { MessageReactive } from "naive-ui";
 import * as playerIpc from "./PlayerIpc";
@@ -107,6 +108,7 @@ export class PlayModeManager {
     const idx = shuffled.findIndex((s) => s.id === musicStore.playSong?.id);
     if (idx !== -1) statusStore.playIndex = idx;
 
+    usePlayerController().refreshGaplessPreload();
     window.$message.success("随机播放已开启", { showIcon: false });
   }
 
@@ -196,6 +198,7 @@ export class PlayModeManager {
       await dataStore.setPlayList(finalList);
       // 设置播放索引为第一首
       statusStore.playIndex = 0;
+      usePlayerController().refreshGaplessPreload();
       window.$message.success("心动模式已开启");
     } catch (e) {
       statusStore.shuffleMode = previousMode;
@@ -227,6 +230,7 @@ export class PlayModeManager {
       await dataStore.setPlayList(dataStore.playList);
     }
 
+    usePlayerController().refreshGaplessPreload();
     window.$message.success("随机播放已关闭", { showIcon: false });
   }
 
