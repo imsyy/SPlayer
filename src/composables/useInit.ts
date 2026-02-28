@@ -79,6 +79,36 @@ export const useInit = () => {
       window.electron.ipcRenderer.send("win-loaded");
       // 同步任务栏歌词状态
       window.electron.ipcRenderer.send("taskbar:toggle", statusStore.showTaskbarLyric);
+
+      // 初始化时同步任务栏歌词配置到主进程，确保 electron-store 与 settingStore 一致
+      // 修复任务栏歌词悬浮对齐设置可能在重启后丢失的问题
+      updateTaskbarConfig({
+        mode: settingStore.taskbarLyricMode,
+        maxWidth: settingStore.taskbarLyricMaxWidth,
+        position: settingStore.taskbarLyricPosition,
+        autoShrink: settingStore.taskbarLyricAutoShrink,
+        margin: settingStore.taskbarLyricMargin,
+        minWidth: settingStore.taskbarLyricMinWidth,
+
+        floatingAlign: settingStore.taskbarLyricFloatingAlign,
+        floatingAutoWidth: settingStore.taskbarLyricFloatingAutoWidth,
+        floatingWidth: settingStore.taskbarLyricFloatingWidth,
+        floatingHeight: settingStore.taskbarLyricFloatingHeight,
+        floatingAlwaysOnTop: settingStore.taskbarLyricFloatingAlwaysOnTop,
+
+        showWhenPaused: settingStore.taskbarLyricShowWhenPaused,
+        showCover: settingStore.taskbarLyricShowCover,
+        themeMode: settingStore.themeMode,
+        fontFamily: settingStore.LyricFont,
+        globalFont: settingStore.globalFont,
+        fontWeight: settingStore.taskbarLyricFontWeight,
+        animationMode: settingStore.taskbarLyricAnimationMode,
+        singleLineMode: settingStore.taskbarLyricSingleLineMode,
+        showWordLyrics: settingStore.taskbarLyricShowWordLyrics,
+        showTranslation: settingStore.showTran,
+        showRomaji: settingStore.showRoma,
+      });
+
       // 显示桌面歌词
       window.electron.ipcRenderer.send("desktop-lyric:toggle", statusStore.showDesktopLyric);
       // 检查更新
@@ -118,6 +148,7 @@ export const useInit = () => {
 
       watch(
         () => [
+          settingStore.taskbarLyricMode,
           settingStore.taskbarLyricShowCover,
           settingStore.themeMode,
           settingStore.LyricFont,
@@ -129,9 +160,15 @@ export const useInit = () => {
           settingStore.showRoma,
           settingStore.taskbarLyricShowWordLyrics,
           settingStore.taskbarLyricShowWhenPaused,
+          settingStore.taskbarLyricFloatingAlign,
+          settingStore.taskbarLyricFloatingAutoWidth,
+          settingStore.taskbarLyricFloatingWidth,
+          settingStore.taskbarLyricFloatingHeight,
+          settingStore.taskbarLyricFloatingAlwaysOnTop,
         ],
         () => {
           updateTaskbarConfig({
+            mode: settingStore.taskbarLyricMode,
             showCover: settingStore.taskbarLyricShowCover,
             themeMode: settingStore.themeMode,
             fontFamily: settingStore.LyricFont,
@@ -143,6 +180,11 @@ export const useInit = () => {
             showTranslation: settingStore.showTran,
             showRomaji: settingStore.showRoma,
             showWordLyrics: settingStore.taskbarLyricShowWordLyrics,
+            floatingAlign: settingStore.taskbarLyricFloatingAlign,
+            floatingAutoWidth: settingStore.taskbarLyricFloatingAutoWidth,
+            floatingWidth: settingStore.taskbarLyricFloatingWidth,
+            floatingHeight: settingStore.taskbarLyricFloatingHeight,
+            floatingAlwaysOnTop: settingStore.taskbarLyricFloatingAlwaysOnTop,
           });
         },
       );

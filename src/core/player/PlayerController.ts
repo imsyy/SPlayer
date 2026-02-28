@@ -185,18 +185,9 @@ class PlayerController {
   /**
    * 设置歌曲 UI 状态
    * @param song - 歌曲
-   * @param audioSource - 音频源
    * @param startSeek - 开始seek时间
    */
-  public setupSongUI(
-    song: SongType,
-    audioSource: {
-      url: string;
-      quality: QualityType | undefined;
-      source: AudioSourceType | undefined;
-    },
-    startSeek: number,
-  ) {
+  public setupSongUI(song: SongType, startSeek: number) {
     const musicStore = useMusicStore();
     const statusStore = useStatusStore();
     const lyricManager = useLyricManager();
@@ -223,7 +214,7 @@ class PlayerController {
       });
     }
     // 更新任务栏歌词窗口的元数据
-    const { name, artist, album } = getPlayerInfoObj() || {};
+    const { name, artist, album } = getPlayerInfoObj(song) || {};
     const coverUrl = song.coverSize?.s || song.cover || "";
     playerIpc.sendTaskbarMetadata({
       title: name || "",
@@ -244,10 +235,6 @@ class PlayerController {
     }
     // 获取歌词
     lyricManager.handleLyric(song);
-    console.log(`🎧 [${song.id}] 最终播放信息:`, audioSource);
-    // 更新音质和解锁状态
-    statusStore.songQuality = audioSource.quality;
-    statusStore.audioSource = audioSource.source;
   }
 
   /**
@@ -282,7 +269,7 @@ class PlayerController {
       statusStore.playLoading = false;
       // 初始化或无歌曲时
       if (!statusStore.playStatus && !autoPlay) return;
-      throw new Error("SONG_NOT_FOUND");
+      return;
     }
     // Fuck DJ Mode
     if (this.shouldSkipSong(playSongData)) {
@@ -293,15 +280,18 @@ class PlayerController {
     }
     try {
       // 立即停止当前播放 (除非是 Crossfade)
+      statusStore.playLoading = true;
       if (!options.crossfade) {
         audioManager.stop();
       }
-      statusStore.playLoading = true;
+      // 立即更新 UI（歌曲信息、封面、歌词等），无需等待网络请求
+      this.setupSongUI(playSongData, seek);
       const { audioSource, analysis, analysisKind } = await this.prepareAudioSource(
         playSongData,
         requestToken,
         { analysis: options.crossfade ? "head" : "none" },
       );
+      if (requestToken !== this.currentRequestToken) return;
       // Automix 分析应用
       const lastAnalysis = this.currentAnalysis;
       this.currentAnalysis = analysis;
@@ -322,8 +312,11 @@ class PlayerController {
         startSeek = automixParams.startSeek;
         initialRate = automixParams.initialRate;
       }
-      // 设置 UI 状态
-      this.setupSongUI(playSongData, audioSource, startSeek);
+      if (requestToken !== this.currentRequestToken) return;
+      // 更新音质和音源信息
+      console.log(`🎧 [${playSongData.id}] 最终播放信息:`, audioSource);
+      statusStore.songQuality = audioSource.quality;
+      statusStore.audioSource = audioSource.source;
       // 执行底层播放
       await this.loadAndPlay(
         audioSource.url,
@@ -335,6 +328,7 @@ class PlayerController {
       if (requestToken !== this.currentRequestToken) return;
       // 后置处理
       await this.afterPlaySetup(playSongData);
+      statusStore.playLoading = false;
     } catch (error) {
       if (requestToken === this.currentRequestToken) {
         console.error("❌ 播放初始化失败:", error);
@@ -375,6 +369,7 @@ class PlayerController {
       audioManager.stop();
       // 执行底层播放，保持进度，保持原播放状态
       await this.loadAndPlay(audioSource.url, shouldAutoPlay, seek);
+      statusStore.playLoading = false;
     } catch (error) {
       console.error("❌ 切换音质失败:", error);
       statusStore.playLoading = false;
@@ -414,6 +409,7 @@ class PlayerController {
       // 停止当前播放
       audioManager.stop();
       await this.loadAndPlay(audioSource.url, shouldAutoPlay, seek);
+      statusStore.playLoading = false;
     } catch (error) {
       console.error("❌ 切换音频源失败:", error);
       statusStore.playLoading = false;
@@ -671,24 +667,8 @@ class PlayerController {
     // 加载状态
     audioManager.addEventListener("loadstart", () => {
       statusStore.playLoading = true;
-      // Watchdog: 如果 10秒后仍未 canplay/playing/error，强制取消 loading
-      const token = this.currentRequestToken;
-      setTimeout(() => {
-        if (
-          statusStore.playLoading &&
-          token === this.currentRequestToken &&
-          !statusStore.playStatus
-        ) {
-          console.warn("⚠️ [Watchdog] Loading timeout, resetting state");
-          statusStore.playLoading = false;
-        }
-      }, 10000);
     });
 
-    // 播放中 (兜底)
-    audioManager.addEventListener("playing", () => {
-      if (statusStore.playLoading) statusStore.playLoading = false;
-    });
     // 加载完成
     audioManager.addEventListener("canplay", () => {
       const playSongData = getPlaySongData();
@@ -868,7 +848,6 @@ class PlayerController {
     }
     // 用户主动中止
     if (errCode === AudioErrorCode.ABORTED || errCode === AudioErrorCode.DOM_ABORT) {
-      statusStore.playLoading = false;
       this.retryInfo.count = 0;
       return;
     }
@@ -1009,6 +988,8 @@ class PlayerController {
     const songManager = useSongManager();
     // 先暂停当前播放
     const audioManager = useAudioManager();
+    // 立即显示加载状态
+    statusStore.playLoading = true;
     audioManager.stop();
     // 私人FM
     if (statusStore.personalFmMode) {

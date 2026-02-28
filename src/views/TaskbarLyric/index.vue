@@ -1,10 +1,10 @@
 <template>
   <div
     class="taskbar-lyric"
-    :class="{ dark: state.isDark, 'layout-reverse': !state.isCenter }"
+    :class="{ dark: state.isDark, 'layout-reverse': !state.isCenter, floating: isFloating }"
     :style="rootStyle"
-    @mouseenter="isHovering = true"
-    @mouseleave="isHovering = false"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
   >
     <div class="cover-wrapper" v-if="coverSrc && settingStore.taskbarLyricShowCover">
       <Transition name="cross-fade">
@@ -13,7 +13,7 @@
     </div>
 
     <Transition name="controls-expand">
-      <div class="media-controls" v-if="isHovering">
+      <div class="media-controls" v-if="showControls">
         <div class="control-btn" @click.stop="controlAction('playPrev')">
           <SvgIcon name="SkipPrev" />
         </div>
@@ -27,45 +27,31 @@
     </Transition>
 
     <div class="content" :style="contentStyle">
-      <Transition name="content-switch">
-        <div :key="viewKey" class="lyric-view-container">
-          <Transition :name="settingStore.taskbarLyricAnimationMode" mode="out-in">
-            <TransitionGroup
-              tag="div"
-              class="lyric-list-wrapper"
-              :class="{ 'metadata-mode': isHovering }"
-              name="lyric-list"
-              :key="innerTransitionKey"
-            >
-              <div
-                v-for="item in itemsToRender"
-                :key="item.key"
-                class="lyric-item"
-                :class="{
-                  'is-primary': item.isPrimary,
-                  'is-sub': item.itemType === 'sub',
-                  'is-next': item.itemType === 'next',
-                }"
-              >
-                <LyricScroll
-                  class="line-text"
-                  :style="{ transformOrigin: state.isCenter ? 'center left' : 'center right' }"
-                  :text="item.text"
-                  :words="item.words"
-                  :currentTime="state.currentTime"
-                  :isActive="item.isPrimary"
-                  :mode="
-                    item.itemType === 'main' && !currentLyricText && !isHovering
-                      ? 'line'
-                      : state.lyricType
-                  "
-                  :progress="item.itemType === 'main' ? currentLineProgress : 0"
-                  @resize-width="(w) => handleLyricResize(item.key, w)"
-                />
-              </div>
-            </TransitionGroup>
-          </Transition>
-        </div>
+      <Transition :name="settingStore.taskbarLyricAnimationMode" mode="out-in">
+        <TransitionGroup tag="div" class="lyric-list-wrapper" name="lyric-list" :key="transitionKey">
+          <div
+            v-for="item in displayItems"
+            :key="item.key"
+            class="lyric-item"
+            :class="{
+              'is-primary': item.isPrimary,
+              'is-sub': item.itemType === 'sub',
+              'is-next': item.itemType === 'next',
+            }"
+          >
+            <LyricScroll
+              class="line-text"
+              :style="{ transformOrigin: state.isCenter ? 'center left' : 'center right' }"
+              :text="item.text"
+              :words="item.words"
+              :currentTime="state.currentTime"
+              :isActive="item.isPrimary"
+              :mode="item.itemType === 'main' && !currentLyricText ? 'line' : state.lyricType"
+              :progress="item.itemType === 'main' ? currentLineProgress : 0"
+              @resize-width="(w) => handleLyricResize(item.key, w)"
+            />
+          </div>
+        </TransitionGroup>
       </Transition>
     </div>
   </div>
@@ -81,9 +67,14 @@ import {
 } from "@/types/shared";
 import type { LyricLine, LyricWord } from "@applemusic-like-lyrics/lyric";
 import type { CSSProperties } from "vue";
+import { useRoute } from "vue-router";
 import LyricScroll from "./LyricScroll.vue";
 
 const settingStore = useSettingStore();
+const route = useRoute();
+const isFloating = computed(() => route.query.mode === "floating");
+const isHovering = ref(false);
+const showControls = computed(() => !isFloating.value && isHovering.value);
 
 /**
  * 只有当 IPC 时间与本地时间误差超过 250ms 时，才同步 IPC 的时间
@@ -165,7 +156,13 @@ const lyricFontFamily = computed(() => {
   return font === "default" ? "inherit" : font;
 });
 
-const isHovering = ref(false);
+const handleMouseEnter = () => {
+  if (!isFloating.value) isHovering.value = true;
+};
+
+const handleMouseLeave = () => {
+  isHovering.value = false;
+};
 
 const controlAction = (action: "playPrev" | "playOrPause" | "playNext") => {
   const ipc = window.electron?.ipcRenderer;
@@ -207,22 +204,6 @@ const createMetadataItems = (title: string, artist: string): DisplayItem[] => {
 
   return items;
 };
-
-const itemsToRender = computed(() => {
-  if (isHovering.value) {
-    return createMetadataItems(state.title, state.artist);
-  }
-  return displayItems.value;
-});
-
-const viewKey = computed(() => (isHovering.value ? "metadata-view" : "lyric-view"));
-
-const innerTransitionKey = computed(() => {
-  if (isHovering.value) {
-    return `meta-${state.title}-${state.artist}`;
-  }
-  return transitionKey.value;
-});
 
 const displayItems = computed<DisplayItem[]>(() => {
   if (!currentLyricText.value) {
@@ -319,9 +300,8 @@ const handleLyricResize = (key: string | number, width: number) => {
 const calculateAndResizeWindow = () => {
   const ipc = window.electron?.ipcRenderer;
   if (!ipc) return;
-  if (isHovering.value) return;
 
-  const activeKeys = new Set(itemsToRender.value.map((i) => i.key));
+  const activeKeys = new Set(displayItems.value.map((i) => i.key));
   let maxTextWidth = 0;
 
   for (const [key, width] of lyricsWidthMap) {
@@ -340,12 +320,6 @@ const calculateAndResizeWindow = () => {
     ipc.send("taskbar:set-width", requiredWidth);
   }
 };
-
-watch(isHovering, (newVal) => {
-  if (!newVal) {
-    calculateAndResizeWindow();
-  }
-});
 
 watch(
   () => state.title,
@@ -607,7 +581,7 @@ $radius: 4px;
   width: 100vw;
   height: 100vh;
   margin: 5px 0;
-  padding: 0 10px;
+  padding: 0 0.7em;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -621,6 +595,7 @@ $radius: 4px;
   user-select: none;
   font-family: v-bind(lyricFontFamily);
   font-weight: v-bind("settingStore.taskbarLyricFontWeight");
+  font-size: 14px;
 
   will-change: opacity, filter;
   transition:
@@ -635,7 +610,7 @@ $radius: 4px;
 
     .cover-wrapper {
       margin-right: 0;
-      margin-left: 8px;
+      margin-left: 0.6em;
     }
   }
 
@@ -645,22 +620,34 @@ $radius: 4px;
     &:hover {
       background-color: rgba(255, 255, 255, 0.1);
     }
-
-    &:not(:has(.control-btn:active)):active {
-      background-color: rgba(255, 255, 255, 0.2);
-    }
-
-    .control-btn:hover {
-      background-color: rgba(255, 255, 255, 0.15);
-    }
   }
 
   &:hover {
     background-color: rgba(0, 0, 0, 0.1);
   }
 
-  &:not(:has(.control-btn:active)):active {
+  &:active {
     background-color: rgba(0, 0, 0, 0.2);
+  }
+
+  &.floating {
+    font-size: clamp(12px, 29vh, 26px);
+    -webkit-app-region: drag;
+
+    .media-controls,
+    .control-btn {
+      -webkit-app-region: no-drag;
+    }
+
+    &:hover,
+    &:active {
+      background-color: transparent;
+    }
+
+    .cover-wrapper,
+    .content {
+      pointer-events: none;
+    }
   }
 }
 
@@ -668,7 +655,7 @@ $radius: 4px;
   position: relative;
   height: 80%;
   aspect-ratio: 1 / 1;
-  margin-right: 8px;
+  margin-right: 0.6em;
   border-radius: $radius;
   overflow: hidden;
   flex-shrink: 0;
@@ -700,66 +687,6 @@ $radius: 4px;
   }
 }
 
-.media-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  max-width: 120px;
-  gap: 6px;
-  overflow: hidden;
-  z-index: 10;
-
-  .control-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 62px;
-    height: 32px;
-    font-size: 18px;
-    color: inherit;
-    border-radius: $radius;
-    border: 1px solid rgba(128, 128, 128, 0.4);
-    box-sizing: border-box;
-    transition:
-      background-color 0.2s,
-      transform 0.1s,
-      border-color 0.2s;
-
-    &:hover {
-      background-color: rgba(128, 128, 128, 0.2);
-      border-color: rgba(128, 128, 128, 0.7);
-      opacity: 1;
-    }
-
-    &:active {
-      transform: scale(0.92);
-      background-color: rgba(128, 128, 128, 0.3);
-      border-color: rgba(128, 128, 128, 0.9);
-    }
-  }
-}
-
-.controls-expand {
-  &-enter-active,
-  &-leave-active {
-    transition: all 0.4s var(--lyric-ease);
-  }
-
-  &-enter-from,
-  &-leave-to {
-    max-width: 0;
-    opacity: 0;
-    margin: 0;
-  }
-
-  &-enter-to,
-  &-leave-from {
-    max-width: 120px;
-    opacity: 1;
-  }
-}
-
 .content {
   position: relative;
   display: flex;
@@ -771,7 +698,7 @@ $radius: 4px;
   box-sizing: border-box;
   transition: opacity 0.3s ease;
 
-  --mask-gap: 6px;
+  --mask-gap: 0.4em;
   --mask-vertical: linear-gradient(
     to bottom,
     transparent 0%,
@@ -781,7 +708,7 @@ $radius: 4px;
   );
   --mask-horizontal: linear-gradient(
     to right,
-    transparent 0,
+    transparent 0%,
     black var(--mask-gap),
     black calc(100% - var(--mask-gap)),
     transparent 100%
@@ -820,8 +747,8 @@ $radius: 4px;
   flex-direction: column;
   justify-content: center;
   width: 100%;
-  min-height: 15px;
-  padding: 0 4px;
+  min-height: 1.1em;
+  padding: 0 0.3em;
   box-sizing: border-box;
   line-height: 1.1;
   transition: all 0.4s var(--lyric-ease);
@@ -829,7 +756,7 @@ $radius: 4px;
   .line-text {
     display: block;
     width: 100%;
-    font-size: 14px;
+    font-size: 1em;
     transition:
       transform 0.4s var(--lyric-ease),
       opacity 0.4s var(--lyric-ease);
@@ -837,7 +764,7 @@ $radius: 4px;
     transform: scale(1);
 
     &.single {
-      font-size: 14px;
+      font-size: 1em;
     }
   }
 
@@ -853,25 +780,6 @@ $radius: 4px;
       opacity: 0.7;
       transform: scale(0.8);
     }
-  }
-}
-
-.content-switch {
-  &-enter-active,
-  &-leave-active {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    pointer-events: none;
-    transition: 0.4s var(--lyric-ease);
-  }
-
-  &-enter-from,
-  &-leave-to {
-    opacity: 0;
   }
 }
 
@@ -957,6 +865,66 @@ $radius: 4px;
   &-leave-to {
     opacity: 0;
     transform: translate3d(-5px, 0, 0);
+  }
+}
+
+.media-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  max-width: 8.6em;
+  gap: 0.4em;
+  overflow: hidden;
+  z-index: 10;
+
+  .control-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4.4em;
+    height: 2.3em;
+    font-size: 1.3em;
+    color: inherit;
+    border-radius: $radius;
+    border: 1px solid rgba(128, 128, 128, 0.4);
+    box-sizing: border-box;
+    transition:
+      background-color 0.2s,
+      transform 0.1s,
+      border-color 0.2s;
+
+    &:hover {
+      background-color: rgba(128, 128, 128, 0.2);
+      border-color: rgba(128, 128, 128, 0.7);
+      opacity: 1;
+    }
+
+    &:active {
+      transform: scale(0.92);
+      background-color: rgba(128, 128, 128, 0.3);
+      border-color: rgba(128, 128, 128, 0.9);
+    }
+  }
+}
+
+.controls-expand {
+  &-enter-active,
+  &-leave-active {
+    transition: all 0.4s var(--lyric-ease);
+  }
+
+  &-enter-from,
+  &-leave-to {
+    max-width: 0;
+    opacity: 0;
+    margin: 0;
+  }
+
+  &-enter-to,
+  &-leave-from {
+    max-width: 8.6em;
+    opacity: 1;
   }
 }
 </style>

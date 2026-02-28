@@ -63,6 +63,9 @@
         <div class="title">
           <SvgIcon name="Message" />
           <span>全部评论</span>
+          <span v-if="statusStore.songCommentCount > 0" class="count">
+            {{ statusStore.songCommentCount }}
+          </span>
         </div>
       </div>
       <CommentList
@@ -170,6 +173,10 @@ const getAllComment = async () => {
       : undefined;
   // 获取评论
   const result = await getComment(songId.value, songType.value, commentPage.value, 20, 3, cursor);
+  // 更新评论总数
+  if (result.data?.totalCount != null) {
+    statusStore.songCommentCount = result.data.totalCount;
+  }
   if (isEmpty(result.data?.comments)) {
     commentHasMore.value = false;
     commentLoading.value = false;
@@ -197,6 +204,7 @@ watch(
     commentHotData.value = [];
     commentPage.value = 1;
     commentHasMore.value = true;
+    statusStore.songCommentCount = 0;
     if (!isShowComment.value) return;
     getHotCommentData();
     getAllComment();
@@ -321,6 +329,12 @@ onMounted(() => {
       font-weight: bold;
       .n-icon {
         margin-right: 6px;
+      }
+      .count {
+        margin-left: 6px;
+        font-size: 14px;
+        font-weight: normal;
+        opacity: 0.6;
       }
     }
   }

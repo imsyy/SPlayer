@@ -170,6 +170,21 @@ export const useAppearanceSettings = (): SettingConfig => {
             }),
           },
           {
+            key: "showCommentCount",
+            label: "显示评论数量",
+            type: "select",
+            description: "在评论按钮上显示评论数量",
+            options: [
+              { label: "关闭", value: "off" },
+              { label: "缩减", value: "compact" },
+              { label: "完整", value: "full" },
+            ],
+            value: computed({
+              get: () => settingStore.showCommentCount,
+              set: (v) => (settingStore.showCommentCount = v),
+            }),
+          },
+          {
             key: "routeAnimation",
             label: "页面切换动画",
             type: "select",

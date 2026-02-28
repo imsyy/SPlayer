@@ -43,6 +43,8 @@ export interface StoreType {
   taskbar: {
     /** 是否启用 */
     enabled: boolean;
+    /** 模式 */
+    mode?: "taskbar" | "floating";
     /** 最大宽度 */
     maxWidth?: number;
     /** 显示封面 */
@@ -57,6 +59,13 @@ export interface StoreType {
     margin?: number;
     /** 最小宽度 (百分比) */
     minWidth?: number;
+    floatingX?: number;
+    floatingY?: number;
+    floatingAlign?: "left" | "right";
+    floatingAutoWidth?: boolean;
+    floatingWidth?: number;
+    floatingHeight?: number;
+    floatingAlwaysOnTop?: boolean;
   };
   /** 代理 */
   proxy: string;
@@ -112,6 +121,7 @@ export const useStore = () => {
       },
       taskbar: {
         enabled: false,
+        mode: "taskbar",
         maxWidth: 30,
         showCover: true,
         position: "automatic",
@@ -119,6 +129,13 @@ export const useStore = () => {
         autoShrink: false,
         margin: 10,
         minWidth: 10,
+        floatingX: screenData.workArea.x + screenData.workArea.width / 2 - 150,
+        floatingY: screenData.workArea.y + screenData.workArea.height - 120,
+        floatingAlign: "right",
+        floatingAutoWidth: true,
+        floatingWidth: 300,
+        floatingHeight: 48,
+        floatingAlwaysOnTop: false,
       },
       macos: {
         statusBarLyric: {

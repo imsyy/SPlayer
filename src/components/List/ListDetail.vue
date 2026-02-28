@@ -214,7 +214,12 @@
                     {{ detailData?.count }}
                   </n-text>
                 </n-tab>
-                <n-tab name="comments"> 评论 </n-tab>
+                <n-tab name="comments">
+                  评论
+                  <n-text v-if="settingStore.showCommentCount !== 'off' && detailData?.commentCount" class="count" depth="3">
+                    {{ formatCommentCount(detailData.commentCount) }}
+                  </n-text>
+                </n-tab>
               </n-tabs>
             </n-flex>
           </n-flex>
@@ -234,7 +239,7 @@
 import type { CoverType, SongType } from "@/types/main";
 import type { DropdownOption } from "naive-ui";
 import { coverLoaded, formatNumber } from "@/utils/helper";
-import { removeBrackets } from "@/utils/format";
+import { removeBrackets, formatCommentCount } from "@/utils/format";
 import { renderToolbar } from "@/utils/meta";
 import { formatTimestamp } from "@/utils/time";
 import { openDescModal, openJumpArtist } from "@/utils/modal";

@@ -1,8 +1,27 @@
-import { useDataStore, useMusicStore, useStatusStore } from "@/stores";
+import { useDataStore, useMusicStore, useSettingStore, useStatusStore } from "@/stores";
 import type { ArtistType, CatType, CommentType, CoverType, MetaData, SongType } from "@/types/main";
 import { flatMap, isArray, uniqBy } from "lodash-es";
 import { handleSongQuality } from "./helper";
 import { msToTime } from "./time";
+
+/**
+ * 格式化评论数量
+ * @param count 评论数量
+ * @returns 格式化后的评论数量
+ */
+export const formatCommentCount = (count: number): string | number => {
+  const settingStore = useSettingStore();
+  if (settingStore.showCommentCount === "full") return count;
+  if (count >= 10000) {
+    const val = Math.floor(count / 1000) / 10;
+    return `${val % 1 === 0 ? val.toFixed(0) : val}W+`;
+  }
+  if (count >= 1000) {
+    const val = Math.floor(count / 100) / 10;
+    return `${val % 1 === 0 ? val.toFixed(0) : val}K+`;
+  }
+  return count;
+};
 
 /**
  * 移除文本中的括号内容（支持中英文括号）

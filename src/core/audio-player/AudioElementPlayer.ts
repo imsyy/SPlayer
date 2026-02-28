@@ -100,6 +100,16 @@ export class AudioElementPlayer extends BaseAudioPlayer {
   }
 
   /**
+   * 停止播放并清理当前音频源
+   * 彻底移除 src，防止旧链接后续继续触发 canplay 等事件
+   */
+  public stop(): void {
+    super.stop();
+    this.audioElement.removeAttribute("src");
+    this.audioElement.load();
+  }
+
+  /**
    * 执行底层 Seek
    * @param time 目标时间（秒）
    */

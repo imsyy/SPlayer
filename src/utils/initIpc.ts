@@ -94,12 +94,18 @@ const initIpc = () => {
       const cover = musicStore.getSongCover("s") || "";
 
       const configPayload: TaskbarConfig = {
+        mode: settingStore.taskbarLyricMode,
         // 布局
         maxWidth: settingStore.taskbarLyricMaxWidth,
         position: settingStore.taskbarLyricPosition,
         autoShrink: settingStore.taskbarLyricAutoShrink,
         margin: settingStore.taskbarLyricMargin,
         minWidth: settingStore.taskbarLyricMinWidth,
+        floatingAlign: settingStore.taskbarLyricFloatingAlign,
+        floatingAutoWidth: settingStore.taskbarLyricFloatingAutoWidth,
+        floatingWidth: settingStore.taskbarLyricFloatingWidth,
+        floatingHeight: settingStore.taskbarLyricFloatingHeight,
+        floatingAlwaysOnTop: settingStore.taskbarLyricFloatingAlwaysOnTop,
 
         // 行为
         enabled: statusStore.showTaskbarLyric,

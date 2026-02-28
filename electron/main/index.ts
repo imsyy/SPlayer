@@ -15,7 +15,7 @@ import { trySendCustomProtocol } from "./utils/protocol";
 import { initSingleLock } from "./utils/single-lock";
 import loadWindow from "./windows/load-window";
 import mainWindow from "./windows/main-window";
-import taskbarLyricWindow from "./windows/taskbar-lyric-window";
+import taskbarLyricManager from "./utils/taskbar-lyric-manager";
 
 // 屏蔽报错
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = "true";
@@ -144,7 +144,7 @@ class MainProcess {
         // 清理媒体集成资源
         shutdownMedia();
         // 销毁任务栏歌词窗口
-        taskbarLyricWindow.destroy();
+        taskbarLyricManager.destroyAll();
         // 停止 MPV 服务
         const mpvService = MpvService.getInstance();
         try {
