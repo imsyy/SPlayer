@@ -349,41 +349,54 @@ export const usePlaySettings = (): SettingConfig => {
               get: () => settingStore.useNextPrefetch,
               set: (v) => (settingStore.useNextPrefetch = v),
             }),
-          },
-          {
-            key: "useGaplessPlayback",
-            label: "无缝播放",
-            type: "switch",
-            tags: [{ text: "Beta", type: "warning" }],
-            description: computed(() =>
-              settingStore.playbackEngine === "web-audio" && settingStore.audioEngine === "element"
-                ? "歌曲结束时无缝衔接下一首，避免间隙"
-                : "无缝播放仅在使用 Web Audio 引擎时可用",
-            ),
-            value: computed({
-              get: () => settingStore.useGaplessPlayback,
-              set: (v) => {
-                if (v) {
-                  window.$dialog.warning({
-                    title: "启用无缝播放 (Beta)",
-                    content:
-                      "无缝播放会预解码下一首歌曲的音频数据，每首歌曲约占用 50-150MB 内存。如果设备内存较小，可能影响性能。",
-                    positiveText: "开启",
-                    negativeText: "取消",
-                    onPositiveClick: () => {
-                      settingStore.useGaplessPlayback = true;
-                    },
-                  });
-                } else {
-                  settingStore.useGaplessPlayback = v;
-                }
+            forceIf: {
+              condition: computed(() => settingStore.useGaplessPlayback),
+              forcedValue: true,
+              forcedDescription: "无缝播放已启用，需要保持预载开启",
+            },
+            children: [
+              {
+                key: "useGaplessPlayback",
+                label: "无缝播放",
+                type: "switch",
+                tags: [{ text: "Beta", type: "warning" }],
+                description: computed(() =>
+                  settingStore.playbackEngine === "web-audio" &&
+                  settingStore.audioEngine === "element"
+                    ? "歌曲结束时无缝衔接下一首，避免间隙（下一首播放后生效）"
+                    : "无缝播放仅在使用 Web Audio 引擎时可用",
+                ),
+                value: computed({
+                  get: () => settingStore.useGaplessPlayback,
+                  set: (v) => {
+                    if (v) {
+                      window.$dialog.warning({
+                        title: "启用无缝播放 (Beta)",
+                        content: () =>
+                          h("div", [
+                            h("p", "无缝播放会预解码下一首歌曲的音频数据，每首歌曲约占用 50-150MB 内存。如果设备内存较小，可能影响性能。"),
+                            h("p", "推荐在经过创作者特殊设计的专辑中体验"),
+                            h("p", "如《Self-Discovery》《A Moment Apart》等"),
+                            h("p", "该功能目前处于预览状态，有任何问题请提交 Issues。"),
+                          ]),
+                        positiveText: "开启",
+                        negativeText: "取消",
+                        onPositiveClick: () => {
+                          settingStore.useGaplessPlayback = true;
+                        },
+                      });
+                    } else {
+                      settingStore.useGaplessPlayback = v;
+                    }
+                  },
+                }),
+                disabled: computed(
+                  () =>
+                    settingStore.playbackEngine !== "web-audio" ||
+                    settingStore.audioEngine !== "element",
+                ),
               },
-            }),
-            disabled: computed(
-              () =>
-                settingStore.playbackEngine !== "web-audio" ||
-                settingStore.audioEngine !== "element",
-            ),
+            ],
           },
           {
             key: "memoryLastSeek",
