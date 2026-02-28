@@ -85,6 +85,7 @@ class GaplessManager {
       }
 
       const arrayBuffer = await response.arrayBuffer();
+      const rawSize = arrayBuffer.byteLength;
 
       // 再次检查是否已取消
       if (abortController.signal.aborted) return;
@@ -105,7 +106,7 @@ class GaplessManager {
       this._isPreloading = false;
 
       console.log(
-        `[GaplessManager] 预载完成: duration=${audioBuffer.duration.toFixed(1)}s, size=${(arrayBuffer.byteLength / 1024 / 1024).toFixed(1)}MB`,
+        `[GaplessManager] 预载完成: duration=${audioBuffer.duration.toFixed(1)}s, size=${(rawSize / 1024 / 1024).toFixed(1)}MB`,
       );
     } catch (e) {
       if ((e as Error).name === "AbortError") {
