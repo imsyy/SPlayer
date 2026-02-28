@@ -607,7 +607,8 @@ class PlayerController {
           let nextIdx = sStore.playIndex + 1;
           if (nextIdx >= playList.length) nextIdx = 0;
           if (playList.length > 0) {
-            useGaplessManager().preload(prefetch.url, nextIdx);
+            const nextSong = playList[nextIdx];
+            useGaplessManager().preload(prefetch.url, nextIdx, nextSong?.name);
           }
         }
       });

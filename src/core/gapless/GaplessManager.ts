@@ -54,7 +54,7 @@ class GaplessManager {
    * @param url 音频 URL
    * @param nextIndex 下一首在播放列表中的索引
    */
-  async preload(url: string, nextIndex: number) {
+  async preload(url: string, nextIndex: number, songName?: string) {
     // 如果已经在预载相同 URL，跳过
     if (this._url === url && (this._isReady || this._isPreloading)) {
       return;
@@ -71,7 +71,8 @@ class GaplessManager {
     this.abortController = abortController;
 
     try {
-      console.log(`[GaplessManager] 开始预载: index=${nextIndex}`);
+      const label = songName ? `"${songName}"` : `index=${nextIndex}`;
+      console.log(`[GaplessManager] 开始预载: ${label}`);
 
       const response = await fetch(url, {
         signal: abortController.signal,
@@ -105,8 +106,11 @@ class GaplessManager {
       this._isReady = true;
       this._isPreloading = false;
 
+      // 计算解码后 PCM 内存占用
+      const pcmBytes = audioBuffer.length * audioBuffer.numberOfChannels * 4; // Float32 = 4 bytes
+
       console.log(
-        `[GaplessManager] 预载完成: duration=${audioBuffer.duration.toFixed(1)}s, size=${(rawSize / 1024 / 1024).toFixed(1)}MB`,
+        `[GaplessManager] 预载完成: ${label}, duration=${audioBuffer.duration.toFixed(1)}s, raw=${(rawSize / 1024 / 1024).toFixed(1)}MB, pcm=${(pcmBytes / 1024 / 1024).toFixed(1)}MB`,
       );
     } catch (e) {
       if ((e as Error).name === "AbortError") {
