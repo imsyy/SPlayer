@@ -140,6 +140,23 @@ export const likePlaylist = (id: number, t: number = 1 | 2) => {
 };
 
 /**
+ * 更新歌单中歌曲顺序
+ * @param {number} pid - 歌单 id
+ * @param {number[]} ids - 歌曲 id 数组（按新顺序排列）
+ */
+export const songOrderUpdate = (pid: number, ids: number[]) => {
+  return request({
+    url: "/song/order/update",
+    method: "post",
+    data: {
+      pid,
+      ids: JSON.stringify(ids),
+    },
+    params: { timestamp: Date.now() },
+  });
+};
+
+/**
  * 获取专辑排行榜数据
  * @param {boolean} [detail=true] 是否获取详情数据，默认为 true
  */

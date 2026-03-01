@@ -53,9 +53,11 @@
           :loading="loading"
           :height="songListHeight"
           :playListId="playlistId"
+          :draggable="canDragSort"
           :doubleClickAction="searchData?.length ? 'add' : 'all'"
           @scroll="handleListScroll"
           @removeSong="removeSong"
+          @reorder="handleReorder"
         />
         <n-empty
           v-else
@@ -85,11 +87,12 @@ import {
   playlistAllSongs,
   deletePlaylist,
   updatePlaylistPrivacy,
+  songOrderUpdate,
 } from "@/api/playlist";
 import { formatCoverList, formatSongsList } from "@/utils/format";
 import { renderIcon, copyData, getShareUrl } from "@/utils/helper";
 import { isLogin, toLikePlaylist, updateUserLikePlaylist } from "@/utils/auth";
-import { useDataStore, useLocalStore } from "@/stores";
+import { useDataStore, useLocalStore, useStatusStore } from "@/stores";
 import { openBatchList, openUpdatePlaylist } from "@/utils/modal";
 import { useListDetail } from "@/composables/List/useListDetail";
 import { useListSearch } from "@/composables/List/useListSearch";
@@ -100,6 +103,7 @@ import { useListDataCache, type ListCacheData } from "@/composables/List/useList
 const router = useRouter();
 const dataStore = useDataStore();
 const localStore = useLocalStore();
+const statusStore = useStatusStore();
 
 const {
   detailData,
@@ -147,6 +151,11 @@ const isUserPlaylist = computed(() => {
 // 是否处于收藏歌单
 const isLikePlaylist = computed(() => {
   return dataStore.userLikeData.playlists.some((playlist) => playlist.id === detailData.value?.id);
+});
+
+// 是否可拖拽排序（用户自建歌单 + 默认排序 + 非搜索模式）
+const canDragSort = computed(() => {
+  return isUserPlaylist.value && !searchValue.value && statusStore.listSortField === "default";
 });
 
 // 是否处于歌单页面
@@ -512,6 +521,49 @@ const removeSong = async (ids: number[]) => {
     }
   }
   setListData(listData.value.filter((song) => !ids.includes(song.id)));
+};
+
+// 拖拽重排序
+const handleReorder = async (fromIndex: number, toIndex: number) => {
+  if (fromIndex === toIndex) return;
+
+  // 乐观更新视图
+  const newList = [...listData.value];
+  const [moved] = newList.splice(fromIndex, 1);
+  newList.splice(toIndex, 0, moved);
+  setListData(newList);
+
+  if (isLocalPlaylist.value) {
+    // 本地歌单持久化
+    const success = await localStore.reorderSongsInLocalPlaylist(
+      playlistId.value,
+      fromIndex,
+      toIndex,
+    );
+    if (!success) {
+      window.$message.error("排序失败");
+      handleLocalPlaylist(playlistId.value);
+    }
+  } else {
+    // 在线歌单持久化
+    try {
+      const ids = newList.map((s) => s.id);
+      const result = await songOrderUpdate(playlistId.value, ids);
+      if (result.code !== 200) {
+        window.$message.error("保存排序失败");
+        getPlaylistDetail(playlistId.value, { getList: true, refresh: true });
+      } else {
+        // 更新缓存
+        if (detailData.value) {
+          saveCache("playlist", playlistId.value, detailData.value, newList);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to update song order:", error);
+      window.$message.error("保存排序失败，请重试");
+      getPlaylistDetail(playlistId.value, { getList: true, refresh: true });
+    }
+  }
 };
 
 // 编辑歌单
