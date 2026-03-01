@@ -306,6 +306,13 @@ const specialContributors = [
     buttonText: "GitHub",
     url: "https://github.com/apoint123",
   },
+  {
+    name: "ITMan_CHINA",
+    description: "开源社区街溜子丨神秘 AI 驾驶员丨列位猪公，今天吃什么？",
+    avatar: "/images/avatar/itmanchina.webp",
+    buttonText: "GitHub",
+    url: "https://github.com/ITManCHINA",
+  },
 ];
 
 // 社区数据
