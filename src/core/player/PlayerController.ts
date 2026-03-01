@@ -611,18 +611,21 @@ class PlayerController {
     const settingStore = useSettingStore();
     if (!settingStore.useNextPrefetch) return;
     const songManager = useSongManager();
-    // 始终执行 URL 预取
-    songManager.prefetchNextSong().then((prefetch) => {
+    // 始终执行 URL 预取（cover、lyrics、URL cache）
+    songManager.prefetchNextSong().then(async () => {
       // gapless 额外触发 AudioBuffer 预解码
       if (
-        !prefetch?.url ||
         !settingStore.useGaplessPlayback ||
         useAudioManager().engineType !== "element"
       )
         return;
+      // 使用共享的 getNextSongInfo 获取准确的下一首（处理 DJ 跳过等）
       const nextInfo = this.getNextSongInfo();
-      if (!nextInfo || prefetch.id !== nextInfo.song.id) return;
-      useGaplessManager().preload(prefetch.url, nextInfo.index, nextInfo.song.name);
+      if (!nextInfo) return;
+      // 获取实际下一首的 URL（prefetchNextSong 可能因 DJ 跳过预取了错误的歌曲）
+      const audioSource = await songManager.getAudioSource(nextInfo.song);
+      if (!audioSource.url) return;
+      useGaplessManager().preload(audioSource.url, nextInfo.index, nextInfo.song.name);
     });
   }
 
