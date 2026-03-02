@@ -115,14 +115,17 @@ const initCacheIpc = (): void => {
   });
 
   // 检查是否存在音乐缓存
-  ipcMain.handle("music-cache-check", async (_event, id: number | string, quality?: string) => {
-    try {
-      return await musicCacheService.hasCache(id, quality);
-    } catch (error) {
-      processLog.error("Check music cache failed:", error);
-      return null;
-    }
-  });
+  ipcMain.handle(
+    "music-cache-check",
+    async (_event, id: number | string, quality?: string, md5?: string) => {
+      try {
+        return await musicCacheService.hasCache(id, quality, md5);
+      } catch (error) {
+        processLog.error("Check music cache failed:", error);
+        return null;
+      }
+    },
+  );
 
   // 下载并缓存音乐
   ipcMain.handle(

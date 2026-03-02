@@ -68,6 +68,8 @@ export class MpvService {
       "--demuxer-max-bytes=120MiB", // 增大缓存容量
       "--demuxer-readahead-secs=120", // 增加预读时间
       `--audio-device=${this.currentAudioDevice}`, // 使用当前设置的音频设备
+      "--audio-channels=auto", // 自动检测音频通道
+      "--demuxer-lavf-o=fflags=+discardcorrupt", // 容错处理，忽略损坏的数据
     ];
 
     // 关闭自动播放时，用启动参数强制暂停，避免启动后短暂自动播放
@@ -83,12 +85,21 @@ export class MpvService {
     //processLog.info("正在启动 MPV 进程...", args);
 
     try {
-      this.mpvProcess = spawn("mpv", args, { stdio: "ignore" });
+      this.mpvProcess = spawn("mpv", args, { stdio: ["ignore", "pipe", "pipe"] });
       // 将当前进程与本次播放请求关联，便于区分旧进程退出与新进程生命周期
       this.mpvProcessNonce = this.playNonce;
 
-      this.mpvProcess.on("exit", () => {
-        //processLog.warn(`MPV 进程已退出`);
+      // 捕获 stdout 和 stderr 用于调试
+      this.mpvProcess.stdout?.on("data", (data) => {
+        processLog.info("MPV stdout:", data.toString());
+      });
+
+      this.mpvProcess.stderr?.on("data", (data) => {
+        processLog.error("MPV stderr:", data.toString());
+      });
+
+      this.mpvProcess.on("exit", (code, signal) => {
+        processLog.warn(`MPV 进程已退出，退出码: ${code}, 信号: ${signal}`);
         this.mpvProcess = null;
         this.isConnected = false;
         this.client = null;

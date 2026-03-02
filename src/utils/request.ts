@@ -31,7 +31,7 @@ server.interceptors.request.use(
     if (!request.params) request.params = {};
     // Cookie
     if (!request.params.noCookie && (isLogin() || getCookie("MUSIC_U") !== null)) {
-      const cookie = `MUSIC_U=${getCookie("MUSIC_U")};`;
+      const cookie = `MUSIC_U=${getCookie("MUSIC_U")};os=pc;`;
       request.params.cookie = cookie;
     }
     // 自定义 realIP

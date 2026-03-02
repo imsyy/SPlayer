@@ -1,5 +1,6 @@
-import { existsSync } from "fs";
+import { existsSync, createReadStream } from "fs";
 import { rename, stat, unlink } from "fs/promises";
+import { createHash } from "crypto";
 import { cacheLog } from "../logger";
 import { useStore } from "../store";
 import { loadNativeModule } from "../utils/native-loader";
@@ -34,37 +35,74 @@ export class MusicCacheService {
   }
 
   /**
+   * 计算文件 MD5
+   */
+  private async calculateMD5(filePath: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const hash = createHash("md5");
+      const stream = createReadStream(filePath);
+      stream.on("error", (err) => reject(err));
+      stream.on("data", (chunk) => hash.update(chunk));
+      stream.on("end", () => resolve(hash.digest("hex")));
+    });
+  }
+
+  /**
    * 检查缓存是否存在
    * 如果 quality 为 undefined，则返回任意一个匹配 id 的缓存（如果存在）
+   * 如果提供了 expectedMD5，则会校验文件 MD5，不一致则删除缓存并返回 null
    */
-  public async hasCache(id: number | string, quality?: string): Promise<string | null> {
-    // 精确查找
+  public async hasCache(
+    id: number | string,
+    quality?: string,
+    expectedMD5?: string,
+  ): Promise<string | null> {
+    let filePath: string | null = null;
+
+    // 1. 精确查找：如果指定了音质，直接检查对应文件是否存在
     if (quality) {
       const key = this.getCacheKey(id, quality);
       try {
-        const filePath = this.cacheService.getFilePath("music", key);
-        if (existsSync(filePath)) {
-          return filePath;
+        const p = this.cacheService.getFilePath("music", key);
+        if (existsSync(p)) {
+          filePath = p;
         }
       } catch {
-        return null;
+        // ignore
       }
-      return null;
+    } else {
+      // 2. 模糊查找：如果未指定音质，查找该 ID 下的任意缓存文件
+      try {
+        const items = await this.cacheService.list("music");
+        // 查找以 id_ 开头且以 .sc 结尾的文件
+        const prefix = `${id}_`;
+        const match = items.find((item) => item.key.startsWith(prefix) && item.key.endsWith(".sc"));
+        if (match) {
+          filePath = this.cacheService.getFilePath("music", match.key);
+        }
+      } catch {
+        // ignore
+      }
     }
 
-    // 模糊查找 (API请求失败时，只要有缓存就用)
-    try {
-      const items = await this.cacheService.list("music");
-      // 查找以 id_ 开头且以 .sc 结尾的文件（排除 .tmp 文件）
-      const prefix = `${id}_`;
-      const match = items.find((item) => item.key.startsWith(prefix) && item.key.endsWith(".sc"));
-      if (match) {
-        return this.cacheService.getFilePath("music", match.key);
-      }
-    } catch {
-      return null;
-    }
-    return null;
+    // 如果找到文件且需要校验 MD5
+     if (filePath && expectedMD5) {
+       try {
+         const fileMD5 = await this.calculateMD5(filePath);
+         if (fileMD5.toLowerCase() !== expectedMD5.toLowerCase()) {
+            cacheLog.info(
+              `[MusicCache] 缓存 MD5 不匹配，删除旧缓存。ID: ${id}, 期望: ${expectedMD5}, 实际: ${fileMD5}`,
+            );
+            await unlink(filePath).catch(() => {});
+            return null;
+          }
+       } catch (error) {
+         cacheLog.error(`[MusicCache] Failed to calculate MD5 for ${filePath}:`, error);
+         return null;
+       }
+     }
+
+    return filePath;
   }
 
   /**
