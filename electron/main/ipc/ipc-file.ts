@@ -274,8 +274,8 @@ const initFileIpc = (): void => {
   });
 
   // 尝试通过歌名快速在本地缓存中寻找对应的 TTML 文件信息并提取其关联的 ncmId
-  ipcMain.handle("match-local-ttml-by-name", async (_, lyricDirs: string[], songName: string, artists?: string[]) => {
-    return matchLocalTtmlByName(lyricDirs, songName, artists);
+  ipcMain.handle("match-local-ttml-by-name", async (_, lyricDirs: string[], songName: string) => {
+    return matchLocalTtmlByName(lyricDirs, songName);
   });
 
   // 删除文件
