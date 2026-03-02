@@ -1,5 +1,5 @@
 import { app, dialog, ipcMain, shell } from "electron";
-import { access, mkdir, unlink, writeFile, stat } from "node:fs/promises";
+import { access, mkdir, unlink, writeFile, stat, readFile } from "node:fs/promises";
 import { isAbsolute, join, normalize, relative, resolve } from "node:path";
 import { Worker } from "node:worker_threads";
 import { ipcLog } from "../logger";
@@ -535,6 +535,54 @@ const initFileIpc = (): void => {
       return null;
     }
   });
+
+  // 读取便携式本地匹配索引数据库
+  ipcMain.handle("get-local-match-index", async (_event, dirPath: string) => {
+    try {
+      const indexPath = join(dirPath, ".splayer-match.json");
+      const exists = await access(indexPath).then(() => true).catch(() => false);
+      if (!exists) return {};
+
+      const content = await readFile(indexPath, "utf-8");
+      return JSON.parse(content);
+    } catch (e) {
+      ipcLog.warn(`Failed to read local match index for ${dirPath}:`, String(e));
+      return {};
+    }
+  });
+
+  // 保存便携式本地匹配索引数据库
+  ipcMain.handle(
+    "save-local-match-index",
+    async (_event, dirPath: string, fileName: string, ncmId: number | null) => {
+      try {
+        const indexPath = join(dirPath, ".splayer-match.json");
+        let indexData: Record<string, number | null> = {};
+
+        // 先尝试读取已有索引
+        const exists = await access(indexPath).then(() => true).catch(() => false);
+        if (exists) {
+          const content = await readFile(indexPath, "utf-8");
+          try {
+            indexData = JSON.parse(content);
+          } catch {
+            // 解析失败不阻断，直接覆盖
+          }
+        }
+
+        // 更新记录
+        indexData[fileName] = ncmId;
+
+        // 写入索引文件
+        // 格式化输出方便用户必要时查看，也可最小化
+        await writeFile(indexPath, JSON.stringify(indexData, null, 2), "utf-8");
+        return { success: true };
+      } catch (e) {
+        ipcLog.error(`Failed to save local match index for ${dirPath}:`, String(e));
+        return { success: false, error: String(e) };
+      }
+    }
+  );
 };
 
 export default initFileIpc;

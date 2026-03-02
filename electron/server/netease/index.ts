@@ -78,12 +78,35 @@ export const initNcmAPI = async (fastify: FastifyInstance) => {
     "/netease/lyric/ttml",
     async (req: FastifyRequest<{ Querystring: { id: string } }>, reply: FastifyReply) => {
       const { id } = req.query;
-      if (!id) {
-        return reply.status(400).send({ error: "id is required" });
+
+      // 1. 严格校验 id 为纯数字，防止路径穿越或注入
+      if (!id || !/^\d+$/.test(id)) {
+        return reply.status(400).send({ error: "Invalid song id format" });
       }
+
       const store = useStore();
-      const server = store.get("amllDbServer") ?? defaultAMLLDbServer;
-      const url = server.replace("%s", String(id));
+      const server = store.get("amllDbServer") || defaultAMLLDbServer;
+
+      // 2. 校验服务器配置合法性
+      if (!server.startsWith("http://") && !server.startsWith("https://")) {
+        serverLog.error("❌ TTML Lyric Fetch Blocked: Invalid protocol in server config", server);
+        return reply.status(500).send({ error: "Invalid server protocol" });
+      }
+
+      if (!server.includes("%s")) {
+        serverLog.error("❌ TTML Lyric Fetch Blocked: Missing %s placeholder in server config", server);
+        return reply.status(500).send({ error: "Invalid server configuration" });
+      }
+
+      // 3. 安全构造 URL
+      const encodedId = encodeURIComponent(id);
+      const url = server.replace("%s", encodedId);
+
+      // 二次协议验证
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        return reply.status(500).send({ error: "Constructed URL protocol is unsafe" });
+      }
+
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
       try {

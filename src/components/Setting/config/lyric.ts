@@ -456,6 +456,36 @@ export const useLyricSettings = (): SettingConfig => {
             ],
           },
           {
+            key: "localLyricNCMMatch",
+            label: "本地歌曲网易云歌词匹配",
+            type: "switch",
+            description:
+              "没有嵌入歌词的本地歌曲将根据元数据（歌名、歌手、专辑）从网易云搜索匹配歌词",
+            show: isElectron,
+            value: computed({
+              get: () => settingStore.localLyricNCMMatch,
+              set: (v) => (settingStore.localLyricNCMMatch = v),
+            }),
+            children: [
+              {
+                key: "localLyricMatchLevel",
+                label: "匹配严格度",
+                type: "select",
+                description:
+                  "严格：歌名+歌手+专辑均需精确匹配 | 标准：歌名+歌手精确匹配 | 宽松：歌名+歌手模糊匹配",
+                options: [
+                  { label: "严格", value: "strict" },
+                  { label: "标准", value: "normal" },
+                  { label: "宽松", value: "loose" },
+                ],
+                value: computed({
+                  get: () => settingStore.localLyricMatchLevel,
+                  set: (v) => (settingStore.localLyricMatchLevel = v),
+                }),
+              },
+            ],
+          },
+          {
             key: "enableOnlineTTMLLyric",
             label: "启用在线 TTML 歌词",
             type: "switch",
