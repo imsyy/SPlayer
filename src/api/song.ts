@@ -36,8 +36,22 @@ export const songUrl = (
     | "hires"
     | "jyeffect"
     | "sky"
+    | "dolby"
     | "jymaster" = "exhigh",
 ) => {
+  // 杜比全景声使用旧版接口，并传入特殊参数
+  if (level === "dolby") {
+    return request({
+      url: "/song/url",
+      params: {
+        id,
+        br: 999000,
+        immerseType: "c51",
+        timestamp: Date.now(),
+      },
+    });
+  }
+
   return request({
     url: "/song/url/v1",
     params: {

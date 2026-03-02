@@ -19,6 +19,12 @@
         </n-list>
       </n-checkbox-group>
     </n-scrollbar>
+    <n-collapse-transition :show="displaySuffix !== ''">
+      <n-divider />
+      <n-flex justify="end">
+        <n-text> {{ displaySuffix }} </n-text>
+      </n-flex>
+    </n-collapse-transition>
     <n-divider />
     <n-flex vertical size="small" class="footer">
       <n-text depth="2" class="footer-title">要复制的内容</n-text>
@@ -73,6 +79,27 @@ const displayLyrics = computed(() => {
   });
 });
 
+const displaySuffix = computed(() => {
+  const showSongName = selectedFilters.value.includes("songName");
+  const showArtist = selectedFilters.value.includes("artist");
+
+  if (!showSongName && !showArtist) return "";
+
+  const songName = musicStore.playSong.name;
+  const artistName = Array.isArray(musicStore.playSong.artists)
+    ? musicStore.playSong.artists.map((ar) => ar.name).join("/")
+    : musicStore.playSong.artists;
+
+  if (showSongName && showArtist) {
+    return `——《${songName}》 - ${artistName}`;
+  } else if (showSongName) {
+    return `——《${songName}》`;
+  } else if (showArtist) {
+    return `—— ${artistName}`;
+  }
+  return "";
+});
+
 const showTranslation = computed(() => selectedFilters.value.includes("translation"));
 const showRomaji = computed(() => selectedFilters.value.includes("romaji"));
 
@@ -92,6 +119,8 @@ const selectAll = () => {
  * 复制歌词
  */
 const handleCopy = async () => {
+  const lineSeparator = selectedFilters.value.includes("emptyLine") ? "\n\n" : "\n";
+
   let linesToCopy = displayLyrics.value
     .filter((l) => selectedLines.value.includes(l.index))
     .map((l) => {
@@ -102,27 +131,9 @@ const handleCopy = async () => {
       return parts.join("\n");
     })
     .filter((s) => s)
-    .join(selectedFilters.value.includes("emptyLine") ? "\n\n" : "\n");
+    .join(lineSeparator);
 
-  const showSongName = selectedFilters.value.includes("songName");
-  const showArtist = selectedFilters.value.includes("artist");
-
-  if (showSongName || showArtist) {
-    const songName = musicStore.playSong.name;
-    const artistName = Array.isArray(musicStore.playSong.artists)
-      ? musicStore.playSong.artists.map((ar) => ar.name).join("/")
-      : musicStore.playSong.artists;
-
-    let suffix = "\n\n——";
-    if (showSongName && showArtist) {
-      suffix += `《${songName}》 - ${artistName}`;
-    } else if (showSongName) {
-      suffix += `《${songName}》`;
-    } else if (showArtist) {
-      suffix += ` ${artistName}`;
-    }
-    linesToCopy += suffix;
-  }
+  if (displaySuffix.value) linesToCopy += `${lineSeparator}${displaySuffix.value}`;
 
   if (linesToCopy) {
     await copyData(linesToCopy);

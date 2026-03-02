@@ -2,7 +2,6 @@
   <div class="like-type">
     <CoverList
       :data="dataStore.userLikeData.djs"
-      :loading="true"
       type="radio"
       :hiddenCover="settingStore.hiddenCovers.like"
     />

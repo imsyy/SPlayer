@@ -5,6 +5,11 @@ export const albumDetail = (id: number) => {
   return request({ url: "/album", params: { id } });
 };
 
+// 获取专辑动态信息
+export const albumDetailDynamic = (id: number) => {
+  return request({ url: "/album/detail/dynamic", params: { id } });
+};
+
 // 收藏/取消收藏专辑
 export const likeAlbum = (id: number, t: number = 1 | 2) => {
   return request({

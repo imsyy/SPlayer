@@ -1,5 +1,5 @@
 import { getCookie, removeCookie, setCookies } from "./cookie";
-import type { UserLikeDataType, CoverType, ArtistType, SongType } from "@/types/main";
+import type { CoverType, ArtistType, SongType } from "@/types/main";
 import {
   userAccount,
   userDetail,
@@ -300,14 +300,14 @@ export const updateUserLikePlaylist = async () => {
   if (!isLogin() || !userId) return;
   if (dataStore.loginType === "uid") {
     const result = await userPlaylist(30, 0, userId);
-    dataStore.setUserLikeData("playlists", formatCoverList(result.playlist));
+    await dataStore.setUserLikeData("playlists", formatCoverList(result.playlist));
     return;
   }
   // 计算数量
   const { createdPlaylistCount, subPlaylistCount } = dataStore.userData;
   const number = (createdPlaylistCount || 0) + (subPlaylistCount || 0) || 50;
   const result = await userPlaylist(number, 0, userId);
-  dataStore.setUserLikeData("playlists", formatCoverList(result.playlist));
+  await dataStore.setUserLikeData("playlists", formatCoverList(result.playlist));
 };
 
 // 更新用户喜欢歌手
@@ -432,7 +432,7 @@ export const toSubRadio = toLikeSomething("订阅", "播客", () => radioSub, up
 const setUserLikeDataLoop = async <T>(
   apiFunction: (limit: number, offset: number) => Promise<any>,
   formatFunction: (data: any[]) => T[],
-  key: keyof UserLikeDataType,
+  key: "playlists" | "artists" | "albums" | "mvs" | "djs",
 ) => {
   const dataStore = useDataStore();
   const userId = dataStore.userData.userId;
@@ -476,11 +476,9 @@ const setUserLikeDataLoop = async <T>(
   }
   // 保存数据
   if (key === "artists") {
-    dataStore.setUserLikeData(key, allData as ArtistType[]);
+    await dataStore.setUserLikeData(key, allData as ArtistType[]);
   } else if (key === "playlists" || key === "albums" || key === "mvs" || key === "djs") {
-    dataStore.setUserLikeData(key, allData as CoverType[]);
-  } else {
-    console.error(`Unsupported key in setUserLikeDataLoop: ${key}`);
+    await dataStore.setUserLikeData(key, allData as CoverType[]);
   }
 
   console.log(`✅ Fetched ${allData.length} ${key} for user ${userId}`);

@@ -3,11 +3,18 @@ import type { LyricLine } from "@applemusic-like-lyrics/lyric";
 export type Milliseconds = number;
 
 export interface TaskbarConfig {
+  mode: "taskbar" | "floating";
   maxWidth: number;
   position: "automatic" | "left" | "right";
   autoShrink: boolean;
   margin: number;
   minWidth: number;
+
+  floatingAlign: "left" | "right";
+  floatingAutoWidth: boolean;
+  floatingWidth: number;
+  floatingHeight: number;
+  floatingAlwaysOnTop: boolean;
 
   enabled: boolean;
   showWhenPaused: boolean;

@@ -1039,7 +1039,7 @@ export class AutomixManager {
             // 提交状态切换
             statusStore.playIndex = targetIndex;
             statusStore.endAutomixFx();
-            playerController.setupSongUI(targetSong, audioSource, options.startSeek);
+            playerController.setupSongUI(targetSong, options.startSeek);
             playerController.afterPlaySetup(targetSong);
           },
         },

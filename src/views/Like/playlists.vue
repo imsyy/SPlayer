@@ -17,7 +17,6 @@
       <CoverList
         :key="plTypeChoose"
         :data="listData"
-        :loading="true"
         type="playlist"
         :hiddenCover="settingStore.hiddenCovers.like"
       />

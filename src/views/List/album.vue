@@ -63,7 +63,7 @@
 <script setup lang="ts">
 import type { DropdownOption } from "naive-ui";
 import { songDetail } from "@/api/song";
-import { albumDetail } from "@/api/album";
+import { albumDetail, albumDetailDynamic } from "@/api/album";
 import { formatCoverList, formatSongsList } from "@/utils/format";
 import { renderIcon, copyData, getShareUrl } from "@/utils/helper";
 import { openBatchList } from "@/utils/modal";
@@ -185,29 +185,28 @@ const getAlbumDetail = async (id: number, refresh: boolean = false) => {
   currentRequestId.value = id;
   setLoading(true);
   clearSearch();
-
-  // 1. 尝试读取缓存
+  // 尝试读取缓存
   if (!refresh) {
     const cached = await loadCache("album", id);
     if (cached) {
       setDetailData(cached.detail);
       setListData(cached.songs);
       setLoading(false);
-
+      // 获取专辑评论等动态数据
+      fetchAlbumDynamic(id);
       // 后台检查更新
       backgroundCheck(id, cached);
       return;
     }
   }
-
-  if (!refresh && detailData.value?.id !== id) {
-    resetData(true);
-  }
+  if (!refresh && detailData.value?.id !== id) resetData(true);
   // 获取专辑详情
   const detail = await albumDetail(id);
   // 检查是否仍然是当前请求的专辑
   if (currentRequestId.value !== id) return;
   setDetailData(formatCoverList(detail.album)[0]);
+  // 获取专辑评论等动态数据
+  fetchAlbumDynamic(id);
   // 获取专辑歌曲
   const ids: number[] = detail.songs.map((song: any) => song.id as number);
   const result = await songDetail(ids);
@@ -215,10 +214,8 @@ const getAlbumDetail = async (id: number, refresh: boolean = false) => {
   if (currentRequestId.value !== id) return;
   const songs = formatSongsList(result.songs);
   setListData(songs);
-
   // 保存缓存
   saveCache("album", id, detailData.value!, songs);
-
   setLoading(false);
 };
 
@@ -228,9 +225,7 @@ const backgroundCheck = async (id: number, cached: ListCacheData) => {
     const detail = await albumDetail(id);
     // 检查是否仍然是当前请求的专辑
     if (currentRequestId.value !== id) return;
-
     const latestDetail = formatCoverList(detail.album)[0];
-
     if (checkNeedsUpdate(cached, latestDetail)) {
       console.log("Album cache expired, refreshing...");
       getAlbumDetail(id, true);
@@ -249,6 +244,19 @@ const handleSearchUpdate = (val: string) => {
 // 处理 tab 切换
 const handleTabChange = (value: "songs" | "comments") => {
   currentTab.value = value;
+};
+
+// 获取专辑动态信息（评论数等）
+const fetchAlbumDynamic = async (id: number) => {
+  try {
+    const result = await albumDetailDynamic(id);
+    if (!detailData.value || detailData.value.id !== id) return;
+    if (typeof result.commentCount === "number") {
+      detailData.value.commentCount = result.commentCount;
+    }
+  } catch {
+    // 忽略错误
+  }
 };
 
 // 播放全部歌曲

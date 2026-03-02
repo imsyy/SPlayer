@@ -2,7 +2,6 @@
   <div class="like-type">
     <CoverList
       :data="dataStore.userLikeData.albums"
-      :loading="true"
       type="album"
       :hiddenCover="settingStore.hiddenCovers.like"
     />

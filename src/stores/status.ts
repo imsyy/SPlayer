@@ -165,6 +165,8 @@ interface StatusState {
   playlistMode: "online" | "local";
   automixFxSeq: number;
   automixEndedSeq: number;
+  /** 当前歌曲评论数量 */
+  songCommentCount: number;
 }
 
 export const useStatusStore = defineStore("status", {
@@ -248,6 +250,7 @@ export const useStatusStore = defineStore("status", {
     playlistMode: "online",
     automixFxSeq: 0,
     automixEndedSeq: 0,
+    songCommentCount: 0,
   }),
   getters: {
     // 播放音量图标

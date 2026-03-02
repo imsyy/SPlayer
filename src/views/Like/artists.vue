@@ -2,7 +2,6 @@
   <div class="like-type">
     <ArtistList
       :data="dataStore.userLikeData.artists"
-      :loading="true"
       :hiddenCover="settingStore.hiddenCovers.like"
     />
   </div>

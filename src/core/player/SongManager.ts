@@ -1,5 +1,5 @@
 import { personalFm, personalFmToTrash } from "@/api/rec";
-import { songUrl, unlockSongUrl } from "@/api/song";
+import { songQuality, songUrl, unlockSongUrl } from "@/api/song";
 import { useLyricManager } from "@/core/player/LyricManager";
 import {
   useDataStore,
@@ -136,8 +136,13 @@ class SongManager {
    * 检查本地缓存
    * @param id 歌曲id
    * @param quality 音质
+   * @param md5 歌曲文件md5
    */
-  private checkLocalCache = async (id: number, quality?: QualityType): Promise<string | null> => {
+  private checkLocalCache = async (
+    id: number,
+    quality?: QualityType,
+    md5?: string,
+  ): Promise<string | null> => {
     const settingStore = useSettingStore();
     if (isElectron && settingStore.cacheEnabled && settingStore.songCacheEnabled) {
       try {
@@ -145,6 +150,7 @@ class SongManager {
           "music-cache-check",
           id,
           quality,
+          md5,
         );
         if (cachePath) {
           console.log(`🚀 [${id}] 由本地音乐缓存提供`);
@@ -177,20 +183,47 @@ class SongManager {
    */
   public getOnlineUrl = async (id: number, isPc: boolean = false): Promise<AudioSource> => {
     const settingStore = useSettingStore();
-    let level = isPc ? "exhigh" : settingStore.songLevel;
+    let level: string = isPc ? "exhigh" : settingStore.songLevel;
+    
     // Fuck AI Mode: 如果开启，且请求的 level 是 AI 音质，降级为 hires
     if (settingStore.disableAiAudio && AI_AUDIO_LEVELS.includes(level)) {
       level = "hires";
     }
-    const res = await songUrl(id, level);
+    
+    // 如果请求杜比音质，先检查歌曲是否支持
+    if (level === "dolby") {
+      try {
+        const qualityRes = await songQuality(id);
+        const hasDb = qualityRes.data?.db && Number(qualityRes.data.db.br) > 0;
+        // 如果不支持杜比，降级到最高可用音质
+        if (!hasDb) {
+          console.log(`🔽 [${id}] 歌曲不支持杜比音质，自动降级`);
+          // 按优先级降级：hires -> lossless -> exhigh
+          if (qualityRes.data?.hr && Number(qualityRes.data.hr.br) > 0) {
+            level = "hires";
+          } else if (qualityRes.data?.sq && Number(qualityRes.data.sq.br) > 0) {
+            level = "lossless";
+          } else {
+            level = "exhigh";
+          }
+        }
+      } catch (e) {
+        console.error(`检查杜比音质支持失败，降级到极高音质:`, e);
+        level = "exhigh";
+      }
+    }
+    
+    const res = await songUrl(id, level as any);
     console.log(`🌐 ${id} music data:`, res);
-    const songData = res.data?.[0];
+    
+    // 兼容新旧接口的数据结构
+    const songData = Array.isArray(res.data) ? res.data[0] : res.data?.[0];
+    
     // 是否有播放地址
     if (!songData || !songData?.url) return { id, url: undefined };
     // 是否仅能试听
     const isTrial = songData?.freeTrialInfo !== null;
     // 返回歌曲地址
-    // 客户端直接返回，网页端转 https, 并转换url以便解决音乐链接cors问题
     const normalizedUrl = isElectron
       ? songData.url
       : songData.url
@@ -199,11 +232,20 @@ class SongManager {
           .replace(/m704\.music\.126\.net/g, "m701.music.126.net");
     // 若为试听且未开启试听播放，则将 url 置为空，仅标记为试听
     const finalUrl = isTrial && !settingStore.playSongDemo ? null : normalizedUrl;
-    // 获取音质
-    const quality = handleSongQuality(songData, "online");
+    
+    // 获取音质：如果请求的是杜比，直接使用杜比音质，否则从返回数据判断
+    let quality: QualityType | undefined;
+    if (level === "dolby") {
+      // 请求的是杜比音质，直接标记为杜比
+      quality = QualityType.Dolby;
+    } else {
+      // 其他音质从返回数据判断
+      quality = handleSongQuality(songData, "online");
+    }
+    
     // 检查本地缓存
     if (finalUrl && quality) {
-      const cachedUrl = await this.checkLocalCache(id, quality);
+      const cachedUrl = await this.checkLocalCache(id, quality, songData?.md5);
       if (cachedUrl) {
         return { id, url: cachedUrl, isTrial, quality };
       }

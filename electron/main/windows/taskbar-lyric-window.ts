@@ -6,7 +6,7 @@ import type {
   UiaWatcher,
 } from "@native/taskbar-lyric";
 import { TASKBAR_IPC_CHANNELS } from "@shared";
-import { app, type BrowserWindow, ipcMain, nativeTheme, screen } from "electron";
+import { app, type BrowserWindow, nativeTheme, screen } from "electron";
 import { debounce } from "lodash-es";
 import { join } from "node:path";
 import { processLog } from "../logger";
@@ -146,14 +146,6 @@ class TaskbarLyricWindow {
 
     sendTheme();
 
-    ipcMain.removeAllListeners("taskbar:set-width");
-    ipcMain.on("taskbar:set-width", (_, width: number) => {
-      if (this.contentWidth !== width) {
-        this.contentWidth = width;
-        this.debouncedUpdateLayout();
-      }
-    });
-
     this.win.once("ready-to-show", () => {
       if (this.win) {
         this.embed();
@@ -204,6 +196,13 @@ class TaskbarLyricWindow {
     });
 
     return this.win;
+  }
+
+  setContentWidth(width: number) {
+    if (this.contentWidth !== width) {
+      this.contentWidth = width;
+      this.debouncedUpdateLayout();
+    }
   }
 
   embed() {
