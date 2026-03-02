@@ -1,5 +1,5 @@
 import { qqMusicMatch } from "@/api/qqmusic";
-import { searchMatch } from "@/api/search";
+import { searchResult, SearchTypes } from "@/api/search";
 import { songLyric, songLyricTTML } from "@/api/song";
 import { keywords as defaultKeywords, regexes as defaultRegexes } from "@/assets/data/exclude";
 import { useCacheManager } from "@/core/resource/CacheManager";
@@ -517,26 +517,7 @@ class LyricManager {
       }
     }
 
-    // 2. 尝试通过歌名在全局歌词文件夹中急速匹配 TTML
-    const { localLyricPath } = settingStore;
-    if (isElectron && localLyricPath && localLyricPath.length > 0 && window.electron?.ipcRenderer) {
-      try {
-        const lyricDirs = Array.isArray(localLyricPath) ? localLyricPath.map((p) => String(p)) : [];
-        const ttmlNcmId = await window.electron.ipcRenderer.invoke(
-          "match-local-ttml-by-name",
-          lyricDirs,
-          songName,
-        );
-        if (ttmlNcmId) {
-          console.log(`[MetadataMatch] 全局 TTML 文件夹歌名急速命中: ${songName} -> NCM ID ${ttmlNcmId}`);
-          return ttmlNcmId;
-        }
-      } catch (err) {
-        console.warn(`[MetadataMatch] 全局 TTML 查找失败: ${err}`);
-      }
-    }
-
-    // 3. 检查全局 CacheDB 缓存
+    // 2. 检查全局 CacheDB 缓存
     const cacheKey = `ncm-match:${song.path || song.name}`;
     try {
       if (isElectron) {
@@ -569,34 +550,14 @@ class LyricManager {
       }
     };
 
-    // 构建 API 搜索参数
+    // 构建搜索关键词
     const artistStr = localArtists.length > 0 ? localArtists[0] : "";
-    const albumStr = localAlbum || "";
-    const durationSec = song.duration ? Math.floor(song.duration / 1000) : 0;
-
-    console.log(`[MetadataMatch] 调用 /search/match 匹配: "${songName}" - "${artistStr}" (级别: ${matchLevel})`);
+    const keywords = artistStr ? `${songName} ${artistStr}` : songName;
+    console.log(`[MetadataMatch] 搜索: "${keywords}" (级别: ${matchLevel})`);
 
     try {
-      const res = await searchMatch(songName, albumStr, artistStr, durationSec, "");
-
-      let songs: any[] = [];
-      const resultObj = res?.result || res?.data;
-      if (resultObj) {
-        if (Array.isArray(resultObj.match)) {
-          songs = resultObj.match;
-        } else if (Array.isArray(resultObj.songs)) {
-          songs = resultObj.songs;
-        } else if (Array.isArray(resultObj.song)) {
-          songs = resultObj.song;
-        } else if (resultObj.match && typeof resultObj.match === "object") {
-          songs = [resultObj.match];
-        } else if (resultObj.song && typeof resultObj.song === "object") {
-          songs = [resultObj.song];
-        } else if (Array.isArray(resultObj)) {
-          songs = resultObj;
-        }
-      }
-
+      const res = await searchResult(keywords, 20, 0, SearchTypes.Single);
+      const songs = res?.result?.songs;
       if (!songs || !Array.isArray(songs) || songs.length === 0) {
         console.log(`[MetadataMatch] 未找到结果: ${songName}`);
         await saveMatchResult(null);
@@ -604,10 +565,6 @@ class LyricManager {
       }
 
       // 遍历候选歌曲，按匹配度筛选
-      const matchedCandidates: number[] = [];
-      let firstMatchedNcmId: number | null = null;
-      let checkTTML = settingStore.enableOnlineTTMLLyric; // 如果启用了TTML，我们可以尝试并行竞速获取
-
       for (const candidate of songs) {
         const candidateName = candidate.name?.trim() || "";
         const candidateArtists: string[] = (candidate.ar || candidate.artists || [])
@@ -650,47 +607,12 @@ class LyricManager {
 
         if (matched) {
           const ncmId = candidate.id;
-          if (firstMatchedNcmId === null) {
-            firstMatchedNcmId = ncmId; // 记录按排序最优先匹配的网易云ID
-          }
-          if (checkTTML) {
-            matchedCandidates.push(ncmId);
-          } else {
-            // 如果不需要查 TTML，直接命中返回第一个
-            console.log(
-              `[MetadataMatch] 匹配成功: "${candidateName}" - ${candidateArtists.join(", ")} (ID: ${ncmId})`,
-            );
-            await saveMatchResult(ncmId);
-            return ncmId;
-          }
-        }
-      }
-
-      // 并发检查 TTML 短路提速
-      if (checkTTML && matchedCandidates.length > 0) {
-        console.log(`[MetadataMatch] 开始并发检查 ${matchedCandidates.length} 个候选者的 TTML:`, matchedCandidates);
-        try {
-          // 竞速：任何一个含有 TTML 的请求先返回就直接采用
-          const winId = await Promise.any(
-            matchedCandidates.map(async (id) => {
-              const ttml = await songLyricTTML(id);
-              if (ttml) return id;
-              throw new Error("No TTML");
-            })
+          console.log(
+            `[MetadataMatch] 匹配成功: "${candidateName}" - ${candidateArtists.join(", ")} (ID: ${ncmId})`,
           );
-
-          console.log(`[MetadataMatch] 🚀 TTML 竞速成功，选用 ID: ${winId}`);
-          await saveMatchResult(winId);
-          return winId;
-        } catch (e) {
-          // Promise.any 抛出 AggregateError 说明所有候选者都没有 TTML，回退使用第一个元数据匹配的 ID
-          console.log(`[MetadataMatch] 候选者均无 TTML，回退首选 ID: ${firstMatchedNcmId}`);
+          await saveMatchResult(ncmId);
+          return ncmId;
         }
-      }
-
-      if (firstMatchedNcmId !== null) {
-        await saveMatchResult(firstMatchedNcmId);
-        return firstMatchedNcmId;
       }
 
       console.log(`[MetadataMatch] 无满足条件的匹配: ${songName}`);
@@ -733,7 +655,6 @@ class LyricManager {
       const settingStore = useSettingStore();
       const localLyricData: { lyric?: string; format?: "lrc" | "ttml" | "yrc", external?: any, embedded?: any } =
         await window.electron.ipcRenderer.invoke("get-music-lyric", song.path);
-      const { lyric, format, external } = localLyricData;
 
       // ── 情况 A：已有本地嵌入/关联歌词 ──
       let localResult: LyricFetchResult | null = null;
@@ -791,24 +712,14 @@ class LyricManager {
         return 0;
       };
 
-      // 1. 同级同名明确优先: 原逻辑如果同级找到了就用 localResult
-      // 如果没有且传入了全局目录的 overrideResult，优先回退到 overrideResult
-      let baseLocalResult = localResult;
-      if (!baseLocalResult && overrideResult && (!isEmpty(overrideResult.data.lrcData) || !isEmpty(overrideResult.data.yrcData))) {
-        baseLocalResult = overrideResult;
-      }
-
       // ── 情况 B：在线补完 (NCM/TTML/QM) ──
-      let finalResult = baseLocalResult || defaultResult;
-      const localLevel = getLyricLevel(baseLocalResult);
-
-      // 同级同名词优先于任何网络：如果明确是同级外部歌词（external），则绝不被网易云在线覆盖（即使用户有 lrc 而网易有 ttml）
-      const canOverrideWithOnline = !external;
+      let finalResult = localResult || defaultResult;
+      const localLevel = getLyricLevel(localResult);
 
       // 1. 网易云/TTML 元数据匹配
       if (settingStore.localLyricNCMMatch) {
-        // 如果本地还没有最高级歌词，且允许被在线覆盖，则尝试在线匹配
-        if (canOverrideWithOnline && localLevel < 4) {
+        // 如果本地还没有最高级歌词，则尝试匹配
+        if (localLevel < 4) {
           const ncmId = await this.matchNCMSongByMetadata(song);
           if (ncmId) {
             const onlineResult = await this.fetchOnlineLyric({

@@ -542,24 +542,10 @@ const initFileIpc = (): void => {
     }
   });
 
-  // 获取并确保匹配索引目录存在
-  const getMatchIndexDir = async () => {
-    const dir = join(app.getPath("userData"), "local-data", "match-index");
-    try {
-      await access(dir);
-    } catch {
-      await mkdir(dir, { recursive: true });
-    }
-    return dir;
-  };
-
   // 读取便携式本地匹配索引数据库
   ipcMain.handle("get-local-match-index", async (_event, dirPath: string) => {
     try {
-      const matchIndexDir = await getMatchIndexDir();
-      const dirHash = createHash("md5").update(dirPath).digest("hex");
-      const indexPath = join(matchIndexDir, `${dirHash}.json`);
-
+      const indexPath = join(dirPath, ".splayer-match.json");
       const exists = await access(indexPath).then(() => true).catch(() => false);
       if (!exists) return {};
 
@@ -576,10 +562,7 @@ const initFileIpc = (): void => {
     "save-local-match-index",
     async (_event, dirPath: string, fileName: string, ncmId: number | null) => {
       try {
-        const matchIndexDir = await getMatchIndexDir();
-        const dirHash = createHash("md5").update(dirPath).digest("hex");
-        const indexPath = join(matchIndexDir, `${dirHash}.json`);
-
+        const indexPath = join(dirPath, ".splayer-match.json");
         let indexData: Record<string, number | null> = {};
 
         // 先尝试读取已有索引
