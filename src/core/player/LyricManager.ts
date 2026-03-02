@@ -510,6 +510,18 @@ class LyricManager {
     // 一般没有多种音译，故不对音译部分进行清洗，如果需要请另写处理函数
     ttmlContent: string,
   ): string {
+    // 先过滤掉 type="replacement" 且 xml:lang 包含 "zh-Hant" 的翻译段落
+    // 支持任意属性顺序、命名空间、xml:lang变体(zh-Hant, zh-Hant-TW, zh-Hant-HK等)
+    const filteredContent = ttmlContent
+      .replace(
+        /<translation[^>]*\btype\s*=\s*["']replacement["'][^>]*\bxml:lang\s*=\s*["']zh-Hant[^"']*["'][^>]*>[\s\S]*?<\/translation>/gi,
+        "",
+      )
+      .replace(
+        /<translation[^>]*\bxml:lang\s*=\s*["']zh-Hant[^"']*["'][^>]*\btype\s*=\s*["']replacement["'][^>]*>[\s\S]*?<\/translation>/gi,
+        "",
+      );
+
     const lang_counter = (ttml_text: string) => {
       // 使用正则匹配所有 xml:lang="xx-XX" 格式的字符串
       const langRegex = /(?<=<(span|translation)[^<>]+)xml:lang="([^"]+)"/g;
@@ -564,9 +576,9 @@ class LyricManager {
       return ttml_text.replace(translationRegex, replacer).replace(spanRegex, replacer);
     };
 
-    const context_lang = lang_counter(ttmlContent);
+    const context_lang = lang_counter(filteredContent);
     const major = lang_filter(context_lang);
-    const cleaned_ttml = ttml_cleaner(ttmlContent, major);
+    const cleaned_ttml = ttml_cleaner(filteredContent, major);
 
     return cleaned_ttml.replace(/\n\s*/g, "");
   }
@@ -617,7 +629,18 @@ class LyricManager {
       try {
         const ttmlContent = typeof ttml === "string" ? ttml : "";
         if (ttmlContent) {
-          ttmlLines = parseTTML(this.cleanTTMLTranslations(ttmlContent)).lines || [];
+          console.log("[本地歌词] TTML原始长度:", ttmlContent.length);
+          console.log(
+            "[本地歌词] 包含replacement zh-Hant:",
+            ttmlContent.includes('type="replacement"') && ttmlContent.includes("zh-Hant"),
+          );
+          const cleaned = this.cleanTTMLTranslations(ttmlContent);
+          console.log("[本地歌词] TTML清理后长度:", cleaned.length);
+          console.log(
+            "[本地歌词] 清理后包含replacement zh-Hant:",
+            cleaned.includes('type="replacement"') && cleaned.includes("zh-Hant"),
+          );
+          ttmlLines = parseTTML(cleaned).lines || [];
           console.log("检测到本地TTML歌词覆盖", ttmlLines);
         }
       } catch (err) {

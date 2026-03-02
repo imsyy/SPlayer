@@ -1,13 +1,335 @@
 import type { SongMetadata } from "@native/tools";
 import type { Options as GlobOptions } from "fast-glob/out/settings";
 import { parseFile } from "music-metadata";
-import { access, readdir, readFile, stat } from "node:fs/promises";
+import { access, open, readdir, readFile, stat } from "node:fs/promises";
 import { basename, dirname, extname, join, resolve } from "node:path";
 import { ipcLog } from "../logger";
 import { getFileID, getFileMD5, metaDataLyricsArrayToLrc } from "../utils/helper";
 import { loadNativeModule } from "../utils/native-loader";
+import { CacheService } from "./CacheService";
 import FastGlob from "fast-glob";
 import pLimit from "p-limit";
+
+const globOpt = (cwd?: string): GlobOptions => ({
+  cwd,
+  caseSensitiveMatch: false,
+});
+
+/** TTML 缓存数据 */
+interface TtmlIdCache {
+  ncmIds: number[];
+  filePath: string;
+  mtime: number;
+}
+
+/** TTML-ID 映射缓存（使用CacheService存储） */
+class TtmlIdMappingCache {
+  private cache: Map<string, TtmlIdCache> = new Map();
+  private cacheKey = "ttml-id-mapping";
+  private pendingSave = false;
+
+  async load(): Promise<void> {
+    try {
+      const cacheService = CacheService.getInstance();
+      await cacheService.init();
+      const data = await cacheService.get("lyrics", this.cacheKey);
+      if (data) {
+        const parsed = JSON.parse(data.toString("utf-8")) as Record<string, TtmlIdCache>;
+        this.cache = new Map(Object.entries(parsed));
+        ipcLog.info(`[TtmlIdMappingCache] 加载了 ${this.cache.size} 条缓存`);
+      }
+    } catch (e) {
+      ipcLog.error("[TtmlIdMappingCache] 加载缓存失败:", e);
+    }
+  }
+
+  private async saveInternal(): Promise<void> {
+    if (this.pendingSave) return;
+    this.pendingSave = true;
+    try {
+      const cacheService = CacheService.getInstance();
+      await cacheService.init();
+      const data = JSON.stringify(Object.fromEntries(this.cache));
+      await cacheService.put("lyrics", this.cacheKey, data);
+    } catch (e) {
+      ipcLog.error("[TtmlIdMappingCache] 保存缓存失败:", e);
+    } finally {
+      this.pendingSave = false;
+    }
+  }
+
+  async save(): Promise<void> {
+    await this.saveInternal();
+  }
+
+  getById(ncmId: number): TtmlIdCache | undefined {
+    return this.cache.get(`id:${ncmId}`);
+  }
+
+  getByPath(filePath: string): TtmlIdCache | undefined {
+    return this.cache.get(`path:${filePath}`);
+  }
+
+  async set(
+    ncmIds: number[],
+    filePath: string,
+    mtime: number,
+    options: { autoSave: boolean } = { autoSave: true },
+  ): Promise<void> {
+    const oldCache = this.cache.get(`path:${filePath}`);
+    if (oldCache) {
+      for (const oldId of oldCache.ncmIds) {
+        this.cache.delete(`id:${oldId}`);
+      }
+    }
+    this.cache.set(`path:${filePath}`, { ncmIds, filePath, mtime });
+    for (const ncmId of ncmIds) {
+      this.cache.set(`id:${ncmId}`, { ncmIds, filePath, mtime });
+    }
+    if (options.autoSave) {
+      await this.saveInternal();
+    }
+  }
+
+  getByIds(ncmIds: number[]): TtmlIdCache | undefined {
+    for (const id of ncmIds) {
+      const cached = this.cache.get(`id:${id}`);
+      if (cached) return cached;
+    }
+    return undefined;
+  }
+
+  async delete(
+    filePath: string,
+    options: { autoSave: boolean } = { autoSave: true },
+  ): Promise<void> {
+    const cached = this.cache.get(`path:${filePath}`);
+    if (cached) {
+      for (const id of cached.ncmIds) {
+        this.cache.delete(`id:${id}`);
+      }
+      this.cache.delete(`path:${filePath}`);
+      if (options.autoSave) {
+        await this.saveInternal();
+      }
+    }
+  }
+
+  clear(): void {
+    this.cache.clear();
+  }
+}
+
+let ttmlIdCache: TtmlIdMappingCache | null = null;
+let loadPromise: Promise<void> | null = null;
+let isScanning = false;
+
+const getTtmlIdCache = async (): Promise<TtmlIdMappingCache> => {
+  if (!ttmlIdCache) {
+    ttmlIdCache = new TtmlIdMappingCache();
+  }
+  if (!loadPromise) {
+    loadPromise = ttmlIdCache.load();
+  }
+  await loadPromise;
+  return ttmlIdCache;
+};
+
+/** 从TTML提取所有NCM ID */
+const extractNcmIdFromTTML = (ttmlContent: string): number[] => {
+  try {
+    const matches = ttmlContent.matchAll(
+      /<amll:meta\s+key=["']ncmMusicId["']\s+value=["'](\d+)["']/g,
+    );
+    const ids: number[] = [];
+    for (const match of matches) {
+      if (match[1]) {
+        const ncmId = parseInt(match[1], 10);
+        if (!isNaN(ncmId) && ncmId > 0 && !ids.includes(ncmId)) {
+          ids.push(ncmId);
+        }
+      }
+    }
+    return ids;
+  } catch {
+    return [];
+  }
+};
+
+/** 读取本地歌词 */
+async function readLocalLyricImpl(
+  lyricDirs: string[],
+  id: number,
+): Promise<{ lrc: string; ttml: string }> {
+  const result = { lrc: "", ttml: "" };
+  const cache = await getTtmlIdCache();
+  let isCacheDirty = false;
+
+  const cached = cache.getByIds([id]);
+  if (cached) {
+    try {
+      const fileStat = await stat(cached.filePath);
+      if (fileStat.mtimeMs === cached.mtime) {
+        result.ttml = await readFile(cached.filePath, "utf-8");
+        ipcLog.info(`[readLocalLyric] 从缓存中找到 TTML: ${cached.filePath}`);
+      } else {
+        await cache.delete(cached.filePath, { autoSave: false });
+        isCacheDirty = true;
+      }
+    } catch (e) {
+      ipcLog.warn(`[readLocalLyric] 访问缓存的 TTML 文件失败，删除缓存: ${cached.filePath}`, e);
+      await cache.delete(cached.filePath, { autoSave: false });
+      isCacheDirty = true;
+    }
+  }
+
+  if (!result.lrc) {
+    const lrcPattern = `**/{,*.}${id}.lrc`;
+    for (const dir of lyricDirs) {
+      try {
+        const lrcFiles = await FastGlob(lrcPattern, globOpt(dir));
+        if (lrcFiles.length > 0) {
+          const filePath = join(dir, lrcFiles[0]);
+          await access(filePath);
+          result.lrc = await readFile(filePath, "utf-8");
+          break;
+        }
+      } catch (e) {
+        ipcLog.warn(`[readLocalLyric] 查找 LRC 文件时路径异常，跳过: ${dir}`, e);
+      }
+    }
+  }
+
+  if (!result.ttml) {
+    const ttmlPattern = `**/{,*.}${id}.ttml`;
+    for (const dir of lyricDirs) {
+      try {
+        const ttmlFiles = await FastGlob(ttmlPattern, globOpt(dir));
+        if (ttmlFiles.length > 0) {
+          const filePath = join(dir, ttmlFiles[0]);
+          await access(filePath);
+          result.ttml = await readFile(filePath, "utf-8");
+          const fileStat = await stat(filePath);
+          await cache.set([id], filePath, fileStat.mtimeMs, { autoSave: false });
+          isCacheDirty = true;
+          break;
+        }
+      } catch (e) {
+        ipcLog.warn(`[readLocalLyric] 查找 TTML 文件时路径异常，跳过: ${dir}`, e);
+      }
+    }
+  }
+
+  if (!result.ttml && lyricDirs.length > 0) {
+    ipcLog.info(`[readLocalLyric] 未找到TTML，将在后台扫描目录建立缓存...`);
+    scanTtmlIdMapping(lyricDirs)
+      .then((count) => {
+        ipcLog.info(`[readLocalLyric] 后台扫描完成，建立了 ${count} 条缓存`);
+      })
+      .catch((e) => {
+        ipcLog.warn(`[readLocalLyric] 后台扫描失败:`, e);
+      });
+  }
+
+  if (isCacheDirty) {
+    await cache.save();
+  }
+
+  return result;
+}
+
+/** 后台扫描所有歌词目录，构建TTML-ID映射缓存 */
+export async function scanTtmlIdMapping(
+  lyricDirs: string[],
+  onProgress?: (current: number, total: number) => void,
+): Promise<number> {
+  if (isScanning) {
+    ipcLog.info("[scanTtmlIdMapping] 扫描正在进行中，跳过本次请求");
+    return 0;
+  }
+  isScanning = true;
+
+  try {
+    const cache = await getTtmlIdCache();
+    let scannedCount = 0;
+    let hasChanges = false;
+
+    // 并发限制，避免过多文件句柄打开
+    const limit = pLimit(20);
+
+    // 1. 并行获取所有目录下的文件列表
+    const filePaths = (
+      await Promise.all(
+        lyricDirs.map(async (dir) => {
+          try {
+            const files = await FastGlob("**/*.ttml", globOpt(dir));
+            return files.map((file) => join(dir, file));
+          } catch (e) {
+            ipcLog.warn(`[scanTtmlIdMapping] 扫描目录失败: ${dir}`, e);
+            return [];
+          }
+        }),
+      )
+    ).flat();
+
+    const totalFiles = filePaths.length;
+    let processedCount = 0;
+
+    // 2. 并发处理文件
+    await Promise.all(
+      filePaths.map((filePath) =>
+        limit(async () => {
+          try {
+            const fileStat = await stat(filePath);
+            const existingCache = cache.getByPath(filePath);
+
+            // 检查缓存有效性 (mtimeMs 可能有微小差异，这里使用严格相等，若有问题可改用 Math.abs < 1)
+            if (existingCache && fileStat.mtimeMs === existingCache.mtime) {
+              return;
+            }
+
+            // 读取文件头部 (只读前 5KB)
+            let ttmlHeader = "";
+            let fileHandle;
+            try {
+              fileHandle = await open(filePath, "r");
+              const buffer = Buffer.allocUnsafe(5000);
+              const { bytesRead } = await fileHandle.read(buffer, 0, 5000, 0);
+              ttmlHeader = buffer.toString("utf-8", 0, bytesRead);
+            } catch {
+              // 忽略读取错误
+              return;
+            } finally {
+              await fileHandle?.close();
+            }
+
+            const extractedIds = extractNcmIdFromTTML(ttmlHeader);
+            if (extractedIds.length > 0) {
+              await cache.set(extractedIds, filePath, fileStat.mtimeMs, { autoSave: false });
+              hasChanges = true;
+              scannedCount++;
+            }
+          } catch (e) {
+            ipcLog.warn(`[scanTtmlIdMapping] 处理文件失败: ${filePath}`, e);
+          } finally {
+            processedCount++;
+            if (onProgress) {
+              onProgress(processedCount, totalFiles);
+            }
+          }
+        }),
+      ),
+    );
+
+    if (hasChanges) {
+      await cache.save();
+    }
+
+    return scannedCount;
+  } finally {
+    isScanning = false;
+  }
+}
 
 type toolModule = typeof import("@native/tools");
 const tools: toolModule = loadNativeModule("tools.node", "tools");
@@ -41,15 +363,6 @@ const MUSIC_EXTENSIONS = [
   "aifc",
   "opus",
 ];
-
-/**
- * 获取全局搜索配置
- * @param cwd 当前工作目录
- */
-const globOpt = (cwd?: string): GlobOptions => ({
-  cwd,
-  caseSensitiveMatch: false,
-});
 
 export class MusicMetadataService {
   /**
@@ -220,48 +533,7 @@ export class MusicMetadataService {
    * @returns 歌词内容
    */
   async readLocalLyric(lyricDirs: string[], id: number): Promise<{ lrc: string; ttml: string }> {
-    const result = { lrc: "", ttml: "" };
-
-    try {
-      // 定义需要查找的模式
-      const patterns = {
-        ttml: `**/{,*.}${id}.ttml`,
-        lrc: `**/{,*.}${id}.lrc`,
-      };
-
-      // 遍历每一个目录
-      for (const dir of lyricDirs) {
-        try {
-          // 查找 ttml
-          if (!result.ttml) {
-            const ttmlFiles = await FastGlob(patterns.ttml, globOpt(dir));
-            if (ttmlFiles.length > 0) {
-              const filePath = join(dir, ttmlFiles[0]);
-              await access(filePath);
-              result.ttml = await readFile(filePath, "utf-8");
-            }
-          }
-
-          // 查找 lrc
-          if (!result.lrc) {
-            const lrcFiles = await FastGlob(patterns.lrc, globOpt(dir));
-            if (lrcFiles.length > 0) {
-              const filePath = join(dir, lrcFiles[0]);
-              await access(filePath);
-              result.lrc = await readFile(filePath, "utf-8");
-            }
-          }
-
-          // 如果两种文件都找到了就提前结束搜索
-          if (result.ttml && result.lrc) break;
-        } catch {
-          // 某个路径异常，跳过
-        }
-      }
-    } catch {
-      /* 忽略错误 */
-    }
-    return result;
+    return readLocalLyricImpl(lyricDirs, id);
   }
 
   /**
