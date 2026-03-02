@@ -38,14 +38,21 @@ export const initNcmAPI = async (fastify: FastifyInstance) => {
     const neteaseApi = (
       NeteaseCloudMusicApi as unknown as Record<string, (params: unknown) => Promise<any>>
     )[routerName];
-    serverLog.log("🌐 Request NcmAPI:", requestPath);
+    const params = {
+      ...(req.query as Record<string, unknown>),
+      ...(req.body as Record<string, unknown>),
+      cookie: req.cookies,
+    };
+
+    serverLog.log(`🌐 Request NcmAPI: ${routerName} | params:`, JSON.stringify(params));
 
     try {
-      const result = await neteaseApi({
-        ...(req.query as Record<string, unknown>),
-        ...(req.body as Record<string, unknown>),
-        cookie: req.cookies,
-      });
+      const result = await neteaseApi(params);
+      const logBody = JSON.stringify(result.body);
+      serverLog.log(
+        `✅ NcmAPI Response: ${routerName} | body:`,
+        logBody.length > 500 ? logBody.substring(0, 500) + "..." : logBody,
+      );
       return reply.send(result.body);
     } catch (error: unknown) {
       serverLog.error("❌ NcmAPI Error:", error);
@@ -77,16 +84,24 @@ export const initNcmAPI = async (fastify: FastifyInstance) => {
       const store = useStore();
       const server = store.get("amllDbServer") ?? defaultAMLLDbServer;
       const url = server.replace("%s", String(id));
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, { signal: controller.signal });
         if (response.status !== 200) {
           return reply.send(null);
         }
         const data = await response.text();
         return reply.send(data);
-      } catch (error) {
-        serverLog.error("❌ TTML Lyric Fetch Error:", error);
+      } catch (error: any) {
+        if (error.name === "AbortError") {
+          serverLog.error("❌ TTML Lyric Fetch Timeout:", url);
+        } else {
+          serverLog.error("❌ TTML Lyric Fetch Error:", error);
+        }
         return reply.send(null);
+      } finally {
+        clearTimeout(timeout);
       }
     },
   );

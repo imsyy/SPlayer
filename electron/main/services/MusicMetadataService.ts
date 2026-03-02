@@ -8,6 +8,7 @@ import { getFileID, getFileMD5, metaDataLyricsArrayToLrc } from "../utils/helper
 import { loadNativeModule } from "../utils/native-loader";
 import FastGlob from "fast-glob";
 import pLimit from "p-limit";
+import { readLocalLyricImpl } from "./TtmlScannerService";
 
 type toolModule = typeof import("@native/tools");
 const tools: toolModule = loadNativeModule("tools.node", "tools");
@@ -215,53 +216,13 @@ export class MusicMetadataService {
 
   /**
    * 读取本地目录中的歌词（通过ID查找）
+   * 支持 ncmMusicId 元数据缓存匹配和文件名模式匹配
    * @param lyricDirs 歌词目录列表
    * @param id 歌曲ID
    * @returns 歌词内容
    */
   async readLocalLyric(lyricDirs: string[], id: number): Promise<{ lrc: string; ttml: string }> {
-    const result = { lrc: "", ttml: "" };
-
-    try {
-      // 定义需要查找的模式
-      const patterns = {
-        ttml: `**/{,*.}${id}.ttml`,
-        lrc: `**/{,*.}${id}.lrc`,
-      };
-
-      // 遍历每一个目录
-      for (const dir of lyricDirs) {
-        try {
-          // 查找 ttml
-          if (!result.ttml) {
-            const ttmlFiles = await FastGlob(patterns.ttml, globOpt(dir));
-            if (ttmlFiles.length > 0) {
-              const filePath = join(dir, ttmlFiles[0]);
-              await access(filePath);
-              result.ttml = await readFile(filePath, "utf-8");
-            }
-          }
-
-          // 查找 lrc
-          if (!result.lrc) {
-            const lrcFiles = await FastGlob(patterns.lrc, globOpt(dir));
-            if (lrcFiles.length > 0) {
-              const filePath = join(dir, lrcFiles[0]);
-              await access(filePath);
-              result.lrc = await readFile(filePath, "utf-8");
-            }
-          }
-
-          // 如果两种文件都找到了就提前结束搜索
-          if (result.ttml && result.lrc) break;
-        } catch {
-          // 某个路径异常，跳过
-        }
-      }
-    } catch {
-      /* 忽略错误 */
-    }
-    return result;
+    return readLocalLyricImpl(lyricDirs, id);
   }
 
   /**

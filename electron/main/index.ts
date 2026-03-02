@@ -98,7 +98,11 @@ class MainProcess {
       // 设置应用程序名称
       electronApp.setAppUserModelId("com.imsyy.splayer");
       // 启动主服务进程
-      await initAppServer();
+      try {
+        await initAppServer();
+      } catch (err) {
+        processLog.error("🚫 Failed to start AppServer:", err);
+      }
       // 启动窗口
       this.loadWindow = loadWindow.create();
       this.mainWindow = mainWindow.create();
@@ -108,6 +112,9 @@ class MainProcess {
       initIpc();
       // 自动启动 WebSocket
       SocketService.tryAutoStart();
+    }).catch(err => {
+      processLog.error("🚀 Fatal error during application startup:", err);
+      console.error("🚀 Fatal error during application startup:", err);
     });
   }
   // 应用程序事件

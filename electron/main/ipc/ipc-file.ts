@@ -5,6 +5,7 @@ import { Worker } from "node:worker_threads";
 import { ipcLog } from "../logger";
 import { LocalMusicService } from "../services/LocalMusicService";
 import { DownloadService } from "../services/DownloadService";
+import { scanTtmlIdMapping } from "../services/TtmlScannerService";
 import { MusicMetadataService } from "../services/MusicMetadataService";
 import { useStore } from "../store";
 import { chunkArray } from "../utils/helper";
@@ -53,7 +54,7 @@ const runToolsJobInWorker = async (payload: Record<string, unknown>) => {
         worker.removeAllListeners("message");
         worker.removeAllListeners("error");
         worker.removeAllListeners("exit");
-        worker.terminate().catch(() => {});
+        worker.terminate().catch(() => { });
       };
 
       worker.once(
@@ -100,7 +101,7 @@ const runToolsJobInWorker = async (payload: Record<string, unknown>) => {
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     ipcLog.warn(`[AudioAnalysis] 启动分析失败: ${message}`);
-    worker.terminate().catch(() => {});
+    worker.terminate().catch(() => { });
     return null;
   }
 };
@@ -145,7 +146,7 @@ const handleLocalMusicSync = async (
       (current, total) => {
         event.sender.send("music-sync-progress", { current, total });
       },
-      () => {},
+      () => { },
     );
     // 处理音乐封面路径
     const finalTracks = processMusicList(allTracks, coverDir);
@@ -259,6 +260,16 @@ const initFileIpc = (): void => {
   // 读取本地歌词
   ipcMain.handle("read-local-lyric", async (_, lyricDirs: string[], id: number) => {
     return musicMetadataService.readLocalLyric(lyricDirs, id);
+  });
+
+  // 手动扫描本地 TTML 歌词目录，建立 ncmMusicId 映射缓存
+  ipcMain.handle("scan-ttml-lyrics", async (_, lyricDirs: string[]) => {
+    try {
+      const count = await scanTtmlIdMapping(lyricDirs);
+      return { success: true, count };
+    } catch (error: any) {
+      return { success: false, message: error?.message || String(error) };
+    }
   });
 
   // 删除文件

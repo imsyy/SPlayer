@@ -50,7 +50,7 @@ class LyricManager {
    */
   private prefetchedLyric: { id: number | string; result: LyricFetchResult } | null = null;
 
-  constructor() {}
+  constructor() { }
 
   /**
    * 重置当前歌曲的歌词数据
