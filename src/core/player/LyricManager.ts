@@ -585,6 +585,10 @@ class LyricManager {
       }
 
       // 遍历候选歌曲，按匹配度筛选
+      const matchedCandidates: number[] = [];
+      let firstMatchedNcmId: number | null = null;
+      let checkTTML = settingStore.enableOnlineTTMLLyric; // 如果启用了TTML，我们可以尝试并行竞速获取
+
       for (const candidate of songs) {
         const candidateName = candidate.name?.trim() || "";
         const candidateArtists: string[] = (candidate.ar || candidate.artists || [])
@@ -627,12 +631,47 @@ class LyricManager {
 
         if (matched) {
           const ncmId = candidate.id;
-          console.log(
-            `[MetadataMatch] 匹配成功: "${candidateName}" - ${candidateArtists.join(", ")} (ID: ${ncmId})`,
-          );
-          await saveMatchResult(ncmId);
-          return ncmId;
+          if (firstMatchedNcmId === null) {
+            firstMatchedNcmId = ncmId; // 记录按排序最优先匹配的网易云ID
+          }
+          if (checkTTML) {
+            matchedCandidates.push(ncmId);
+          } else {
+            // 如果不需要查 TTML，直接命中返回第一个
+            console.log(
+              `[MetadataMatch] 匹配成功: "${candidateName}" - ${candidateArtists.join(", ")} (ID: ${ncmId})`,
+            );
+            await saveMatchResult(ncmId);
+            return ncmId;
+          }
         }
+      }
+
+      // 并发检查 TTML 短路提速
+      if (checkTTML && matchedCandidates.length > 0) {
+        console.log(`[MetadataMatch] 开始并发检查 ${matchedCandidates.length} 个候选者的 TTML:`, matchedCandidates);
+        try {
+          // 竞速：任何一个含有 TTML 的请求先返回就直接采用
+          const winId = await Promise.any(
+            matchedCandidates.map(async (id) => {
+              const ttml = await songLyricTTML(id);
+              if (ttml) return id;
+              throw new Error("No TTML");
+            })
+          );
+
+          console.log(`[MetadataMatch] 🚀 TTML 竞速成功，选用 ID: ${winId}`);
+          await saveMatchResult(winId);
+          return winId;
+        } catch (e) {
+          // Promise.any 抛出 AggregateError 说明所有候选者都没有 TTML，回退使用第一个元数据匹配的 ID
+          console.log(`[MetadataMatch] 候选者均无 TTML，回退首选 ID: ${firstMatchedNcmId}`);
+        }
+      }
+
+      if (firstMatchedNcmId !== null) {
+        await saveMatchResult(firstMatchedNcmId);
+        return firstMatchedNcmId;
       }
 
       console.log(`[MetadataMatch] 无满足条件的匹配: ${songName}`);
