@@ -517,7 +517,26 @@ class LyricManager {
       }
     }
 
-    // 2. 检查全局 CacheDB 缓存
+    // 2. 尝试通过歌名在全局歌词文件夹中急速匹配 TTML
+    const { localLyricPath } = settingStore;
+    if (isElectron && localLyricPath && localLyricPath.length > 0 && window.electron?.ipcRenderer) {
+      try {
+        const lyricDirs = Array.isArray(localLyricPath) ? localLyricPath.map((p) => String(p)) : [];
+        const ttmlNcmId = await window.electron.ipcRenderer.invoke(
+          "match-local-ttml-by-name",
+          lyricDirs,
+          songName,
+        );
+        if (ttmlNcmId) {
+          console.log(`[MetadataMatch] 全局 TTML 文件夹歌名急速命中: ${songName} -> NCM ID ${ttmlNcmId}`);
+          return ttmlNcmId;
+        }
+      } catch (err) {
+        console.warn(`[MetadataMatch] 全局 TTML 查找失败: ${err}`);
+      }
+    }
+
+    // 3. 检查全局 CacheDB 缓存
     const cacheKey = `ncm-match:${song.path || song.name}`;
     try {
       if (isElectron) {

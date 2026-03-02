@@ -6,7 +6,7 @@ import { Worker } from "node:worker_threads";
 import { ipcLog } from "../logger";
 import { LocalMusicService } from "../services/LocalMusicService";
 import { DownloadService } from "../services/DownloadService";
-import { scanTtmlIdMapping } from "../services/TtmlScannerService";
+import { scanTtmlIdMapping, matchLocalTtmlByName } from "../services/TtmlScannerService";
 import { MusicMetadataService } from "../services/MusicMetadataService";
 import { useStore } from "../store";
 import { chunkArray } from "../utils/helper";
@@ -274,8 +274,8 @@ const initFileIpc = (): void => {
   });
 
   // 尝试通过歌名快速在本地缓存中寻找对应的 TTML 文件信息并提取其关联的 ncmId
-  ipcMain.handle("match-local-ttml-by-name", async (_, lyricDirs: string[], songName: string, artists?: string[]) => {
-    return matchLocalTtmlByName(lyricDirs, songName, artists);
+  ipcMain.handle("match-local-ttml-by-name", async (_, lyricDirs: string[], songName: string) => {
+    return matchLocalTtmlByName(lyricDirs, songName);
   });
 
   // 删除文件

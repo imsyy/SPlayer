@@ -12,7 +12,6 @@ import { ipcLog } from "../logger";
 interface TtmlIdEntry {
     ncmIds: number[];
     musicNames: string[];
-    artists: string[];
     filePath: string;
     mtime: number;
 }
@@ -69,6 +68,10 @@ class TtmlIdMappingCache {
 
     getById(ncmId: number): TtmlIdEntry | undefined {
         return this.cache.get(`id:${ncmId}`);
+    }
+
+    getByName(name: string): TtmlIdEntry | undefined {
+        return this.cache.get(`name:${name}`);
     }
 
     getByPath(filePath: string): TtmlIdEntry | undefined {
@@ -136,7 +139,6 @@ class TtmlIdMappingCache {
     async set(
         ncmIds: number[],
         musicNames: string[],
-        artists: string[],
         filePath: string,
         mtime: number,
         options: { autoSave: boolean } = { autoSave: true },
@@ -147,12 +149,18 @@ class TtmlIdMappingCache {
             for (const oldId of oldCache.ncmIds) {
                 this.cache.delete(`id:${oldId}`);
             }
+            for (const oldName of oldCache.musicNames || []) {
+                this.cache.delete(`name:${oldName}`);
+            }
         }
 
-        const entry: TtmlIdEntry = { ncmIds, musicNames, artists, filePath, mtime };
+        const entry: TtmlIdEntry = { ncmIds, musicNames, filePath, mtime };
         this.cache.set(`path:${filePath}`, entry);
         for (const ncmId of ncmIds) {
             this.cache.set(`id:${ncmId}`, entry);
+        }
+        for (const musicName of musicNames) {
+            this.cache.set(`name:${musicName}`, entry);
         }
 
         if (options.autoSave) {
@@ -168,6 +176,9 @@ class TtmlIdMappingCache {
         if (cached) {
             for (const id of cached.ncmIds) {
                 this.cache.delete(`id:${id}`);
+            }
+            for (const name of cached.musicNames || []) {
+                this.cache.delete(`name:${name}`);
             }
             this.cache.delete(`path:${filePath}`);
             if (options.autoSave) {
@@ -211,17 +222,16 @@ const globOpt = (cwd?: string) => ({
 });
 
 /**
- * 从 TTML 内容中提取 ncmMusicId 和 musicName 和 artists
+ * 从 TTML 内容中提取 ncmMusicId 和 musicName
  * 支持多个 ID；仅需传入文件头部内容即可
  */
-export const extractMetadataFromTTML = (ttmlContent: string): { ncmIds: number[]; musicNames: string[]; artists: string[] } => {
-    const result = { ncmIds: [] as number[], musicNames: [] as string[], artists: [] as string[] };
+export const extractMetadataFromTTML = (ttmlContent: string): { ncmIds: number[]; musicNames: string[] } => {
+    const result = { ncmIds: [] as number[], musicNames: [] as string[] };
     try {
-        const matches = ttmlContent.matchAll(
+        const idMatches = ttmlContent.matchAll(
             /<amll:meta\s+key=["']ncmMusicId["']\s+value=["'](\d+)["']/g,
         );
-        const ids: number[] = [];
-        for (const match of matches) {
+        for (const match of idMatches) {
             if (match[1]) {
                 const ncmId = parseInt(match[1], 10);
                 if (!isNaN(ncmId) && ncmId > 0 && !result.ncmIds.includes(ncmId)) {
@@ -229,7 +239,6 @@ export const extractMetadataFromTTML = (ttmlContent: string): { ncmIds: number[]
                 }
             }
         }
-
         const nameMatches = ttmlContent.matchAll(
             /<amll:meta\s+key=["']musicName["']\s+value=["']([^"']+)["']/g,
         );
@@ -242,26 +251,10 @@ export const extractMetadataFromTTML = (ttmlContent: string): { ncmIds: number[]
                 }
             }
         }
-
-        // 提取艺术家 (artists, artist, singer, 或者 singers)
-        const artistMatches = ttmlContent.matchAll(
-            /<amll:meta\s+key=["'](?:artists?|singers?)["']\s+value=["']([^"']+)["']/gi,
-        );
-        for (const match of artistMatches) {
-            if (match[1]) {
-                const artistStr = match[1].trim();
-                // 分解类似 "周杰伦, 孙燕姿" 或 "周杰伦 / 孙燕姿"
-                const artistParts = artistStr.split(/[,/、&;；]+/).map(a => a.trim().toLowerCase()).filter(Boolean);
-                for (const part of artistParts) {
-                    if (part && !result.artists.includes(part)) {
-                        result.artists.push(part);
-                    }
-                }
-            }
-        }
     } catch {
-        return [];
+        // ignore
     }
+    return result;
 };
 
 // ──────────────────────────────────────────────
@@ -334,9 +327,9 @@ export async function scanTtmlIdMapping(lyricDirs: string[]): Promise<number> {
                             await fileHandle?.close();
                         }
 
-                        const { ncmIds, musicNames, artists } = extractMetadataFromTTML(ttmlHeader);
+                        const { ncmIds, musicNames } = extractMetadataFromTTML(ttmlHeader);
                         if (ncmIds.length > 0 || musicNames.length > 0) {
-                            await cache.set(ncmIds, musicNames, artists, filePath, fileStat.mtimeMs, { autoSave: false });
+                            await cache.set(ncmIds, musicNames, filePath, fileStat.mtimeMs, { autoSave: false });
                             hasChanges = true;
                             scannedCount++;
                         }
@@ -467,7 +460,7 @@ export async function readLocalLyricImpl(
                     result.ttml = await readFile(filePath, "utf-8");
                     // 将文件名匹配到的结果也存入缓存
                     const fileStat = await stat(filePath);
-                    await cache.set([id], [], [], filePath, fileStat.mtimeMs, { autoSave: false });
+                    await cache.set([id], [], filePath, fileStat.mtimeMs, { autoSave: false });
                     isCacheDirty = true;
                     break;
                 }
@@ -501,17 +494,16 @@ export async function readLocalLyricImpl(
  * 尝试通过歌名快速在本地缓存中寻找对应的 TTML 文件信息并提取其关联的 ncmId
  * @param lyricDirs 本地歌词目录列表
  * @param songName 本地歌曲标题
- * @param artists 本地歌手信息
  * @returns 命中的 ncmId 或 null
  */
 export async function matchLocalTtmlByName(
     lyricDirs: string[],
     songName: string,
-    artists?: string[],
 ): Promise<number | null> {
     if (!songName) return null;
     const cache = await getTtmlIdCache();
-    const cached = cache.getBySongAndArtist(songName, artists);
+    const lowerName = songName.trim().toLowerCase();
+    const cached = cache.getByName(lowerName);
 
     if (cached && cached.ncmIds.length > 0) {
         ipcLog.info(
@@ -529,4 +521,3 @@ export async function matchLocalTtmlByName(
 
     return null;
 }
-
