@@ -1,7 +1,7 @@
 import type { SongMetadata } from "@native/tools";
 import type { Options as GlobOptions } from "fast-glob/out/settings";
 import { parseFile } from "music-metadata";
-import { access, readdir, readFile, stat } from "node:fs/promises";
+import { access, open, readdir, readFile, stat } from "node:fs/promises";
 import { basename, dirname, extname, join, resolve } from "node:path";
 import { ipcLog } from "../logger";
 import { getFileID, getFileMD5, metaDataLyricsArrayToLrc } from "../utils/helper";
@@ -122,6 +122,7 @@ class TtmlIdMappingCache {
 
 let ttmlIdCache: TtmlIdMappingCache | null = null;
 let loadPromise: Promise<void> | null = null;
+let isScanning = false;
 
 const getTtmlIdCache = async (): Promise<TtmlIdMappingCache> => {
   if (!ttmlIdCache) {
@@ -242,53 +243,92 @@ export async function scanTtmlIdMapping(
   lyricDirs: string[],
   onProgress?: (current: number, total: number) => void,
 ): Promise<number> {
-  const cache = await getTtmlIdCache();
-  let scannedCount = 0;
-  let hasChanges = false;
+  if (isScanning) {
+    ipcLog.info("[scanTtmlIdMapping] 扫描正在进行中，跳过本次请求");
+    return 0;
+  }
+  isScanning = true;
 
-  for (const dir of lyricDirs) {
-    try {
-      const allTtmlFiles = await FastGlob("**/*.ttml", globOpt(dir));
-      const total = allTtmlFiles.length;
+  try {
+    const cache = await getTtmlIdCache();
+    let scannedCount = 0;
+    let hasChanges = false;
 
-      for (let i = 0; i < allTtmlFiles.length; i++) {
-        const fileName = allTtmlFiles[i];
-        const filePath = join(dir, fileName);
+    // 并发限制，避免过多文件句柄打开
+    const limit = pLimit(20);
 
-        try {
-          const fileStat = await stat(filePath);
-          const existingCache = cache.getByPath(filePath);
-          if (existingCache && fileStat.mtimeMs === existingCache.mtime) {
-            continue;
+    // 1. 并行获取所有目录下的文件列表
+    const filePaths = (
+      await Promise.all(
+        lyricDirs.map(async (dir) => {
+          try {
+            const files = await FastGlob("**/*.ttml", globOpt(dir));
+            return files.map((file) => join(dir, file));
+          } catch (e) {
+            ipcLog.warn(`[scanTtmlIdMapping] 扫描目录失败: ${dir}`, e);
+            return [];
           }
+        }),
+      )
+    ).flat();
 
-          const ttmlFull = await readFile(filePath, "utf-8");
-          const ttmlHeader = ttmlFull.substring(0, 5000);
-          const extractedIds = extractNcmIdFromTTML(ttmlHeader);
-          if (extractedIds.length > 0) {
-            await cache.set(extractedIds, filePath, fileStat.mtimeMs, { autoSave: false });
-            hasChanges = true;
-            scannedCount++;
+    const totalFiles = filePaths.length;
+    let processedCount = 0;
+
+    // 2. 并发处理文件
+    await Promise.all(
+      filePaths.map((filePath) =>
+        limit(async () => {
+          try {
+            const fileStat = await stat(filePath);
+            const existingCache = cache.getByPath(filePath);
+
+            // 检查缓存有效性 (mtimeMs 可能有微小差异，这里使用严格相等，若有问题可改用 Math.abs < 1)
+            if (existingCache && fileStat.mtimeMs === existingCache.mtime) {
+              return;
+            }
+
+            // 读取文件头部 (只读前 5KB)
+            let ttmlHeader = "";
+            let fileHandle;
+            try {
+              fileHandle = await open(filePath, "r");
+              const buffer = Buffer.allocUnsafe(5000);
+              const { bytesRead } = await fileHandle.read(buffer, 0, 5000, 0);
+              ttmlHeader = buffer.toString("utf-8", 0, bytesRead);
+            } catch {
+              // 忽略读取错误
+              return;
+            } finally {
+              await fileHandle?.close();
+            }
+
+            const extractedIds = extractNcmIdFromTTML(ttmlHeader);
+            if (extractedIds.length > 0) {
+              await cache.set(extractedIds, filePath, fileStat.mtimeMs, { autoSave: false });
+              hasChanges = true;
+              scannedCount++;
+            }
+          } catch (e) {
+            ipcLog.warn(`[scanTtmlIdMapping] 处理文件失败: ${filePath}`, e);
+          } finally {
+            processedCount++;
+            if (onProgress) {
+              onProgress(processedCount, totalFiles);
+            }
           }
-        } catch (e) {
-          ipcLog.warn(`[scanTtmlIdMapping] 处理文件失败，已跳过: ${filePath}`, e);
-          continue;
-        }
+        }),
+      ),
+    );
 
-        if (onProgress) {
-          onProgress(i + 1, total);
-        }
-      }
-    } catch {
-      continue;
+    if (hasChanges) {
+      await cache.save();
     }
-  }
 
-  if (hasChanges) {
-    await cache.save();
+    return scannedCount;
+  } finally {
+    isScanning = false;
   }
-
-  return scannedCount;
 }
 
 type toolModule = typeof import("@native/tools");
