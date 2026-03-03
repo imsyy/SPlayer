@@ -70,3 +70,30 @@ export const searchResult = (
     },
   });
 };
+
+/**
+ * 本地歌曲匹配网易云信息
+ * @param title 文件的标题信息
+ * @param album 文件的专辑信息
+ * @param artist 文件的艺术家信息
+ * @param duration 文件的时长，单位为秒
+ * @param md5 文件的 md5
+ */
+export const searchMatch = (
+  title: string,
+  album: string = "",
+  artist: string = "",
+  duration: number = 0,
+  md5: string = "",
+) => {
+  return request({
+    url: "/search/match",
+    params: {
+      title,
+      album,
+      artist,
+      duration,
+      md5,
+    },
+  });
+};
