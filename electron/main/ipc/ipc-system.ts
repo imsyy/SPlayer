@@ -66,7 +66,9 @@ const initSystemIpc = (): void => {
     if (!mainWin) return;
     const proxyRules = `${config.protocol}://${config.server}:${config.port}`;
     store.set("proxy", proxyRules);
-    mainWin?.webContents.session.setProxy({ proxyRules });
+    // 直连图片与核心资源，绕过代理避免跨域与防盗链拦截
+    const proxyBypassRules = "*.music.126.net;*.music.163.com;<local>";
+    mainWin?.webContents.session.setProxy({ proxyRules, proxyBypassRules });
     ipcLog.info("✅ Set proxy successfully:", proxyRules);
   });
 
@@ -76,7 +78,8 @@ const initSystemIpc = (): void => {
     try {
       // 设置代理
       const ses = session.defaultSession;
-      await ses.setProxy({ proxyRules });
+      const proxyBypassRules = "*.music.126.net;*.music.163.com;<local>";
+      await ses.setProxy({ proxyRules, proxyBypassRules });
       // 测试请求
       const request = net.request({ url: "https://www.baidu.com" });
       return new Promise((resolve) => {

@@ -41,7 +41,11 @@ class MainWindow {
     const store = useStore();
     // 配置网络代理
     if (store.get("proxy")) {
-      this.win.webContents.session.setProxy({ proxyRules: store.get("proxy") });
+      const proxyBypassRules = "*.music.126.net;*.music.163.com;<local>";
+      this.win.webContents.session.setProxy({
+        proxyRules: store.get("proxy"),
+        proxyBypassRules,
+      });
     }
 
     // 窗口打开处理程序
