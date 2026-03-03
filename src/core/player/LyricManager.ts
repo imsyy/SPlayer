@@ -1,5 +1,5 @@
 import { qqMusicMatch } from "@/api/qqmusic";
-import { searchResult, SearchTypes } from "@/api/search";
+import { searchMatch } from "@/api/search";
 import { songLyric, songLyricTTML } from "@/api/song";
 import { keywords as defaultKeywords, regexes as defaultRegexes } from "@/assets/data/exclude";
 import { useCacheManager } from "@/core/resource/CacheManager";
@@ -550,14 +550,34 @@ class LyricManager {
       }
     };
 
-    // 构建搜索关键词
+    // 构建 API 搜索参数
     const artistStr = localArtists.length > 0 ? localArtists[0] : "";
-    const keywords = artistStr ? `${songName} ${artistStr}` : songName;
-    console.log(`[MetadataMatch] 搜索: "${keywords}" (级别: ${matchLevel})`);
+    const albumStr = localAlbum || "";
+    const durationSec = song.duration ? Math.floor(song.duration / 1000) : 0;
+
+    console.log(`[MetadataMatch] 调用 /search/match 匹配: "${songName}" - "${artistStr}" (级别: ${matchLevel})`);
 
     try {
-      const res = await searchResult(keywords, 20, 0, SearchTypes.Single);
-      const songs = res?.result?.songs;
+      const res = await searchMatch(songName, albumStr, artistStr, durationSec, "");
+
+      let songs: any[] = [];
+      const resultObj = res?.result || res?.data;
+      if (resultObj) {
+        if (Array.isArray(resultObj.match)) {
+          songs = resultObj.match;
+        } else if (Array.isArray(resultObj.songs)) {
+          songs = resultObj.songs;
+        } else if (Array.isArray(resultObj.song)) {
+          songs = resultObj.song;
+        } else if (resultObj.match && typeof resultObj.match === "object") {
+          songs = [resultObj.match];
+        } else if (resultObj.song && typeof resultObj.song === "object") {
+          songs = [resultObj.song];
+        } else if (Array.isArray(resultObj)) {
+          songs = resultObj;
+        }
+      }
+
       if (!songs || !Array.isArray(songs) || songs.length === 0) {
         console.log(`[MetadataMatch] 未找到结果: ${songName}`);
         await saveMatchResult(null);
