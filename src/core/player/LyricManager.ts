@@ -733,6 +733,7 @@ class LyricManager {
       const settingStore = useSettingStore();
       const localLyricData: { lyric?: string; format?: "lrc" | "ttml" | "yrc", external?: any, embedded?: any } =
         await window.electron.ipcRenderer.invoke("get-music-lyric", song.path);
+      const { lyric, format, external } = localLyricData;
 
       // ── 情况 A：已有本地嵌入/关联歌词 ──
       let localResult: LyricFetchResult | null = null;
@@ -790,14 +791,24 @@ class LyricManager {
         return 0;
       };
 
+      // 1. 同级同名明确优先: 原逻辑如果同级找到了就用 localResult
+      // 如果没有且传入了全局目录的 overrideResult，优先回退到 overrideResult
+      let baseLocalResult = localResult;
+      if (!baseLocalResult && overrideResult && (!isEmpty(overrideResult.data.lrcData) || !isEmpty(overrideResult.data.yrcData))) {
+        baseLocalResult = overrideResult;
+      }
+
       // ── 情况 B：在线补完 (NCM/TTML/QM) ──
-      let finalResult = localResult || defaultResult;
-      const localLevel = getLyricLevel(localResult);
+      let finalResult = baseLocalResult || defaultResult;
+      const localLevel = getLyricLevel(baseLocalResult);
+
+      // 同级同名词优先于任何网络：如果明确是同级外部歌词（external），则绝不被网易云在线覆盖（即使用户有 lrc 而网易有 ttml）
+      const canOverrideWithOnline = !external;
 
       // 1. 网易云/TTML 元数据匹配
       if (settingStore.localLyricNCMMatch) {
-        // 如果本地还没有最高级歌词，则尝试匹配
-        if (localLevel < 4) {
+        // 如果本地还没有最高级歌词，且允许被在线覆盖，则尝试在线匹配
+        if (canOverrideWithOnline && localLevel < 4) {
           const ncmId = await this.matchNCMSongByMetadata(song);
           if (ncmId) {
             const onlineResult = await this.fetchOnlineLyric({
