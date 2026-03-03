@@ -197,6 +197,10 @@ class PlayerController {
     // 重置进度
     statusStore.progress = 0;
     statusStore.lyricIndex = -1;
+    // 清空上一首歌的歌词缓存
+    musicStore.setSongLyric({ lrcData: [], yrcData: [] }, true);
+    statusStore.usingTTMLLyric = false;
+    statusStore.usingQRCLyric = false;
     // 重置重试计数
     const sid = song.type === "radio" ? song.dj?.id : song.id;
     if (this.retryInfo.songId !== sid) {
@@ -494,9 +498,9 @@ class PlayerController {
         const onSwitch = crossfadeOptions.onSwitch;
         const wrappedOnSwitch = shouldDeferStateSync
           ? () => {
-              onSwitch?.();
-              updateSeekState();
-            }
+            onSwitch?.();
+            updateSeekState();
+          }
           : onSwitch;
         await audioManager.crossfadeTo(url, {
           duration: crossfadeOptions.duration,
