@@ -219,10 +219,12 @@ export class MusicMetadataService {
    * 支持 ncmMusicId 元数据缓存匹配和文件名模式匹配
    * @param lyricDirs 歌词目录列表
    * @param id 歌曲ID
+   * @param songName 本地歌曲名称
+   * @param artists 歌曲对应的歌手数组
    * @returns 歌词内容
    */
-  async readLocalLyric(lyricDirs: string[], id: number): Promise<{ lrc: string; ttml: string }> {
-    return readLocalLyricImpl(lyricDirs, id);
+  async readLocalLyric(lyricDirs: string[], id: number, songName?: string, artists?: string[]): Promise<{ lrc: string; ttml: string; matchedNcmId?: number }> {
+    return readLocalLyricImpl(lyricDirs, id, songName, artists);
   }
 
   /**

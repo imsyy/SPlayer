@@ -9,9 +9,10 @@ import { ipcLog } from "../logger";
 // 类型
 // ──────────────────────────────────────────────
 
-/** TTML ID 映射条目 */
 interface TtmlIdEntry {
     ncmIds: number[];
+    musicNames: string[];
+    artists: string[];
     filePath: string;
     mtime: number;
 }
@@ -74,6 +75,54 @@ class TtmlIdMappingCache {
         return this.cache.get(`path:${filePath}`);
     }
 
+    /**
+     * 判断两个字符串是否包含匹配（忽略大小写和空格）
+     */
+    private isContainsMatch(a: string, b: string): boolean {
+        const al = a.trim().toLowerCase();
+        const bl = b.trim().toLowerCase();
+        return al.includes(bl) || bl.includes(al);
+    }
+
+    /**
+     * 通过歌名和（可选的）歌手信息进行联合查找
+     * 将底层所有的元素转化为 Flat Array 进行灵活过滤
+     */
+    getBySongAndArtist(songName: string, queryArtists?: string[]): TtmlIdEntry | undefined {
+        if (!songName) return undefined;
+        const targetSongName = songName.trim().toLowerCase();
+        const targetArtists = (queryArtists || []).map((a) => a.trim().toLowerCase()).filter(Boolean);
+
+        // 去重获取所有的有效 Entry（因为 path 和 id 都指向了同一个 Object）
+        const allEntries = Array.from(
+            new Set(
+                Array.from(this.cache.values())
+            )
+        );
+
+        // 第一优先级：歌名和歌手同时匹配
+        if (targetArtists.length > 0) {
+            const matchedWithArtist = allEntries.find(entry => {
+                // 歌名匹配
+                const songMatch = entry.musicNames.some(name => this.isContainsMatch(name, targetSongName));
+                if (!songMatch) return false;
+
+                // 歌手匹配（只要目标的一个歌手名，在缓存的某一个歌手名中存在部分包含关系即可）
+                const artistMatch = targetArtists.some(targetArtist =>
+                    entry.artists.some(cacheArtist => this.isContainsMatch(cacheArtist, targetArtist))
+                );
+                return artistMatch;
+            });
+            if (matchedWithArtist) return matchedWithArtist;
+        }
+
+        // 第二优先级降级：如果没有传歌手，或者传了但是歌手没匹配上，回退到只匹配歌名
+        const matchedOnlySong = allEntries.find(entry =>
+            entry.musicNames.some(name => this.isContainsMatch(name, targetSongName))
+        );
+        return matchedOnlySong;
+    }
+
     getByIds(ncmIds: number[]): TtmlIdEntry | undefined {
         for (const id of ncmIds) {
             const cached = this.cache.get(`id:${id}`);
@@ -86,6 +135,8 @@ class TtmlIdMappingCache {
 
     async set(
         ncmIds: number[],
+        musicNames: string[],
+        artists: string[],
         filePath: string,
         mtime: number,
         options: { autoSave: boolean } = { autoSave: true },
@@ -98,7 +149,7 @@ class TtmlIdMappingCache {
             }
         }
 
-        const entry: TtmlIdEntry = { ncmIds, filePath, mtime };
+        const entry: TtmlIdEntry = { ncmIds, musicNames, artists, filePath, mtime };
         this.cache.set(`path:${filePath}`, entry);
         for (const ncmId of ncmIds) {
             this.cache.set(`id:${ncmId}`, entry);
@@ -160,10 +211,11 @@ const globOpt = (cwd?: string) => ({
 });
 
 /**
- * 从 TTML 内容中提取 ncmMusicId
+ * 从 TTML 内容中提取 ncmMusicId 和 musicName 和 artists
  * 支持多个 ID；仅需传入文件头部内容即可
  */
-export const extractNcmIdFromTTML = (ttmlContent: string): number[] => {
+export const extractMetadataFromTTML = (ttmlContent: string): { ncmIds: number[]; musicNames: string[]; artists: string[] } => {
+    const result = { ncmIds: [] as number[], musicNames: [] as string[], artists: [] as string[] };
     try {
         const matches = ttmlContent.matchAll(
             /<amll:meta\s+key=["']ncmMusicId["']\s+value=["'](\d+)["']/g,
@@ -172,12 +224,41 @@ export const extractNcmIdFromTTML = (ttmlContent: string): number[] => {
         for (const match of matches) {
             if (match[1]) {
                 const ncmId = parseInt(match[1], 10);
-                if (!isNaN(ncmId) && ncmId > 0 && !ids.includes(ncmId)) {
-                    ids.push(ncmId);
+                if (!isNaN(ncmId) && ncmId > 0 && !result.ncmIds.includes(ncmId)) {
+                    result.ncmIds.push(ncmId);
                 }
             }
         }
-        return ids;
+
+        const nameMatches = ttmlContent.matchAll(
+            /<amll:meta\s+key=["']musicName["']\s+value=["']([^"']+)["']/g,
+        );
+        for (const match of nameMatches) {
+            if (match[1]) {
+                const musicName = match[1].trim();
+                const lowerName = musicName.toLowerCase();
+                if (lowerName && !result.musicNames.includes(lowerName)) {
+                    result.musicNames.push(lowerName);
+                }
+            }
+        }
+
+        // 提取艺术家 (artists, artist, singer, 或者 singers)
+        const artistMatches = ttmlContent.matchAll(
+            /<amll:meta\s+key=["'](?:artists?|singers?)["']\s+value=["']([^"']+)["']/gi,
+        );
+        for (const match of artistMatches) {
+            if (match[1]) {
+                const artistStr = match[1].trim();
+                // 分解类似 "周杰伦, 孙燕姿" 或 "周杰伦 / 孙燕姿"
+                const artistParts = artistStr.split(/[,/、&;；]+/).map(a => a.trim().toLowerCase()).filter(Boolean);
+                for (const part of artistParts) {
+                    if (part && !result.artists.includes(part)) {
+                        result.artists.push(part);
+                    }
+                }
+            }
+        }
     } catch {
         return [];
     }
@@ -253,9 +334,9 @@ export async function scanTtmlIdMapping(lyricDirs: string[]): Promise<number> {
                             await fileHandle?.close();
                         }
 
-                        const extractedIds = extractNcmIdFromTTML(ttmlHeader);
-                        if (extractedIds.length > 0) {
-                            await cache.set(extractedIds, filePath, fileStat.mtimeMs, { autoSave: false });
+                        const { ncmIds, musicNames, artists } = extractMetadataFromTTML(ttmlHeader);
+                        if (ncmIds.length > 0 || musicNames.length > 0) {
+                            await cache.set(ncmIds, musicNames, artists, filePath, fileStat.mtimeMs, { autoSave: false });
                             hasChanges = true;
                             scannedCount++;
                         }
@@ -299,10 +380,39 @@ export async function scanTtmlIdMapping(lyricDirs: string[]): Promise<number> {
 export async function readLocalLyricImpl(
     lyricDirs: string[],
     id: number,
-): Promise<{ lrc: string; ttml: string }> {
-    const result = { lrc: "", ttml: "" };
+    songName?: string,
+    artists?: string[]
+): Promise<{ lrc: string; ttml: string; matchedNcmId?: number }> {
+    const result: { lrc: string; ttml: string; matchedNcmId?: number } = { lrc: "", ttml: "" };
     const cache = await getTtmlIdCache();
     let isCacheDirty = false;
+
+    // ── 步骤 0：查询歌名（与歌手）缓存 ──
+    let cachedByName: ReturnType<typeof cache.getBySongAndArtist> | undefined;
+    if (songName) {
+        cachedByName = cache.getBySongAndArtist(songName, artists);
+        if (cachedByName) {
+            const filePath = cachedByName.filePath;
+            try {
+                const fileStat = await stat(filePath);
+                if (fileStat.mtimeMs === cachedByName.mtime) {
+                    result.ttml = await readFile(filePath, "utf-8");
+                    result.matchedNcmId = cachedByName.ncmIds.length > 0 ? cachedByName.ncmIds[0] : undefined;
+                    ipcLog.info(`[readLocalLyric] 歌名缓存命中 TTML: ${filePath}`);
+                } else {
+                    await cache.delete(filePath, { autoSave: false });
+                    isCacheDirty = true;
+                    // @ts-ignore
+                    cachedByName = undefined;
+                }
+            } catch (e) {
+                await cache.delete(filePath, { autoSave: false });
+                isCacheDirty = true;
+                // @ts-ignore
+                cachedByName = undefined;
+            }
+        }
+    }
 
     // ── 步骤 1：查询 ncmMusicId 缓存 ──
     const cached = cache.getByIds([id]);
@@ -357,7 +467,7 @@ export async function readLocalLyricImpl(
                     result.ttml = await readFile(filePath, "utf-8");
                     // 将文件名匹配到的结果也存入缓存
                     const fileStat = await stat(filePath);
-                    await cache.set([id], filePath, fileStat.mtimeMs, { autoSave: false });
+                    await cache.set([id], [], [], filePath, fileStat.mtimeMs, { autoSave: false });
                     isCacheDirty = true;
                     break;
                 }
@@ -386,3 +496,37 @@ export async function readLocalLyricImpl(
 
     return result;
 }
+
+/**
+ * 尝试通过歌名快速在本地缓存中寻找对应的 TTML 文件信息并提取其关联的 ncmId
+ * @param lyricDirs 本地歌词目录列表
+ * @param songName 本地歌曲标题
+ * @param artists 本地歌手信息
+ * @returns 命中的 ncmId 或 null
+ */
+export async function matchLocalTtmlByName(
+    lyricDirs: string[],
+    songName: string,
+    artists?: string[],
+): Promise<number | null> {
+    if (!songName) return null;
+    const cache = await getTtmlIdCache();
+    const cached = cache.getBySongAndArtist(songName, artists);
+
+    if (cached && cached.ncmIds.length > 0) {
+        ipcLog.info(
+            `[matchLocalTtmlByName] 本地 TTML 歌名缓存命中: "${songName}" -> ID ${cached.ncmIds[0]}`,
+        );
+        return cached.ncmIds[0];
+    }
+
+    // 初次查询若未命中，直接返回 null 以不阻塞主流程，并触发异步后台扫描以备后续使用
+    if (!cached && lyricDirs.length > 0) {
+        scanTtmlIdMapping(lyricDirs).catch((e) => {
+            ipcLog.warn(`[matchLocalTtmlByName] 后台扫描失败:`, e);
+        });
+    }
+
+    return null;
+}
+
