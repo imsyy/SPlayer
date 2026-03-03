@@ -719,9 +719,10 @@ class LyricManager {
   /**
    * 处理本地歌词
    * @param song 歌曲对象
+   * @param overrideResult 外部全局覆盖的歌词结果（如果有）
    * @returns 歌词数据和元数据
    */
-  private async fetchLocalLyric(song: SongType): Promise<LyricFetchResult> {
+  private async fetchLocalLyric(song: SongType, overrideResult?: LyricFetchResult): Promise<LyricFetchResult> {
     const defaultResult: LyricFetchResult = {
       data: { lrcData: [], yrcData: [] },
       meta: { usingTTMLLyric: false, usingQRCLyric: false },
@@ -730,8 +731,9 @@ class LyricManager {
 
     try {
       const settingStore = useSettingStore();
-      const { lyric, format }: { lyric?: string; format?: "lrc" | "ttml" | "yrc" } =
+      const localLyricData: { lyric?: string; format?: "lrc" | "ttml" | "yrc", external?: any, embedded?: any } =
         await window.electron.ipcRenderer.invoke("get-music-lyric", song.path);
+      const { lyric, format, external } = localLyricData;
 
       // ── 情况 A：已有本地嵌入/关联歌词 ──
       let localResult: LyricFetchResult | null = null;
@@ -789,14 +791,24 @@ class LyricManager {
         return 0;
       };
 
+      // 1. 同级同名明确优先: 原逻辑如果同级找到了就用 localResult
+      // 如果没有且传入了全局目录的 overrideResult，优先回退到 overrideResult
+      let baseLocalResult = localResult;
+      if (!baseLocalResult && overrideResult && (!isEmpty(overrideResult.data.lrcData) || !isEmpty(overrideResult.data.yrcData))) {
+        baseLocalResult = overrideResult;
+      }
+
       // ── 情况 B：在线补完 (NCM/TTML/QM) ──
-      let finalResult = localResult || defaultResult;
-      const localLevel = getLyricLevel(localResult);
+      let finalResult = baseLocalResult || defaultResult;
+      const localLevel = getLyricLevel(baseLocalResult);
+
+      // 同级同名词优先于任何网络：如果明确是同级外部歌词（external），则绝不被网易云在线覆盖（即使用户有 lrc 而网易有 ttml）
+      const canOverrideWithOnline = !external;
 
       // 1. 网易云/TTML 元数据匹配
       if (settingStore.localLyricNCMMatch) {
-        // 如果本地还没有最高级歌词，则尝试匹配
-        if (localLevel < 4) {
+        // 如果本地还没有最高级歌词，且允许被在线覆盖，则尝试在线匹配
+        if (canOverrideWithOnline && localLevel < 4) {
           const ncmId = await this.matchNCMSongByMetadata(song);
           if (ncmId) {
             const onlineResult = await this.fetchOnlineLyric({
@@ -1269,10 +1281,21 @@ class LyricManager {
         if (!isEmpty(overrideResult.data.lrcData) || !isEmpty(overrideResult.data.yrcData)) {
           // 对齐
           overrideResult.data = this.alignLocalLyrics(overrideResult.data);
+
+          if (overrideResult.matchedNcmId) {
+            this.saveMatchCache(`ncm-match:${song.path || song.name}`, overrideResult.matchedNcmId);
+            if (dirPath && fileName && window.electron?.ipcRenderer) {
+              window.electron.ipcRenderer.invoke("save-local-match-index", dirPath, fileName, overrideResult.matchedNcmId).catch(() => { });
+            }
+          }
+        }
+
+        if (song.path) {
+          // 本地文件附带的歌词文件夹 (同级 > override > NCM)
+          fetchResult = await this.fetchLocalLyric(song, overrideResult);
+        } else if (!isEmpty(overrideResult.data.lrcData) || !isEmpty(overrideResult.data.yrcData)) {
+          // 纯粹的缓存无path兜底
           fetchResult = overrideResult;
-        } else if (song.path) {
-          // 本地文件
-          fetchResult = await this.fetchLocalLyric(song);
         } else {
           // 在线获取
           fetchResult = await this.fetchOnlineLyric(song);
