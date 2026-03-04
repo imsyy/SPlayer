@@ -3,7 +3,7 @@ import { getSharedAudioContext } from "./SharedAudioContext";
 import { useAudioManager } from "../player/AudioManager";
 import { useSongManager } from "../player/SongManager";
 import { usePlayerController } from "../player/PlayerController";
-import { useDataStore, useMusicStore, useSettingStore, useStatusStore } from "@/stores";
+import { useMusicStore, useSettingStore, useStatusStore } from "@/stores";
 import type {
   AudioAnalysis,
   AutomixPlan,
