@@ -590,7 +590,7 @@ class PlayerController {
     }
 
     // 预载下一首
-    if (settingStore.useNextPrefetch) {
+    if (settingStore.useNextPrefetch || settingStore.useGaplessPlayback) {
       this.refreshNextPreload();
     }
 
@@ -609,7 +609,7 @@ class PlayerController {
    */
   public refreshNextPreload() {
     const settingStore = useSettingStore();
-    if (!settingStore.useNextPrefetch) return;
+    if (!settingStore.useNextPrefetch && !settingStore.useGaplessPlayback) return;
     const songManager = useSongManager();
     // 始终执行 URL 预取（cover、lyrics、URL cache）
     songManager.prefetchNextSong().then(async () => {
