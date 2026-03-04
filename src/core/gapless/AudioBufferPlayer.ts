@@ -58,38 +58,12 @@ export class AudioBufferPlayer extends BaseAudioPlayer {
    * 创建并启动 SourceNode
    */
   protected async doPlay(): Promise<void> {
-    if (!this.buffer || !this.audioCtx || !this.inputNode) return;
+    if (!this.audioCtx) return;
 
-    // 清理旧的 source
     this.stopSource();
+    if (!this.createAndStartSource(this.anchorOffset)) return;
 
-    const source = this.audioCtx.createBufferSource();
-    source.buffer = this.buffer;
-    source.playbackRate.value = this._rate;
-    source.connect(this.inputNode);
-
-    // 记录锚点
     this.anchorContextTime = this.audioCtx.currentTime;
-    source.start(0, this.anchorOffset);
-
-    source.onended = () => {
-      if (this.sourceNode === source && !this._paused) {
-        // 检查是否真正播放完毕
-        const elapsed = this.currentTime;
-        const dur = this.duration;
-        if (dur > 0 && elapsed < dur - 0.5) {
-          console.warn(
-            `[AudioBufferPlayer] source.onended 提前触发 (elapsed=${elapsed.toFixed(2)}, duration=${dur.toFixed(2)})`,
-          );
-          return;
-        }
-        this._paused = true;
-        this.stopTimeupdateTimer();
-        this.dispatch(AUDIO_EVENTS.ENDED);
-      }
-    };
-
-    this.sourceNode = source;
     this._paused = false;
     this.startTimeupdateTimer();
     this.dispatch(AUDIO_EVENTS.PLAY);
@@ -101,36 +75,12 @@ export class AudioBufferPlayer extends BaseAudioPlayer {
    * @param when AudioContext 时间点
    */
   public scheduleStart(offset: number, when: number) {
-    if (!this.buffer || !this.audioCtx || !this.inputNode) return;
-
     this.stopSource();
-
-    const source = this.audioCtx.createBufferSource();
-    source.buffer = this.buffer;
-    source.playbackRate.value = this._rate;
-    source.connect(this.inputNode);
 
     this.anchorOffset = offset;
     this.anchorContextTime = when;
-    source.start(when, offset);
+    if (!this.createAndStartSource(offset, when)) return;
 
-    source.onended = () => {
-      if (this.sourceNode === source && !this._paused) {
-        const elapsed = this.currentTime;
-        const dur = this.duration;
-        if (dur > 0 && elapsed < dur - 0.5) {
-          console.warn(
-            `[AudioBufferPlayer] scheduled source.onended 提前触发 (elapsed=${elapsed.toFixed(2)}, duration=${dur.toFixed(2)})`,
-          );
-          return;
-        }
-        this._paused = true;
-        this.stopTimeupdateTimer();
-        this.dispatch(AUDIO_EVENTS.ENDED);
-      }
-    };
-
-    this.sourceNode = source;
     this._paused = false;
     this.startTimeupdateTimer();
   }
@@ -154,50 +104,24 @@ export class AudioBufferPlayer extends BaseAudioPlayer {
     // 如果正在播放，重新创建 source
     if (!this._paused) {
       this.stopSource();
-
-      if (this.buffer && this.audioCtx && this.inputNode) {
-        const source = this.audioCtx.createBufferSource();
-        source.buffer = this.buffer;
-        source.playbackRate.value = this._rate;
-        source.connect(this.inputNode);
-        source.start(0, this.anchorOffset);
-
-        source.onended = () => {
-          if (this.sourceNode === source && !this._paused) {
-            const elapsed = this.currentTime;
-            const dur = this.duration;
-            if (dur > 0 && elapsed < dur - 0.5) return;
-            this._paused = true;
-            this.stopTimeupdateTimer();
-            this.dispatch(AUDIO_EVENTS.ENDED);
-          }
-        };
-
-        this.sourceNode = source;
-        this.anchorContextTime = this.audioCtx.currentTime;
-      }
+      this.createAndStartSource(this.anchorOffset);
     }
 
     this.dispatch(AUDIO_EVENTS.SEEKED);
   }
 
   public setRate(value: number): void {
-    const old = this._rate;
-    this._rate = value;
-
-    // 更新锚点以保持位置准确
+    // 先用旧速率计算当前位置，再更新锚点
     if (this.audioCtx && !this._paused) {
-      this.anchorOffset = this.currentTime;
+      const wallDelta = this.audioCtx.currentTime - this.anchorContextTime;
+      this.anchorOffset = Math.max(0, Math.min(this.anchorOffset + wallDelta * this._rate, this.duration));
       this.anchorContextTime = this.audioCtx.currentTime;
     }
+
+    this._rate = value;
 
     if (this.sourceNode) {
       this.sourceNode.playbackRate.value = value;
-    }
-
-    // 速率变化后需要重新计算锚点
-    if (old !== value && this.audioCtx && !this._paused) {
-      this.anchorContextTime = this.audioCtx.currentTime;
     }
   }
 
@@ -240,6 +164,41 @@ export class AudioBufferPlayer extends BaseAudioPlayer {
     this.buffer = null;
     this._paused = true;
     super.destroy();
+  }
+
+  /**
+   * 创建、连接并启动 SourceNode，同时设置 onended 回调
+   * @param offset 音频偏移量（秒）
+   * @param when AudioContext 时间点（0 表示立即播放）
+   * @returns 创建的 source，如果前置条件不满足则返回 null
+   */
+  private createAndStartSource(offset: number, when: number = 0): AudioBufferSourceNode | null {
+    if (!this.buffer || !this.audioCtx || !this.inputNode) return null;
+
+    const source = this.audioCtx.createBufferSource();
+    source.buffer = this.buffer;
+    source.playbackRate.value = this._rate;
+    source.connect(this.inputNode);
+    source.start(when, offset);
+
+    source.onended = () => {
+      if (this.sourceNode === source && !this._paused) {
+        const elapsed = this.currentTime;
+        const dur = this.duration;
+        if (dur > 0 && elapsed < dur - 0.5) {
+          console.warn(
+            `[AudioBufferPlayer] source.onended 提前触发 (elapsed=${elapsed.toFixed(2)}, duration=${dur.toFixed(2)})`,
+          );
+          return;
+        }
+        this._paused = true;
+        this.stopTimeupdateTimer();
+        this.dispatch(AUDIO_EVENTS.ENDED);
+      }
+    };
+
+    this.sourceNode = source;
+    return source;
   }
 
   /** 停止当前 SourceNode */
