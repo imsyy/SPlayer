@@ -48,6 +48,10 @@ export interface SettingState {
   taskbarLyricUseThemeColor: boolean;
   /** 是否使用在线服务 */
   useOnlineService: boolean;
+  /** 评论区抱一抱 */
+  enableCommentHug: boolean;
+  /** 是否已显示过抱一抱提示 */
+  showedCommentHugTip: boolean;
   /** 分享链接格式 */
   shareUrlFormat: "web" | "mobile";
   /** 启动时检查更新 */
@@ -500,6 +504,8 @@ export const useSettingStore = defineStore("setting", {
     routeAnimation: "slide",
     playerExpandAnimation: "up",
     useOnlineService: true,
+    enableCommentHug: true,
+    showedCommentHugTip: false,
     shareUrlFormat: "web",
     showCloseAppTip: true,
     closeAppMethod: "hide",

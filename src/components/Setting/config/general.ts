@@ -363,6 +363,19 @@ export const useGeneralSettings = (): SettingConfig => {
         title: "其他设置",
         items: [
           {
+            key: "enableCommentHug",
+            label: "评论区抱一抱",
+            type: "switch",
+            description: "开启后双击评论即可向评论者发送抱一抱",
+            value: computed({
+              get: () => settingStore.enableCommentHug,
+              set: (v) => {
+                settingStore.enableCommentHug = v;
+                if (v) settingStore.showedCommentHugTip = false;
+              },
+            }),
+          },
+          {
             key: "shareUrlFormat",
             label: "分享链接格式",
             type: "select",

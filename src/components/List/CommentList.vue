@@ -103,9 +103,10 @@ import { isLogin } from "@/utils/auth";
 import { openUserLogin } from "@/utils/modal";
 import emoji from "@/assets/data/emoji.json";
 import { commentLike, hugComment, getCommentHugList } from "@/api/comment";
-import { useDataStore } from "@/stores";
+import { useDataStore, useSettingStore } from "@/stores";
 
 const userStore = useDataStore();
+const settingStore = useSettingStore();
 
 const props = defineProps<{
   data: CommentType[];
@@ -164,13 +165,46 @@ const likeComment = debounce(async (data: CommentType) => {
 }, 300);
 
 // 双击抱一抱
+let hugTipDismissed = false;
 const handleDoubleClick = debounce(async (item: CommentType) => {
+  if (!settingStore.enableCommentHug) return;
+  // 首次双击提示
+  if (!settingStore.showedCommentHugTip) {
+    window.$dialog.warning({
+      title: "抱一抱",
+      content: "双击评论会向评论者发送「抱一抱」，是否继续？",
+      positiveText: "继续",
+      negativeText: hugTipDismissed ? "取消且不再提示" : "取消",
+      onPositiveClick: () => {
+        settingStore.showedCommentHugTip = true;
+        executeHug(item);
+      },
+      onNegativeClick: () => {
+        if (hugTipDismissed) {
+          settingStore.showedCommentHugTip = true;
+          settingStore.enableCommentHug = false;
+        }
+        hugTipDismissed = true;
+      },
+    });
+    return;
+  }
+  executeHug(item);
+}, 300);
+
+// 执行抱一抱
+const executeHug = async (item: CommentType) => {
   if (!isLogin()) {
     openUserLogin();
     return;
   }
-  // 本地歌曲不支持抱一抱
-  if (typeof props.resId !== "number") return;
+  // 仅歌曲评论支持抱一抱
+  if (typeof props.resId !== "number" || props.type !== 0) {
+    if (typeof props.resId === "number") {
+      window.$message.warning("仅歌曲评论支持抱一抱");
+    }
+    return;
+  }
   try {
     const result = await hugComment(userStore.userData.userId, item.id, props.resId);
     if (result.code === 200) {
@@ -207,7 +241,7 @@ const handleDoubleClick = debounce(async (item: CommentType) => {
     console.error("Hug comment error:", error);
     window.$message.error("抱一抱失败");
   }
-}, 300);
+};
 </script>
 
 <style lang="scss" scoped>
