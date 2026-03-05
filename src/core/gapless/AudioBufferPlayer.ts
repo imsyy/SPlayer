@@ -156,6 +156,16 @@ export class AudioBufferPlayer extends BaseAudioPlayer {
   }
 
   /**
+   * 在指定的 AudioContext 时间点设置增益值
+   * 用于 GaplessManager 在调度时预设音量，避免直接访问 protected gainNode
+   */
+  public setGainAtTime(value: number, when: number): void {
+    if (this.gainNode) {
+      this.gainNode.gain.setValueAtTime(value, when);
+    }
+  }
+
+  /**
    * 销毁引擎，释放内存
    */
   public override destroy(): void {

@@ -151,11 +151,8 @@ class GaplessManager {
     const audioCtx = getSharedAudioContext();
     const when = audioCtx.currentTime + remaining;
 
-    // 直接操作 gainNode.gain 设置音量，不调用 setVolume 避免污染 volume 字段
-    if (this.player["gainNode"]) {
-      const gainNode = this.player["gainNode"] as GainNode;
-      gainNode.gain.setValueAtTime(volume, when);
-    }
+    // 预设音量，不调用 setVolume 避免污染 volume 字段
+    this.player.setGainAtTime(volume, when);
 
     // 精确调度
     this.player.scheduleStart(0, when);
