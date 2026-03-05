@@ -195,6 +195,7 @@ class PlayerController {
 
     musicStore.playSong = song;
     statusStore.currentTime = startSeek;
+    statusStore.duration = song.duration || 0;
     // 重置进度
     statusStore.progress = 0;
     statusStore.lyricIndex = -1;
