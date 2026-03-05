@@ -166,6 +166,9 @@ const likeComment = debounce(async (data: CommentType) => {
 
 // 双击抱一抱
 let hugTipDismissed = false;
+watch(() => settingStore.enableCommentHug, (v) => {
+  if (v) hugTipDismissed = false;
+});
 const handleDoubleClick = debounce(async (item: CommentType) => {
   if (!settingStore.enableCommentHug) return;
   // 首次双击提示
