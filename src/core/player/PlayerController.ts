@@ -625,7 +625,7 @@ class PlayerController {
       // 获取实际下一首的 URL（prefetchNextSong 可能因 DJ 跳过预取了错误的歌曲）
       const audioSource = await songManager.getAudioSource(nextInfo.song);
       if (!audioSource.url) return;
-      useGaplessManager().preload(audioSource.url, nextInfo.index, nextInfo.song.name);
+      useGaplessManager().preload(audioSource.url, nextInfo.index, nextInfo.song.id, nextInfo.song.name);
     });
   }
 
@@ -640,7 +640,8 @@ class PlayerController {
     statusStore.playIndex = preloadedIndex;
     const song = dataStore.playList[preloadedIndex];
     if (!song) {
-      console.warn("[Gapless] 无法获取预载索引对应的歌曲");
+      console.warn("[Gapless] 无法获取预载索引对应的歌曲，回退到标准切歌");
+      this.nextOrPrev("next", true, true);
       return;
     }
     this.setupSongUI(song, 0);
@@ -839,13 +840,15 @@ class PlayerController {
         const gaplessManager = useGaplessManager();
         const nextInfo = this.getNextSongInfo();
         // 懒校验：预载的下一首是否仍然匹配
-        if (
-          gaplessManager.nextIndex >= 0 &&
-          nextInfo &&
-          gaplessManager.nextIndex !== nextInfo.index
-        ) {
-          gaplessManager.clear();
-          this.refreshNextPreload();
+        if (gaplessManager.nextIndex >= 0 && nextInfo) {
+          if (gaplessManager.nextSongId !== nextInfo.song.id) {
+            // 歌曲变了，清除并重新预载
+            gaplessManager.clear();
+            this.refreshNextPreload();
+          } else if (gaplessManager.nextIndex !== nextInfo.index) {
+            // 同一首歌但索引偏移了（如列表重排），更新索引
+            gaplessManager.updateNextIndex(nextInfo.index);
+          }
         }
         // 调度：剩余 ≤2s
         const remaining = (duration - currentTime) / 1000;

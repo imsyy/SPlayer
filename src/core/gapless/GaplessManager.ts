@@ -14,6 +14,8 @@ class GaplessManager {
   private _url: string | null = null;
   /** 预载对应的播放列表索引 */
   private _nextIndex: number = -1;
+  /** 预载对应的歌曲 ID */
+  private _nextSongId: number | string | null = null;
   /** 是否正在预载中 */
   private _isPreloading = false;
   /** 是否已就绪（解码完成） */
@@ -31,6 +33,18 @@ class GaplessManager {
   /** 预载对应的下一首索引 */
   get nextIndex() {
     return this._nextIndex;
+  }
+
+  /** 更新下一首索引（当歌曲未变但列表发生偏移时动态校准索引） */
+  updateNextIndex(newIndex: number) {
+    if (this._nextIndex !== newIndex) {
+      this._nextIndex = newIndex;
+    }
+  }
+
+  /** 预载对应的歌曲 ID */
+  get nextSongId() {
+    return this._nextSongId;
   }
 
   /** 是否正在预载中 */
@@ -53,8 +67,9 @@ class GaplessManager {
    * fetch 音频数据 → decodeAudioData → 创建 AudioBufferPlayer
    * @param url 音频 URL
    * @param nextIndex 下一首在播放列表中的索引
+   * @param songId 歌曲的唯一 ID
    */
-  async preload(url: string, nextIndex: number, songName?: string) {
+  async preload(url: string, nextIndex: number, songId: number | string, songName?: string) {
     // 如果已经在预载相同 URL，跳过
     if (this._url === url && (this._isReady || this._isPreloading)) {
       return;
@@ -65,6 +80,7 @@ class GaplessManager {
 
     this._url = url;
     this._nextIndex = nextIndex;
+    this._nextSongId = songId;
     this._isPreloading = true;
 
     const abortController = new AbortController();
@@ -164,6 +180,7 @@ class GaplessManager {
     this.player = null;
     this._url = null;
     this._nextIndex = -1;
+    this._nextSongId = null;
     this._isReady = false;
     this._isScheduled = false;
     this._isPreloading = false;
@@ -211,6 +228,7 @@ class GaplessManager {
     // 重置所有状态
     this._url = null;
     this._nextIndex = -1;
+    this._nextSongId = null;
     this._isReady = false;
     this._isScheduled = false;
     this._isPreloading = false;
