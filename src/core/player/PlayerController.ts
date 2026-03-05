@@ -1116,6 +1116,7 @@ class PlayerController {
     let attempts = 0;
     const maxAttempts = playListLength;
     // Fuck DJ Mode: 寻找下一个不被跳过的歌曲
+    const skippedNames: string[] = [];
     while (attempts < maxAttempts) {
       nextIndex += type === "next" ? 1 : -1;
       // 边界处理 (索引越界)
@@ -1125,7 +1126,15 @@ class PlayerController {
       if (!this.shouldSkipSong(nextSong)) {
         break;
       }
+      skippedNames.push(nextSong.name || `#${nextIndex}`);
       attempts++;
+    }
+    if (skippedNames.length > 0) {
+      const display = skippedNames.length <= 3
+        ? skippedNames.join("、")
+        : `${skippedNames.slice(0, 3).join("、")} 等 ${skippedNames.length} 首`;
+      console.log(`[Fuck DJ] Skipping: ${skippedNames.join(", ")}`);
+      window.$message.warning(`已跳过 DJ/抖音 歌曲: ${display}`);
     }
     if (attempts >= maxAttempts) {
       window.$message.warning("播放列表中没有可播放的歌曲");
@@ -1399,7 +1408,11 @@ class PlayerController {
     if (play) {
       await this.togglePlayIndex(songIndex, true);
     } else {
-      window.$message.success("已添加至下一首播放");
+      if (this.shouldSkipSong(song)) {
+        window.$message.warning(`已添加至播放列表，但该歌曲将被 Fuck DJ Mode 跳过: ${song.name}`);
+      } else {
+        window.$message.success("已添加至下一首播放");
+      }
     }
   }
 
