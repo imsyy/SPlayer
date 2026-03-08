@@ -8,6 +8,10 @@ import { qqMusicMatch } from "@/api/qqmusic";
 import { songLevelData } from "@/utils/meta";
 import { getPlayerInfoObj } from "@/utils/format";
 import { LyricProcessor, type LyricProcessorOptions, type LyricResult } from "./LyricProcessor";
+import { albumDetail } from "@/api/album";
+
+const albumArtistCache = new Map<number, string[] | Promise<string[]>>();
+const MAX_ALBUM_ARTIST_CACHE_SIZE = 100;
 
 interface DownloadConfig {
   fileName: string;
@@ -19,6 +23,7 @@ interface DownloadConfig {
   saveMetaFile: boolean;
   songData: SongType;
   lyric: string;
+  albumArtists: string[];
   skipIfExist: boolean;
   threadCount: number;
   referer?: string;
@@ -55,6 +60,7 @@ class SongDownloadStrategy implements DownloadStrategy {
   private basicLyric = "";
   private ttmlLyric = "";
   private yrcLyric = "";
+  private albumArtists: string[] = [];
 
   constructor(
     public readonly song: SongType,
@@ -125,6 +131,44 @@ class SongDownloadStrategy implements DownloadStrategy {
         this.yrcLyric = verbatim.yrc;
       }
     }
+
+    // 处理专辑艺术家信息
+    if (this.settingStore.downloadMeta) {
+      const album = this.song.album;
+      if (typeof album !== "string") {
+        const cached = albumArtistCache.get(album.id);
+        if (cached instanceof Array) {
+          this.albumArtists = cached;
+        } else if (cached instanceof Promise) {
+          this.albumArtists = await cached;
+        } else {
+          const promise = albumDetail(album.id)
+            .then((res) => {
+              if (res.code === 200) {
+                const artistName = res?.album?.artists?.map((a) => a.name) || [];
+                albumArtistCache.set(album.id, artistName);
+                // 控制缓存大小
+                if (albumArtistCache.size > MAX_ALBUM_ARTIST_CACHE_SIZE) {
+                  for (const [k, v] of albumArtistCache) {
+                    if (v instanceof Array) {
+                      albumArtistCache.delete(k);
+                      if (albumArtistCache.size < MAX_ALBUM_ARTIST_CACHE_SIZE) break;
+                    }
+                  }
+                }
+                return artistName;
+              }
+              return [];
+            })
+            .catch((e) => {
+              console.error(`获取专辑艺术家失败: ${album.id}`, e);
+              return [];
+            });
+          albumArtistCache.set(album.id, promise);
+          this.albumArtists = await promise;
+        }
+      }
+    }
   }
   /**
    * 获取下载配置
@@ -146,6 +190,7 @@ class SongDownloadStrategy implements DownloadStrategy {
       saveMetaFile: downloadMeta && saveMetaFile,
       songData: cloneDeep(this.song),
       lyric: this.basicLyric,
+      albumArtists: this.albumArtists,
       skipIfExist: true,
       threadCount: downloadThreadCount,
       enableDownloadHttp2: enableDownloadHttp2,

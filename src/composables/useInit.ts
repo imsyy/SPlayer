@@ -1,6 +1,5 @@
 import { mediaSessionManager } from "@/core/player/MediaSessionManager";
 import { usePlayerController } from "@/core/player/PlayerController";
-import { updateTaskbarConfig } from "@/core/player/PlayerIpc";
 import { useDownloadManager } from "@/core/resource/DownloadManager";
 import { useDataStore, useSettingStore, useShortcutStore, useStatusStore } from "@/stores";
 import { TASKBAR_IPC_CHANNELS } from "@/types/shared";
@@ -30,7 +29,7 @@ export const useInit = () => {
   // 事件监听
   initEventListener();
 
-  onMounted(async () => {
+    onMounted(async () => {
     // 检查并执行设置迁移
     settingStore.checkAndMigrate();
     // 打印版本信息
@@ -78,116 +77,29 @@ export const useInit = () => {
       // 显示窗口
       window.electron.ipcRenderer.send("win-loaded");
       // 同步任务栏歌词状态
-      window.electron.ipcRenderer.send("taskbar:toggle", statusStore.showTaskbarLyric);
-
-      // 初始化时同步任务栏歌词配置到主进程，确保 electron-store 与 settingStore 一致
-      // 修复任务栏歌词悬浮对齐设置可能在重启后丢失的问题
-      updateTaskbarConfig({
-        mode: settingStore.taskbarLyricMode,
-        maxWidth: settingStore.taskbarLyricMaxWidth,
-        position: settingStore.taskbarLyricPosition,
-        autoShrink: settingStore.taskbarLyricAutoShrink,
-        margin: settingStore.taskbarLyricMargin,
-        minWidth: settingStore.taskbarLyricMinWidth,
-
-        floatingAlign: settingStore.taskbarLyricFloatingAlign,
-        floatingAutoWidth: settingStore.taskbarLyricFloatingAutoWidth,
-        floatingWidth: settingStore.taskbarLyricFloatingWidth,
-        floatingHeight: settingStore.taskbarLyricFloatingHeight,
-        floatingAlwaysOnTop: settingStore.taskbarLyricFloatingAlwaysOnTop,
-
-        showWhenPaused: settingStore.taskbarLyricShowWhenPaused,
-        showCover: settingStore.taskbarLyricShowCover,
-        themeMode: settingStore.themeMode,
-        fontFamily: settingStore.LyricFont,
-        globalFont: settingStore.globalFont,
-        fontWeight: settingStore.taskbarLyricFontWeight,
-        animationMode: settingStore.taskbarLyricAnimationMode,
-        singleLineMode: settingStore.taskbarLyricSingleLineMode,
-        showWordLyrics: settingStore.taskbarLyricShowWordLyrics,
-        showTranslation: settingStore.showTran,
-        showRomaji: settingStore.showRoma,
-      });
-
+      const taskbarConfig = await window.electron.ipcRenderer.invoke(
+        TASKBAR_IPC_CHANNELS.GET_OPTION,
+      );
+      statusStore.showTaskbarLyric = taskbarConfig?.enabled ?? statusStore.showTaskbarLyric ?? false;
+      window.electron.ipcRenderer.send(
+        TASKBAR_IPC_CHANNELS.SET_OPTION,
+        { enabled: statusStore.showTaskbarLyric },
+        true,
+      );
       // 显示桌面歌词
       window.electron.ipcRenderer.send("desktop-lyric:toggle", statusStore.showDesktopLyric);
       // 检查更新
       if (settingStore.checkUpdateOnStart) window.electron.ipcRenderer.send("check-update", false);
-
-      // 启动时，如果启用macOS歌词，发送初始数据
+      // 如果启用macOS歌词，发送初始数据
       if (isMac && settingStore.macos.statusBarLyric.enabled) {
         window.electron.ipcRenderer.send(TASKBAR_IPC_CHANNELS.REQUEST_DATA);
       }
-
       // 确保主窗口在最后获得焦点
       if (statusStore.showDesktopLyric) {
         setTimeout(() => {
           window.electron.ipcRenderer.send("win-show-main");
         }, FINAL_FOCUS_DELAY_MS);
       }
-
-      // 监听任务栏歌词设置
-      watch(
-        () => [
-          settingStore.taskbarLyricMaxWidth,
-          settingStore.taskbarLyricPosition,
-          settingStore.taskbarLyricAutoShrink,
-          settingStore.taskbarLyricMargin,
-          settingStore.taskbarLyricMinWidth,
-        ],
-        () => {
-          updateTaskbarConfig({
-            maxWidth: settingStore.taskbarLyricMaxWidth,
-            position: settingStore.taskbarLyricPosition,
-            autoShrink: settingStore.taskbarLyricAutoShrink,
-            margin: settingStore.taskbarLyricMargin,
-            minWidth: settingStore.taskbarLyricMinWidth,
-          });
-        },
-      );
-
-      watch(
-        () => [
-          settingStore.taskbarLyricMode,
-          settingStore.taskbarLyricShowCover,
-          settingStore.themeMode,
-          settingStore.LyricFont,
-          settingStore.globalFont,
-          settingStore.taskbarLyricFontWeight,
-          settingStore.taskbarLyricAnimationMode,
-          settingStore.taskbarLyricSingleLineMode,
-          settingStore.showTran,
-          settingStore.showRoma,
-          settingStore.taskbarLyricShowWordLyrics,
-          settingStore.taskbarLyricShowWhenPaused,
-          settingStore.taskbarLyricFloatingAlign,
-          settingStore.taskbarLyricFloatingAutoWidth,
-          settingStore.taskbarLyricFloatingWidth,
-          settingStore.taskbarLyricFloatingHeight,
-          settingStore.taskbarLyricFloatingAlwaysOnTop,
-        ],
-        () => {
-          updateTaskbarConfig({
-            mode: settingStore.taskbarLyricMode,
-            showCover: settingStore.taskbarLyricShowCover,
-            themeMode: settingStore.themeMode,
-            fontFamily: settingStore.LyricFont,
-            globalFont: settingStore.globalFont,
-            fontWeight: settingStore.taskbarLyricFontWeight,
-            animationMode: settingStore.taskbarLyricAnimationMode,
-            singleLineMode: settingStore.taskbarLyricSingleLineMode,
-            showWhenPaused: settingStore.taskbarLyricShowWhenPaused,
-            showTranslation: settingStore.showTran,
-            showRomaji: settingStore.showRoma,
-            showWordLyrics: settingStore.taskbarLyricShowWordLyrics,
-            floatingAlign: settingStore.taskbarLyricFloatingAlign,
-            floatingAutoWidth: settingStore.taskbarLyricFloatingAutoWidth,
-            floatingWidth: settingStore.taskbarLyricFloatingWidth,
-            floatingHeight: settingStore.taskbarLyricFloatingHeight,
-            floatingAlwaysOnTop: settingStore.taskbarLyricFloatingAlwaysOnTop,
-          });
-        },
-      );
     }
   });
 };

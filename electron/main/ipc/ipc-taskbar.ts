@@ -8,56 +8,26 @@ import taskbarLyricManager from "../utils/taskbar-lyric-manager";
 
 let cachedIsPlaying = false;
 
+/** 读取完整任务栏配置 */
 const getTaskbarConfig = (): TaskbarConfig => {
-  const store = useStore();
-  return {
-    mode: store.get("taskbar.mode", "taskbar"),
-    maxWidth: store.get("taskbar.maxWidth", 300),
-    position: store.get("taskbar.position", "automatic"),
-    autoShrink: store.get("taskbar.autoShrink", false),
-    margin: store.get("taskbar.margin", 10),
-    minWidth: store.get("taskbar.minWidth", 10),
-    enabled: store.get("taskbar.enabled", false),
-    floatingAlign: store.get("taskbar.floatingAlign", "right"),
-    floatingAutoWidth: store.get("taskbar.floatingAutoWidth", true),
-    floatingWidth: store.get("taskbar.floatingWidth", 300),
-    floatingHeight: store.get("taskbar.floatingHeight", 48),
-    floatingAlwaysOnTop: store.get("taskbar.floatingAlwaysOnTop", false),
-
-    showWhenPaused: store.get("taskbar.showWhenPaused", true),
-    showCover: store.get("taskbar.showCover", true),
-    themeMode: store.get("taskbar.themeMode", "auto"),
-    fontFamily: store.get("taskbar.fontFamily", ""),
-    globalFont: store.get("taskbar.globalFont", ""),
-    fontWeight: store.get("taskbar.fontWeight", 0),
-    animationMode: store.get("taskbar.animationMode", "slide-blur"),
-    singleLineMode: store.get("taskbar.singleLineMode", false),
-    showTranslation: store.get("taskbar.showTranslation", true),
-    showRomaji: store.get("taskbar.showRomaji", true),
-    showWordLyrics: store.get("taskbar.showWordLyrics", true),
-  };
+  return useStore().get("taskbar");
 };
 
+/** 根据配置更新窗口可见性 */
 const updateWindowVisibility = (config: TaskbarConfig) => {
   const tray = getMainTray();
-
-  if (tray) {
-    tray.setTaskbarLyricShow(config.enabled);
+  if (tray) tray.setTaskbarLyricShow(config.enabled);
+  if (!config.enabled) {
+    taskbarLyricManager.close(false);
+    return;
   }
-
-  const shouldBeVisible = config.enabled && (cachedIsPlaying || config.showWhenPaused);
-
+  taskbarLyricManager.create(config.mode);
+  const shouldBeVisible = cachedIsPlaying || config.showWhenPaused;
   taskbarLyricManager.setVisibility(shouldBeVisible);
 };
 
-const updateWindowLayout = (animate: boolean = true) => {
-  taskbarLyricManager.updateLayout(animate);
-};
-
 const initTaskbarIpc = () => {
-  // 在函数内部获取 store，确保在 app ready 事件之后
   const store = useStore();
-
   const initialConfig = getTaskbarConfig();
   if (initialConfig.enabled) {
     taskbarLyricManager.create(initialConfig.mode);
@@ -68,67 +38,30 @@ const initTaskbarIpc = () => {
     taskbarLyricManager.setContentWidth(width);
   });
 
-  ipcMain.on(
-    TASKBAR_IPC_CHANNELS.UPDATE_CONFIG,
-    (_event, partialConfig: Partial<TaskbarConfig>) => {
-      const oldConfig = getTaskbarConfig();
+  ipcMain.handle(TASKBAR_IPC_CHANNELS.GET_OPTION, () => getTaskbarConfig());
 
-      Object.entries(partialConfig).forEach(([key, value]) => {
+  // 设置配置（增量合并）
+  ipcMain.on(
+    TASKBAR_IPC_CHANNELS.SET_OPTION,
+    (_event, option: Partial<TaskbarConfig>, pushToWindow = true) => {
+      if (!option) return;
+      // 增量更新
+      const prev = getTaskbarConfig();
+      const next = { ...prev, ...option };
+      Object.entries(option).forEach(([key, value]) => {
         store.set(`taskbar.${key}`, value);
       });
-
-      const newConfig = getTaskbarConfig();
-
-      const modeChanged = newConfig.mode !== oldConfig.mode;
-
-      if (modeChanged) {
-        taskbarLyricManager.close(false);
+      // 推送到歌词窗口
+      if (pushToWindow) {
+        taskbarLyricManager.send(TASKBAR_IPC_CHANNELS.SYNC_STATE, {
+          type: "config-update",
+          data: option,
+        } as SyncStatePayload);
       }
-
-      if (newConfig.enabled && (!oldConfig.enabled || modeChanged)) {
-        taskbarLyricManager.create(newConfig.mode);
+      updateWindowVisibility(next);
+      if (next.enabled) {
+        taskbarLyricManager.updateLayout(false);
       }
-
-      if (
-        newConfig.enabled !== oldConfig.enabled ||
-        newConfig.showWhenPaused !== oldConfig.showWhenPaused ||
-        modeChanged
-      ) {
-        updateWindowVisibility(newConfig);
-      }
-
-      if (newConfig.enabled) {
-        if (newConfig.mode === "taskbar") {
-          if (
-            newConfig.maxWidth !== oldConfig.maxWidth ||
-            newConfig.position !== oldConfig.position ||
-            newConfig.autoShrink !== oldConfig.autoShrink ||
-            newConfig.margin !== oldConfig.margin ||
-            newConfig.minWidth !== oldConfig.minWidth
-          ) {
-            updateWindowLayout(true);
-          }
-        } else {
-          const floatingWidthChanged =
-            newConfig.floatingAutoWidth === false && newConfig.floatingWidth !== oldConfig.floatingWidth;
-          if (
-            newConfig.maxWidth !== oldConfig.maxWidth ||
-            newConfig.floatingAlign !== oldConfig.floatingAlign ||
-            newConfig.floatingAutoWidth !== oldConfig.floatingAutoWidth ||
-            floatingWidthChanged ||
-            newConfig.floatingHeight !== oldConfig.floatingHeight ||
-            newConfig.floatingAlwaysOnTop !== oldConfig.floatingAlwaysOnTop ||
-            modeChanged
-          ) {
-            updateWindowLayout(false);
-          }
-        }
-      }
-
-      taskbarLyricManager.send(TASKBAR_IPC_CHANNELS.SYNC_STATE, {
-        type: "config-update",
-        data: partialConfig,
-      } as SyncStatePayload);
     },
   );
 
@@ -174,9 +107,8 @@ const initTaskbarIpc = () => {
   // 把事件发射到 app 里不太好，但是我觉得也没有必要为了这一个事件创建一个事件总线
   // TODO: 如果有了事件总线，通过那个事件总线发射这个事件
   (app as EventEmitter).on("explorer-restarted", () => {
-    const currentEnabled = store.get("taskbar.enabled");
-    const currentMode = store.get("taskbar.mode", "taskbar");
-    if (currentEnabled && currentMode === "taskbar") {
+    const currentConfig = getTaskbarConfig();
+    if (currentConfig.enabled && currentConfig.mode === "taskbar") {
       taskbarLyricManager.close(false);
       setTimeout(() => {
         taskbarLyricManager.create("taskbar");

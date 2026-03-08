@@ -161,8 +161,8 @@
 </template>
 
 <script setup lang="ts">
-import { LyricLine, LyricWord } from "@applemusic-like-lyrics/lyric";
-import { calculateLyricIndex } from "@/utils/calc";
+import { LyricWord } from "@applemusic-like-lyrics/lyric";
+import { calculateLyricIndex, getSafeEndTime } from "@/utils/calc";
 import { LyricConfig, LyricData, RenderLine } from "@/types/desktop-lyric";
 import defaultDesktopLyricConfig from "@/assets/data/lyricConfig";
 
@@ -245,26 +245,6 @@ const handleMouseMove = () => {
  */
 const handleMouseLeave = () => {
   isHovered.value = false;
-};
-
-/**
- * 计算安全的结束时间
- * - 优先使用当前行的 `endTime`
- * - 若为空则使用下一行的 `time` 作为当前行的结束参照
- * @param lyrics 歌词数组
- * @param idx 当前行索引
- * @returns 安全的结束时间（秒）
- */
-const getSafeEndTime = (lyrics: LyricLine[], idx: number) => {
-  const cur = lyrics?.[idx];
-  const next = lyrics?.[idx + 1];
-  const curEnd = Number(cur?.endTime);
-  const curStart = Number(cur?.startTime);
-  if (Number.isFinite(curEnd) && curEnd > curStart) return curEnd;
-  const nextStart = Number(next?.startTime);
-  if (Number.isFinite(nextStart) && nextStart > curStart) return nextStart;
-  // 无有效结束参照：返回 0（表示无时长，不滚动）
-  return 0;
 };
 
 /**

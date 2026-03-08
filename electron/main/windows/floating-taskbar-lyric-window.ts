@@ -143,10 +143,9 @@ class FloatingTaskbarLyricWindow {
   private sendFloatingAlign(force: boolean) {
     if (!this.win || this.win.isDestroyed()) return;
     const store = useStore();
-    const floatingAlign = store.get("taskbar.floatingAlign", "right");
+    const { floatingAlign } = store.get("taskbar");
     if (!force && this.lastFloatingAlign === floatingAlign) return;
     this.lastFloatingAlign = floatingAlign;
-
     this.win.webContents.send("taskbar:update-layout", {
       isCenter: floatingAlign === "left",
     });
@@ -172,10 +171,8 @@ class FloatingTaskbarLyricWindow {
     const workArea = this.getWorkAreaForWindow();
     const maxWidthPercent = this.getMaxWidthPercent(workArea.width);
     const maxWidth = Math.round((workArea.width * maxWidthPercent) / 100);
-    const floatingAutoWidth = store.get("taskbar.floatingAutoWidth", true);
-    const floatingWidth = store.get("taskbar.floatingWidth", 300);
-    const floatingHeight = store.get("taskbar.floatingHeight", 48);
-    const floatingAlign = store.get("taskbar.floatingAlign", "right");
+    const { floatingAutoWidth, floatingWidth, floatingHeight, floatingAlign } =
+      store.get("taskbar");
     const floatingAnchor = floatingAlign === "left" ? "left" : "right";
 
     const nextWidth = Math.min(
@@ -209,7 +206,8 @@ class FloatingTaskbarLyricWindow {
       bounds.y !== nextY ||
       bounds.width !== nextWidth ||
       bounds.height !== nextHeight;
-    if (shouldUpdate) this.win.setBounds({ x: nextX, y: nextY, width: nextWidth, height: nextHeight });
+    if (shouldUpdate)
+      this.win.setBounds({ x: nextX, y: nextY, width: nextWidth, height: nextHeight });
 
     this.applyAlwaysOnTop(false);
     this.sendFloatingAlign(false);

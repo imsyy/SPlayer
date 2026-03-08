@@ -22,9 +22,11 @@
         :loading="loading"
         :height="songListHeight"
         :playListId="playlistId"
+        :draggable="canDragSort"
         :doubleClickAction="searchData?.length ? 'add' : 'all'"
         @scroll="handleListScroll"
         @removeSong="removeSong"
+        @reorder="handleReorder"
       />
       <n-empty
         v-else
@@ -44,11 +46,11 @@
 import type { DropdownOption } from "naive-ui";
 import { SongType } from "@/types/main";
 import { songDetail } from "@/api/song";
-import { playlistDetail, playlistAllSongs } from "@/api/playlist";
+import { playlistDetail, playlistAllSongs, songOrderUpdate } from "@/api/playlist";
 import { formatCoverList, formatSongsList } from "@/utils/format";
 import { renderIcon, copyData, getShareUrl } from "@/utils/helper";
 import { isObject } from "lodash-es";
-import { useDataStore } from "@/stores";
+import { useDataStore, useStatusStore } from "@/stores";
 import { openBatchList, openUpdatePlaylist } from "@/utils/modal";
 import { updateUserLikePlaylist } from "@/utils/auth";
 import { useListDetail } from "@/composables/List/useListDetail";
@@ -57,6 +59,7 @@ import { useListScroll } from "@/composables/List/useListScroll";
 import { useListActions } from "@/composables/List/useListActions";
 
 const dataStore = useDataStore();
+const statusStore = useStatusStore();
 
 // 是否激活
 const isActivated = ref<boolean>(false);
@@ -78,6 +81,11 @@ const { playAllSongs: playAllSongsAction } = useListActions();
 
 // 歌单 ID
 const playlistId = computed<number>(() => Number(dataStore.userLikeData.playlists?.[0]?.id) || 0);
+
+// 是否可拖拽排序（默认排序 + 非搜索模式）
+const canDragSort = computed(() => {
+  return !searchValue.value && statusStore.listSortField === "default";
+});
 
 // 当前正在请求的歌单 ID，用于防止竞态条件
 const currentRequestId = ref<number>(0);
@@ -332,6 +340,36 @@ const playAllSongs = useDebounceFn(() => {
 const removeSong = (ids: number[]) => {
   if (!listData.value) return;
   setListData(listData.value.filter((song) => !ids.includes(song.id)));
+};
+
+// 拖拽重排序
+const handleReorder = async (fromIndex: number, toIndex: number) => {
+  if (fromIndex === toIndex) return;
+
+  // 乐观更新视图
+  const newList = [...listData.value];
+  const [moved] = newList.splice(fromIndex, 1);
+  newList.splice(toIndex, 0, moved);
+  setListData(newList);
+
+  // 持久化到服务端
+  try {
+    const ids = newList.map((s) => s.id);
+    const result = await songOrderUpdate(playlistId.value, ids);
+    if (result.code !== 200) {
+      window.$message.error("保存排序失败");
+      loadPlaylistData(playlistId.value, true);
+    } else {
+      // 更新缓存
+      if (detailData.value) {
+        dataStore.setLikeSongsList(detailData.value, newList);
+      }
+    }
+  } catch (error) {
+    console.error("Failed to update song order:", error);
+    window.$message.error("保存排序失败，请重试");
+    loadPlaylistData(playlistId.value, true);
+  }
 };
 
 onActivated(async () => {

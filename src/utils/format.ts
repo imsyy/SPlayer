@@ -1,4 +1,4 @@
-import { useDataStore, useMusicStore, useSettingStore, useStatusStore } from "@/stores";
+import { useDataStore, useMusicStore, useStatusStore } from "@/stores";
 import type { ArtistType, CatType, CommentType, CoverType, MetaData, SongType } from "@/types/main";
 import { flatMap, isArray, uniqBy } from "lodash-es";
 import { handleSongQuality } from "./helper";
@@ -10,8 +10,6 @@ import { msToTime } from "./time";
  * @returns 格式化后的评论数量
  */
 export const formatCommentCount = (count: number): string | number => {
-  const settingStore = useSettingStore();
-  if (settingStore.showCommentCount === "full") return count;
   if (count >= 10000) {
     const val = Math.floor(count / 1000) / 10;
     return `${val % 1 === 0 ? val.toFixed(0) : val}W+`;

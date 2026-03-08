@@ -1,7 +1,7 @@
 import type { LyricLine } from "@applemusic-like-lyrics/lyric";
 import { cloneDeep } from "lodash-es";
 import { parseLrc } from "./parseLrc";
-import { extractLyricContent } from "./qrc-parser";
+import { extractLyricContent } from "./parseQrc";
 
 /**
  * LRC 格式类型

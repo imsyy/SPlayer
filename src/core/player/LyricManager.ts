@@ -19,6 +19,7 @@ import { parseLrc } from "@/utils/lyric/parseLrc";
 import { getConverter } from "@/utils/opencc";
 import { type LyricLine, parseTTML, parseYrc } from "@applemusic-like-lyrics/lyric";
 import { cloneDeep, isEmpty } from "lodash-es";
+import { attachTtmlBgLines, cleanTTMLTranslations } from "@/utils/lyric/parseTTML";
 
 interface LyricFetchResult {
   data: SongLyric;
@@ -322,7 +323,7 @@ class LyricManager {
         }
       }
       if (!ttmlContent || typeof ttmlContent !== "string") return;
-      const sorted = this.cleanTTMLTranslations(ttmlContent);
+      const sorted = cleanTTMLTranslations(ttmlContent);
       const parsed = parseTTML(sorted);
       const lines = parsed?.lines || [];
       if (!lines.length) return;
@@ -459,7 +460,7 @@ class LyricManager {
       }
       // TTML 直接返回
       if (format === "ttml") {
-        const sorted = this.cleanTTMLTranslations(lyric);
+        const sorted = cleanTTMLTranslations(lyric);
         const ttml = parseTTML(sorted);
         const lines = ttml?.lines || [];
         return {
@@ -498,77 +499,6 @@ class LyricManager {
     } catch {
       return defaultResult;
     }
-  }
-
-  /**
-   * 清洗 TTML 中不需要的翻译
-   * @param ttmlContent 原始 TTML 内容
-   * @returns 清洗后的 TTML 内容
-   */
-  // 当支持 i18n 之后，需要对其中的部分函数进行修改，使其优选逻辑能够根据用户界面语言变化
-  private cleanTTMLTranslations(
-    // 一般没有多种音译，故不对音译部分进行清洗，如果需要请另写处理函数
-    ttmlContent: string,
-  ): string {
-    const lang_counter = (ttml_text: string) => {
-      // 使用正则匹配所有 xml:lang="xx-XX" 格式的字符串
-      const langRegex = /(?<=<(span|translation)[^<>]+)xml:lang="([^"]+)"/g;
-      const matches = ttml_text.matchAll(langRegex);
-
-      // 提取匹配结果并去重
-      const langSet = new Set<string>();
-      for (const match of matches) {
-        if (match[2]) langSet.add(match[2]);
-      }
-
-      return Array.from(langSet);
-    };
-
-    const lang_filter = (langs: string[]): string | null => {
-      if (langs.length <= 1) return null;
-
-      const lang_matcher = (target: string) => {
-        return langs.find((lang) => {
-          try {
-            return new Intl.Locale(lang).maximize().script === target;
-          } catch {
-            return false;
-          }
-        });
-      };
-
-      const hans_matched = lang_matcher("Hans");
-      if (hans_matched) return hans_matched;
-
-      const hant_matched = lang_matcher("Hant");
-      if (hant_matched) return hant_matched;
-
-      const major = langs.find((key) => key.startsWith("zh"));
-      if (major) return major;
-
-      return langs[0];
-    };
-
-    const ttml_cleaner = (ttml_text: string, major_lang: string | null): string => {
-      // 如果没有指定主语言，直接返回原文本（或者根据需求返回空）
-      if (major_lang === null) return ttml_text;
-
-      /**
-       * 替换逻辑回调函数
-       * @param match 完整匹配到的标签字符串 (例如 <code><span ...>...<\/span></code>)
-       * @param lang 正则中第一个捕获组匹配到的语言代码 (例如 "ja-JP")
-       */
-      const replacer = (match: string, lang: string) => (lang === major_lang ? match : "");
-      const translationRegex = /<translation[^>]+xml:lang="([^"]+)"[^>]*>[\s\S]*?<\/translation>/g;
-      const spanRegex = /<span[^>]+xml:lang="([^" ]+)"[^>]*>[\s\S]*?<\/span>/g;
-      return ttml_text.replace(translationRegex, replacer).replace(spanRegex, replacer);
-    };
-
-    const context_lang = lang_counter(ttmlContent);
-    const major = lang_filter(context_lang);
-    const cleaned_ttml = ttml_cleaner(ttmlContent, major);
-
-    return cleaned_ttml.replace(/\n\s*/g, "");
   }
 
   /**
@@ -617,7 +547,9 @@ class LyricManager {
       try {
         const ttmlContent = typeof ttml === "string" ? ttml : "";
         if (ttmlContent) {
-          ttmlLines = parseTTML(this.cleanTTMLTranslations(ttmlContent)).lines || [];
+          const cleaned = cleanTTMLTranslations(ttmlContent);
+          const raw = parseTTML(cleaned).lines || [];
+          ttmlLines = raw;
           console.log("检测到本地TTML歌词覆盖", ttmlLines);
         }
       } catch (err) {
@@ -1001,6 +933,26 @@ class LyricManager {
     } catch (e) {
       console.warn(`Lyrics prefetch failed: [${song.id}]`, e);
     }
+  }
+
+  /**
+   * 获取原始 TTML 文本（如果存在）
+   * @param id 歌曲 ID
+   */
+  public async getRawTtml(id: number | string): Promise<string | null> {
+    if (typeof id !== "number") return null;
+    const ttml = await this.getRawLyricCache(id, "ttml");
+    if (ttml) return cleanTTMLTranslations(ttml);
+    return null;
+  }
+
+  /**
+   * 为任务栏歌词处理 TTML（注入 BG）
+   * @param lines 原始解析后的歌词行
+   * @param ttml 原始 TTML 文本
+   */
+  public processTtmlForTaskbar(lines: LyricLine[], ttml: string): LyricLine[] {
+    return attachTtmlBgLines(ttml, cloneDeep(lines));
   }
 }
 

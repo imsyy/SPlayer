@@ -103,7 +103,21 @@
         <!-- Slider -->
         <n-slider
           v-else-if="item.type === 'slider'"
-          v-model:value="modelValue"
+          :value="modelValue"
+          @update:value="
+            (val) => {
+              if (!isForcedConditionMet) {
+                baseModelValue = val;
+              }
+            }
+          "
+          @dragend="
+            () => {
+              if (!isForcedConditionMet) {
+                handleAction();
+              }
+            }
+          "
           class="set"
           :min="resolve(item.min)"
           :max="resolve(item.max)"

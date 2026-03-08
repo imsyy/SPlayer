@@ -611,25 +611,16 @@ class PlayerController {
       const blobURLManager = useBlobURLManager();
       // Blob URL 清理
       const oldCover = musicStore.playSong.cover;
-      let shouldFetchCover = !oldCover || oldCover === "/images/song.jpg?asset";
-
       if (oldCover && oldCover.startsWith("blob:")) {
         blobURLManager.revokeBlobURL(musicStore.playSong.path || "");
-        shouldFetchCover = true;
       }
-
-      let coverBuffer: Uint8Array | undefined;
-
       // 获取封面数据
-      if (shouldFetchCover) {
+      if (!oldCover || oldCover === "/images/song.jpg?asset") {
         console.log("获取封面数据");
         const coverData = await window.electron.ipcRenderer.invoke("get-music-cover", path);
         if (coverData) {
           const blobURL = blobURLManager.createBlobURL(coverData.data, coverData.format, path);
           if (blobURL) musicStore.playSong.cover = blobURL;
-          if (coverData.data) {
-            coverBuffer = new Uint8Array(coverData.data);
-          }
         } else {
           musicStore.playSong.cover = "/images/song.jpg?asset";
         }
@@ -640,7 +631,7 @@ class PlayerController {
       // 获取主色
       getCoverColor(musicStore.playSong.cover);
       // 更新媒体会话
-      mediaSessionManager.updateMetadata(coverBuffer);
+      mediaSessionManager.updateMetadata();
       // 更新任务栏歌词
       const { name, artist } = getPlayerInfoObj() || {};
       playerIpc.sendTaskbarMetadata({
@@ -1556,7 +1547,7 @@ class PlayerController {
     const statusStore = useStatusStore();
     if (statusStore.showTaskbarLyric === show) return;
     statusStore.showTaskbarLyric = show;
-    playerIpc.updateTaskbarConfig({ enabled: show });
+    playerIpc.setTaskbarLyricShow(show);
     window.$message.success(`${show ? "已开启" : "已关闭"}任务栏歌词`);
   }
 

@@ -44,42 +44,8 @@ export interface SettingState {
   closeAppMethod: "exit" | "hide";
   /** 显示任务栏进度 */
   showTaskbarProgress: boolean;
-  /** 任务栏歌词模式 */
-  taskbarLyricMode: "taskbar" | "floating";
-  /** 任务栏歌词显示封面 */
-  taskbarLyricShowCover: boolean;
-  /** 任务栏歌词最大宽度 */
-  taskbarLyricMaxWidth: number;
-  /** 任务栏歌词位置 */
-  taskbarLyricPosition: "automatic" | "left" | "right";
-  /** 任务栏歌词自动收缩 */
-  taskbarLyricAutoShrink: boolean;
-  /** 任务栏歌词边距 */
-  taskbarLyricMargin: number;
-  /** 任务栏歌词最小宽度 */
-  taskbarLyricMinWidth: number;
-  /** 任务栏歌词悬浮对齐 **/
-  taskbarLyricFloatingAlign: "left" | "right";
-  /** 任务栏歌词悬浮自动宽度 **/
-  taskbarLyricFloatingAutoWidth: boolean;
-  /** 任务栏歌词悬浮宽度 **/
-  taskbarLyricFloatingWidth: number;
-  /** 任务栏歌词悬浮高度 **/
-  taskbarLyricFloatingHeight: number;
-  /** 任务栏歌词悬浮置顶 **/
-  taskbarLyricFloatingAlwaysOnTop: boolean;
-  /** 暂停时显示任务栏歌词 */
-  taskbarLyricShowWhenPaused: boolean;
-  /** 任务栏歌词动画模式 */
-  taskbarLyricAnimationMode: "slide-blur" | "left-sm";
-  /** 任务栏歌词单行模式 */
-  taskbarLyricSingleLineMode: boolean;
-  /** 任务栏歌词逐字模式 */
-  taskbarLyricShowWordLyrics: boolean;
   /** 任务栏歌词跟随主题色 */
   taskbarLyricUseThemeColor: boolean;
-  /** 任务栏歌词字重 */
-  taskbarLyricFontWeight: number;
   /** 是否使用在线服务 */
   useOnlineService: boolean;
   /** 分享链接格式 */
@@ -234,8 +200,6 @@ export interface SettingState {
   progressAdjustLyric: boolean;
   /** 显示播放列表数量 */
   showPlaylistCount: boolean;
-  /** 显示评论数量 */
-  showCommentCount: "off" | "compact" | "full";
   /** 是否显示音乐频谱 */
   showSpectrums: boolean;
   /** 是否开启系统音频集成 */
@@ -416,6 +380,7 @@ export interface SettingState {
     copyLyric: boolean;
     lyricOffset: boolean;
     lyricSettings: boolean;
+    commentCount: boolean;
   };
   /** 右键菜单显示配置 */
   contextMenuOptions: {
@@ -539,24 +504,7 @@ export const useSettingStore = defineStore("setting", {
     showCloseAppTip: true,
     closeAppMethod: "hide",
     showTaskbarProgress: false,
-    taskbarLyricMode: "taskbar",
-    taskbarLyricShowCover: true,
-    taskbarLyricMaxWidth: 30,
-    taskbarLyricPosition: "automatic",
-    taskbarLyricAutoShrink: false,
-    taskbarLyricMargin: 10,
-    taskbarLyricMinWidth: 10,
-    taskbarLyricFloatingAlign: "right",
-    taskbarLyricFloatingAutoWidth: true,
-    taskbarLyricFloatingWidth: 300,
-    taskbarLyricFloatingHeight: 48,
-    taskbarLyricFloatingAlwaysOnTop: false,
-    taskbarLyricShowWhenPaused: true,
-    taskbarLyricAnimationMode: "slide-blur",
-    taskbarLyricSingleLineMode: false,
-    taskbarLyricShowWordLyrics: true,
     taskbarLyricUseThemeColor: false,
-    taskbarLyricFontWeight: 400,
     checkUpdateOnStart: true,
     preventSleep: false,
     useKeepAlive: true,
@@ -591,7 +539,6 @@ export const useSettingStore = defineStore("setting", {
     progressTooltipShow: true,
     progressAdjustLyric: false,
     showPlaylistCount: true,
-    showCommentCount: "compact",
     showSpectrums: false,
     smtcOpen: true,
     playSongDemo: false,
@@ -725,6 +672,7 @@ export const useSettingStore = defineStore("setting", {
       copyLyric: true,
       lyricOffset: true,
       lyricSettings: true,
+      commentCount: false,
     },
     contextMenuOptions: {
       play: true,

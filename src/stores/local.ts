@@ -252,6 +252,31 @@ const createLocalStore = () => {
   };
 
   /**
+   * 重排本地歌单中的歌曲顺序
+   * @param playlistId 歌单 ID
+   * @param fromIndex 源位置索引
+   * @param toIndex 目标位置索引
+   */
+  const reorderSongsInLocalPlaylist = async (
+    playlistId: number,
+    fromIndex: number,
+    toIndex: number,
+  ): Promise<boolean> => {
+    const playlist = localPlaylists.value.find((p) => p.id === playlistId);
+    if (!playlist) return false;
+    if (fromIndex < 0 || fromIndex >= playlist.songs.length) return false;
+    if (toIndex < 0 || toIndex >= playlist.songs.length) return false;
+    if (fromIndex === toIndex) return true;
+
+    const [movedId] = playlist.songs.splice(fromIndex, 1);
+    playlist.songs.splice(toIndex, 0, movedId);
+    playlist.updateTime = Date.now();
+
+    await saveLocalPlaylists();
+    return true;
+  };
+
+  /**
    * 判断是否为本地歌单 ID
    * @param id 歌单 ID
    */
@@ -280,6 +305,7 @@ const createLocalStore = () => {
     deleteLocalPlaylist,
     addSongsToLocalPlaylist,
     removeSongsFromLocalPlaylist,
+    reorderSongsInLocalPlaylist,
     getLocalPlaylistDetail,
     isLocalPlaylist,
   });

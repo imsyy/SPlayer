@@ -5,7 +5,7 @@ import type {
   TrayWatcher,
   UiaWatcher,
 } from "@native/taskbar-lyric";
-import { TASKBAR_IPC_CHANNELS } from "@shared";
+import { TASKBAR_IPC_CHANNELS, type TaskbarConfig } from "@shared";
 import { app, type BrowserWindow, nativeTheme, screen } from "electron";
 import { debounce } from "lodash-es";
 import { join } from "node:path";
@@ -259,7 +259,7 @@ class TaskbarLyricWindow {
       const maxWidthSetting = Math.round(
         (primaryDisplay.workAreaSize.width * this.maxWidthPercent) / 100,
       );
-      const positionSetting = store.get("taskbar.position", "automatic");
+      const positionSetting = store.get("taskbar.position", "automatic") as TaskbarConfig["position"];
       const autoShrink = store.get("taskbar.autoShrink", false);
       const MAX_WIDTH_PHYSICAL = autoShrink
         ? Math.min(maxWidthSetting, this.contentWidth) * scaleFactor

@@ -36,4 +36,7 @@ target
 docs/.vitepress/cache
 docs/.vitepress/dist
 
+# AI
 .trae/*
+.cursor/*
+.claude/*

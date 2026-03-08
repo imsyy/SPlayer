@@ -6,7 +6,7 @@
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
   >
-    <div class="cover-wrapper" v-if="coverSrc && settingStore.taskbarLyricShowCover">
+    <div class="cover-wrapper" v-if="coverSrc && taskbarConfig.showCover">
       <Transition name="cross-fade">
         <img :key="coverSrc" :src="coverSrc" class="cover" alt="cover" @error="onCoverError" />
       </Transition>
@@ -27,51 +27,68 @@
     </Transition>
 
     <div class="content" :style="contentStyle">
-      <Transition :name="settingStore.taskbarLyricAnimationMode" mode="out-in">
-        <TransitionGroup tag="div" class="lyric-list-wrapper" name="lyric-list" :key="transitionKey">
-          <div
-            v-for="item in displayItems"
-            :key="item.key"
-            class="lyric-item"
-            :class="{
-              'is-primary': item.isPrimary,
-              'is-sub': item.itemType === 'sub',
-              'is-next': item.itemType === 'next',
-            }"
+      <div class="lyric-view-container">
+        <Transition :name="taskbarConfig.animationMode" mode="out-in">
+          <TransitionGroup
+            tag="div"
+            class="lyric-list-wrapper"
+            :class="{ 'metadata-mode': isHovering }"
+            name="lyric-list"
+            :key="transitionKey"
+            @before-leave="onBeforeLeave"
           >
-            <LyricScroll
-              class="line-text"
-              :style="{ transformOrigin: state.isCenter ? 'center left' : 'center right' }"
-              :text="item.text"
-              :words="item.words"
-              :currentTime="state.currentTime"
-              :isActive="item.isPrimary"
-              :mode="item.itemType === 'main' && !currentLyricText ? 'line' : state.lyricType"
-              :progress="item.itemType === 'main' ? currentLineProgress : 0"
-              @resize-width="(w) => handleLyricResize(item.key, w)"
-            />
-          </div>
-        </TransitionGroup>
-      </Transition>
+            <div
+              v-for="item in itemsToRender"
+              :key="item.key"
+              class="lyric-item"
+              :class="{
+                'is-primary': item.isPrimary,
+                'is-sub': item.itemType === 'sub',
+                'is-next': item.itemType === 'next',
+              }"
+            >
+              <LyricScroll
+                class="line-text"
+                :style="{ transformOrigin: state.isCenter ? 'center left' : 'center right' }"
+                :text="item.text"
+                :words="item.words"
+                :currentTime="state.currentTime"
+                :isActive="item.isActive"
+                :mode="
+                  isHovering
+                    ? 'line'
+                    : item.itemType === 'main' && !currentLyricText
+                      ? 'line'
+                      : state.lyricType
+                "
+                :progress="item.progress"
+                @resize-width="(w) => handleLyricResize(item.key, w)"
+              />
+            </div>
+          </TransitionGroup>
+        </Transition>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useSettingStore } from "@/stores";
 import {
+  DEFAULT_TASKBAR_CONFIG,
   TASKBAR_IPC_CHANNELS,
   type SyncStatePayload,
   type SyncTickPayload,
   type TaskbarConfig,
 } from "@/types/shared";
+import { calculateLyricIndex, getSafeEndTime } from "@/utils/calc";
+import { getLineText } from "@/utils/lyric/parseTTML";
 import type { LyricLine, LyricWord } from "@applemusic-like-lyrics/lyric";
 import type { CSSProperties } from "vue";
 import { useRoute } from "vue-router";
 import LyricScroll from "./LyricScroll.vue";
 
-const settingStore = useSettingStore();
 const route = useRoute();
+const taskbarConfig = reactive<TaskbarConfig>({ ...DEFAULT_TASKBAR_CONFIG });
 const isFloating = computed(() => route.query.mode === "floating");
 const isHovering = ref(false);
 const showControls = computed(() => !isFloating.value && isHovering.value);
@@ -88,8 +105,10 @@ interface DisplayItem {
   key: string | number;
   text: string;
   isPrimary: boolean;
+  isActive: boolean;
   itemType: "main" | "sub" | "next";
   words?: LyricWord[];
+  progress: number;
 }
 
 const state = reactive({
@@ -141,6 +160,12 @@ const rootStyle = computed<CSSProperties>(() => {
   const style: CSSProperties = {
     "--dynamic-opacity": state.opacity,
     "--dynamic-blur": `${state.blurVal}px`,
+    "--lyric-font-family": lyricFontFamily.value,
+    "--lyric-font-weight": String(taskbarConfig.fontWeight),
+    "--lyric-font-scale": String(taskbarConfig.fontScale),
+    "--lyric-line-height": String(taskbarConfig.lineHeight),
+    "--lyric-main-scale": String(taskbarConfig.mainScale),
+    "--lyric-sub-scale": String(taskbarConfig.subScale),
   };
 
   if (state.themeColor) {
@@ -151,9 +176,10 @@ const rootStyle = computed<CSSProperties>(() => {
 });
 
 const lyricFontFamily = computed(() => {
-  const font =
-    settingStore.LyricFont === "follow" ? settingStore.globalFont : settingStore.LyricFont;
-  return font === "default" ? "inherit" : font;
+  const raw = taskbarConfig.fontFamily || "system-ui";
+  if (raw === "follow") return "system-ui";
+  if (raw === "default") return "inherit";
+  return raw;
 });
 
 const handleMouseEnter = () => {
@@ -183,13 +209,32 @@ const transitionKey = computed(() => {
   return `lyric-group-${jumpCount.value}`;
 });
 
+const onBeforeLeave = (el: Element) => {
+  const element = el as HTMLElement;
+  const parent = element.parentElement;
+  if (!parent) return;
+
+  const elementRect = element.getBoundingClientRect();
+  const parentRect = parent.getBoundingClientRect();
+  const top = elementRect.top - parentRect.top;
+  const left = elementRect.left - parentRect.left;
+
+  element.style.position = "absolute";
+  element.style.top = `${top}px`;
+  element.style.left = `${left}px`;
+  element.style.width = `${elementRect.width}px`;
+  element.style.height = `${elementRect.height}px`;
+};
+
 const createMetadataItems = (title: string, artist: string): DisplayItem[] => {
   const items: DisplayItem[] = [
     {
       key: `meta-title-${title}`,
       text: title || "SPlayer",
       isPrimary: true,
+      isActive: true,
       itemType: "main",
+      progress: 0,
     },
   ];
 
@@ -198,64 +243,182 @@ const createMetadataItems = (title: string, artist: string): DisplayItem[] => {
       key: `meta-artist-${artist}`,
       text: artist,
       isPrimary: false,
+      isActive: false,
       itemType: "sub",
+      progress: 0,
     });
   }
 
   return items;
 };
 
+const mainLyrics = ref<LyricLine[]>([]);
+const mainToRawIndex = ref<number[]>([]);
+const mainSafeEnds = ref<number[]>([]);
+const mainLyricIndex = ref(-1);
+const bgCache = ref<{ line: LyricLine; rawIndex: number } | null>(null);
+const mainBgMap = ref<Map<number, { line: LyricLine; rawIndex: number }>>(new Map());
+
+const rebuildMainLyrics = (lyrics: LyricLine[]) => {
+  const mains: LyricLine[] = [];
+  const map: number[] = [];
+  const bgMap = new Map<number, { line: LyricLine; rawIndex: number }>();
+
+  let currentMainIdx = -1;
+  lyrics.forEach((line, rawIdx) => {
+    if (!line.isBG) {
+      mains.push(line);
+      map.push(rawIdx);
+      currentMainIdx = mains.length - 1;
+    } else if (currentMainIdx >= 0 && !bgMap.has(currentMainIdx)) {
+      bgMap.set(currentMainIdx, { line, rawIndex: rawIdx });
+    }
+  });
+
+  const safeEnds = mains.map((_, idx) => {
+    const v = getSafeEndTime(mains, idx);
+    return v > 0 ? v : Infinity;
+  });
+
+  mainLyrics.value = mains;
+  mainToRawIndex.value = map;
+  mainSafeEnds.value = safeEnds;
+  mainBgMap.value = bgMap;
+  mainLyricIndex.value = -1;
+  state.lyricIndex = -1;
+  bgCache.value = null;
+};
+
+watch(
+  () => state.lyrics,
+  (lyrics) => rebuildMainLyrics(lyrics),
+  { immediate: true },
+);
+
+/**
+ * 解析歌词行的安全结束时间
+ * 优先使用行内 endTime，无效时回退到安全结束时间计算
+ */
+const resolveLineSafeEnd = (line: LyricLine, lineIndex?: number): number | null => {
+  const startTime = Number(line.startTime);
+  if (!Number.isFinite(startTime)) return null;
+  const endTime = Number(line.endTime);
+  if (Number.isFinite(endTime) && endTime > startTime) return endTime;
+  const idx = lineIndex ?? state.lyrics.indexOf(line);
+  if (idx < 0) return null;
+  const safeEnd = getSafeEndTime(state.lyrics, idx);
+  return Number.isFinite(safeEnd) && safeEnd > startTime ? safeEnd : null;
+};
+
+/**
+ * 计算逐字滚动进度
+ * 仅在有效时长内返回 0~1 的进度值
+ */
+const calcScrollProgress = (startTime: number, endTime: number | null, currentTime: number) => {
+  if (endTime === null) return 0;
+  const totalDuration = endTime - startTime;
+  if (totalDuration <= 0) return 0;
+  const BUFFER_RATIO = 0.2;
+  const activeScrollDuration = totalDuration * (1 - BUFFER_RATIO);
+  const elapsed = currentTime - startTime;
+  if (activeScrollDuration <= 10) {
+    return elapsed >= activeScrollDuration ? 1 : 0;
+  }
+  const rawProgress = elapsed / activeScrollDuration;
+  return Math.max(0, Math.min(rawProgress, 1));
+};
+
+/**
+ * 获取指定歌词行的滚动进度
+ * 非逐字模式或无有效时间窗口时返回 0
+ */
+const getLineProgress = (line: LyricLine | undefined, lineIndex?: number) => {
+  if (!line) return 0;
+  if (state.lyricType !== "word") return 0;
+  const safeEnd = resolveLineSafeEnd(line, lineIndex);
+  return calcScrollProgress(Number(line.startTime), safeEnd, state.currentTime);
+};
+
+/**
+ * 更新当前主歌词对应的 BG 行缓存
+ * 直接从预计算的 mainBgMap 中 O(1) 查找
+ */
+const updateBgCache = () => {
+  const idx = mainLyricIndex.value;
+  if (idx < 0 || idx >= mainLyrics.value.length) {
+    bgCache.value = null;
+    return;
+  }
+  bgCache.value = mainBgMap.value.get(idx) ?? null;
+};
+
+watch(mainLyricIndex, updateBgCache);
+
 const displayItems = computed<DisplayItem[]>(() => {
   if (!currentLyricText.value) {
     return createMetadataItems(state.title, state.artist);
   }
 
-  if (!state.lyrics.length || state.lyricIndex < 0) return [];
+  if (!mainLyrics.value.length || mainLyricIndex.value < 0) return [];
 
-  const currentLine = state.lyrics[state.lyricIndex];
-  const currentText =
-    currentLine.words
-      ?.map((w) => w.word)
-      .join("")
-      .trim() || "";
+  const currentLine = mainLyrics.value[mainLyricIndex.value];
+  const currentRawIndex = mainToRawIndex.value[mainLyricIndex.value] ?? -1;
+  if (currentRawIndex < 0) return [];
+  const currentText = getLineText(currentLine);
 
+  const shouldShowWords = taskbarConfig.showWordLyrics && state.lyricType === "word";
+  const bgLine = bgCache.value?.line;
+  const hasBg = !!bgLine;
   let subText = "";
-  if (settingStore.showTran && currentLine.translatedLyric) {
-    subText = currentLine.translatedLyric;
-  } else if (settingStore.showRoma && currentLine.romanLyric) {
-    subText = currentLine.romanLyric;
+  if (!hasBg) {
+    if (taskbarConfig.showTranslation && currentLine.translatedLyric) {
+      subText = currentLine.translatedLyric;
+    }
   }
 
   const items: DisplayItem[] = [];
 
   items.push({
-    key: `${currentLine.startTime}-${state.lyricIndex}-main`,
+    key: `${currentLine.startTime}-${currentRawIndex}-main`,
     text: currentText,
     isPrimary: true,
+    isActive: true,
     itemType: "main",
-    words: settingStore.taskbarLyricShowWordLyrics ? currentLine.words : undefined,
+    words: shouldShowWords ? currentLine.words : undefined,
+    progress: currentLineProgress.value,
   });
 
-  if (subText) {
+  if (hasBg) {
     items.push({
-      key: `${currentLine.startTime}-${state.lyricIndex}-sub`,
+      key: `${currentLine.startTime}-${currentRawIndex}-sub`,
+      text: getLineText(bgLine),
+      isPrimary: false,
+      isActive: shouldShowWords && !!bgLine?.words?.length,
+      itemType: "sub",
+      words: shouldShowWords ? bgLine?.words : undefined,
+      progress: getLineProgress(bgLine, bgCache.value?.rawIndex),
+    });
+  } else if (subText) {
+    items.push({
+      key: `${currentLine.startTime}-${currentRawIndex}-sub`,
       text: subText,
       isPrimary: false,
+      isActive: false,
       itemType: "sub",
+      progress: 0,
     });
-  } else if (!settingStore.taskbarLyricSingleLineMode) {
-    const nextLine = state.lyrics[state.lyricIndex + 1];
+  } else if (!taskbarConfig.singleLineMode) {
+    const nextLine = mainLyrics.value[mainLyricIndex.value + 1];
     if (nextLine) {
-      const nextText =
-        nextLine.words
-          ?.map((w) => w.word)
-          .join("")
-          .trim() || "";
+      const nextRawIndex = mainToRawIndex.value[mainLyricIndex.value + 1] ?? -1;
+      const nextText = getLineText(nextLine);
       items.push({
-        key: `${nextLine.startTime}-${state.lyricIndex + 1}-main`,
+        key: `${nextLine.startTime}-${nextRawIndex}-main`,
         text: nextText,
         isPrimary: false,
+        isActive: false,
         itemType: "next",
+        progress: 0,
       });
     }
   }
@@ -263,30 +426,20 @@ const displayItems = computed<DisplayItem[]>(() => {
   return items;
 });
 
+const itemsToRender = computed<DisplayItem[]>(() => {
+  if (isHovering.value) {
+    return createMetadataItems(state.title, state.artist);
+  }
+  return displayItems.value;
+});
+
 const currentLineProgress = computed(() => {
   if (!state.lyrics.length || state.lyricIndex < 0) return 0;
   if (state.lyricType !== "word") return 0;
 
   const currentLine = state.lyrics[state.lyricIndex];
-  const startTime = currentLine.startTime;
-  const endTime = currentLine.endTime;
-  const totalDuration = endTime - startTime;
-
-  if (totalDuration <= 0) return 1;
-
-  const BUFFER_RATIO = 0.2;
-
-  const activeScrollDuration = totalDuration * (1 - BUFFER_RATIO);
-
-  const elapsed = state.currentTime - startTime;
-
-  if (activeScrollDuration <= 10) {
-    return elapsed >= activeScrollDuration ? 1 : 0;
-  }
-
-  const rawProgress = elapsed / activeScrollDuration;
-
-  return Math.max(0, Math.min(rawProgress, 1));
+  const safeEnd = resolveLineSafeEnd(currentLine, state.lyricIndex);
+  return calcScrollProgress(Number(currentLine.startTime), safeEnd, state.currentTime);
 });
 
 const lyricsWidthMap = new Map<string | number, number>();
@@ -334,42 +487,26 @@ const currentLyricText = computed(() => {
   return state.lyrics[state.lyricIndex]?.words?.map((w) => w.word).join("") || "";
 });
 
-const findLyricIndex = (currentTime: number, lyrics: LyricLine[], offset: number = 0): number => {
-  const targetTime = currentTime - offset;
-  let low = 0;
-  let high = lyrics.length - 1;
-  let index = -1;
-  while (low <= high) {
-    const mid = (low + high) >> 1;
-    const lineTime = lyrics[mid].startTime;
-    if (lineTime <= targetTime) {
-      index = mid;
-      low = mid + 1;
-    } else {
-      high = mid - 1;
-    }
-  }
-  return index;
-};
-
 let rafId: number | null = null;
 let lastTimestamp = 0;
-const LYRIC_LOOKAHEAD = 300;
 const jumpCount = ref(0);
 
 const updateLyric = () => {
-  if (state.lyrics.length) {
-    // 提前 0.4s 以便让歌词进场动画跑完
-    const firstLineCompensation = state.lyricIndex === -1 ? 400 : 0;
-
-    const newIndex = findLyricIndex(
-      state.currentTime + LYRIC_LOOKAHEAD + firstLineCompensation,
-      state.lyrics,
-      state.offset,
-    );
-    if (newIndex !== state.lyricIndex) {
-      state.lyricIndex = newIndex;
-    }
+  if (!mainLyrics.value.length) {
+    mainLyricIndex.value = -1;
+    state.lyricIndex = -1;
+    return;
+  }
+  const firstLineCompensation = mainLyricIndex.value === -1 ? 400 : 0;
+  const newMainIndex = calculateLyricIndex(
+    state.currentTime + firstLineCompensation,
+    mainLyrics.value,
+    state.offset,
+    1,
+  );
+  if (newMainIndex !== mainLyricIndex.value) {
+    mainLyricIndex.value = newMainIndex;
+    state.lyricIndex = newMainIndex >= 0 ? (mainToRawIndex.value[newMainIndex] ?? -1) : -1;
   }
 };
 
@@ -398,7 +535,7 @@ const stopLoop = () => {
 };
 
 watch(
-  () => state.lyricIndex,
+  () => mainLyricIndex.value,
   (newIndex, oldIndex) => {
     if (oldIndex === -1 || newIndex === -1) return;
     if (newIndex !== oldIndex + 1) {
@@ -411,34 +548,10 @@ const contentStyle = computed<CSSProperties>(() => ({
   textAlign: state.isCenter ? "left" : "right",
 }));
 
-const configMap: Partial<Record<keyof TaskbarConfig, keyof typeof settingStore>> = {
-  showCover: "taskbarLyricShowCover",
-  animationMode: "taskbarLyricAnimationMode",
-  singleLineMode: "taskbarLyricSingleLineMode",
-  fontFamily: "LyricFont",
-  globalFont: "globalFont",
-  fontWeight: "taskbarLyricFontWeight",
-  showTranslation: "showTran",
-  showRomaji: "showRoma",
-  showWordLyrics: "taskbarLyricShowWordLyrics",
-  showWhenPaused: "taskbarLyricShowWhenPaused",
-};
+const applyConfig = (config: Partial<TaskbarConfig>) => {
+  if (Object.keys(config).length === 0) return;
 
-const applyConfigToStore = (config: Partial<TaskbarConfig>) => {
-  const patches: Record<string, unknown> = {};
-
-  (Object.keys(config) as Array<keyof TaskbarConfig>).forEach((key) => {
-    const storeKey = configMap[key];
-    const value = config[key];
-
-    if (storeKey && value !== undefined) {
-      patches[storeKey] = value;
-    }
-  });
-
-  if (Object.keys(patches).length > 0) {
-    settingStore.$patch(patches);
-  }
+  Object.assign(taskbarConfig, config);
 
   if (config.themeMode !== undefined) {
     state.isDark =
@@ -464,13 +577,14 @@ onMounted(() => {
         state.lyrics = lyrics.lines;
         state.lyricType = lyrics.type;
         state.lyricIndex = -1;
+        mainLyricIndex.value = -1;
         jumpCount.value = 0;
 
         state.isPlaying = playback.isPlaying;
         state.currentTime = playback.tick[0];
         state.offset = playback.tick[2] || 0;
 
-        applyConfigToStore(config);
+        applyConfig(config);
         state.themeColor = themeColor;
 
         lastTimestamp = performance.now();
@@ -498,6 +612,7 @@ onMounted(() => {
         state.lyrics = data.lines;
         state.lyricType = data.type;
         state.lyricIndex = -1;
+        mainLyricIndex.value = -1;
         state.currentTime = 0;
         jumpCount.value = 0;
         coverLoadFailed.value = false;
@@ -513,7 +628,7 @@ onMounted(() => {
       }
 
       case "config-update": {
-        applyConfigToStore(payload.data);
+        applyConfig(payload.data);
         break;
       }
 
@@ -581,7 +696,7 @@ $radius: 4px;
   width: 100vw;
   height: 100vh;
   margin: 5px 0;
-  padding: 0 0.7em;
+  padding: 0 0.9em;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -593,9 +708,9 @@ $radius: 4px;
   color: $base-color;
   border-radius: $radius;
   user-select: none;
-  font-family: v-bind(lyricFontFamily);
-  font-weight: v-bind("settingStore.taskbarLyricFontWeight");
-  font-size: 14px;
+  font-family: var(--lyric-font-family, inherit);
+  font-weight: var(--lyric-font-weight, 400);
+  font-size: calc(clamp(12px, 30vh, 16px) * var(--lyric-font-scale, 1));
 
   will-change: opacity, filter;
   transition:
@@ -607,11 +722,6 @@ $radius: 4px;
 
   &.layout-reverse {
     flex-direction: row-reverse;
-
-    .cover-wrapper {
-      margin-right: 0;
-      margin-left: 0.6em;
-    }
   }
 
   &.dark {
@@ -631,7 +741,7 @@ $radius: 4px;
   }
 
   &.floating {
-    font-size: clamp(12px, 29vh, 26px);
+    font-size: calc(clamp(12px, 29vh, 26px) * var(--lyric-font-scale, 1));
     -webkit-app-region: drag;
 
     .media-controls,
@@ -655,7 +765,7 @@ $radius: 4px;
   position: relative;
   height: 80%;
   aspect-ratio: 1 / 1;
-  margin-right: 0.6em;
+  margin-left: 0.4em;
   border-radius: $radius;
   overflow: hidden;
   flex-shrink: 0;
@@ -692,9 +802,11 @@ $radius: 4px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: 100%;
+  flex: 1 1 auto;
+  width: auto;
   height: 100%;
   min-width: 0;
+  overflow: hidden;
   box-sizing: border-box;
   transition: opacity 0.3s ease;
 
@@ -739,6 +851,12 @@ $radius: 4px;
 
   &.metadata-mode {
     justify-content: center;
+
+    .line-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
 }
 
@@ -750,7 +868,7 @@ $radius: 4px;
   min-height: 1.1em;
   padding: 0 0.3em;
   box-sizing: border-box;
-  line-height: 1.1;
+  line-height: var(--lyric-line-height, 1.1);
   transition: all 0.4s var(--lyric-ease);
 
   .line-text {
@@ -761,7 +879,7 @@ $radius: 4px;
       transform 0.4s var(--lyric-ease),
       opacity 0.4s var(--lyric-ease);
     will-change: transform, opacity;
-    transform: scale(1);
+    transform: scale(var(--lyric-main-scale, 1));
 
     &.single {
       font-size: 1em;
@@ -771,14 +889,14 @@ $radius: 4px;
   &.is-sub {
     .line-text {
       opacity: 0.7;
-      transform: scale(0.8);
+      transform: scale(var(--lyric-sub-scale, 0.8));
     }
   }
 
   &.is-next {
     .line-text {
       opacity: 0.7;
-      transform: scale(0.8);
+      transform: scale(var(--lyric-sub-scale, 0.8));
     }
   }
 }
@@ -870,38 +988,38 @@ $radius: 4px;
 
 .media-controls {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  max-width: 8.6em;
-  gap: 0.4em;
+  height: auto;
+  max-width: 6.6em;
+  gap: 0.25em;
   overflow: hidden;
+  margin: 0 0.2em;
   z-index: 10;
 
   .control-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 4.4em;
-    height: 2.3em;
-    font-size: 1.3em;
+    width: 2em;
+    height: 2em;
+    aspect-ratio: 1 / 1;
+    font-size: 1em;
     color: inherit;
-    border-radius: $radius;
+    border-radius: 4px;
     border: 1px solid rgba(128, 128, 128, 0.4);
     box-sizing: border-box;
     transition:
       background-color 0.2s,
-      transform 0.1s,
       border-color 0.2s;
 
     &:hover {
       background-color: rgba(128, 128, 128, 0.2);
       border-color: rgba(128, 128, 128, 0.7);
-      opacity: 1;
     }
 
     &:active {
-      transform: scale(0.92);
       background-color: rgba(128, 128, 128, 0.3);
       border-color: rgba(128, 128, 128, 0.9);
     }
@@ -923,8 +1041,9 @@ $radius: 4px;
 
   &-enter-to,
   &-leave-from {
-    max-width: 8.6em;
+    max-width: 6.6em;
     opacity: 1;
+    margin: 0 0.2em;
   }
 }
 </style>

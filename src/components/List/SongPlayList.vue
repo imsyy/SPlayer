@@ -60,8 +60,8 @@
                 <!-- 拖拽手柄 -->
                 <div
                   class="drag-handle"
-                  @mousedown="handleDragStart($event, index, songData)"
-                  @touchstart.passive="handleDragStart($event, index, songData)"
+                  @mousedown="handlePointerDown($event, index, songData.name || '未知曲目')"
+                  @touchstart.passive="handlePointerDown($event, index, songData.name || '未知曲目')"
                   @click.stop
                 >
                   <SvgIcon :size="20" name="Menu" />
@@ -167,8 +167,8 @@
 import VirtualScroll from "@/components/UI/VirtualScroll.vue";
 import { usePlayerController } from "@/core/player/PlayerController";
 import { useDataStore, useSettingStore, useStatusStore } from "@/stores";
-import type { SongType } from "@/types/main";
 import { removeBrackets } from "@/utils/format";
+import { useDragSort } from "@/composables/List/useDragSort";
 
 const dataStore = useDataStore();
 const statusStore = useStatusStore();
@@ -206,166 +206,19 @@ const cleanPlayList = () => {
   });
 };
 
-const isDragging = ref(false);
-const draggedIndex = ref(-1);
-const targetIndex = ref(-1);
-const dropIndicator = reactive({ index: -1, position: "none" });
-
-const dragLabelData = ref<SongType | null>(null);
-const dragLabelPosition = reactive({ top: 0, left: 0 });
-
-let listRect: DOMRect | null = null;
-let autoScrollRafId: number | null = null;
-
-const handleDragStart = (e: MouseEvent | TouchEvent, index: number, item: SongType) => {
-  if (e.type === "mousedown") {
-    e.preventDefault();
-  }
-
-  isDragging.value = true;
-  draggedIndex.value = index;
-  targetIndex.value = index;
-  dragLabelData.value = item;
-
-  const wrapper = playListRef.value?.wrapperRef;
-  if (wrapper) {
-    listRect = wrapper.getBoundingClientRect();
-  }
-
-  updateDragLabelPosition(e);
-
-  window.addEventListener("mousemove", handleDragMove);
-  window.addEventListener("touchmove", handleDragMove, { passive: false });
-  window.addEventListener("mouseup", handleDragEnd);
-  window.addEventListener("touchend", handleDragEnd);
-};
-
-const handleDragMove = (e: MouseEvent | TouchEvent) => {
-  if (!isDragging.value) return;
-  if (e.cancelable) e.preventDefault();
-
-  updateDragLabelPosition(e);
-
-  if (!listRect) return;
-  const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-
-  handleAutoScroll(clientY, listRect);
-
-  calculateTargetIndex(clientY);
-};
-
-const handleDragEnd = () => {
-  if (draggedIndex.value !== targetIndex.value && targetIndex.value !== -1) {
-    player.moveSong(draggedIndex.value, targetIndex.value);
-  }
-
-  cleanupDragState();
-};
-
-const cleanupDragState = () => {
-  stopAutoScroll();
-
-  isDragging.value = false;
-  draggedIndex.value = -1;
-  targetIndex.value = -1;
-  dropIndicator.index = -1;
-  dropIndicator.position = "none";
-  dragLabelData.value = null;
-
-  window.removeEventListener("mousemove", handleDragMove);
-  window.removeEventListener("touchmove", handleDragMove);
-  window.removeEventListener("mouseup", handleDragEnd);
-  window.removeEventListener("touchend", handleDragEnd);
-};
-
-const calculateTargetIndex = (clientY: number) => {
-  if (!listRect || !playListRef.value) return;
-
-  const currentScrollTop = playListRef.value.getScrollTop() || 0;
-  const paddingTop = 16;
-  const relativeY = clientY - listRect.top + currentScrollTop - paddingTop;
-  const dropInfo = playListRef.value.getDropInfoByOffset(relativeY);
-
-  let gapIndex = dropInfo.index;
-  if (dropInfo.position === "bottom") {
-    gapIndex += 1;
-  }
-
-  const maxGap = dataStore.playList.length;
-  gapIndex = Math.max(0, Math.min(gapIndex, maxGap));
-
-  if (gapIndex === maxGap) {
-    dropIndicator.index = maxGap - 1;
-    dropIndicator.position = "bottom";
-  } else {
-    dropIndicator.index = gapIndex;
-    dropIndicator.position = "top";
-  }
-
-  let insertIndex = draggedIndex.value;
-
-  if (draggedIndex.value < gapIndex) {
-    insertIndex = gapIndex - 1;
-  } else if (draggedIndex.value > gapIndex) {
-    insertIndex = gapIndex;
-  }
-
-  targetIndex.value = Math.max(0, Math.min(insertIndex, maxGap - 1));
-};
-
-const updateDragLabelPosition = (e: MouseEvent | TouchEvent) => {
-  const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-  const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-
-  dragLabelPosition.left = clientX;
-  dragLabelPosition.top = clientY;
-};
-
-const handleAutoScroll = (clientY: number, rect: DOMRect) => {
-  const edgeThreshold = 40;
-  const scrollSpeed = 12;
-
-  if (clientY < rect.top + edgeThreshold) {
-    startAutoScroll(-scrollSpeed);
-  } else if (clientY > rect.bottom - edgeThreshold) {
-    startAutoScroll(scrollSpeed);
-  } else {
-    stopAutoScroll();
-  }
-};
-
-const startAutoScroll = (amount: number) => {
-  if (autoScrollRafId !== null) return;
-
-  let expectedScroll = playListRef.value?.getScrollTop() || 0;
-
-  const scrollStep = () => {
-    if (!isDragging.value) return stopAutoScroll();
-
-    const actualScroll = playListRef.value?.getScrollTop() || 0;
-    if (Math.abs(actualScroll - expectedScroll) > Math.abs(amount) * 3) {
-      expectedScroll = actualScroll;
-    }
-
-    expectedScroll = Math.max(0, expectedScroll + amount);
-    playListRef.value?.scrollTo(expectedScroll, "auto");
-
-    calculateTargetIndex(dragLabelPosition.top);
-
-    autoScrollRafId = requestAnimationFrame(scrollStep);
-  };
-  autoScrollRafId = requestAnimationFrame(scrollStep);
-};
-
-const stopAutoScroll = () => {
-  if (autoScrollRafId !== null) {
-    cancelAnimationFrame(autoScrollRafId);
-    autoScrollRafId = null;
-  }
-};
-
-onUnmounted(() => {
-  cleanupDragState();
+const {
+  isDragging,
+  draggedIndex,
+  dropIndicator,
+  dragLabelData,
+  dragLabelPosition,
+  handlePointerDown,
+} = useDragSort({
+  virtualScrollRef: playListRef,
+  itemCount: computed(() => dataStore.playList.length),
+  onReorder: (from, to) => player.moveSong(from, to),
+  paddingTop: 16,
+  triggerMode: "handle",
 });
 </script>
 

@@ -1,10 +1,10 @@
-import { useSettingStore } from "@/stores/setting";
+import { useMusicStore, useSettingStore } from "@/stores";
 import type { SongLyric } from "@/types/lyric";
+import { useLyricManager } from "./LyricManager";
 import {
   TASKBAR_IPC_CHANNELS,
   type SyncStatePayload,
   type SyncTickPayload,
-  type TaskbarConfig,
 } from "@/types/shared";
 import type { PlayModePayload, RepeatModeType, ShuffleModeType } from "@/types/shared/play-mode";
 import { isElectron, isMac } from "@/utils/env";
@@ -99,11 +99,11 @@ export const sendLikeStatus = (isLiked: boolean) => sendIpc("like-status-change"
 export const toggleDesktopLyric = (show: boolean) => sendIpc("desktop-lyric:toggle", show);
 
 /**
- * 更新任务栏歌词的配置信息（如是否开启）
- * @param config 任务栏配置的增量更新负载
+ * 设置任务栏歌词显示
+ * @param show 是否显示
  */
-export const updateTaskbarConfig = (config: Partial<TaskbarConfig>) =>
-  sendIpc(TASKBAR_IPC_CHANNELS.UPDATE_CONFIG, config);
+export const setTaskbarLyricShow = (show: boolean) =>
+  sendIpc(TASKBAR_IPC_CHANNELS.SET_OPTION, { enabled: show }, true);
 
 /**
  * 向歌词任务栏等外部窗口广播通用的播放状态事件
@@ -147,14 +147,30 @@ export const sendTaskbarMetadata = (payload: TaskbarMetadataPayload) => {
  * 如果存在逐字歌词 (yrcData) 则优先使用逐字渲染，否则降级到普通行歌词 (lrcData)
  * @param lyrics 原始歌词对象模型（含 yrcData 和 lrcData 等）
  */
-export const sendTaskbarLyrics = (lyrics: SongLyric) => {
+export const sendTaskbarLyrics = async (lyrics: SongLyric) => {
   if (!isElectron) return;
 
   const yrcData = lyrics.yrcData ?? [];
   const lrcData = lyrics.lrcData ?? [];
   const hasYrc = yrcData.length > 0;
 
-  const taskbarLyrics = hasYrc ? yrcData : lrcData;
+  let taskbarLyrics = hasYrc ? yrcData : lrcData;
+
+  // 如果是 TTML 逐字歌词，尝试注入 BG (仅用于任务栏显示)
+  if (hasYrc) {
+    const musicStore = useMusicStore();
+    const songId = musicStore.playSong?.id;
+    if (songId) {
+      const lyricManager = useLyricManager();
+      // 获取缓存的原始 TTML
+      const rawTtml = await lyricManager.getRawTtml(songId);
+      if (rawTtml) {
+        // 使用专门的任务栏处理逻辑注入 BG
+        // 注意：这里返回的是一个新的数组，不会污染原始 lyrics 对象
+        taskbarLyrics = lyricManager.processTtmlForTaskbar(taskbarLyrics, rawTtml);
+      }
+    }
+  }
 
   broadcastTaskbarState({
     type: "lyrics-loaded",
