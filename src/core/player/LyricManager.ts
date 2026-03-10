@@ -1305,9 +1305,22 @@ class LyricManager {
 
     // 检查预加载缓存
     if (this.prefetchedLyric && this.prefetchedLyric.id === song.id) {
-      console.log(`🚀 [${song.id}] 使用预加载歌词`);
       const { data, meta } = this.prefetchedLyric.result;
       this.prefetchedLyric = null; // 消费后清除
+
+      // TTML 偏移与声道相关，预加载阶段的结果可能不准确，命中时重新拉取一次
+      if (meta.usingTTMLLyric) {
+        try {
+          const refetched = await this.fetchLyric(song);
+          if (this.activeLyricReq !== req) return;
+          statusStore.usingTTMLLyric = refetched.meta.usingTTMLLyric;
+          statusStore.usingQRCLyric = refetched.meta.usingQRCLyric;
+          this.setFinalLyric(refetched.data, req);
+          return;
+        } catch {
+          // 回退使用预加载结果
+        }
+      }
 
       // 应用到 Store
       statusStore.usingTTMLLyric = meta.usingTTMLLyric;
