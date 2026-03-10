@@ -205,6 +205,7 @@ export class MpvService {
     this.observeProperty(3, "volume");
     this.observeProperty(4, "metadata");
     this.observeProperty(5, "duration");
+    this.observeProperty(6, "audio-params/channel-count");
   }
 
   private applyPendingVolume() {

@@ -33,6 +33,7 @@ export class MpvPlayer extends EventTarget implements IPlaybackEngine {
   private _volume: number = 1;
   private _rate: number = 1;
   private _errorCode: number = 0;
+  private _channels: number = 2;
 
   /** 当前 loadfile 请求期望自动播放 */
   private autoPlayPending: boolean | null = null;
@@ -104,6 +105,12 @@ export class MpvPlayer extends EventTarget implements IPlaybackEngine {
           case "volume":
             if (typeof value === "number") {
               this._volume = value / 100;
+            }
+            break;
+
+          case "audio-params/channel-count":
+            if (typeof value === "number") {
+              this._channels = value;
             }
             break;
         }
@@ -192,6 +199,7 @@ export class MpvPlayer extends EventTarget implements IPlaybackEngine {
         this.forcePaused = false;
       }
       this._src = url;
+      this._channels = 2;
 
       // 设置期望的 seek 位置
       if (options?.seek && options.seek > 0) {
@@ -275,6 +283,10 @@ export class MpvPlayer extends EventTarget implements IPlaybackEngine {
 
   public getErrorCode(): number {
     return this._errorCode;
+  }
+
+  public getChannels(): number {
+    return this._channels;
   }
 
   // ========== 状态属性 ==========

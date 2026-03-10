@@ -218,6 +218,11 @@ export interface IPlaybackEngine {
   getErrorCode(): number;
 
   /**
+   * 获取音频声道数
+   */
+  getChannels?(): number;
+
+  /**
    * 添加事件监听
    */
   addEventListener(

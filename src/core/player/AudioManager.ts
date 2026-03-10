@@ -468,6 +468,13 @@ class AudioManager extends TypedEventTarget<AudioEventMap> implements IPlaybackE
   }
 
   /**
+   * 获取音频声道数
+   */
+  public getChannels(): number {
+    return this.engine.getChannels?.() ?? 2;
+  }
+
+  /**
    * 解除 MPV 强制暂停状态
    * 仅在 MPV 引擎下有效
    */

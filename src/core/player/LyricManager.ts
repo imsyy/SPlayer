@@ -19,7 +19,12 @@ import { parseLrc } from "@/utils/lyric/parseLrc";
 import { getConverter } from "@/utils/opencc";
 import { type LyricLine, parseTTML, parseYrc } from "@applemusic-like-lyrics/lyric";
 import { cloneDeep, isEmpty } from "lodash-es";
-import { attachTtmlBgLines, cleanTTMLTranslations } from "@/utils/lyric/parseTTML";
+import {
+  applyLyricOffsetToLines,
+  attachTtmlBgLines,
+  cleanTTMLTranslations,
+  extractTtmlLyricOffsetMs,
+} from "@/utils/lyric/parseTTML";
 
 interface LyricFetchResult {
   data: SongLyric;
@@ -49,6 +54,14 @@ class LyricManager {
    * 预加载的歌词
    */
   private prefetchedLyric: { id: number | string; result: LyricFetchResult } | null = null;
+
+  /**
+   * 判断是否应用 TTML 歌词偏移（仅杜比全景声6声道）
+   */
+  private shouldApplyTtmlOffset(): boolean {
+    const statusStore = useStatusStore();
+    return statusStore.currentAudioChannels === 6;
+  }
 
   constructor() {}
 
@@ -323,9 +336,12 @@ class LyricManager {
         }
       }
       if (!ttmlContent || typeof ttmlContent !== "string") return;
+      const lyricOffsetMs = this.shouldApplyTtmlOffset()
+        ? extractTtmlLyricOffsetMs(ttmlContent)
+        : 0;
       const sorted = cleanTTMLTranslations(ttmlContent);
       const parsed = parseTTML(sorted);
-      const lines = parsed?.lines || [];
+      const lines = applyLyricOffsetToLines(parsed?.lines || [], lyricOffsetMs);
       if (!lines.length) return;
 
       // 只有当没有 YRC 数据或优先级为 TTML 或 自动模式(TTML > QM) 时才覆盖
@@ -460,9 +476,10 @@ class LyricManager {
       }
       // TTML 直接返回
       if (format === "ttml") {
+        const lyricOffsetMs = this.shouldApplyTtmlOffset() ? extractTtmlLyricOffsetMs(lyric) : 0;
         const sorted = cleanTTMLTranslations(lyric);
         const ttml = parseTTML(sorted);
-        const lines = ttml?.lines || [];
+        const lines = applyLyricOffsetToLines(ttml?.lines || [], lyricOffsetMs);
         return {
           data: { lrcData: [], yrcData: lines },
           meta: { usingTTMLLyric: true, usingQRCLyric: false },
@@ -547,10 +564,12 @@ class LyricManager {
       try {
         const ttmlContent = typeof ttml === "string" ? ttml : "";
         if (ttmlContent) {
+          const lyricOffsetMs = this.shouldApplyTtmlOffset()
+            ? extractTtmlLyricOffsetMs(ttmlContent)
+            : 0;
           const cleaned = cleanTTMLTranslations(ttmlContent);
           const raw = parseTTML(cleaned).lines || [];
-          ttmlLines = raw;
-          console.log("检测到本地TTML歌词覆盖", ttmlLines);
+          ttmlLines = applyLyricOffsetToLines(raw, lyricOffsetMs);
         }
       } catch (err) {
         console.error("parseTTML 本地解析失败:", err);
@@ -838,9 +857,22 @@ class LyricManager {
 
     // 检查预加载缓存
     if (this.prefetchedLyric && this.prefetchedLyric.id === song.id) {
-      console.log(`🚀 [${song.id}] 使用预加载歌词`);
       const { data, meta } = this.prefetchedLyric.result;
       this.prefetchedLyric = null; // 消费后清除
+
+      // TTML 偏移与声道相关，预加载阶段可能不准确，命中时重新拉取
+      if (meta.usingTTMLLyric) {
+        try {
+          const refetched = await this.fetchLyric(song);
+          if (this.activeLyricReq !== req) return;
+          statusStore.usingTTMLLyric = refetched.meta.usingTTMLLyric;
+          statusStore.usingQRCLyric = refetched.meta.usingQRCLyric;
+          this.setFinalLyric(refetched.data, req);
+          return;
+        } catch {
+          // 回退使用预加载结果
+        }
+      }
 
       // 应用到 Store
       statusStore.usingTTMLLyric = meta.usingTTMLLyric;

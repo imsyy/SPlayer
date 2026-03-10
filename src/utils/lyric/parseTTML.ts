@@ -59,6 +59,63 @@ const getRole = (el: Element): string => {
 };
 
 /**
+ * 提取 TTML metadata 中的歌词偏移（毫秒）
+ * @param ttml TTML 文本
+ * @returns 偏移毫秒，正数延后，负数提前
+ */
+export const extractTtmlLyricOffsetMs = (ttml: string): number => {
+  if (!ttml.trim()) return 0;
+  const doc = new DOMParser().parseFromString(ttml, "application/xml");
+  if (doc.getElementsByTagName("parsererror").length) return 0;
+
+  const audioNodes = Array.from(doc.getElementsByTagName("audio"));
+  for (const audio of audioNodes) {
+    const role = getRole(audio);
+    if (role !== "spatial") continue;
+
+    let inMetadata = false;
+    let cur: Element | null = audio.parentElement;
+    while (cur) {
+      const tag = cur.tagName.toLowerCase();
+      if (tag === "metadata" || tag.endsWith(":metadata")) {
+        inMetadata = true;
+        break;
+      }
+      cur = cur.parentElement;
+    }
+    if (!inMetadata) continue;
+
+    const rawOffset = audio.getAttribute("lyricOffset");
+    if (!rawOffset) continue;
+    const offsetSeconds = Number.parseFloat(rawOffset.trim());
+    if (!Number.isFinite(offsetSeconds)) continue;
+    return Math.round(offsetSeconds * 1000);
+  }
+
+  return 0;
+};
+
+/**
+ * 应用歌词偏移到逐字歌词行
+ * @param lines 歌词行
+ * @param offsetMs 偏移毫秒
+ * @returns 偏移后的歌词行
+ */
+export const applyLyricOffsetToLines = (lines: LyricLine[], offsetMs: number): LyricLine[] => {
+  if (!lines.length || !offsetMs) return lines;
+  return lines.map((line) => ({
+    ...line,
+    startTime: line.startTime + offsetMs,
+    endTime: line.endTime + offsetMs,
+    words: line.words.map((word) => ({
+      ...word,
+      startTime: word.startTime + offsetMs,
+      endTime: word.endTime + offsetMs,
+    })),
+  }));
+};
+
+/**
  * 获取元素的文本内容，跳过指定角色
  * @param node 节点
  * @param skipRoles 跳过的角色集合

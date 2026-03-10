@@ -659,13 +659,39 @@ class PlayerController {
     // 加载状态
     audioManager.addEventListener("loadstart", () => {
       statusStore.playLoading = true;
+      statusStore.currentAudioChannels = undefined;
     });
 
     // 加载完成
     audioManager.addEventListener("canplay", () => {
       const playSongData = getPlaySongData();
+      const lyricManager = useLyricManager();
+      const syncChannelsAndRefreshLyric = () => {
+        const prevChannels = statusStore.currentAudioChannels;
+        const nextChannels = audioManager.getChannels();
+        statusStore.currentAudioChannels = nextChannels;
+
+        // 声道发生变化且当前使用 TTML 时，重新加载歌词确保偏移正确
+        if (
+          prevChannels !== nextChannels &&
+          statusStore.usingTTMLLyric &&
+          playSongData &&
+          playSongData.id === useMusicStore().playSong.id
+        ) {
+          lyricManager.handleLyric(playSongData).catch(() => {});
+        }
+      };
       // 结束加载
       statusStore.playLoading = false;
+      // 更新声道数信息
+      syncChannelsAndRefreshLyric();
+      // 间隔刷新：兼容不同引擎声道数延迟到达
+      setTimeout(() => {
+        syncChannelsAndRefreshLyric();
+      }, 200);
+      setTimeout(() => {
+        syncChannelsAndRefreshLyric();
+      }, 600);
       // 恢复 EQ
       if (isElectron && statusStore.eqEnabled) {
         const bands = statusStore.eqBands;

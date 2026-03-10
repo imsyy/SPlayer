@@ -122,6 +122,10 @@ export class FFmpegAudioPlayer extends BaseAudioPlayer {
     return 0;
   }
 
+  public getChannels(): number {
+    return this.metadata?.channels ?? 2;
+  }
+
   private requestWorker<T = void>(
     msg: DistributiveOmit<WorkerRequest, "id">,
     transfer: Transferable[] = [],

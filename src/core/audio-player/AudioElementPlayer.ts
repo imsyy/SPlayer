@@ -17,6 +17,8 @@ export class AudioElementPlayer extends BaseAudioPlayer {
   private audioElement: HTMLAudioElement;
   /** MediaElementAudioSourceNode 用于连接 Web Audio API */
   private sourceNode: MediaElementAudioSourceNode | null = null;
+  /** 当前音频声道数 */
+  private channels = 2;
 
   /** Seek 锁，用于在 seek 过程中返回稳定的 currentTime */
   private isInternalSeeking = false;
@@ -55,6 +57,8 @@ export class AudioElementPlayer extends BaseAudioPlayer {
       } else {
         this.sourceNode.disconnect();
       }
+
+      this.channels = this.sourceNode.channelCount;
 
       // 连接: Source -> Input
       this.sourceNode.connect(this.inputNode);
@@ -227,6 +231,10 @@ export class AudioElementPlayer extends BaseAudioPlayer {
       default:
         return 0;
     }
+  }
+
+  public getChannels(): number {
+    return this.channels;
   }
 
   /**
