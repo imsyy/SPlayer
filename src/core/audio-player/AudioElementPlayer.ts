@@ -196,11 +196,12 @@ export class AudioElementPlayer extends BaseAudioPlayer {
     if (this.isInternalSeeking) {
       return this.targetSeekTime;
     }
-    // 基础时间 - 自动延迟补偿 + 手动延迟补偿
+    // 基础时间 - 自动延迟补偿 + 手动延迟补偿 （仅 playback 模式生效）
+    const finalCompensation = this.audioCtx?.latencyHint === 'playback' ? this.audioDelayCompensation / 1000 : 0;
     return (
       (this.audioElement.currentTime || 0) -
       this.compensatedLatency +
-      this.audioDelayCompensation / 1000
+      finalCompensation
     );
   }
 
