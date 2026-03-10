@@ -30,7 +30,9 @@ export const appName = app.getName() || "SPlayer";
  * 服务器端口
  * @returns number
  */
-export const port = Number(import.meta.env["VITE_SERVER_PORT"] || 25884);
+export const port = Number(
+  process.env["VITE_SERVER_PORT"] || import.meta.env["VITE_SERVER_PORT"] || 25884,
+);
 
 /**
  * 默认 AMLL TTML DB Server

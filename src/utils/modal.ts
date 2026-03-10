@@ -240,6 +240,21 @@ export const openCloudMatch = async (id: number, index: number) => {
   });
 };
 
+// 本地歌曲纠正
+export const openLocalMatch = async (song: SongType) => {
+  const { default: LocalMatch } = await import("@/components/Modal/LocalMatch.vue");
+  const modal = window.$modal.create({
+    preset: "card",
+    transformOrigin: "center",
+    autoFocus: false,
+    style: { width: "600px" },
+    title: "本地歌曲纠正",
+    content: () => {
+      return h(LocalMatch, { song, onClose: () => modal.destroy() });
+    },
+  });
+};
+
 // 新建歌单
 export const openCreatePlaylist = async (isLocal: boolean = false) => {
   const { default: CreatePlaylist } = await import("@/components/Modal/CreatePlaylist.vue");

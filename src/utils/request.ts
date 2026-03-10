@@ -6,7 +6,10 @@ import { isLogin } from "./auth";
 import axiosRetry from "axios-retry";
 
 // 全局地址
-const baseURL: string = String(isDev ? "/api/netease" : import.meta.env["VITE_API_URL"]);
+// 优先使用 VITE_API_URL（针对外部自建 API），否则默认使用相对路径 /api/netease（内置服务器）
+const baseURL: string = String(
+  import.meta.env["VITE_API_URL"] || (isDev ? "/api/netease" : "/api/netease"),
+);
 
 // 基础配置
 const server: AxiosInstance = axios.create({

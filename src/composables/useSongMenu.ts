@@ -13,6 +13,7 @@ import { renderIcon, copyData, getShareUrl } from "@/utils/helper";
 import { deleteCloudSong, importCloudSong } from "@/api/cloud";
 import {
   openCloudMatch,
+  openLocalMatch,
   openCopySongInfo,
   openDownloadSong,
   openPlaylistAdd,
@@ -366,6 +367,15 @@ export const useSongMenu = () => {
         show: settingStore.contextMenuOptions.cloudMatch && isCloud,
         props: {
           onClick: () => openCloudMatch(song?.id, index),
+        },
+        icon: renderIcon("AutoFix"),
+      },
+      {
+        key: "local-match",
+        label: "本地歌曲纠正",
+        show: settingStore.contextMenuOptions.cloudMatch && isLocal,
+        props: {
+          onClick: () => openLocalMatch(song),
         },
         icon: renderIcon("AutoFix"),
       },

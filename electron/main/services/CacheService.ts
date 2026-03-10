@@ -52,7 +52,7 @@ export class CacheService {
     "list-data": "list-data",
   };
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): CacheService {
     if (!CacheService.instance) {
@@ -123,60 +123,70 @@ export class CacheService {
     throw new Error("不支持的缓存写入数据类型");
   }
 
+  private initPromise: Promise<void> | null = null;
+
   /**
    * 初始化服务，计算初始大小，并初始化 DB
    */
   public async init(): Promise<void> {
     if (this.isInitialized) return;
+    // If an initialization is already in progress, wait for it.
+    if (this.initPromise) return this.initPromise;
 
-    try {
-      const basePath = this.getCacheBasePath();
+    this.initPromise = (async () => {
+      try {
+        const basePath = this.getCacheBasePath();
 
-      // 确保目录存在
-      if (!existsSync(basePath)) await mkdir(basePath, { recursive: true });
+        // 确保目录存在
+        if (!existsSync(basePath)) await mkdir(basePath, { recursive: true });
 
-      // 初始化 DB
-      const dbPath = join(basePath, "cache.db");
-      this.db = new CacheDB(dbPath);
+        // 初始化 DB
+        const dbPath = join(basePath, "cache.db");
+        this.db = new CacheDB(dbPath);
 
-      // 初始化文件缓存 (music, local-data)
-      for (const type of ["music", "local-data"] as CacheResourceType[]) {
-        const dir = join(basePath, this.CACHE_SUB_DIR[type]);
-        if (!existsSync(dir)) {
-          await mkdir(dir, { recursive: true });
-        } else {
-          // 清理可能残留的临时文件 (.tmp)
-          try {
-            const files = await readdir(dir);
-            for (const file of files) {
-              if (file.endsWith(".tmp")) {
-                await rm(join(dir, file), { force: true });
+        // 初始化文件缓存 (music, local-data)
+        for (const type of ["music", "local-data"] as CacheResourceType[]) {
+          const dir = join(basePath, this.CACHE_SUB_DIR[type]);
+          if (!existsSync(dir)) {
+            await mkdir(dir, { recursive: true });
+          } else {
+            // 清理可能残留的临时文件 (.tmp)
+            try {
+              const files = await readdir(dir);
+              for (const file of files) {
+                if (file.endsWith(".tmp")) {
+                  await rm(join(dir, file), { force: true });
+                }
               }
+            } catch (e) {
+              cacheLog.warn(`⚠️ 无法清理目录中的临时文件: ${dir}`, e);
             }
-          } catch (e) {
-            cacheLog.warn(`⚠️ 无法清理目录中的临时文件: ${dir}`, e);
+          }
+          // 计算初始大小
+          this.fileSizes[type] = await this.calculateDirSize(dir);
+        }
+
+        // 清理旧的文件缓存目录
+        for (const type of ["list-data", "lyrics"] as CacheResourceType[]) {
+          const dir = join(basePath, this.CACHE_SUB_DIR[type]);
+          if (existsSync(dir)) {
+            await rm(dir, { recursive: true, force: true });
           }
         }
-        // 计算初始大小
-        this.fileSizes[type] = await this.calculateDirSize(dir);
+
+        this.isInitialized = true;
+        cacheLog.info("CacheService initialized.");
+
+        // 启动时触发一次清理检查
+        this.checkAndCleanCache().catch((e) => cacheLog.warn("Startup cache cleanup failed:", e));
+      } catch (error) {
+        this.initPromise = null; // Allow retry
+        cacheLog.error("CacheService init failed:", error);
+        throw error;
       }
+    })();
 
-      // 清理旧的文件缓存目录
-      for (const type of ["list-data", "lyrics"] as CacheResourceType[]) {
-        const dir = join(basePath, this.CACHE_SUB_DIR[type]);
-        if (existsSync(dir)) {
-          await rm(dir, { recursive: true, force: true });
-        }
-      }
-
-      this.isInitialized = true;
-      cacheLog.info("CacheService initialized.");
-
-      // 启动时触发一次清理检查
-      this.checkAndCleanCache().catch((e) => cacheLog.warn("Startup cache cleanup failed:", e));
-    } catch (error) {
-      cacheLog.error("CacheService init failed:", error);
-    }
+    return this.initPromise;
   }
 
   /**

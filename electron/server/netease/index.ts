@@ -38,14 +38,21 @@ export const initNcmAPI = async (fastify: FastifyInstance) => {
     const neteaseApi = (
       NeteaseCloudMusicApi as unknown as Record<string, (params: unknown) => Promise<any>>
     )[routerName];
-    serverLog.log("🌐 Request NcmAPI:", requestPath);
+    const params = {
+      ...(req.query as Record<string, unknown>),
+      ...(req.body as Record<string, unknown>),
+      cookie: req.cookies,
+    };
+
+    serverLog.log(`🌐 Request NcmAPI: ${routerName} | params:`, JSON.stringify(params));
 
     try {
-      const result = await neteaseApi({
-        ...(req.query as Record<string, unknown>),
-        ...(req.body as Record<string, unknown>),
-        cookie: req.cookies,
-      });
+      const result = await neteaseApi(params);
+      const logBody = JSON.stringify(result.body);
+      serverLog.log(
+        `✅ NcmAPI Response: ${routerName} | body:`,
+        logBody.length > 500 ? logBody.substring(0, 500) + "..." : logBody,
+      );
       return reply.send(result.body);
     } catch (error: unknown) {
       serverLog.error("❌ NcmAPI Error:", error);
@@ -71,22 +78,53 @@ export const initNcmAPI = async (fastify: FastifyInstance) => {
     "/netease/lyric/ttml",
     async (req: FastifyRequest<{ Querystring: { id: string } }>, reply: FastifyReply) => {
       const { id } = req.query;
-      if (!id) {
-        return reply.status(400).send({ error: "id is required" });
+
+      // 1. 严格校验 id 为纯数字，防止路径穿越或注入
+      if (!id || !/^\d+$/.test(id)) {
+        return reply.status(400).send({ error: "Invalid song id format" });
       }
+
       const store = useStore();
-      const server = store.get("amllDbServer") ?? defaultAMLLDbServer;
-      const url = server.replace("%s", String(id));
+      const server = store.get("amllDbServer") || defaultAMLLDbServer;
+
+      // 2. 校验服务器配置合法性
+      if (!server.startsWith("http://") && !server.startsWith("https://")) {
+        serverLog.error("❌ TTML Lyric Fetch Blocked: Invalid protocol in server config", server);
+        return reply.status(500).send({ error: "Invalid server protocol" });
+      }
+
+      if (!server.includes("%s")) {
+        serverLog.error("❌ TTML Lyric Fetch Blocked: Missing %s placeholder in server config", server);
+        return reply.status(500).send({ error: "Invalid server configuration" });
+      }
+
+      // 3. 安全构造 URL
+      const encodedId = encodeURIComponent(id);
+      const url = server.replace("%s", encodedId);
+
+      // 二次协议验证
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        return reply.status(500).send({ error: "Constructed URL protocol is unsafe" });
+      }
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, { signal: controller.signal });
         if (response.status !== 200) {
           return reply.send(null);
         }
         const data = await response.text();
         return reply.send(data);
-      } catch (error) {
-        serverLog.error("❌ TTML Lyric Fetch Error:", error);
+      } catch (error: any) {
+        if (error.name === "AbortError") {
+          serverLog.error("❌ TTML Lyric Fetch Timeout:", url);
+        } else {
+          serverLog.error("❌ TTML Lyric Fetch Error:", error);
+        }
         return reply.send(null);
+      } finally {
+        clearTimeout(timeout);
       }
     },
   );

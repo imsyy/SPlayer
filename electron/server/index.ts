@@ -55,17 +55,23 @@ const initAppServer = async () => {
       });
     });
     // 注册接口
+    serverLog.info("🌐 Registering NcmAPI...");
     server.register(initNcmAPI, { prefix: "/api" });
+    serverLog.info("🌐 Registering UnblockAPI...");
     server.register(initUnblockAPI, { prefix: "/api" });
+    serverLog.info("🌐 Registering ControlAPI...");
     server.register(initControlAPI, { prefix: "/api" });
+    serverLog.info("🌐 Registering QQMusicAPI...");
     server.register(initQQMusicAPI, { prefix: "/api" });
     // 启动端口
     const port = Number(process.env["VITE_SERVER_PORT"] || 25884);
+    serverLog.info(`🌐 Attempting to listen on port ${port}...`);
     await server.listen({ port, host: "127.0.0.1" });
-    serverLog.info(`🌐 Starting AppServer on port ${port}`);
+    serverLog.info(`🌐 AppServer is now listening on port ${port}`);
     return server;
   } catch (error) {
-    serverLog.error("🚫 AppServer failed to start");
+    serverLog.error("🚫 AppServer failed to start:", error);
+    console.error("🚫 AppServer failed to start:", error);
     throw error;
   }
 };
