@@ -302,13 +302,13 @@ export const alignLyrics = (
 /**
  * 对齐歌词的翻译和音译
  * 根据开始时间将同一时间的多行歌词分为一组，第一行作为主句，第二行作为翻译，第三行作为音译
- * @param lyrics 未设置翻译和音译的歌词数据
+ * @param lyrics 未设置翻译和音译的歌词数据 (Readonly)
  * @param endTime 对齐时如何处理附加行的结束时间（忽略、匹配、设为最大值）
  * @param maxTimeDiff 允许匹配的最大时间差（单位：毫秒），超过该时间差的行将不会被视为同一行
- * @returns 对齐后的歌词数据
+ * @returns 对齐后的歌词数据 (新副本)
  */
 export const alignLyricLines = (
-  lyrics: LyricLine[],
+  lyrics: Readonly<LyricLine[]>,
   {
     endTime = "set",
     maxTimeDiff = 0, // 默认严格匹配
@@ -373,10 +373,12 @@ export const alignLyricLines = (
   // 组装：第 1 行主句；第 2 行翻译；第 3 行音译；其余行舍去
   const aligned = groups.map((group) => {
     const base = { ...group[0] } as LyricLine;
-    const tran = group[1];
-    const roma = group[2];
-    mergeAddLine(base, tran, "translatedLyric");
-    mergeAddLine(base, roma, "romanLyric");
+    if (base.words) {
+      // 深拷贝 words，避免修改 baseLine.words 时意外修改入参
+      base.words = base.words.map((w) => ({ ...w }));
+    }
+    mergeAddLine(base, group[1], "translatedLyric");
+    mergeAddLine(base, group[2], "romanLyric");
     return base;
   });
   return aligned;
