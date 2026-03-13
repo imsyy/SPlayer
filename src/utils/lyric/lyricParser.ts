@@ -333,9 +333,11 @@ export const alignLyricLines = (
   const isTimeMatch = (baseLine: LyricLine | undefined, addLine: LyricLine | undefined) => {
     if (!baseLine || !addLine) return false;
     const timeDiff = Math.abs(toStartTime(baseLine) - toStartTime(addLine));
+    if (!Number.isFinite(timeDiff)) return false;
     if (timeDiff > maxTimeDiff) return false;
     if (endTime === "match") {
       const endTimeDiff = Math.abs(toEndTime(baseLine) - toEndTime(addLine));
+      if (!Number.isFinite(endTimeDiff)) return false;
       if (endTimeDiff > maxTimeDiff) return false;
     }
     return true;
