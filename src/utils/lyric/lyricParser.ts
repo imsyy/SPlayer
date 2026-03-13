@@ -305,6 +305,7 @@ export const alignLyrics = (
  * @param lyrics 未设置翻译和音译的歌词数据 (Readonly)
  * @param endTime 对齐时如何处理附加行的结束时间（忽略、匹配、设为最大值）
  * @param maxTimeDiff 允许匹配的最大时间差（单位：毫秒），超过该时间差的行将不会被视为同一行
+ * @param assumeSorted 假设输入歌词已经排序，跳过排序步骤以提升性能（此时相邻行才会判定）
  * @returns 对齐后的歌词数据 (新副本)
  */
 export const alignLyricLines = (
@@ -312,9 +313,11 @@ export const alignLyricLines = (
   {
     endTime = "set",
     maxTimeDiff = 0, // 默认严格匹配
+    assumeSorted = false,
   }: Partial<{
     endTime: "ignore" | "match" | "set";
     maxTimeDiff: number;
+    assumeSorted: boolean;
   }> = {},
 ): LyricLine[] => {
   if (!lyrics.length) return [];
@@ -338,7 +341,9 @@ export const alignLyricLines = (
     return true;
   };
   // 按开始时间分组
-  const sorted = [...lyrics].sort((a, b) => toStartTime(a) - toStartTime(b));
+  const sorted = assumeSorted
+    ? lyrics
+    : [...lyrics].sort((a, b) => toStartTime(a) - toStartTime(b));
   const groups: LyricLine[][] = [];
   for (const line of sorted) {
     const last = groups[groups.length - 1]?.[0];
