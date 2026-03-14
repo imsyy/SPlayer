@@ -1,12 +1,11 @@
 <template>
   <Transition name="fade" mode="out-in">
-    <n-flex v-if="data.length > 0" :size="20" :class="['comment-list', { transparent }]" vertical>
+    <n-flex v-if="data.length > 0" key="content" :size="20" :class="['comment-list', { transparent }]" vertical>
       <n-flex
         v-for="(item, index) in data"
         :key="index"
         :size="0"
         class="comments"
-        @dblclick="handleDoubleClick(item)"
       >
         <div v-if="!transparent && !hiddenCover" class="user">
           <div class="avatar">
@@ -68,6 +67,10 @@
               <SvgIcon name="IP" :depth="3" />
               <n-text :depth="3">{{ item.ip.location }}</n-text>
             </div>
+            <!-- 抱一抱 -->
+            <div class="item hug" @click="handleHug(item)">
+              <SvgIcon name="FavoriteBorder" :depth="3" />
+            </div>
             <!-- 点赞 -->
             <div class="item like" @click="likeComment(item)">
               <SvgIcon
@@ -86,11 +89,11 @@
         </n-button>
       </n-flex>
     </n-flex>
-    <div v-else-if="loading" :class="['comment-list', { transparent }]">
+    <div v-else-if="loading" key="loading" :class="['comment-list', { transparent }]">
       <n-skeleton :repeat="20" />
     </div>
     <!-- 空列表 -->
-    <n-empty v-else description="空空如也，怎么什么都没有啊" size="large" />
+    <n-empty v-else key="empty" description="空空如也，怎么什么都没有啊" size="large" />
   </Transition>
 </template>
 
@@ -163,8 +166,8 @@ const likeComment = debounce(async (data: CommentType) => {
   }
 }, 300);
 
-// 双击抱一抱
-const handleDoubleClick = debounce(async (item: CommentType) => {
+// 抱一抱
+const handleHug = debounce(async (item: CommentType) => {
   if (!isLogin()) {
     openUserLogin();
     return;
@@ -288,7 +291,7 @@ const handleDoubleClick = debounce(async (item: CommentType) => {
         border-radius: 8px;
         font-size: 13px;
         margin-top: 6px;
-        background-color: rgba(var(--main-cover-color), 0.12);
+        background-color: rgba(var(--main-cover-color, var(--primary)), 0.12);
         .text {
           white-space: pre-wrap;
           user-select: text;
@@ -305,8 +308,19 @@ const handleDoubleClick = debounce(async (item: CommentType) => {
             margin-right: 4px;
           }
         }
-        .like {
+        .hug {
           margin-left: auto;
+          cursor: pointer;
+          &:hover {
+            .n-icon {
+              color: var(--primary-hex);
+              :deep(svg) {
+                opacity: 1;
+              }
+            }
+          }
+        }
+        .like {
           cursor: pointer;
           &:hover {
             .n-icon,
@@ -324,7 +338,7 @@ const handleDoubleClick = debounce(async (item: CommentType) => {
   &.transparent {
     .comments {
       border-color: transparent;
-      background-color: rgba(var(--main-cover-color), 0.08);
+      background-color: rgba(var(--main-cover-color, var(--primary)), 0.08);
       .content {
         font-size: 16px;
       }

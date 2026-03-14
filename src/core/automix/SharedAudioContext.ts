@@ -1,3 +1,4 @@
+import { useSettingStore } from "@/stores";
 import type { IExtendedAudioContext } from "@/types/audio/context";
 
 /** 共享音频上下文 */
@@ -13,6 +14,7 @@ let masterLimiter: DynamicsCompressorNode | null = null;
  */
 export const getSharedAudioContext = (): IExtendedAudioContext => {
   if (!sharedContext) {
+    const settingStore = useSettingStore();
     const AudioContextClass =
       window.AudioContext ||
       (
@@ -20,7 +22,9 @@ export const getSharedAudioContext = (): IExtendedAudioContext => {
           webkitAudioContext: typeof AudioContext;
         }
       ).webkitAudioContext;
-    sharedContext = new AudioContextClass() as IExtendedAudioContext;
+    sharedContext = new AudioContextClass({
+      latencyHint: settingStore.audioLatencyHint,
+    }) as IExtendedAudioContext;
   }
   return sharedContext;
 };

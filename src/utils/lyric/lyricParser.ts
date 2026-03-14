@@ -96,7 +96,7 @@ export const detectLrcFormat = (content: string): LrcFormat => {
 export const parseWordByWordLrc = (content: string): LyricLine[] => {
   const result: LyricLine[] = [];
   let prevLine: LyricLine | null = null;
-  const WORD_BY_WORD_PATTERN = /\[(\d{2}):(\d{2})\.(\d{1,})\]([^[\\]]*)/g;
+  const WORD_BY_WORD_PATTERN = /\[(\d{2}):(\d{2})\.(\d{1,})\]([^[\]]*)/g;
 
   for (const rawLine of content.split(/\r?\n/)) {
     const line = rawLine.trim();
@@ -297,6 +297,89 @@ export const alignLyrics = (
     }
   }
   return result;
+};
+
+/**
+ * 对齐歌词的翻译和音译
+ * 根据开始时间将同一时间的多行歌词分为一组，第一行作为主句，第二行作为翻译，第三行作为音译
+ * @param lyrics 未设置翻译和音译的歌词数据
+ * @param endTime 对齐时如何处理附加行的结束时间（忽略、匹配、设为最大值）
+ * @param maxTimeDiff 允许匹配的最大时间差（单位：毫秒），超过该时间差的行将不会被视为同一行
+ * @returns 对齐后的歌词数据
+ */
+export const alignLyricLines = (
+  lyrics: LyricLine[],
+  {
+    endTime = "set",
+    maxTimeDiff = 0, // 默认严格匹配
+  }: Partial<{
+    endTime: "ignore" | "match" | "set";
+    maxTimeDiff: number;
+  }> = {},
+): LyricLine[] => {
+  if (!lyrics.length) return [];
+  // 获取开始时间
+  const toStartTime = (line: LyricLine) =>
+    Number(line?.startTime ?? line?.words?.[0]?.startTime ?? 0);
+  // 获取结束时间
+  const toEndTime = (line: LyricLine) =>
+    Number(line?.endTime ?? line?.words?.[line?.words?.length - 1]?.endTime ?? 0);
+  // 取内容
+  const toText = (line: LyricLine) => String(line?.words?.map((w) => w.word).join("") || "").trim();
+  // 是否匹配
+  const isTimeMatch = (baseLine: LyricLine | undefined, addLine: LyricLine | undefined) => {
+    if (!baseLine || !addLine) return false;
+    const timeDiff = Math.abs(toStartTime(baseLine) - toStartTime(addLine));
+    if (timeDiff > maxTimeDiff) return false;
+    if (endTime === "match") {
+      const endTimeDiff = Math.abs(toEndTime(baseLine) - toEndTime(addLine));
+      if (endTimeDiff > maxTimeDiff) return false;
+    }
+    return true;
+  };
+  // 按开始时间分组
+  const sorted = [...lyrics].sort((a, b) => toStartTime(a) - toStartTime(b));
+  const groups: LyricLine[][] = [];
+  for (const line of sorted) {
+    const last = groups[groups.length - 1]?.[0];
+    if (isTimeMatch(last, line)) groups[groups.length - 1].push(line);
+    else groups.push([line]);
+  }
+  // 合并附加行
+  const mergeAddLine = (
+    baseLine: LyricLine,
+    addLine: LyricLine | undefined,
+    key: "translatedLyric" | "romanLyric",
+  ) => {
+    if (baseLine[key] || !addLine) return;
+    const addText = toText(addLine);
+    if (!addText) return;
+    baseLine[key] = addText;
+    // 如果需要设置主行的结束时间，则将主行的结束时间设置为主行和附加行结束时间的较大值
+    if (endTime !== "set") return;
+    const oldEndTime = toEndTime(baseLine);
+    const addEndTime = toEndTime(addLine);
+    if (!Number.isFinite(addEndTime) || addEndTime <= oldEndTime) return;
+    baseLine.endTime = addEndTime;
+    // 考虑句中最后一个字的结束时间
+    if (baseLine.words?.length) {
+      const lastWord = baseLine.words[baseLine.words.length - 1];
+      const lastWordEndTime = lastWord.endTime;
+      if (lastWordEndTime === oldEndTime) {
+        lastWord.endTime = addEndTime;
+      }
+    }
+  };
+  // 组装：第 1 行主句；第 2 行翻译；第 3 行音译；其余行舍去
+  const aligned = groups.map((group) => {
+    const base = { ...group[0] } as LyricLine;
+    const tran = group[1];
+    const roma = group[2];
+    mergeAddLine(base, tran, "translatedLyric");
+    mergeAddLine(base, roma, "romanLyric");
+    return base;
+  });
+  return aligned;
 };
 
 /**

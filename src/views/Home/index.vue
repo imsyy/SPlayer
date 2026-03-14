@@ -12,15 +12,21 @@
 </template>
 
 <script setup lang="ts">
-import { useSettingStore } from "@/stores";
+import { useSettingStore, useDataStore } from "@/stores";
 import { getGreeting } from "@/utils/time";
+import { isLogin } from "@/utils/auth";
 import HomeOnline from "./HomeOnline.vue";
 import HomeLocal from "./HomeLocal.vue";
 
 const settingStore = useSettingStore();
+const dataStore = useDataStore();
 
 // 问候语
-const greetings = computed(getGreeting);
+const greetings = computed(() => {
+  const greeting = getGreeting();
+  const name = isLogin() ? dataStore.userData.name : "";
+  return name ? `${greeting}，${name}` : greeting;
+});
 </script>
 
 <style lang="scss" scoped>

@@ -76,22 +76,27 @@ const commentPage = ref<number>(1);
 const commentHasMore = ref<boolean>(true);
 const commentTotalCount = ref<number>(0);
 
+// 当前请求的 id，用于竞态保护
+const currentRequestId = ref<number>(0);
+
 // 获取热门评论
-const getHotCommentData = async () => {
+const getHotCommentData = async (requestId: number) => {
   if (!props.id) return;
   try {
     const result = await getHotComment(props.id, props.type);
+    if (currentRequestId.value !== requestId) return;
     const formatData = formatCommentList(result.hotComments);
     commentHotData.value = formatData?.length > 0 ? formatData : null;
   } catch (error) {
     console.error("Error getting hot comment data:", error);
-    commentHotData.value = null;
+    if (currentRequestId.value === requestId) commentHotData.value = null;
   }
 };
 
 // 获取评论数据
 const getCommentData = async (clean: boolean = true) => {
   if (!props.id) return;
+  const requestId = clean ? ++currentRequestId.value : currentRequestId.value;
   try {
     commentLoading.value = true;
     if (clean) {
@@ -100,7 +105,8 @@ const getCommentData = async (clean: boolean = true) => {
       commentHasMore.value = true;
     }
     // 获取热门评论
-    await getHotCommentData();
+    await getHotCommentData(requestId);
+    if (currentRequestId.value !== requestId) return;
     // 分页参数
     const cursor =
       commentPage.value > 1 && commentData.value?.length > 0
@@ -108,6 +114,7 @@ const getCommentData = async (clean: boolean = true) => {
         : undefined;
     // 获取评论
     const result = await getComment(props.id, props.type, commentPage.value, 20, 3, cursor);
+    if (currentRequestId.value !== requestId) return;
     // 更新评论总数
     if (result.data?.totalCount != null) {
       commentTotalCount.value = result.data.totalCount;
@@ -124,6 +131,7 @@ const getCommentData = async (clean: boolean = true) => {
     commentHasMore.value = result.data.hasMore;
     commentLoading.value = false;
   } catch (error) {
+    if (currentRequestId.value !== requestId) return;
     console.error("Error getting comment data:", error);
     window.$message.error("获取评论数据失败");
     commentLoading.value = false;
@@ -153,11 +161,11 @@ watch(
   { immediate: true },
 );
 
-// 如果高度是 auto，停止计算高度
+// 传入固定高度时不需要 ResizeObserver
 watch(
   () => props.height,
   (newHeight) => {
-    if (newHeight === "auto") stopCalcHeight();
+    if (newHeight != null) stopCalcHeight();
   },
   { immediate: true },
 );

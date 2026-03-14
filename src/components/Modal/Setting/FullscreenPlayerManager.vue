@@ -37,7 +37,6 @@ const items = computed<Item[]>(() => [
   { label: "显示喜欢按钮", key: "like" },
   { label: "显示添加到歌单", key: "addToPlaylist" },
   { label: "显示下载按钮", key: "download" },
-  { label: "显示评论按钮", key: "comments" },
   { label: "显示桌面歌词", key: "desktopLyric" },
   { label: "显示更多设置", key: "moreSettings" },
   { label: "显示复制歌词", key: "copyLyric" },

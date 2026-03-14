@@ -1,4 +1,9 @@
-import { TASKBAR_IPC_CHANNELS, type SyncStatePayload, type TaskbarConfig } from "@shared";
+import {
+  DEFAULT_TASKBAR_CONFIG,
+  TASKBAR_IPC_CHANNELS,
+  type SyncStatePayload,
+  type TaskbarConfig,
+} from "@shared";
 import { app, ipcMain, nativeTheme } from "electron";
 import type EventEmitter from "node:events";
 import { useStore } from "../store";
@@ -45,12 +50,21 @@ const initTaskbarIpc = () => {
     TASKBAR_IPC_CHANNELS.SET_OPTION,
     (_event, option: Partial<TaskbarConfig>, pushToWindow = true) => {
       if (!option) return;
+
+      // 安全过滤：仅允许写入 DEFAULT_TASKBAR_CONFIG 中定义的合法键
+      const allowedKeys = Object.keys(DEFAULT_TASKBAR_CONFIG);
+
       // 增量更新
       const prev = getTaskbarConfig();
-      const next = { ...prev, ...option };
+      const next = { ...prev };
+
       Object.entries(option).forEach(([key, value]) => {
-        store.set(`taskbar.${key}`, value);
+        if (allowedKeys.includes(key)) {
+          store.set(`taskbar.${key}`, value);
+          (next as any)[key] = value;
+        }
       });
+
       // 推送到歌词窗口
       if (pushToWindow) {
         taskbarLyricManager.send(TASKBAR_IPC_CHANNELS.SYNC_STATE, {

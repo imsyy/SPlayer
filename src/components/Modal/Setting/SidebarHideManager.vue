@@ -15,9 +15,9 @@
         >
           <n-text class="name">{{ item.label }}</n-text>
           <n-switch
-            :value="settingStore.sidebarHide[item.key]"
+            :value="!settingStore.sidebarHide[item.key]"
             :round="false"
-            @update:value="(val) => updateSetting(item.key, val)"
+            @update:value="(val) => updateSetting(item.key, !val)"
           />
         </n-card>
       </div>

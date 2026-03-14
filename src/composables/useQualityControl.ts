@@ -31,6 +31,7 @@ export const useQualityControl = () => {
     const song = musicStore.playSong;
     if (song.path) return "本地";
     if (song.pc) return "云盘";
+    if (song.type === "radio") return "电台";
     if (statusStore.isUnlocked) return "解锁";
     if (!quality) return "未知";
     return qualityNameMap[quality] || quality;

@@ -1,3 +1,4 @@
+import { useSettingStore } from "@/stores";
 import { TypedEventTarget } from "@/utils/TypedEventTarget";
 import type { IExtendedAudioContext } from "@/types/audio/context";
 import { AudioEffectManager } from "./AudioEffectManager";
@@ -65,6 +66,11 @@ export abstract class BaseAudioPlayer
   /** 输入节点 (子类将源连接到此处) */
   protected inputNode: GainNode | null = null;
 
+  protected compensatedLatency = 0;
+
+  /** 用户手动设置的音频延迟补偿 (毫秒) */
+  protected audioDelayCompensation = 0;
+
   protected effectManager: AudioEffectManager | null = null;
 
   /** 初始化状态 */
@@ -102,6 +108,14 @@ export abstract class BaseAudioPlayer
       const processedNode = this.effectManager.connect(this.inputNode);
       processedNode.connect(this.gainNode);
       this.gainNode.connect(getSharedMasterInput());
+
+      const settingStore = useSettingStore();
+      if (settingStore.audioLatencyHint === "playback") {
+        this.compensatedLatency =
+          (this.audioCtx.outputLatency || 0) + (this.audioCtx.baseLatency || 0);
+      } else {
+        this.compensatedLatency = 0;
+      }
 
       // 应用初始音量
       this.gainNode.gain.value = this.volume;
@@ -476,6 +490,14 @@ export abstract class BaseAudioPlayer
   /** 获取滤波器增益 */
   public getFilterGains(): number[] {
     return this.effectManager ? this.effectManager.getFilterGains() : [];
+  }
+
+  /**
+   * 设置歌词同步偏移
+   * @param offset 偏移量 (毫秒)
+   */
+  public setAudioDelayCompensation(offset: number): void {
+    this.audioDelayCompensation = offset;
   }
 
   /** 加载资源 */

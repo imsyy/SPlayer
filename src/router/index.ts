@@ -55,11 +55,13 @@ router.afterEach((to, from) => {
   window.$loadingBar?.finish();
   // 路由变化时重置滚动位置（排除仅 hash 变化的情况）
   if (to.fullPath.split("#")[0] !== from.fullPath.split("#")[0]) {
-    const mainContent = document.getElementById("main-content");
-    if (mainContent) {
-      const scrollContainer = mainContent.querySelector(".n-scrollbar-container");
-      if (scrollContainer) scrollContainer.scrollTop = 0;
-    }
+    requestAnimationFrame(() => {
+      const mainContent = document.getElementById("main-content");
+      if (mainContent) {
+        const scrollContainer = mainContent.querySelector(".n-scrollbar-container");
+        if (scrollContainer) scrollContainer.scrollTop = 0;
+      }
+    });
   }
 });
 

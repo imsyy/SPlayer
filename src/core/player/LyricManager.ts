@@ -9,6 +9,7 @@ import { isElectron } from "@/utils/env";
 import { applyBracketReplacement } from "@/utils/lyric/lyricFormat";
 import { applyProfanityUncensor } from "@/utils/lyric/lyricProfanity";
 import {
+  alignLyricLines,
   alignLyrics,
   isWordLevelFormat,
   parseQRCLyric,
@@ -108,48 +109,6 @@ class LyricManager {
     } catch (error) {
       console.error("写入歌词缓存失败:", error);
     }
-  }
-
-  /**
-   * 对齐本地歌词
-   * @param lyricData 本地歌词数据
-   * @returns 对齐后的本地歌词数据
-   */
-  private alignLocalLyrics(lyricData: SongLyric): SongLyric {
-    // 同一时间的两/三行分别作为主句、翻译、音译
-    const toTime = (line: LyricLine) => Number(line?.startTime ?? line?.words?.[0]?.startTime ?? 0);
-    // 获取结束时间
-    const toEndTime = (line: LyricLine) =>
-      Number(line?.endTime ?? line?.words?.[line?.words?.length - 1]?.endTime ?? 0);
-    // 取内容
-    const toText = (line: LyricLine) => String(line?.words?.[0]?.word || "").trim();
-    const lrc = lyricData.lrcData || [];
-    if (!lrc.length) return lyricData;
-    // 按开始时间分组，时间差 < 0.6s 视为同组
-    const sorted = [...lrc].sort((a, b) => toTime(a) - toTime(b));
-    const groups: LyricLine[][] = [];
-    for (const line of sorted) {
-      const st = toTime(line);
-      const last = groups[groups.length - 1]?.[0];
-      if (last && Math.abs(st - toTime(last)) < 0.6) groups[groups.length - 1].push(line);
-      else groups.push([line]);
-    }
-    // 组装：第 1 行主句；第 2 行翻译；第 3 行音译；不调整时长
-    const aligned = groups.map((group) => {
-      const base = { ...group[0] } as LyricLine;
-      const tran = group[1];
-      const roma = group[2];
-      if (!base.translatedLyric && tran) {
-        base.translatedLyric = toText(tran);
-        base.endTime = Math.max(toEndTime(base), toEndTime(tran));
-      }
-      if (!base.romanLyric && roma) {
-        base.romanLyric = toText(roma);
-        base.endTime = Math.max(toEndTime(base), toEndTime(roma));
-      }
-      return base;
-    });
-    return { lrcData: aligned, yrcData: lyricData.yrcData };
   }
 
   /**
@@ -478,7 +437,7 @@ class LyricManager {
         };
       }
       // 普通格式
-      let aligned = this.alignLocalLyrics({ lrcData: parsedLines, yrcData: [] });
+      let aligned: SongLyric = { lrcData: alignLyricLines(parsedLines), yrcData: [] };
       let usingQRCLyric = false;
       // 如果开启了本地歌曲 QQ 音乐匹配，尝试获取逐字歌词
       if (settingStore.localLyricQQMusicMatch && song) {
@@ -806,11 +765,8 @@ class LyricManager {
           if (isWordLevelFormat(format)) {
             result.yrcData = lines;
           } else {
-            result.lrcData = lines;
             // 应用翻译对齐逻辑
-            const aligned = this.alignLocalLyrics(result);
-            result.lrcData = aligned.lrcData;
-            result.yrcData = aligned.yrcData;
+            result.lrcData = alignLyricLines(lines);
           }
         }
       }
@@ -887,7 +843,7 @@ class LyricManager {
         const overrideResult = await this.fetchLocalOverrideLyric(song.id);
         if (!isEmpty(overrideResult.data.lrcData) || !isEmpty(overrideResult.data.yrcData)) {
           // 对齐
-          overrideResult.data = this.alignLocalLyrics(overrideResult.data);
+          overrideResult.data.lrcData = alignLyricLines(overrideResult.data.lrcData);
           fetchResult = overrideResult;
         } else if (song.path) {
           // 本地文件

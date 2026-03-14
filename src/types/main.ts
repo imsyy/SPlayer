@@ -9,6 +9,8 @@ export type MetaData = {
 
 export type DjData = {
   id: number;
+  /** 所属电台 ID */
+  radioId?: number;
   name: string;
   creator?: string;
 };

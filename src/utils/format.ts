@@ -84,6 +84,7 @@ export const formatSongsList = (data: any[]): SongType[] => {
       dj: item.dj
         ? {
             id: item.mainTrackId || item.id,
+            radioId: item.radio?.id,
             name: item.dj?.brand,
             creator: item.dj?.nickname,
           }
@@ -358,7 +359,7 @@ export const getPlayerInfoObj = (
   // 歌手
   const artist =
     playSongData.type === "radio"
-      ? "播客电台"
+      ? playSongData.dj?.creator || "未知播客"
       : Array.isArray(playSongData.artists)
         ? playSongData.artists.map((artists: { name: string }) => artists.name).join(sep)
         : String(playSongData?.artists || "未知歌手");
@@ -366,7 +367,7 @@ export const getPlayerInfoObj = (
   // 专辑
   const album =
     playSongData.type === "radio"
-      ? "播客电台"
+      ? playSongData.dj?.name || "未知播客"
       : typeof playSongData.album === "object"
         ? playSongData.album.name
         : String(playSongData.album || "未知专辑");

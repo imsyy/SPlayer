@@ -5,6 +5,7 @@ import {
   type AudioEventType,
 } from "./BaseAudioPlayer";
 import type { EngineCapabilities } from "./IPlaybackEngine";
+import { useSettingStore } from "@/stores";
 
 /**
  * 基于 HTMLAudioElement 的播放器实现
@@ -196,7 +197,22 @@ export class AudioElementPlayer extends BaseAudioPlayer {
     if (this.isInternalSeeking) {
       return this.targetSeekTime;
     }
-    return this.audioElement.currentTime || 0;
+    const settingStore = useSettingStore();
+
+    const isPlayback = settingStore.audioLatencyHint === "playback";
+
+    let autoLatency = 0;
+
+    if (isPlayback && this.audioCtx) {
+      autoLatency = (this.audioCtx.outputLatency || 0) + (this.audioCtx.baseLatency || 0);
+    }
+    const manualCompensation = isPlayback ? this.audioDelayCompensation / 1000 : 0;
+    // 基础时间 - 自动延迟补偿 + 手动延迟补偿
+    return (
+      (this.audioElement.currentTime || 0) -
+      autoLatency +
+      manualCompensation
+    );
   }
 
   /** 获取是否暂停状态 */

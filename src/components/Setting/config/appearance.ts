@@ -113,7 +113,7 @@ export const useAppearanceSettings = (): SettingConfig => {
             key: "sidebarHide",
             label: "侧边栏管理",
             type: "button",
-            description: "配置需要在侧边栏隐藏的菜单项",
+            description: "配置需要在侧边栏显示的菜单项",
             buttonLabel: "配置",
             action: openSidebarHideManager,
           },
@@ -372,6 +372,34 @@ export const useAppearanceSettings = (): SettingConfig => {
             },
           },
           {
+            key: "showPlayerComment",
+            label: "显示评论",
+            type: "switch",
+            description: "是否在全屏播放器中显示评论按钮",
+            value: computed({
+              get: () => settingStore.fullscreenPlayerElements.comments,
+              set: (v) => (settingStore.fullscreenPlayerElements.comments = v),
+            }),
+            condition: () => settingStore.fullscreenPlayerElements.comments,
+            children: [
+              {
+                key: "commentDisplayMode",
+                label: "评论显示模式",
+                type: "select",
+                description: "选择全屏播放器评论的显示方式",
+                options: [
+                  { label: "全屏", value: "fullscreen" },
+                  { label: "左半屏", value: "left" },
+                  { label: "右半屏", value: "right" },
+                ],
+                value: computed({
+                  get: () => settingStore.commentDisplayMode,
+                  set: (v) => (settingStore.commentDisplayMode = v),
+                }),
+              },
+            ],
+          },
+          {
             key: "showSpectrums",
             label: "音乐频谱",
             type: "switch",
@@ -394,9 +422,9 @@ export const useAppearanceSettings = (): SettingConfig => {
         items: [
           {
             key: "coverManager",
-            label: "封面隐藏管理",
+            label: "封面显示管理",
             type: "button",
-            description: "配置各界面封面是否隐藏（如歌单广场、排行榜、播放器等）",
+            description: "配置各界面封面是否显示（如歌单广场、排行榜、播放器等）",
             buttonLabel: "配置",
             action: openCoverManager,
           },

@@ -371,6 +371,11 @@ export class FFmpegAudioPlayer extends BaseAudioPlayer {
     return this.currentTempo;
   }
 
+  public setAudioDelayCompensation(offset: number): void {
+    // FFmpeg 引擎使用独立的时钟同步机制，此设置无效
+    void offset;
+  }
+
   public async setTempo(tempo: number) {
     if (!this.worker) return;
     const trueTime = this.currentTime;

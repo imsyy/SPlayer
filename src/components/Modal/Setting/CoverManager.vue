@@ -14,7 +14,11 @@
           class="item"
         >
           <n-text class="name">{{ item.name }}</n-text>
-          <n-switch v-model:value="settingStore.hiddenCovers[item.key]" :round="false" />
+          <n-switch
+            :value="!settingStore.hiddenCovers[item.key]"
+            :round="false"
+            @update:value="(val) => (settingStore.hiddenCovers[item.key] = !val)"
+          />
         </n-card>
       </div>
     </n-scrollbar>

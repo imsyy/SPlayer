@@ -44,37 +44,33 @@
         </n-button>
       </template>
     </ListDetail>
-    <Transition name="fade" mode="out-in">
-      <!-- 歌曲列表 -->
-      <template v-if="currentTab === 'songs'">
-        <SongList
-          v-if="!searchValue || searchData?.length"
-          :data="detailData?.id === playlistId ? displayData : []"
-          :loading="loading"
-          :height="songListHeight"
-          :playListId="playlistId"
-          :draggable="canDragSort"
-          :doubleClickAction="searchData?.length ? 'add' : 'all'"
-          @scroll="handleListScroll"
-          @removeSong="removeSong"
-          @reorder="handleReorder"
-        />
-        <n-empty
-          v-else
-          :description="`搜不到关于 ${searchValue} 的任何歌曲呀`"
-          style="margin-top: 60px"
-          size="large"
-        >
-          <template #icon>
-            <SvgIcon name="SearchOff" />
-          </template>
-        </n-empty>
-      </template>
-      <!-- 评论 -->
-      <template v-else>
-        <ListComment :id="playlistId" :type="2" :height="songListHeight" />
-      </template>
-    </Transition>
+    <!-- 歌曲列表 -->
+    <template v-if="currentTab === 'songs'">
+      <SongList
+        v-if="!searchValue || searchData?.length"
+        :data="detailData?.id === playlistId ? displayData : []"
+        :loading="loading"
+        :height="songListHeight"
+        :playListId="playlistId"
+        :draggable="canDragSort"
+        :doubleClickAction="searchData?.length ? 'add' : 'all'"
+        @scroll="handleListScroll"
+        @removeSong="removeSong"
+        @reorder="handleReorder"
+      />
+      <n-empty
+        v-else
+        :description="`搜不到关于 ${searchValue} 的任何歌曲呀`"
+        style="margin-top: 60px"
+        size="large"
+      >
+        <template #icon>
+          <SvgIcon name="SearchOff" />
+        </template>
+      </n-empty>
+    </template>
+    <!-- 评论 -->
+    <ListComment v-show="currentTab === 'comments'" :id="playlistId" :type="2" :height="songListHeight" />
   </div>
 </template>
 
@@ -597,6 +593,7 @@ const openPrivacy = async () => {
 onBeforeRouteUpdate((to) => {
   const id = Number(to.query.id as string);
   if (id) {
+    currentTab.value = "songs";
     oldPlaylistId.value = id;
     getPlaylistDetail(id);
   }

@@ -1,3 +1,4 @@
+import { toRaw } from "vue";
 import { useMusicStore, useSettingStore } from "@/stores";
 import type { SongLyric } from "@/types/lyric";
 import { useLyricManager } from "./LyricManager";

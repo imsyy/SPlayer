@@ -29,34 +29,30 @@
         </n-button>
       </template>
     </ListDetail>
-    <Transition name="fade" mode="out-in">
-      <!-- 歌曲列表 -->
-      <template v-if="currentTab === 'songs'">
-        <SongList
-          v-if="!searchValue || searchData?.length"
-          :data="detailData?.id === albumId ? displayData : []"
-          :loading="loading"
-          :height="songListHeight"
-          :doubleClickAction="searchData?.length ? 'add' : 'all'"
-          hidden-album
-          @scroll="handleListScroll"
-        />
-        <n-empty
-          v-else
-          :description="`搜不到关于 ${searchValue} 的任何歌曲呀`"
-          style="margin-top: 60px"
-          size="large"
-        >
-          <template #icon>
-            <SvgIcon name="SearchOff" />
-          </template>
-        </n-empty>
-      </template>
-      <!-- 评论 -->
-      <template v-else>
-        <ListComment :id="albumId" :type="3" :height="songListHeight" />
-      </template>
-    </Transition>
+    <!-- 歌曲列表 -->
+    <template v-if="currentTab === 'songs'">
+      <SongList
+        v-if="!searchValue || searchData?.length"
+        :data="detailData?.id === albumId ? displayData : []"
+        :loading="loading"
+        :height="songListHeight"
+        :doubleClickAction="searchData?.length ? 'add' : 'all'"
+        hidden-album
+        @scroll="handleListScroll"
+      />
+      <n-empty
+        v-else
+        :description="`搜不到关于 ${searchValue} 的任何歌曲呀`"
+        style="margin-top: 60px"
+        size="large"
+      >
+        <template #icon>
+          <SvgIcon name="SearchOff" />
+        </template>
+      </n-empty>
+    </template>
+    <!-- 评论 -->
+    <ListComment v-show="currentTab === 'comments'" :id="albumId" :type="3" :height="songListHeight" />
   </div>
 </template>
 
@@ -267,6 +263,7 @@ const playAllSongs = useDebounceFn(() => {
 
 onBeforeRouteUpdate((to) => {
   clearSearch();
+  currentTab.value = "songs";
   const id = Number(to.query.id as string);
   if (id) getAlbumDetail(id);
 });

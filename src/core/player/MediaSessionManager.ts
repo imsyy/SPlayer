@@ -235,12 +235,12 @@ class MediaSessionManager {
     return {
       title: song!.name,
       artist: isRadio
-        ? "播客电台"
+        ? song!.dj?.creator || "未知播客"
         : Array.isArray(song!.artists)
           ? song!.artists.map((a) => a.name).join("/")
           : String(song!.artists),
       album: isRadio
-        ? "播客电台"
+        ? song!.dj?.name || "未知播客"
         : typeof song!.album === "object"
           ? song!.album.name
           : String(song!.album),

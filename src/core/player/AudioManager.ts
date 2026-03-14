@@ -367,6 +367,15 @@ class AudioManager extends TypedEventTarget<AudioEventMap> implements IPlaybackE
   }
 
   /**
+   * 设置音频延迟手动补偿
+   * @param offset 偏移量 (毫秒)
+   */
+  public setAudioDelayCompensation(offset: number): void {
+    // FFmpeg 和 MPV 引擎可能没有实现此方法
+    this.engine.setAudioDelayCompensation?.(offset);
+  }
+
+  /**
    * 设置输出设备
    */
   public async setSinkId(deviceId: string): Promise<void> {
@@ -504,6 +513,16 @@ export const useAudioManager = (): AudioManager => {
       settingStore.playbackEngine,
       settingStore.audioEngine,
     );
+
+    // 监听音频延迟补偿变化
+    watch(
+      () => settingStore.audioDelayCompensation,
+      (offset) => {
+        win[AUDIO_MANAGER_KEY]?.setAudioDelayCompensation(offset);
+      },
+      { immediate: true }, // 立即执行一次以应用初始值
+    );
+
     console.log(`[AudioManager] 创建新实例, engine: ${win[AUDIO_MANAGER_KEY].engineType}`);
   }
   return win[AUDIO_MANAGER_KEY];

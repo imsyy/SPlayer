@@ -1,5 +1,11 @@
 import type { LyricLine } from "@applemusic-like-lyrics/lyric";
-import { TASKBAR_IPC_CHANNELS, type SyncStatePayload, type SyncTickPayload } from "@shared";
+import {
+  DEFAULT_TASKBAR_CONFIG,
+  TASKBAR_IPC_CHANNELS,
+  type SyncStatePayload,
+  type SyncTickPayload,
+  type TaskbarConfig,
+} from "@shared";
 import { ipcMain } from "electron";
 import { useStore } from "../store";
 import { getMainTray } from "../tray";
@@ -88,9 +94,9 @@ const updateMacStatusBarLyric = (forceUpdate: boolean = false) => {
     return;
   }
 
-  // 如果歌词数据为空，则清空标题并返回
+  // 如果歌词数据为空，则显示当前歌曲标题，避免空白
   if (macLyricLines.length === 0) {
-    tray.setTitle("");
+    tray.setTitle(getCurrentSongTitle());
     return;
   }
 
@@ -107,7 +113,7 @@ const updateMacStatusBarLyric = (forceUpdate: boolean = false) => {
           .map((w) => w.word ?? "")
           .join("")
           .trim()
-      : "";
+      : getCurrentSongTitle(); // 处于前奏或未匹配到歌词时，显示歌曲名
 
   tray.setTitle(currentLyric);
 };
@@ -151,27 +157,45 @@ export const initMacStatusBarIpc = () => {
     }
   });
 
+  // 注册任务栏配置通用处理器，确保 macOS 也能获取和设置配置
+  ipcMain.handle(TASKBAR_IPC_CHANNELS.GET_OPTION, () => store.get("taskbar"));
+
+  ipcMain.on(TASKBAR_IPC_CHANNELS.SET_OPTION, (_event, option: Partial<TaskbarConfig>) => {
+    if (!option) return;
+
+    // 安全过滤：仅允许写入 DEFAULT_TASKBAR_CONFIG 中定义的合法键
+    const allowedKeys = Object.keys(DEFAULT_TASKBAR_CONFIG);
+
+    Object.entries(option).forEach(([key, value]) => {
+      if (allowedKeys.includes(key)) {
+        store.set(`taskbar.${key}`, value);
+      }
+    });
+    // macOS 模式下不处理窗口可见性，仅同步配置
+  });
+
   ipcMain.on(TASKBAR_IPC_CHANNELS.SYNC_STATE, (_event, payload: SyncStatePayload) => {
     switch (payload.type) {
       case "lyrics-loaded": {
-        // 仅更新歌词数据，不立即更新状态栏显示
+        // 更新歌词数据并立即刷新显示
         macLyricLines = payload.data.lines;
         macLastLyricIndex = -1;
+        updateMacStatusBarLyric(true);
         break;
       }
 
       case "playback-state":
         macIsPlaying = payload.data.isPlaying;
-        // 不在这里直接更新歌词，依赖 SYNC_TICK 来驱动
+        // 播放状态变更时，如果是播放中，等待 SYNC_TICK 或插值器驱动
+        // 如果是暂停状态，则停止插值器并进行一次最终更新
         if (!macIsPlaying) {
-          // 如果是暂停状态，则停止插值器并进行一次最终更新
           stopInterpolation();
-          updateMacStatusBarLyric();
+          updateMacStatusBarLyric(true);
         }
         break;
 
       case "full-hydration":
-        // 接收完整的状态，但歌词更新仍然依赖 SYNC_TICK
+        // 接收完整的状态，立即同步并刷新显示
         if (payload.data.lyrics) {
           macLyricLines = payload.data.lyrics.lines;
           macLastLyricIndex = -1;
@@ -183,6 +207,11 @@ export const initMacStatusBarIpc = () => {
             macCurrentTime = currentTime;
             macOffset = offset;
           }
+        }
+        // 同步后立即刷新一次
+        updateMacStatusBarLyric(true);
+        if (macIsPlaying) {
+          startInterpolation();
         }
         break;
     }

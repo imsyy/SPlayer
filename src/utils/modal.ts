@@ -469,7 +469,7 @@ export const openSongUnlockManager = async () => {
   });
 };
 
-/** 打开侧边栏隐藏管理弹窗 */
+/** 打开侧边栏显示管理弹窗 */
 export const openSidebarHideManager = async () => {
   const { default: SidebarHideManager } =
     await import("@/components/Modal/Setting/SidebarHideManager.vue");
@@ -478,14 +478,14 @@ export const openSidebarHideManager = async () => {
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "500px" },
-    title: "侧边栏隐藏管理",
+    title: "侧边栏显示管理",
     content: () => {
       return h(SidebarHideManager);
     },
   });
 };
 
-/** 打开封面隐藏配置弹窗 */
+/** 打开封面显示配置弹窗 */
 export const openCoverManager = async () => {
   const { default: CoverManager } = await import("@/components/Modal/Setting/CoverManager.vue");
   window.$modal.create({
@@ -493,7 +493,7 @@ export const openCoverManager = async () => {
     transformOrigin: "center",
     autoFocus: false,
     style: { width: "500px" },
-    title: "封面隐藏配置",
+    title: "封面显示配置",
     content: () => {
       return h(CoverManager);
     },

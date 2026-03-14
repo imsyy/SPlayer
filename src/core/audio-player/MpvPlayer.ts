@@ -268,6 +268,11 @@ export class MpvPlayer extends EventTarget implements IPlaybackEngine {
     }
   }
 
+  public setAudioDelayCompensation(offset: number): void {
+    // MPV 引擎不使用 Web Audio API，此设置无效
+    void offset;
+  }
+
   public getErrorCode(): number {
     return this._errorCode;
   }

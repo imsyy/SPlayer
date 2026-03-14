@@ -1,7 +1,13 @@
-// 路由动画
-.router-slide-enter-active,
+// 路由动画 - 离场动画尽量短，减少 out-in 等待时间
+.router-slide-enter-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
 .router-slide-leave-active {
-  transition: all 0.2s ease;
+  transition:
+    opacity 0.1s ease,
+    transform 0.1s ease;
 }
 .router-slide-enter-from,
 .router-slide-leave-to {
@@ -9,18 +15,26 @@
   transform: translate3d(10px, 0, 0);
 }
 
-.router-fade-enter-active,
+.router-fade-enter-active {
+  transition: opacity 0.2s ease;
+}
 .router-fade-leave-active {
-  transition: all 0.2s ease;
+  transition: opacity 0.1s ease;
 }
 .router-fade-enter-from,
 .router-fade-leave-to {
   opacity: 0;
 }
 
-.router-zoom-enter-active,
+.router-zoom-enter-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
 .router-zoom-leave-active {
-  transition: all 0.2s ease;
+  transition:
+    opacity 0.1s ease,
+    transform 0.1s ease;
 }
 .router-zoom-enter-from,
 .router-zoom-leave-to {
@@ -28,11 +42,13 @@
   transform: scale(0.95);
 }
 
-.router-up-enter-active,
-.router-up-leave-active {
+.router-up-enter-active {
   transition:
     opacity 0.2s ease,
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.router-up-leave-active {
+  transition: opacity 0.1s ease;
 }
 .router-up-enter-from {
   opacity: 0;
@@ -42,19 +58,20 @@
   opacity: 1;
   transform: translate3d(0, 0, 0);
 }
-.router-up-leave-active {
-  transform: translate3d(0, 0, 0);
-}
 .router-up-leave-to {
   opacity: 0;
 }
 
 // flow
-.router-flow-enter-active,
+.router-flow-enter-active {
+  transition:
+    opacity 0.35s cubic-bezier(0.2, 0, 0.2, 1),
+    transform 0.35s cubic-bezier(0.2, 0, 0.2, 1);
+}
 .router-flow-leave-active {
   transition:
-    opacity 0.4s cubic-bezier(0.2, 0, 0.2, 1),
-    transform 0.4s cubic-bezier(0.2, 0, 0.2, 1);
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 .router-flow-enter-from {
   opacity: 0;
@@ -67,10 +84,10 @@
 
 // mask-left
 .router-mask-left-enter-active {
-  transition: clip-path 0.6s cubic-bezier(0, 0, 0.2, 1);
+  transition: clip-path 0.5s cubic-bezier(0, 0, 0.2, 1);
 }
 .router-mask-left-leave-active {
-  transition: clip-path 0.25s ease-in;
+  transition: clip-path 0.15s ease-in;
 }
 .router-mask-left-enter-from {
   clip-path: inset(0 100% 0 0);
@@ -87,10 +104,10 @@
 
 // mask-top
 .router-mask-top-enter-active {
-  transition: clip-path 0.6s cubic-bezier(0, 0, 0.2, 1);
+  transition: clip-path 0.5s cubic-bezier(0, 0, 0.2, 1);
 }
 .router-mask-top-leave-active {
-  transition: clip-path 0.25s ease-in;
+  transition: clip-path 0.15s ease-in;
 }
 .router-mask-top-enter-from {
   clip-path: inset(0 0 100% 0);
@@ -106,9 +123,11 @@
 }
 
 // fade
-.fade-enter-active,
+.fade-enter-active {
+  transition: opacity 0.15s ease-in-out;
+}
 .fade-leave-active {
-  transition: opacity 0.3s ease-in-out;
+  transition: opacity 0.1s ease-in-out;
 }
 
 .fade-enter-from,
@@ -117,11 +136,15 @@
 }
 
 // fadeDown
-.fadeDown-enter-active,
+.fadeDown-enter-active {
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
 .fadeDown-leave-active {
   transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
+    opacity 0.1s ease,
+    transform 0.1s ease;
 }
 
 .fadeDown-enter-from,
@@ -131,13 +154,19 @@
 }
 
 // left-sm
-.left-sm-enter-active,
+.left-sm-enter-active {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition:
+    transform 0.2s,
+    opacity 0.2s;
+}
 .left-sm-leave-active {
   opacity: 1;
   transform: translate3d(0, 0, 0);
   transition:
-    transform 0.3s,
-    opacity 0.3s;
+    transform 0.1s,
+    opacity 0.1s;
 }
 .left-sm-enter-from,
 .left-sm-leave-to {
@@ -146,13 +175,19 @@
 }
 
 // shrink
-.shrink-enter-active,
+.shrink-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    transform 0.2s,
+    opacity 0.2s;
+}
 .shrink-leave-active {
   opacity: 1;
   transform: scale(1);
   transition:
-    transform 0.3s,
-    opacity 0.3s;
+    transform 0.1s,
+    opacity 0.1s;
 }
 .shrink-enter-from,
 .shrink-leave-to {
@@ -161,13 +196,19 @@
 }
 
 // zoom
-.zoom-enter-active,
+.zoom-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 .zoom-leave-active {
   opacity: 1;
   transform: scale(1);
   transition:
-    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-    opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform 0.1s ease,
+    opacity 0.1s ease;
 }
 .zoom-enter-from,
 .zoom-leave-to {

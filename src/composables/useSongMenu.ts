@@ -208,6 +208,18 @@ export const useSongMenu = () => {
         icon: renderIcon("Video", { size: 18 }),
       },
       {
+        key: "comment",
+        label: "查看评论",
+        show: !isLocal && type !== "streaming",
+        props: {
+          onClick: () => {
+            const commentType = type === "radio" ? 4 : 0;
+            router.push({ name: "comment", query: { id: song.id, type: commentType } });
+          },
+        },
+        icon: renderIcon("Message", { size: 18 }),
+      },
+      {
         key: "line-1",
         type: "divider",
         show:

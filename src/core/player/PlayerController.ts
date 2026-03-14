@@ -1,3 +1,4 @@
+import { toRaw } from "vue";
 import { AudioErrorCode } from "@/core/audio-player/BaseAudioPlayer";
 import { useDataStore, useMusicStore, useSettingStore, useStatusStore } from "@/stores";
 import type { AudioSourceType, QualityType, SongType } from "@/types/main";
