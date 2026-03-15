@@ -40,7 +40,7 @@ export const formatTimestamp = (
   format: string = "YYYY-MM-DD",
   keepSameYear: boolean = false,
 ): string => {
-  if (typeof timestamp !== "number") return "";
+  if (!timestamp) return "";
   const date = dayjs(timestamp);
   const shouldOmitYear = !keepSameYear && date.year() === dayjs().year();
   return date.format(shouldOmitYear ? format.replace("YYYY-", "") : format);
