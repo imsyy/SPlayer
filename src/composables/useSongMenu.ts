@@ -148,6 +148,17 @@ export const useSongMenu = () => {
     }
   };
 
+  // 判断两首歌是否相同
+  const isSameSong = (song1: SongType, song2: SongType): boolean => {
+    if (song1.id != null && song2.id != null) {
+      return song1.id === song2.id;
+    }
+    if (song1.path && song2.path) {
+      return song1.path === song2.path;
+    }
+    return false;
+  };
+
   // 生成菜单选项
   const getMenuOptions = (
     song: SongType,
@@ -164,7 +175,7 @@ export const useSongMenu = () => {
     const isCloud = router.currentRoute.value.name === "cloud";
     const isLocal = !!song?.path;
     const isLoginNormal = isLogin() === 1;
-    const isCurrent = statusStore.playIndex === index;
+    const isCurrent = isSameSong(musicStore.playSong, song);
     const isLocalPlaylist = localStore.isLocalPlaylist(playListId);
     const isUserPlaylist =
       (!!playListId && userPlaylistsData.some((pl) => pl.id === playListId)) || isLocalPlaylist;
