@@ -197,7 +197,8 @@ const duration = computed(() => {
 });
 
 const publishTime = computed(() => {
-  return songInfo.value?.createTime ? formatTimestamp(songInfo.value.createTime, "YYYY-MM-DD") : "";
+  const createTime = songInfo.value?.createTime;
+  return typeof createTime === "number" ? formatTimestamp(createTime, "YYYY-MM-DD", true) : "";
 });
 
 const songLink = computed(() => {
