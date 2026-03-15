@@ -34,6 +34,7 @@
                   <template v-if="Array.isArray(currentSong.artists)">
                     <n-text
                       v-for="(ar, index) in currentSong.artists"
+                      class="clickable-text"
                       :key="ar.id"
                       @click="$router.push({ name: 'artist', query: { id: ar.id } })"
                     >
@@ -52,7 +53,7 @@
                 <SvgIcon name="Album" :depth="3" />
                 <n-text
                   v-if="typeof currentSong.album !== 'string'"
-                  class="text-hidden"
+                  class="text-hidden clickable-text"
                   @click="$router.push({ name: 'album', query: { id: currentSong.album.id } })"
                 >
                   {{
@@ -66,6 +67,10 @@
                     ? removeBrackets(currentSong.album)
                     : currentSong.album
                 }}</n-text>
+              </div>
+              <div class="item" v-if="publishTime" title="发行日期">
+                <SvgIcon name="Time" :depth="3" />
+                <n-text class="text-hidden">{{ publishTime }}</n-text>
               </div>
             </div>
             <div class="actions">
@@ -296,6 +301,7 @@ import {
 import { formatSongsList, removeBrackets } from "@/utils/format";
 import { useSettingStore } from "@/stores";
 import dayjs from "dayjs";
+import { formatTimestamp } from "@/utils/time";
 
 const route = useRoute();
 const player = usePlayerController();
@@ -307,6 +313,11 @@ const currentSong = ref<SongType | null>(null);
 const viewModel = ref<WikiViewModel | null>(null);
 const similarSongsList = ref<SongType[]>([]);
 const sheetLoading = ref<Record<number, boolean>>({});
+
+const publishTime = computed(() => {
+  const createTime = currentSong.value?.createTime;
+  return typeof createTime === "number" ? formatTimestamp(createTime, "YYYY-MM-DD") : "";
+});
 
 // 简单的转换逻辑，避免过多判断
 const normalizeWikiData = (
@@ -568,7 +579,7 @@ onActivated(() => {
             margin-right: 4px;
             flex-shrink: 0;
           }
-          .n-text {
+          .clickable-text {
             cursor: pointer;
             &:hover {
               color: var(--primary-hex);
