@@ -33,15 +33,17 @@ export const msToS = (milliseconds: number, decimalPlaces: number = 2): number =
  * 格式化时间戳，同年省略年份
  * @param timestamp 时间戳（毫秒），为空或 0 时返回空字符串
  * @param format 时间格式，默认 "YYYY-MM-DD"
+ * @param keepSameYear 是否保留同年年份，默认为 false（即同年省略年份）
  */
 export const formatTimestamp = (
   timestamp: number | undefined,
   format: string = "YYYY-MM-DD",
+  keepSameYear: boolean = false,
 ): string => {
   if (!timestamp) return "";
   const date = dayjs(timestamp);
-  const isSameYear = date.year() === dayjs().year();
-  return date.format(isSameYear ? format.replace("YYYY-", "") : format);
+  const shouldOmitYear = !keepSameYear && date.year() === dayjs().year();
+  return date.format(shouldOmitYear ? format.replace("YYYY-", "") : format);
 };
 
 /**

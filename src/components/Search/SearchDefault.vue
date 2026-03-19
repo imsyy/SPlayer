@@ -3,10 +3,7 @@
     <n-card v-if="isShow" class="search-default" content-style="padding: 0">
       <n-scrollbar class="scrollbar">
         <!-- 搜索历史 -->
-        <div
-          v-if="settingStore.showSearchHistory && dataStore.searchHistory.length > 0"
-          class="history"
-        >
+        <div v-if="isShowSearchHistory" class="history">
           <div class="title">
             <SvgIcon name="History" />
             <n-text class="name">搜索历史 </n-text>
@@ -25,7 +22,7 @@
           </n-flex>
         </div>
         <!-- 热搜榜 -->
-        <div v-if="searchHotData.length > 0" class="hot-list">
+        <div v-if="isShowHotSearch" class="hot-list">
           <div class="title">
             <SvgIcon name="Fire" />
             <n-text class="name">热搜榜 </n-text>
@@ -86,18 +83,30 @@ const settingStore = useSettingStore();
 
 const searchHotData = ref<SearchHotItem[]>([]);
 
-// 是否展示
+// 是否展示 SearchDefault
 const isShow = computed(() => {
   return (
     !statusStore.searchInputValue &&
     statusStore.searchFocus &&
-    (searchHotData.value.length > 0 || dataStore.searchHistory.length > 0)
+    (isShowHotSearch.value || isShowSearchHistory.value)
+  );
+});
+
+// 是否展示搜索历史
+const isShowSearchHistory = computed(() => {
+  return settingStore.showSearchHistory && dataStore.searchHistory.length > 0;
+});
+
+// 是否展示热搜榜
+const isShowHotSearch = computed(() => {
+  return (
+    settingStore.useOnlineService && settingStore.showHotSearch && searchHotData.value.length > 0
   );
 });
 
 // 获取热搜数据
 const getSearchHotData = async () => {
-  if (!settingStore.useOnlineService) return;
+  if (!settingStore.useOnlineService || !settingStore.showHotSearch) return;
   const result = await getCacheData(searchHot, {
     key: "searchHotData",
     time: 10,

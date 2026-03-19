@@ -18,7 +18,7 @@
   - 正确: `// 监听主进程消息`
   - 错误: `// 1. listen to main process`, `// this function handles ipc...`
 
-### 2. UI 组件使用Naive UI
+### 2. UI 组件使用 Naive UI
 
 - **原则**: 严禁重复造轮子。所有通用交互必须优先使用 Naive UI 组件。
 - **处理方式**: 如果未找到合适组件，必须先询问用户，禁止擅自手写原生 CSS/HTML 组件。
@@ -27,7 +27,7 @@
 
 ### 3. 图标
 
-- **原则**: 优先复用项目 `src/icons` 或现有图标方案。
+- **原则**: 优先复用项目 `src/assets/icons` 或现有图标方案。
 - **具体实现**: 严格遵循项目现有的图标组件用法。
   - 正确: `<SvgIcon :name="isLikeAlbum ? 'Favorite' : 'FavoriteBorder'" />`
   - 错误: 擅自引入 `xicons` (除非用户明确允许) 或手写 SVG 代码。

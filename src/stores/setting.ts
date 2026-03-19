@@ -214,8 +214,6 @@ export interface SettingState {
   lyricsBlendMode: "screen" | "plus-lighter";
   /** 播放试听 */
   playSongDemo: boolean;
-  /** 显示搜索历史 */
-  showSearchHistory: boolean;
   /** 是否使用 AMLL 歌词 */
   useAMLyrics: boolean;
   /** 是否使用 AMLL 歌词弹簧效果 */
@@ -410,6 +408,10 @@ export interface SettingState {
   };
   /** 启用搜索关键词获取 */
   enableSearchKeyword: boolean;
+  /** 显示搜索历史 */
+  showSearchHistory: boolean;
+  /** 显示热搜榜 */
+  showHotSearch: boolean;
   /** 搜索框行为 */
   searchInputBehavior: "normal" | "clear" | "sync";
   /** 显示主页问好 */
@@ -500,7 +502,6 @@ export const useSettingStore = defineStore("setting", {
     englishLyricFont: "follow",
     koreanLyricFont: "follow",
     hideVipTag: false,
-    showSearchHistory: true,
     menuShowCover: true,
     menuExpandedKeys: [],
     routeAnimation: "slide",
@@ -703,6 +704,8 @@ export const useSettingStore = defineStore("setting", {
       musicTagEditor: true,
     },
     enableSearchKeyword: true,
+    showSearchHistory: true,
+    showHotSearch: true,
     searchInputBehavior: "normal",
     showHomeGreeting: true,
     homePageSections: [

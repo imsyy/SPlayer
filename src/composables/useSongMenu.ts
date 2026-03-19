@@ -35,7 +35,8 @@ export const useSongMenu = () => {
   const localStore = useLocalStore();
 
   // 删除本地歌曲
-  const deleteLocalSong = (song: SongType, emit: (event: "removeSong", args: any[]) => void) => {
+  const deleteLocalSong = (song: SongType, emit?: (event: "removeSong", args: any[]) => void) => {
+    if (emit === undefined) return;
     if (!song.path) return;
     window.$dialog.warning({
       title: "确认删除",
@@ -148,13 +149,24 @@ export const useSongMenu = () => {
     }
   };
 
+  // 判断两首歌是否相同
+  const isSameSong = (song1: SongType, song2: SongType): boolean => {
+    if (song1.id != null && song2.id != null) {
+      return song1.id === song2.id;
+    }
+    if (song1.path && song2.path) {
+      return song1.path === song2.path;
+    }
+    return false;
+  };
+
   // 生成菜单选项
   const getMenuOptions = (
     song: SongType,
-    index: number,
+    index: number = -1,
     playListId: number = 0,
     isDailyRecommend: boolean = false,
-    emit: (event: "removeSong", args: any[]) => void,
+    emit?: (event: "removeSong", args: any[]) => void,
   ): DropdownOption[] => {
     const userPlaylistsData = dataStore.userLikeData.playlists?.filter(
       (pl) => pl.userId === dataStore.userData.userId,
@@ -164,7 +176,7 @@ export const useSongMenu = () => {
     const isCloud = router.currentRoute.value.name === "cloud";
     const isLocal = !!song?.path;
     const isLoginNormal = isLogin() === 1;
-    const isCurrent = statusStore.playIndex === index;
+    const isCurrent = isSameSong(musicStore.playSong, song);
     const isLocalPlaylist = localStore.isLocalPlaylist(playListId);
     const isUserPlaylist =
       (!!playListId && userPlaylistsData.some((pl) => pl.id === playListId)) || isLocalPlaylist;
@@ -321,13 +333,14 @@ export const useSongMenu = () => {
         label: "从歌单中删除",
         show:
           settingStore.contextMenuOptions.deleteFromPlaylist &&
+          emit !== undefined &&
           isUserPlaylist &&
           (isLocalPlaylist || isLoginNormal) &&
           !isCloud,
         props: {
           onClick: () =>
             deleteSongs(playListId!, [song.id], {
-              callback: () => emit("removeSong", [song.id]),
+              callback: () => emit?.("removeSong", [song.id]),
               songName: song.name,
             }),
         },
@@ -345,7 +358,11 @@ export const useSongMenu = () => {
       {
         key: "delete-local",
         label: "从本地磁盘中删除",
-        show: settingStore.contextMenuOptions.deleteFromLocal && isLocal && !isCurrent,
+        show:
+          settingStore.contextMenuOptions.deleteFromLocal &&
+          emit !== undefined &&
+          isLocal &&
+          !isCurrent,
         props: {
           onClick: () => deleteLocalSong(song, emit),
         },

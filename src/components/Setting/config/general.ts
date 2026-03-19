@@ -308,6 +308,7 @@ export const useGeneralSettings = (): SettingConfig => {
           {
             key: "showSearchHistory",
             label: "显示搜索历史",
+            description: "是否在搜索框的默认显示内容中显示当前搜索历史",
             type: "switch",
             value: computed({
               get: () => settingStore.showSearchHistory,
@@ -315,10 +316,22 @@ export const useGeneralSettings = (): SettingConfig => {
             }),
           },
           {
+            key: "showHotSearch",
+            label: "显示热搜榜",
+            type: "switch",
+            show: computed(() => settingStore.useOnlineService),
+            description: "是否在搜索框的默认显示内容中显示热搜榜单",
+            value: computed({
+              get: () => settingStore.showHotSearch,
+              set: (v) => (settingStore.showHotSearch = v),
+            }),
+          },
+          {
             key: "enableSearchKeyword",
             label: "搜索关键词建议",
             type: "switch",
-            description: "是否启用搜索关键词建议",
+            show: computed(() => settingStore.useOnlineService),
+            description: "将搜索框闲置时的默认显示内容替换为搜索关键词建议",
             value: computed({
               get: () => settingStore.enableSearchKeyword,
               set: (v) => (settingStore.enableSearchKeyword = v),

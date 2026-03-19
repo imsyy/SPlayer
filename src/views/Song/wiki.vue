@@ -8,17 +8,14 @@
               :src="currentSong.cover"
               class="cover-img"
               object-fit="cover"
+              :previewed-img-props="{ style: { borderRadius: '8px' } }"
               :render-toolbar="renderToolbar"
-              :img-props="{
-                style: { width: '100%', height: '100%', borderRadius: '8px' },
-                alt: 'detail-cover',
-              }"
             />
             <n-image
               class="cover-shadow"
               preview-disabled
               :src="currentSong.cover"
-              :img-props="{ alt: 'cover-shadow' }"
+              object-fit="cover"
             />
           </div>
           <div class="data">
@@ -34,6 +31,7 @@
                   <template v-if="Array.isArray(currentSong.artists)">
                     <n-text
                       v-for="(ar, index) in currentSong.artists"
+                      class="clickable-text"
                       :key="ar.id"
                       @click="$router.push({ name: 'artist', query: { id: ar.id } })"
                     >
@@ -52,7 +50,7 @@
                 <SvgIcon name="Album" :depth="3" />
                 <n-text
                   v-if="typeof currentSong.album !== 'string'"
-                  class="text-hidden"
+                  class="text-hidden clickable-text"
                   @click="$router.push({ name: 'album', query: { id: currentSong.album.id } })"
                 >
                   {{
@@ -67,8 +65,12 @@
                     : currentSong.album
                 }}</n-text>
               </div>
+              <div class="item" v-if="publishTime" title="发行日期">
+                <SvgIcon name="Time" :depth="3" />
+                <n-text class="text-hidden">{{ publishTime }}</n-text>
+              </div>
             </div>
-            <div class="actions">
+            <n-flex class="actions">
               <n-button
                 type="primary"
                 strong
@@ -82,7 +84,18 @@
                 </template>
                 播放
               </n-button>
-            </div>
+              <n-dropdown
+                :options="currentSong ? getMenuOptions(currentSong) : []"
+                trigger="click"
+                placement="bottom-start"
+              >
+                <n-button :focusable="false" class="more" circle strong secondary>
+                  <template #icon>
+                    <SvgIcon name="List" />
+                  </template>
+                </n-button>
+              </n-dropdown>
+            </n-flex>
           </div>
         </div>
         <!-- 数据展示区域 -->
@@ -296,10 +309,14 @@ import {
 import { formatSongsList, removeBrackets } from "@/utils/format";
 import { useSettingStore } from "@/stores";
 import dayjs from "dayjs";
+import { useSongMenu } from "@/composables/useSongMenu";
+import { formatTimestamp } from "@/utils/time";
 
 const route = useRoute();
 const player = usePlayerController();
 const settingStore = useSettingStore();
+
+const { getMenuOptions } = useSongMenu();
 
 const loading = ref(true);
 const currentSongId = ref<number>(0);
@@ -307,6 +324,12 @@ const currentSong = ref<SongType | null>(null);
 const viewModel = ref<WikiViewModel | null>(null);
 const similarSongsList = ref<SongType[]>([]);
 const sheetLoading = ref<Record<number, boolean>>({});
+const currentRequestToken = ref(0);
+
+const publishTime = computed(() => {
+  const createTime = currentSong.value?.createTime;
+  return typeof createTime === "number" ? formatTimestamp(createTime, "YYYY-MM-DD") : "";
+});
 
 // 简单的转换逻辑，避免过多判断
 const normalizeWikiData = (
@@ -401,9 +424,10 @@ const normalizeWikiData = (
 };
 
 // 获取歌曲信息
-const fetchData = async () => {
-  const id = Number(route.query.id);
+const fetchData = async (id?: number) => {
+  id = id ?? Number(route.query.id);
   if (!id || id === currentSongId.value) return;
+  const token = ++currentRequestToken.value;
   loading.value = true;
   currentSongId.value = id;
   viewModel.value = null;
@@ -412,12 +436,14 @@ const fetchData = async () => {
   try {
     const detailRes = await songDetail(id);
     if (!detailRes.songs?.[0]) throw new Error("Song not found");
+    if (token !== currentRequestToken.value) return;
     currentSong.value = formatSongsList(detailRes.songs)[0];
     const [wikiRes, listenRes, sheetRes] = await Promise.allSettled([
       songWikiSummary(id),
       songFirstListenInfo(id),
       songSheetList(id),
     ]);
+    if (token !== currentRequestToken.value) return;
     // 获取歌曲信息
     const wikiData = wikiRes.status === "fulfilled" ? wikiRes.value.data || wikiRes.value : {};
     const listenData =
@@ -431,6 +457,7 @@ const fetchData = async () => {
     if (viewModel.value.similarSongs.length > 0) {
       try {
         const sims = await songDetail(viewModel.value.similarSongs);
+        if (token !== currentRequestToken.value) return;
         if (sims.songs) similarSongsList.value = formatSongsList(sims.songs);
       } catch (e) {
         console.warn("Failed to load similar songs", e);
@@ -440,7 +467,9 @@ const fetchData = async () => {
     console.error("Fetch wiki failed", error);
     window.$message.error("加载信息失败");
   } finally {
-    loading.value = false;
+    if (token === currentRequestToken.value) {
+      loading.value = false;
+    }
   }
 };
 
@@ -469,11 +498,11 @@ const handlePlay = () => {
   if (currentSong.value) player.addNextSong(currentSong.value, true);
 };
 
-onActivated(() => {
-  const id = Number(route.query.id);
-  if (id && id !== currentSongId.value) {
-    fetchData();
-  }
+onActivated(() => fetchData());
+
+// 监听路由更新
+onBeforeRouteUpdate((to) => {
+  fetchData(Number(to.query.id));
 });
 </script>
 
@@ -521,12 +550,17 @@ onActivated(() => {
       flex-shrink: 0;
       margin-right: 20px;
       position: relative;
+      :deep(img) {
+        width: 100%;
+        height: 100%;
+      }
       .cover-img {
         position: relative;
         z-index: 1;
         border-radius: 8px;
         width: 100%;
         height: 100%;
+        overflow: hidden;
       }
       .cover-shadow {
         position: absolute;
@@ -568,7 +602,7 @@ onActivated(() => {
             margin-right: 4px;
             flex-shrink: 0;
           }
-          .n-text {
+          .clickable-text {
             cursor: pointer;
             &:hover {
               color: var(--primary-hex);
@@ -580,8 +614,10 @@ onActivated(() => {
         margin-top: auto;
         :deep(.n-button) {
           height: 40px;
-          padding: 0 24px;
-          font-size: 16px;
+          transition: all 0.3s var(--n-bezier);
+        }
+        .more {
+          width: 40px;
         }
         @media (max-width: 768px) {
           :deep(.n-button) {
