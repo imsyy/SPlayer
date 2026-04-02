@@ -721,3 +721,23 @@ export const openExcludeComment = async () => {
     },
   });
 };
+
+/** 打开云盘上传弹窗 */
+export const openCloudUpload = async (onSuccess?: () => void) => {
+  const { default: CloudUpload } = await import("@/components/Modal/CloudUpload.vue");
+  const modal = window.$modal.create({
+    preset: "card",
+    transformOrigin: "center",
+    autoFocus: false,
+    style: { width: "700px" },
+    title: "云盘上传",
+    content: () => {
+      return h(CloudUpload, {
+        onClose: () => modal.destroy(),
+        onSuccess: () => {
+          if (onSuccess) onSuccess();
+        },
+      });
+    },
+  });
+};

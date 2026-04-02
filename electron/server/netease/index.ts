@@ -41,11 +41,27 @@ export const initNcmAPI = async (fastify: FastifyInstance) => {
     serverLog.log("🌐 Request NcmAPI:", requestPath);
 
     try {
-      const result = await neteaseApi({
+      const params: Record<string, unknown> = {
         ...(req.query as Record<string, unknown>),
         ...(req.body as Record<string, unknown>),
         cookie: req.cookies,
-      });
+      };
+
+      // 处理 multipart/form-data 文件上传
+      if (req.isMultipart()) {
+        const data = await req.file();
+        if (data) {
+          const buffer = await data.toBuffer();
+          params.songFile = {
+            name: data.filename,
+            data: buffer,
+            mimetype: data.mimetype,
+            size: buffer.byteLength,
+          };
+        }
+      }
+
+      const result = await neteaseApi(params);
       return reply.send(result.body);
     } catch (error: unknown) {
       serverLog.error("❌ NcmAPI Error:", error);

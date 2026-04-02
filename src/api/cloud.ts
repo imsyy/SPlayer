@@ -85,3 +85,61 @@ export const importCloudSong = (
     params: { id, song, fileType, fileSize, bitrate, md5, artist, album, timestamp: Date.now() },
   });
 };
+
+/**
+ * 获取云盘上传凭证
+ * @param {string} md5 - 文件MD5
+ * @param {number} fileSize - 文件大小
+ * @param {string} filename - 文件名
+ */
+export const getCloudUploadToken = (
+  md5: string,
+  fileSize: number,
+  filename: string,
+) => {
+  return request({
+    url: "/cloud/upload/token",
+    method: "POST",
+    params: {
+      md5,
+      fileSize,
+      filename,
+      timestamp: Date.now(),
+    },
+  });
+};
+
+/**
+ * 完成云盘上传
+ * @param {string} songId - 歌曲ID
+ * @param {string} filename - 文件名
+ * @param {string} resourceId - 资源ID
+ * @param {string} md5 - 文件MD5
+ * @param {string} song - 歌曲名（可选）
+ * @param {string} artist - 艺术家（可选）
+ * @param {string} album - 专辑（可选）
+ */
+export const completeCloudUpload = (
+  songId: string,
+  filename: string,
+  resourceId: string,
+  md5: string,
+  song?: string,
+  artist?: string,
+  album?: string,
+) => {
+  return request({
+    url: "/cloud/upload/complete",
+    method: "POST",
+    params: {
+      songId,
+      filename,
+      resourceId,
+      md5,
+      song,
+      artist,
+      album,
+      timestamp: Date.now(),
+    },
+  });
+};

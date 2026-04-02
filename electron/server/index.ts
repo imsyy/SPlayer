@@ -12,15 +12,21 @@ import fastify from "fastify";
 
 const initAppServer = async () => {
   try {
+    const uploadFileSizeLimit = 100 * 1024 * 1024; // 100MB
     const server = fastify({
       routerOptions: {
         // 忽略尾随斜杠
         ignoreTrailingSlash: true,
       },
+      bodyLimit: uploadFileSizeLimit,
     });
     // 注册插件
     server.register(fastifyCookie);
-    server.register(fastifyMultipart);
+    server.register(fastifyMultipart, {
+      limits: {
+        fileSize: uploadFileSizeLimit
+      },
+    });
     // 生产环境启用静态文件
     if (!isDev) {
       serverLog.info("📂 Serving static files from /renderer");
