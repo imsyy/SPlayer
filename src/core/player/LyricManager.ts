@@ -1,8 +1,15 @@
 import { qqMusicMatch } from "@/api/qqmusic";
+import { cloudSongLyric } from "@/api/cloud";
 import { songLyric, songLyricTTML } from "@/api/song";
 import { keywords as defaultKeywords, regexes as defaultRegexes } from "@/assets/data/exclude";
 import { useCacheManager } from "@/core/resource/CacheManager";
-import { useMusicStore, useSettingStore, useStatusStore, useStreamingStore } from "@/stores";
+import {
+  useDataStore,
+  useMusicStore,
+  useSettingStore,
+  useStatusStore,
+  useStreamingStore,
+} from "@/stores";
 import type { LyricPriority, SongLyric } from "@/types/lyric";
 import type { SongType } from "@/types/main";
 import { isElectron } from "@/utils/env";
@@ -75,7 +82,10 @@ class LyricManager {
    * @param type 缓存类型
    * @returns 缓存数据
    */
-  private async getRawLyricCache(id: number, type: "lrc" | "ttml" | "qrc"): Promise<string | null> {
+  private async getRawLyricCache(
+    id: number | string,
+    type: "lrc" | "ttml" | "qrc",
+  ): Promise<string | null> {
     const settingStore = useSettingStore();
     if (!isElectron || !settingStore.cacheEnabled) return null;
     try {
@@ -99,7 +109,11 @@ class LyricManager {
    * @param type 缓存类型
    * @param data 数据
    */
-  private async saveRawLyricCache(id: number, type: "lrc" | "ttml" | "qrc", data: string) {
+  private async saveRawLyricCache(
+    id: number | string,
+    type: "lrc" | "ttml" | "qrc",
+    data: string,
+  ) {
     const settingStore = useSettingStore();
     if (!isElectron || !settingStore.cacheEnabled) return;
     try {
@@ -304,8 +318,11 @@ class LyricManager {
       if (qqMusicAdopted && result.yrcData.length > 0) return;
 
       if (typeof id !== "number") return;
+      const dataStore = useDataStore();
+      const userId = dataStore.userData.userId;
+      const lyricCacheKey = song.pc && userId ? `cloud_${userId}_${id}` : id;
       let data: any = null;
-      const cached = await this.getRawLyricCache(id, "lrc");
+      const cached = await this.getRawLyricCache(lyricCacheKey, "lrc");
       if (cached) {
         try {
           data = JSON.parse(cached);
@@ -314,33 +331,60 @@ class LyricManager {
         }
       }
       if (!data) {
-        data = await songLyric(id);
+        if (song.pc && userId) {
+          data = await cloudSongLyric(id, userId);
+        }
+        if (!data) {
+          data = await songLyric(id);
+        }
         if (data && data.code === 200) {
-          this.saveRawLyricCache(id, "lrc", JSON.stringify(data));
+          this.saveRawLyricCache(lyricCacheKey, "lrc", JSON.stringify(data));
         }
       }
       if (!data || data.code !== 200) return;
       let lrcLines: LyricLine[] = [];
       let yrcLines: LyricLine[] = [];
+      const getLyricText = (lyric: unknown): string => {
+        if (typeof lyric === "string") return lyric;
+        if (
+          lyric &&
+          typeof lyric === "object" &&
+          "lyric" in lyric &&
+          typeof lyric.lyric === "string"
+        ) {
+          return lyric.lyric;
+        }
+        return "";
+      };
+      const lrcContent = getLyricText(data?.lrc);
+      const tlyricContent = getLyricText(data?.tlyric);
+      const romalrcContent = getLyricText(data?.romalrc);
+      const yrcContent = getLyricText(data?.yrc);
+      const ytlrcContent = getLyricText(data?.ytlrc);
+      const yromalrcContent = getLyricText(data?.yromalrc);
       // 普通歌词
-      if (data?.lrc?.lyric) {
-        lrcLines = parseLrc(data.lrc.lyric) || [];
+      if (lrcContent) {
+        lrcLines = parseLrc(lrcContent) || [];
         // 普通歌词翻译
-        if (data?.tlyric?.lyric)
-          lrcLines = alignLyrics(lrcLines, parseLrc(data.tlyric.lyric), "translatedLyric");
+        if (tlyricContent) {
+          lrcLines = alignLyrics(lrcLines, parseLrc(tlyricContent), "translatedLyric");
+        }
         // 普通歌词音译
-        if (data?.romalrc?.lyric)
-          lrcLines = alignLyrics(lrcLines, parseLrc(data.romalrc.lyric), "romanLyric");
+        if (romalrcContent) {
+          lrcLines = alignLyrics(lrcLines, parseLrc(romalrcContent), "romanLyric");
+        }
       }
       // 逐字歌词
-      if (data?.yrc?.lyric) {
-        yrcLines = parseYrc(data.yrc.lyric) || [];
+      if (yrcContent) {
+        yrcLines = parseYrc(yrcContent) || [];
         // 逐字歌词翻译
-        if (data?.ytlrc?.lyric)
-          yrcLines = alignLyrics(yrcLines, parseLrc(data.ytlrc.lyric), "translatedLyric");
+        if (ytlrcContent) {
+          yrcLines = alignLyrics(yrcLines, parseLrc(ytlrcContent), "translatedLyric");
+        }
         // 逐字歌词音译
-        if (data?.yromalrc?.lyric)
-          yrcLines = alignLyrics(yrcLines, parseLrc(data.yromalrc.lyric), "romanLyric");
+        if (yromalrcContent) {
+          yrcLines = alignLyrics(yrcLines, parseLrc(yromalrcContent), "romanLyric");
+        }
       }
       if (lrcLines.length) result.lrcData = lrcLines;
       // 如果没有 TTML 且没有 QM YRC，则采用 网易云 YRC

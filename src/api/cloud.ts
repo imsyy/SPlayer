@@ -41,6 +41,18 @@ export const matchCloudSong = (uid: number, sid: number, asid: number) => {
   });
 };
 
+// 获取云盘歌曲歌词
+export const cloudSongLyric = (sid: number, uid: number) => {
+  return request({
+    url: "/cloud/lyric/get",
+    params: {
+      sid,
+      uid,
+      timestamp: Date.now(),
+    },
+  });
+};
+
 // 上传歌曲到云盘
 export const uploadCloudSong = (file: File) => {
   const formData = new FormData();
