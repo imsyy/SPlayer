@@ -13,6 +13,7 @@ export class MusicCacheService {
   private static instance: MusicCacheService;
   private cacheService: CacheService;
   private downloadingTasks: Map<string, Promise<string>> = new Map();
+  /** 音质优先级，兼容枚举值和历史缓存命名 */
   private readonly qualityPriority: Record<string, number> = {
     master: 100,
     dolby: 95,
@@ -54,6 +55,9 @@ export class MusicCacheService {
     return `${id}_${quality}.sc`;
   }
 
+  /**
+   * 从缓存文件名中提取音质标识
+   */
   private getQualityFromKey(id: number | string, key: string): string | null {
     const prefix = `${id}_`;
     if (!key.startsWith(prefix) || !key.endsWith(".sc")) {
@@ -62,10 +66,16 @@ export class MusicCacheService {
     return key.slice(prefix.length, -3);
   }
 
+  /**
+   * 获取音质权重
+   */
   private getQualityWeight(quality: string): number {
     return this.qualityPriority[quality.toLowerCase()] ?? 0;
   }
 
+  /**
+   * 按音质优先级和最近修改时间筛选候选缓存
+   */
   private async pickCandidates(
     id: number | string,
   ): Promise<Array<{ filePath: string; quality: string }>> {
@@ -108,8 +118,9 @@ export class MusicCacheService {
 
   /**
    * 检查缓存是否存在
-   * 如果 quality 为 undefined，则按音质优先级与 mtime 选择匹配 id 的缓存
-   * 如果提供了 expectedMD5，则会校验文件 MD5，不一致则删除不匹配缓存并继续尝试
+   * 指定 quality 时仅检查目标音质
+   * 未指定 quality 时按音质优先级和最近修改时间选择候选缓存
+   * 提供 expectedMD5 时会校验文件哈希，不一致则删除旧缓存
    */
   public async hasCache(
     id: number | string,
@@ -137,6 +148,7 @@ export class MusicCacheService {
 
     for (const candidate of candidates) {
       const { filePath, quality: candidateQuality } = candidate;
+      // 无需校验哈希时，命中即返回
       if (!expectedMD5) {
         return filePath;
       }
