@@ -59,7 +59,7 @@
 
     <!-- 底部按钮 -->
     <n-flex class="menu" justify="end">
-      <n-button strong secondary @click="emit('close')"> 关闭 </n-button>
+      <n-button strong secondary @click="handleClose"> 关闭 </n-button>
     </n-flex>
   </div>
 </template>
@@ -73,6 +73,7 @@ import axios from "axios";
 const emit = defineEmits<{
   close: [];
   success: [];
+  updateHasActive: [val: boolean];
 }>();
 
 // 上传队列
@@ -88,6 +89,36 @@ interface UploadItem {
 const uploadQueue = ref<UploadItem[]>([]);
 const isUploading = ref(false);
 
+// 关闭按钮：有活跃任务时弹出确认
+const handleClose = () => {
+  const hasActive = uploadQueue.value.some(
+    (item) => item.status === "pending" || item.status === "uploading",
+  );
+  if (hasActive) {
+    window.$dialog.warning({
+      title: "确认关闭",
+      content: "上传队列中还有文件正在上传或等待上传，关闭将中断上传，是否确认关闭？",
+      positiveText: "确认关闭",
+      negativeText: "取消",
+      onPositiveClick: () => emit("close"),
+    });
+  } else {
+    emit("close");
+  }
+};
+
+// 同步活跃上传状态给父级（用于 X 按钮拦截）
+watch(
+  uploadQueue,
+  (queue) => {
+    const hasActive = queue.some(
+      (item) => item.status === "pending" || item.status === "uploading",
+    );
+    emit("updateHasActive", hasActive);
+  },
+  { deep: true },
+);
+
 // 文件上传前校验
 const beforeUpload = (data: { file: { file: File | null }; fileList: any[] }) => {
   const file = data.file.file;
@@ -102,13 +133,13 @@ const beforeUpload = (data: { file: { file: File | null }; fileList: any[] }) =>
   return true;
 };
 
-// 检查文件是否已在队列中（排除已成功和失败的文件）
+// 检查文件是否已在队列中
 const isFileInQueue = (file: File): boolean => {
-  return uploadQueue.value.some(item => 
-    item.file.name === file.name && 
-    item.file.size === file.size &&
-    item.file.lastModified === file.lastModified &&
-    (item.status === 'pending' || item.status === 'uploading')
+  return uploadQueue.value.some(
+    (item) =>
+      item.file.name === file.name &&
+      item.file.size === file.size &&
+      item.file.lastModified === file.lastModified,
   );
 };
 
@@ -160,15 +191,21 @@ const handleUpload = async (options: UploadCustomRequestOptions) => {
 
 // 处理上传队列
 const processUploadQueue = async () => {
-  for (const item of uploadQueue.value) {
-    if (item.status !== "pending") continue;
-
+  let item: UploadItem | undefined;
+  while ((item = uploadQueue.value.find((i) => i.status === "pending")) !== undefined) {
     try {
       // 先尝试后端代理，失败则回退到客户端直传
       await uploadFileWithFallback(item);
       item.status = "success";
       item.statusText = "上传完成！";
       item.percent = 100;
+      emit("success");
+      // 3 秒后清理该成功条目
+      const doneItem = item;
+      setTimeout(() => {
+        const idx = uploadQueue.value.indexOf(doneItem);
+        if (idx !== -1) uploadQueue.value.splice(idx, 1);
+      }, 3000);
     } catch (error: any) {
       console.error(`${item.file.name} 上传失败:`, error);
       item.status = "error";
@@ -177,18 +214,6 @@ const processUploadQueue = async () => {
       item.statusText = `上传失败: ${errorMsg}`;
       item.percent = 0;
     }
-  }
-  
-  // 检查是否有成功的上传
-  const hasSuccess = uploadQueue.value.some(item => item.status === "success");
-  if (hasSuccess) {
-    // 通知刷新
-    emit("success");
-    
-    // 清理已成功上传的文件
-    setTimeout(() => {
-      uploadQueue.value = uploadQueue.value.filter(item => item.status !== "success");
-    }, 3000);
   }
 };
 

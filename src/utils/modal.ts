@@ -725,17 +725,35 @@ export const openExcludeComment = async () => {
 /** 打开云盘上传弹窗 */
 export const openCloudUpload = async (onSuccess?: () => void) => {
   const { default: CloudUpload } = await import("@/components/Modal/CloudUpload.vue");
+  // 追踪是否有活跃上传任务
+  let hasActiveUploads = false;
   const modal = window.$modal.create({
     preset: "card",
     transformOrigin: "center",
     autoFocus: false,
+    maskClosable: false,
     style: { width: "700px" },
     title: "云盘上传",
+    onClose: () => {
+      if (hasActiveUploads) {
+        window.$dialog.warning({
+          title: "确认关闭",
+          content: "上传队列中还有文件正在上传或等待上传，关闭将中断上传，是否确认关闭？",
+          positiveText: "确认关闭",
+          negativeText: "取消",
+          onPositiveClick: () => modal.destroy(),
+        });
+        return false;
+      }
+    },
     content: () => {
       return h(CloudUpload, {
         onClose: () => modal.destroy(),
         onSuccess: () => {
           if (onSuccess) onSuccess();
+        },
+        onUpdateHasActive: (val: boolean) => {
+          hasActiveUploads = val;
         },
       });
     },
