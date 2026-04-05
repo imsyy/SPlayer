@@ -156,12 +156,14 @@ export class MusicCacheService {
         if (existsSync(p)) {
           candidates.push({ filePath: p, quality });
         }
-      } catch {
+      } catch (e) {
+        cacheLog.warn(`[MusicCache] 检查精确缓存失败，ID: ${id}, 音质: ${quality}:`, e);
       }
     } else {
       try {
         candidates.push(...(await this.pickCandidates(id)));
-      } catch {
+      } catch (e) {
+        cacheLog.warn(`[MusicCache] 获取候选缓存失败，ID: ${id}:`, e);
       }
     }
 
@@ -259,9 +261,16 @@ export class MusicCacheService {
         // 下载成功后，将临时文件重命名为正式缓存文件
         await rename(tempPath, filePath);
 
-        const finalStats = await stat(filePath);
-        const finalMD5 = await this.calculateMD5(filePath);
-        await this.writeMeta(filePath, finalMD5, finalStats.size).catch(() => {});
+        // 异步写入元数据（即发即忘，不阻塞主流程）
+        (async () => {
+          try {
+            const finalStats = await stat(filePath);
+            const finalMD5 = await this.calculateMD5(filePath);
+            await this.writeMeta(filePath, finalMD5, finalStats.size);
+          } catch (e) {
+            cacheLog.warn(`[MusicCache] 写入元数据失败，路径: ${filePath}:`, e);
+          }
+        })();
 
         // 更新 CacheService 的大小记录
         await this.cacheService.notifyFileChange("music", key);
