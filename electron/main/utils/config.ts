@@ -32,6 +32,11 @@ export const appName = app.getName() || "SPlayer";
  */
 export const port = Number(import.meta.env["VITE_SERVER_PORT"] || 25884);
 
+const devRendererUrl = process.env["ELECTRON_RENDERER_URL"]?.replace(
+  "://localhost",
+  "://127.0.0.1",
+);
+
 /**
  * 默认 AMLL TTML DB Server
  * @returns string
@@ -43,24 +48,22 @@ export const defaultAMLLDbServer = "https://amlldb.bikonoo.com/ncm-lyrics/%s.ttm
  * @returns string
  */
 export const mainWinUrl =
-  isDev && process.env["ELECTRON_RENDERER_URL"]
-    ? process.env["ELECTRON_RENDERER_URL"]
-    : `http://localhost:${port}`;
+  isDev && devRendererUrl ? devRendererUrl : `http://127.0.0.1:${port}`;
 
 /**
  * 歌词窗口加载地址
  * @returns string
  */
 export const lyricWinUrl =
-  isDev && process.env["ELECTRON_RENDERER_URL"]
-    ? `${process.env["ELECTRON_RENDERER_URL"]}/#/desktop-lyric`
-    : `http://localhost:${port}/#/desktop-lyric`;
+  isDev && devRendererUrl
+    ? `${devRendererUrl}/#/desktop-lyric`
+    : `http://127.0.0.1:${port}/#/desktop-lyric`;
 
 /**
  * 加载窗口地址
  * @returns string
  */
 export const loadWinUrl =
-  isDev && process.env["ELECTRON_RENDERER_URL"]
-    ? `${process.env["ELECTRON_RENDERER_URL"]}/web/loading/index.html`
-    : `http://localhost:${port}/web/loading/index.html`;
+  isDev && devRendererUrl
+    ? `${devRendererUrl}/web/loading/index.html`
+    : `http://127.0.0.1:${port}/web/loading/index.html`;

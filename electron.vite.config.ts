@@ -91,6 +91,7 @@ export default defineConfig(({ mode }) => {
         },
       },
       server: {
+        host: "127.0.0.1",
         port: webPort,
         // 代理
         proxy: {
@@ -102,6 +103,7 @@ export default defineConfig(({ mode }) => {
         },
       },
       preview: {
+        host: "127.0.0.1",
         port: webPort,
       },
       build: {
