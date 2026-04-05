@@ -66,10 +66,6 @@ export class MusicCacheService {
     return this.qualityPriority[quality.toLowerCase()] ?? 0;
   }
 
-  private async removeCacheFile(filePath: string): Promise<void> {
-    await unlink(filePath).catch(() => {});
-  }
-
   private async pickCandidates(
     id: number | string,
   ): Promise<Array<{ filePath: string; quality: string }>> {
@@ -150,7 +146,7 @@ export class MusicCacheService {
           cacheLog.info(
             `[MusicCache] 缓存 MD5 不匹配，删除旧缓存。ID: ${id}, 音质: ${candidateQuality}, 期望: ${expectedMD5}, 实际: ${fileMD5}`,
           );
-          await this.removeCacheFile(filePath);
+          await unlink(filePath).catch(() => {});
           if (quality) {
             return null;
           }
