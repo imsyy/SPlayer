@@ -1,5 +1,5 @@
 import { existsSync, createReadStream } from "fs";
-import { readFile, rename, stat, unlink, writeFile } from "fs/promises";
+import { rename, stat, unlink } from "fs/promises";
 import { createHash } from "crypto";
 import { cacheLog } from "../logger";
 import { useStore } from "../store";
@@ -54,10 +54,6 @@ export class MusicCacheService {
     return `${id}_${quality}.sc`;
   }
 
-  private getMetaPath(filePath: string): string {
-    return `${filePath}.meta.json`;
-  }
-
   private getQualityFromKey(id: number | string, key: string): string | null {
     const prefix = `${id}_`;
     if (!key.startsWith(prefix) || !key.endsWith(".sc")) {
@@ -70,34 +66,8 @@ export class MusicCacheService {
     return this.qualityPriority[quality] ?? 0;
   }
 
-  private async readMeta(filePath: string): Promise<{ md5?: string; size?: number } | null> {
-    try {
-      const metaPath = this.getMetaPath(filePath);
-      if (!existsSync(metaPath)) {
-        return null;
-      }
-      const raw = await readFile(metaPath, "utf-8");
-      const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== "object") {
-        return null;
-      }
-      const md5 = typeof parsed.md5 === "string" ? parsed.md5 : undefined;
-      const size = typeof parsed.size === "number" ? parsed.size : undefined;
-      return { md5, size };
-    } catch {
-      return null;
-    }
-  }
-
-  private async writeMeta(filePath: string, md5: string, size: number): Promise<void> {
-    const metaPath = this.getMetaPath(filePath);
-    const content = JSON.stringify({ md5, size, updatedAt: Date.now() });
-    await writeFile(metaPath, content, "utf-8");
-  }
-
-  private async removeCacheWithMeta(filePath: string): Promise<void> {
+  private async removeCacheFile(filePath: string): Promise<void> {
     await unlink(filePath).catch(() => {});
-    await unlink(this.getMetaPath(filePath)).catch(() => {});
   }
 
   private async pickCandidates(
@@ -175,18 +145,12 @@ export class MusicCacheService {
         return filePath;
       }
       try {
-        const fileInfo = await stat(filePath);
-        const meta = await this.readMeta(filePath);
-        let fileMD5 = meta?.md5;
-        if (!fileMD5 || (typeof meta?.size === "number" && meta.size !== fileInfo.size)) {
-          fileMD5 = await this.calculateMD5(filePath);
-          await this.writeMeta(filePath, fileMD5, fileInfo.size).catch(() => {});
-        }
+        const fileMD5 = await this.calculateMD5(filePath);
         if (fileMD5.toLowerCase() !== expectedMD5.toLowerCase()) {
           cacheLog.info(
             `[MusicCache] 缓存 MD5 不匹配，删除旧缓存。ID: ${id}, 音质: ${candidateQuality}, 期望: ${expectedMD5}, 实际: ${fileMD5}`,
           );
-          await this.removeCacheWithMeta(filePath);
+          await this.removeCacheFile(filePath);
           if (quality) {
             return null;
           }
@@ -194,7 +158,7 @@ export class MusicCacheService {
         }
         return filePath;
       } catch (error) {
-        cacheLog.error(`[MusicCache] Failed to validate MD5 for ${filePath}:`, error);
+        cacheLog.error(`[MusicCache] 校验缓存 MD5 失败，路径: ${filePath}:`, error);
         if (quality) {
           return null;
         }
@@ -262,17 +226,6 @@ export class MusicCacheService {
 
         // 下载成功后，将临时文件重命名为正式缓存文件
         await rename(tempPath, filePath);
-
-        // 异步写入元数据（即发即忘，不阻塞主流程）
-        (async () => {
-          try {
-            const finalStats = await stat(filePath);
-            const finalMD5 = await this.calculateMD5(filePath);
-            await this.writeMeta(filePath, finalMD5, finalStats.size);
-          } catch (e) {
-            cacheLog.warn(`[MusicCache] 写入元数据失败，路径: ${filePath}:`, e);
-          }
-        })();
 
         // 更新 CacheService 的大小记录
         await this.cacheService.notifyFileChange("music", key);
