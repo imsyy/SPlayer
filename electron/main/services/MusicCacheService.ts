@@ -100,7 +100,9 @@ export class MusicCacheService {
     await unlink(this.getMetaPath(filePath)).catch(() => {});
   }
 
-  private async pickCandidates(id: number | string): Promise<Array<{ filePath: string; quality: string }>> {
+  private async pickCandidates(
+    id: number | string,
+  ): Promise<Array<{ filePath: string; quality: string }>> {
     const items = await this.cacheService.list("music");
     const result: Array<{ filePath: string; quality: string; weight: number; mtime: number }> = [];
     for (const item of items) {
