@@ -745,6 +745,7 @@ export const openCloudUpload = async (onSuccess?: () => void) => {
         });
         return false;
       }
+      return true;
     },
     content: () => {
       return h(CloudUpload, {
