@@ -13,26 +13,18 @@ export class MusicCacheService {
   private static instance: MusicCacheService;
   private cacheService: CacheService;
   private downloadingTasks: Map<string, Promise<string>> = new Map();
-  /** 音质优先级，兼容枚举值和历史缓存命名 */
+  /** 音质优先级 */
   private readonly qualityPriority: Record<string, number> = {
-    master: 100,
-    dolby: 95,
-    spatial: 90,
-    surround: 85,
+    "master": 100,
+    "dolby": 95,
+    "spatial": 90,
+    "surround": 85,
     "hi-res": 80,
-    sq: 70,
-    lossless: 70,
-    flac: 70,
-    hq: 60,
-    exhigh: 60,
-    "320k": 60,
-    high: 60,
-    mq: 50,
-    higher: 50,
-    "192k": 50,
-    lq: 40,
-    standard: 40,
-    "128k": 40,
+    "sq": 70,
+    "hq": 60,
+    "mq": 50,
+    "lq": 40,
+    "standard": 40,
   };
 
   private constructor() {
