@@ -14,22 +14,22 @@ export class MusicCacheService {
   private cacheService: CacheService;
   private downloadingTasks: Map<string, Promise<string>> = new Map();
   private readonly qualityPriority: Record<string, number> = {
-    Master: 100,
-    Dolby: 95,
-    Spatial: 90,
-    Surround: 85,
-    "Hi-Res": 80,
-    SQ: 70,
+    master: 100,
+    dolby: 95,
+    spatial: 90,
+    surround: 85,
+    "hi-res": 80,
+    sq: 70,
     lossless: 70,
     flac: 70,
-    HQ: 60,
+    hq: 60,
     exhigh: 60,
     "320k": 60,
     high: 60,
-    MQ: 50,
+    mq: 50,
     higher: 50,
     "192k": 50,
-    LQ: 40,
+    lq: 40,
     standard: 40,
     "128k": 40,
   };
@@ -63,7 +63,7 @@ export class MusicCacheService {
   }
 
   private getQualityWeight(quality: string): number {
-    return this.qualityPriority[quality] ?? 0;
+    return this.qualityPriority[quality.toLowerCase()] ?? 0;
   }
 
   private async removeCacheFile(filePath: string): Promise<void> {
