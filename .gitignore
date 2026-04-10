@@ -40,3 +40,4 @@ docs/.vitepress/dist
 .trae/*
 .cursor/*
 .claude/*
+.qwen/*

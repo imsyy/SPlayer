@@ -1,0 +1,123 @@
+# Flatpak manifest for SPlayer - Test Version
+# 
+# How to test:
+# 1. Build: flatpak-builder --force-clean --user build-dir com.imsyy.SPlayer.yml
+# 2. Install: flatpak-builder --force-clean --user --install build-dir com.imsyy.SPlayer.yml
+# 3. Run: flatpak run com.imsyy.SPlayer
+# 4. Clean: flatpak uninstall com.imsyy.SPlayer && rm -rf build-dir .flatpak-builder
+
+id: com.imsyy.SPlayer
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.node22
+  - org.freedesktop.Sdk.Extension.rust-stable
+
+command: run.sh
+
+finish-args:
+  # Display server
+  - --socket=x11
+  - --socket=wayland
+  # Audio
+  - --socket=pulseaudio
+  # Network for music streaming
+  - --share=network
+  # GPU acceleration
+  - --device=dri
+  # File access
+  - --filesystem=home
+  - --filesystem=xdg-music
+  # Notifications
+  - --talk-name=org.freedesktop.Notifications
+  # DNS resolution and network services
+  - --system-talk-name=org.freedesktop.resolve1
+  - --talk-name=org.freedesktop.NetworkManager
+  - --talk-name=org.freedesktop.login1
+  # Allow all system bus access for network operations
+  - --socket=session-bus
+  - --socket=system-bus
+
+modules:
+  - name: SPlayer
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/node22/bin:/usr/lib/sdk/rust-stable/bin
+      env:
+        # Chinese npm mirror
+        NPM_CONFIG_REGISTRY: 'https://registry.npmmirror.com'
+        # Skip electron binary download
+        ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+        NPM_CONFIG_STRICT_SSL: 'false'
+      # Network during build
+      build-args:
+        - --share=network
+    build-commands:
+      # Complete build script
+      - |
+        set -e
+        
+        echo "=== Step 1: Installing pnpm ==="
+        npm install --prefix=/var/tmp pnpm@10
+        export PATH="/var/tmp/node_modules/.bin:$PATH"
+        
+        echo "=== Step 2: Installing dependencies and building native modules ==="
+        # Build better-sqlite3 and other native modules
+        pnpm install --frozen-lockfile
+        
+        # Rebuild native modules for Electron runtime
+        echo "=== Step 2b: Rebuilding native modules for Electron ==="
+        npx electron-builder install-app-deps
+        
+        echo "=== Step 3: Building Rust native modules ==="
+        pnpm build:native
+        
+        echo "=== Step 5: Building Electron app ==="
+        npx electron-vite build
+        
+        echo "=== Step 5: Packaging with electron-builder ==="
+        # Build only unpacked directory, avoid pacman/rpm/deb
+        npx electron-builder --linux --config electron-builder-flatpak.ts
+        
+        echo "=== Step 6: Installing to Flatpak structure ==="
+        install -d /app/share/SPlayer
+        install -d /app/bin
+        install -d /app/share/applications
+        install -d /app/share/icons/hicolor/512x512/apps
+        
+        # Copy built application
+        cp -r dist/linux-unpacked/* /app/share/SPlayer/
+        
+        # Desktop entry
+        cat > /app/share/applications/com.imsyy.SPlayer.desktop << 'DESKTOP'
+        [Desktop Entry]
+        Name=SPlayer
+        Comment=A minimalist music player
+        Exec=run.sh %U
+        Icon=com.imsyy.SPlayer
+        Type=Application
+        Categories=Audio;Music;Player;AudioVideo;
+        MimeType=x-scheme-handler/orpheus;
+        StartupNotify=true
+        DESKTOP
+        
+        # Icon
+        install -Dm644 public/icons/favicon-512x512.png /app/share/icons/hicolor/512x512/apps/com.imsyy.SPlayer.png
+        
+        # Launcher script (disable SUID sandbox for Flatpak)
+        cat > /app/bin/run.sh << 'LAUNCHER'
+        #!/bin/bash
+        exec /app/share/SPlayer/SPlayer --no-sandbox "$@"
+        LAUNCHER
+        chmod +x /app/bin/run.sh
+        
+        echo "=== Build Complete ==="
+
+    sources:
+      # Application source
+      - type: dir
+        path: .
+      # Custom electron-builder config
+      - type: file
+        path: electron-builder-flatpak.ts
