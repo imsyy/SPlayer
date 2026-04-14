@@ -1,7 +1,7 @@
 import { useSettingStore } from "@/stores";
 import { TypedEventTarget } from "@/utils/TypedEventTarget";
 import type { IExtendedAudioContext } from "@/types/audio/context";
-import { AudioEffectManager } from "./AudioEffectManager";
+import { AudioEffectManager, type SpatialWaveform } from "./AudioEffectManager";
 import type { EngineCapabilities, IPlaybackEngine, FadeCurve } from "./IPlaybackEngine";
 import { getSharedAudioContext, getSharedMasterInput } from "../automix/SharedAudioContext";
 
@@ -490,6 +490,26 @@ export abstract class BaseAudioPlayer
   /** 获取滤波器增益 */
   public getFilterGains(): number[] {
     return this.effectManager ? this.effectManager.getFilterGains() : [];
+  }
+
+  /** 设置空间音效开关 */
+  public setSpatialEnabled(enabled: boolean, depth: number = 1, rampTime: number = 0.05) {
+    this.effectManager?.setSpatialEnabled(enabled, depth, rampTime);
+  }
+
+  /** 设置空间音效速率 (Hz) */
+  public setSpatialRate(hz: number, rampTime: number = 0.1) {
+    this.effectManager?.setSpatialRate(hz, rampTime);
+  }
+
+  /** 设置空间音效深度 (0-1) */
+  public setSpatialDepth(depth: number, rampTime: number = 0.1) {
+    this.effectManager?.setSpatialDepth(depth, rampTime);
+  }
+
+  /** 设置空间音效 LFO 波形 */
+  public setSpatialWaveform(waveform: SpatialWaveform) {
+    this.effectManager?.setSpatialWaveform(waveform);
   }
 
   /**

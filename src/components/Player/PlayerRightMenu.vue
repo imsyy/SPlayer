@@ -102,7 +102,13 @@ import { usePlayerController } from "@/core/player/PlayerController";
 import { useDataStore, useSettingStore, useStatusStore, useMusicStore } from "@/stores";
 import { isElectron } from "@/utils/env";
 import { renderIcon } from "@/utils/helper";
-import { openAutoClose, openChangeRate, openEqualizer, openABLoop } from "@/utils/modal";
+import {
+  openAutoClose,
+  openChangeRate,
+  openEqualizer,
+  openABLoop,
+  openSpatialAudio,
+} from "@/utils/modal";
 import { useAudioManager } from "@/core/player/AudioManager";
 import type { DropdownOption } from "naive-ui";
 import { useQualityControl } from "@/composables/useQualityControl";
@@ -155,6 +161,12 @@ const controlsOptions = computed<DropdownOption[]>(() => [
     disabled: !audioManager.capabilities.supportsEqualizer,
   },
   {
+    label: "空间音效",
+    key: "spatialAudio",
+    icon: renderIcon("AutoFix"),
+    disabled: !audioManager.capabilities.supportsSpatialAudio,
+  },
+  {
     label: "自动关闭",
     key: "autoClose",
     icon: renderIcon("TimeAuto"),
@@ -181,6 +193,13 @@ const handleControls = (key: string) => {
         return;
       }
       openEqualizer();
+      break;
+    case "spatialAudio":
+      if (!audioManager.capabilities.supportsSpatialAudio) {
+        window.$message.warning("当前引擎不支持空间音效");
+        return;
+      }
+      openSpatialAudio();
       break;
     case "autoClose":
       openAutoClose();

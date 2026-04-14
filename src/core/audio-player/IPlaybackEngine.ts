@@ -10,6 +10,8 @@ export interface EngineCapabilities {
   supportsEqualizer: boolean;
   /** 是否支持频谱分析 */
   supportsSpectrum: boolean;
+  /** 是否支持空间音效 (Auto-Pan / 8D) */
+  supportsSpatialAudio: boolean;
 }
 
 /**
@@ -189,6 +191,31 @@ export interface IPlaybackEngine {
   rampLowPassFilterToAt?(frequency: number, when: number): void;
 
   setLowPassQAt?(q: number, when: number): void;
+
+  /**
+   * 设置空间音效 (Auto-Pan) 开关
+   * @param enabled 是否启用
+   * @param depth 深度 (0-1)
+   * @param rampTime 渐变时间 (秒)
+   */
+  setSpatialEnabled?(enabled: boolean, depth?: number, rampTime?: number): void;
+
+  /**
+   * 设置空间音效 LFO 速率
+   * @param hz 左右摇摆频率 (Hz)
+   */
+  setSpatialRate?(hz: number, rampTime?: number): void;
+
+  /**
+   * 设置空间音效深度
+   * @param depth 深度 (0-1)
+   */
+  setSpatialDepth?(depth: number, rampTime?: number): void;
+
+  /**
+   * 设置空间音效 LFO 波形
+   */
+  setSpatialWaveform?(waveform: "sine" | "triangle" | "square"): void;
 
   /**
    * 获取频谱数据

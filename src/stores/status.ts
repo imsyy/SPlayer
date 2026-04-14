@@ -116,6 +116,16 @@ interface StatusState {
   eqBands: number[];
   /** 均衡器当前预设 key */
   eqPreset: string;
+  /** 空间音效是否开启 (Auto-Pan / 8D) */
+  spatialEnabled: boolean;
+  /** 空间音效速率（Hz，左右摇摆频率） */
+  spatialRate: number;
+  /** 空间音效深度（0.0 - 1.0） */
+  spatialDepth: number;
+  /** 空间音效 LFO 波形 */
+  spatialWaveform: "sine" | "triangle" | "square";
+  /** 空间音效当前预设 key */
+  spatialPreset: string;
   /** 自动关闭 */
   autoClose: {
     /** 自动关闭 */
@@ -215,6 +225,11 @@ export const useStatusStore = defineStore("status", {
     eqEnabled: false,
     eqBands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     eqPreset: "acoustic",
+    spatialEnabled: false,
+    spatialRate: 0.25,
+    spatialDepth: 0.9,
+    spatialWaveform: "sine",
+    spatialPreset: "classic8d",
     autoClose: {
       enable: false,
       time: 30,
@@ -413,6 +428,40 @@ export const useStatusStore = defineStore("status", {
       this.eqPreset = preset;
     },
     /**
+     * 设置空间音效开关
+     */
+    setSpatialEnabled(enabled: boolean) {
+      this.spatialEnabled = enabled;
+    },
+    /**
+     * 设置空间音效速率 (Hz)
+     */
+    setSpatialRate(hz: number) {
+      if (Number.isFinite(hz)) {
+        this.spatialRate = Math.max(0.05, Math.min(20, hz));
+      }
+    },
+    /**
+     * 设置空间音效深度 (0 - 1)
+     */
+    setSpatialDepth(depth: number) {
+      if (Number.isFinite(depth)) {
+        this.spatialDepth = Math.max(0, Math.min(1, depth));
+      }
+    },
+    /**
+     * 设置空间音效波形
+     */
+    setSpatialWaveform(waveform: "sine" | "triangle" | "square") {
+      this.spatialWaveform = waveform;
+    },
+    /**
+     * 设置空间音效预设 key
+     */
+    setSpatialPreset(preset: string) {
+      this.spatialPreset = preset;
+    },
+    /**
      * 重置播放状态
      */
     resetPlayStatus() {
@@ -462,6 +511,11 @@ export const useStatusStore = defineStore("status", {
       "eqEnabled",
       "eqBands",
       "eqPreset",
+      "spatialEnabled",
+      "spatialRate",
+      "spatialDepth",
+      "spatialWaveform",
+      "spatialPreset",
       "developerMode",
       "themeBackgroundMode",
       "backgroundConfig",

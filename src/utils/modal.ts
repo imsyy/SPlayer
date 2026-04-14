@@ -429,6 +429,21 @@ export const openEqualizer = async () => {
   });
 };
 
+/** 打开空间音效弹窗 (Auto-Pan / 8D) */
+export const openSpatialAudio = async () => {
+  const { default: SpatialAudio } = await import("@/components/Modal/SpatialAudio.vue");
+  window.$modal.create({
+    preset: "card",
+    transformOrigin: "center",
+    autoFocus: false,
+    style: { width: "520px" },
+    title: "空间音效",
+    content: () => {
+      return h(SpatialAudio);
+    },
+  });
+};
+
 /**
  * 打开简介弹窗
  * @param content 简介内容

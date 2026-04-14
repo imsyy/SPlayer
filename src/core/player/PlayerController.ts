@@ -673,6 +673,16 @@ class PlayerController {
           bands.forEach((val, idx) => audioManager.setFilterGain(idx, val));
         }
       }
+      // 恢复空间音效
+      if (audioManager.capabilities.supportsSpatialAudio) {
+        audioManager.setSpatialRate(statusStore.spatialRate, 0);
+        audioManager.setSpatialWaveform(statusStore.spatialWaveform);
+        audioManager.setSpatialEnabled(
+          statusStore.spatialEnabled,
+          statusStore.spatialDepth,
+          0.05,
+        );
+      }
       if (isElectron) {
         // 更新喜欢状态
         playerIpc.sendLikeStatus(dataStore.isLikeSong(playSongData?.id || 0));
@@ -1512,6 +1522,39 @@ class PlayerController {
   public disableEq() {
     const audioManager = useAudioManager();
     for (let i = 0; i < 10; i++) audioManager.setFilterGain(i, 0);
+  }
+
+  /**
+   * 更新空间音效 (Auto-Pan / 8D)
+   * @param options 空间音效选项
+   * @param options.enabled 是否启用
+   * @param options.rate LFO 速率 (Hz)
+   * @param options.depth 深度 (0-1)
+   * @param options.waveform LFO 波形
+   */
+  public updateSpatialAudio(options: {
+    enabled?: boolean;
+    rate?: number;
+    depth?: number;
+    waveform?: "sine" | "triangle" | "square";
+  }) {
+    const audioManager = useAudioManager();
+    if (!audioManager.capabilities.supportsSpatialAudio) return;
+    if (options.rate !== undefined) audioManager.setSpatialRate(options.rate);
+    if (options.depth !== undefined) audioManager.setSpatialDepth(options.depth);
+    if (options.waveform !== undefined) audioManager.setSpatialWaveform(options.waveform);
+    if (options.enabled !== undefined) {
+      const statusStore = useStatusStore();
+      audioManager.setSpatialEnabled(options.enabled, options.depth ?? statusStore.spatialDepth);
+    }
+  }
+
+  /**
+   * 禁用空间音效
+   */
+  public disableSpatialAudio() {
+    const audioManager = useAudioManager();
+    audioManager.setSpatialEnabled(false);
   }
 
   /**

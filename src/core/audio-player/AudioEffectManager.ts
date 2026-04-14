@@ -1,6 +1,8 @@
 /**
- * @fileoverview 负责均衡器和频谱分析的管理器
+ * @fileoverview 负责均衡器、空间音效和频谱分析的管理器
  */
+
+export type SpatialWaveform = "sine" | "triangle" | "square";
 
 export class AudioEffectManager {
   private audioCtx: AudioContext;
@@ -14,6 +16,15 @@ export class AudioEffectManager {
   private highPassFilter: BiquadFilterNode | null = null;
   /** AutoMIX 专用滤波器：低通 (用于切出时过滤低频) */
   private lowPassFilter: BiquadFilterNode | null = null;
+
+  /** 空间音效：声像节点 */
+  private pannerNode: StereoPannerNode | null = null;
+  /** 空间音效：LFO 振荡器 (驱动 pan 参数) */
+  private spatialLfo: OscillatorNode | null = null;
+  /** 空间音效：LFO 深度增益 (0 = 关闭直通，1 = 完全左右摇摆) */
+  private spatialDepthGain: GainNode | null = null;
+  /** 空间音效：LFO 是否已启动 (OscillatorNode 只能 start 一次) */
+  private spatialLfoStarted: boolean = false;
 
   /** 平滑后的低频音量 */
   private smoothedLowFreqVolume: number = 0;
@@ -54,13 +65,26 @@ export class AudioEffectManager {
     this.lowPassFilter.type = "lowpass";
     this.lowPassFilter.frequency.value = 22000; // 默认关闭 (直通)
     this.lowPassFilter.Q.value = 0.707;
+
+    // 创建空间音效节点
+    // pan = 0 为居中，LFO 通过 spatialDepthGain 调制 pan 参数实现左右摇摆
+    // 初始 depthGain = 0 表示不施加调制（直通）
+    this.pannerNode = this.audioCtx.createStereoPanner();
+    this.spatialDepthGain = this.audioCtx.createGain();
+    this.spatialDepthGain.gain.value = 0;
+    this.spatialLfo = this.audioCtx.createOscillator();
+    this.spatialLfo.type = "sine";
+    this.spatialLfo.frequency.value = 0.25; // 默认 0.25 Hz (4 秒一圈)
+    this.spatialLfo.connect(this.spatialDepthGain);
+    this.spatialDepthGain.connect(this.pannerNode.pan);
   }
 
   /**
    * 将效果链连接到音频管线中
-   * 链路: Input -> HighPass -> LowPass -> Filter[0]... -> Analyser -> Output
+   * 链路: Input -> HighPass -> LowPass -> Filter[0]... -> Analyser -> Panner -> Output
+   * 频谱分析放在 Panner 之前，使频谱显示不受左右摇摆影响。
    * @param inputNode 输入音频节点 (通常是 SourceNode)
-   * @returns 链条的最后一个节点 (AnalyserNode)，供调用者连接到 GainNode 或 Destination
+   * @returns 链条的最后一个节点 (StereoPannerNode)，供调用者连接到 GainNode 或 Destination
    */
   public connect(inputNode: AudioNode): AudioNode {
     let currentNode = inputNode;
@@ -87,7 +111,95 @@ export class AudioEffectManager {
       currentNode = this.analyserNode;
     }
 
+    // 连接到空间音效 (StereoPanner)
+    if (this.pannerNode) {
+      currentNode.connect(this.pannerNode);
+      currentNode = this.pannerNode;
+    }
+
     return currentNode;
+  }
+
+  /**
+   * 确保 LFO 已启动 (OscillatorNode 的 start 只能调用一次)
+   */
+  private ensureSpatialLfoStarted() {
+    if (this.spatialLfo && !this.spatialLfoStarted) {
+      try {
+        this.spatialLfo.start();
+        this.spatialLfoStarted = true;
+      } catch {
+        // 已经启动过，忽略
+        this.spatialLfoStarted = true;
+      }
+    }
+  }
+
+  /**
+   * 设置空间音效启用状态
+   * 通过将 LFO 深度增益渐变到 0 或指定深度实现启停，避免爆音
+   * @param enabled 是否开启
+   * @param depth 深度 (0.0 - 1.0)，关闭时该值忽略
+   * @param rampTime 渐变时间 (秒)，默认 0.05s
+   */
+  public setSpatialEnabled(enabled: boolean, depth: number = 1, rampTime: number = 0.05) {
+    if (!this.spatialDepthGain || !this.pannerNode) return;
+
+    this.ensureSpatialLfoStarted();
+
+    const currentTime = this.audioCtx.currentTime;
+    const safeRamp = Math.max(0.01, rampTime);
+    const targetGain = enabled ? Math.max(0, Math.min(1, depth)) : 0;
+
+    this.spatialDepthGain.gain.cancelScheduledValues(currentTime);
+    this.spatialDepthGain.gain.setValueAtTime(this.spatialDepthGain.gain.value, currentTime);
+    this.spatialDepthGain.gain.linearRampToValueAtTime(targetGain, currentTime + safeRamp);
+
+    // 关闭时把 panner 的固定 pan 拉回 0 (居中)，防止 LFO 停止瞬间卡在某一侧
+    if (!enabled) {
+      this.pannerNode.pan.cancelScheduledValues(currentTime);
+      this.pannerNode.pan.setValueAtTime(this.pannerNode.pan.value, currentTime);
+      this.pannerNode.pan.linearRampToValueAtTime(0, currentTime + safeRamp);
+    }
+  }
+
+  /**
+   * 设置空间音效速率 (LFO 频率)
+   * @param hz 左右摇摆速率 (Hz)，推荐范围 0.05 ~ 4
+   * @param rampTime 渐变时间 (秒)
+   */
+  public setSpatialRate(hz: number, rampTime: number = 0.1) {
+    if (!this.spatialLfo) return;
+    const safeHz = Math.max(0.05, Math.min(20, hz));
+    const currentTime = this.audioCtx.currentTime;
+    const safeRamp = Math.max(0.01, rampTime);
+    this.spatialLfo.frequency.cancelScheduledValues(currentTime);
+    this.spatialLfo.frequency.setValueAtTime(this.spatialLfo.frequency.value, currentTime);
+    this.spatialLfo.frequency.linearRampToValueAtTime(safeHz, currentTime + safeRamp);
+  }
+
+  /**
+   * 设置空间音效深度 (LFO 摆动幅度)
+   * @param depth 深度 (0.0 - 1.0)，0 = 无摇摆，1 = 完全左右
+   * @param rampTime 渐变时间 (秒)
+   */
+  public setSpatialDepth(depth: number, rampTime: number = 0.1) {
+    if (!this.spatialDepthGain) return;
+    const safeDepth = Math.max(0, Math.min(1, depth));
+    const currentTime = this.audioCtx.currentTime;
+    const safeRamp = Math.max(0.01, rampTime);
+    this.spatialDepthGain.gain.cancelScheduledValues(currentTime);
+    this.spatialDepthGain.gain.setValueAtTime(this.spatialDepthGain.gain.value, currentTime);
+    this.spatialDepthGain.gain.linearRampToValueAtTime(safeDepth, currentTime + safeRamp);
+  }
+
+  /**
+   * 设置空间音效波形
+   * sine = 平滑摇摆；triangle = 匀速左右；square = 硬切换（跳跃式）
+   */
+  public setSpatialWaveform(waveform: SpatialWaveform) {
+    if (!this.spatialLfo) return;
+    this.spatialLfo.type = waveform;
   }
 
   /**
@@ -288,5 +400,16 @@ export class AudioEffectManager {
     this.highPassFilter?.disconnect();
     this.lowPassFilter?.disconnect();
     this.analyserNode?.disconnect();
+    if (this.spatialLfo && this.spatialLfoStarted) {
+      try {
+        this.spatialLfo.stop();
+      } catch {
+        // 可能已经停止过
+      }
+    }
+    this.spatialLfo?.disconnect();
+    this.spatialDepthGain?.disconnect();
+    this.pannerNode?.disconnect();
+    this.spatialLfoStarted = false;
   }
 }

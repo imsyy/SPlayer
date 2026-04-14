@@ -56,6 +56,7 @@ export class MpvPlayer extends EventTarget implements IPlaybackEngine {
     supportsSinkId: true,
     supportsEqualizer: false,
     supportsSpectrum: false,
+    supportsSpatialAudio: false,
   };
 
   public init(): void {
