@@ -116,16 +116,32 @@ interface StatusState {
   eqBands: number[];
   /** 均衡器当前预设 key */
   eqPreset: string;
-  /** 空间音效是否开启 (Auto-Pan / 8D) */
-  spatialEnabled: boolean;
-  /** 空间音效速率（Hz，左右摇摆频率） */
-  spatialRate: number;
-  /** 空间音效深度（0.0 - 1.0） */
-  spatialDepth: number;
-  /** 空间音效 LFO 波形 */
-  spatialWaveform: "sine" | "triangle" | "square";
-  /** 空间音效当前预设 key */
-  spatialPreset: string;
+  /** 8D 环绕是否开启 */
+  effect8dEnabled: boolean;
+  /** 8D 摇摆速率（Hz） */
+  effect8dRate: number;
+  /** 8D 摇摆深度（0-1） */
+  effect8dDepth: number;
+  /** 3D HRTF 环绕是否开启 */
+  effect3dEnabled: boolean;
+  /** 3D 旋转速度（Hz） */
+  effect3dRate: number;
+  /** 3D 声源半径（0-1） */
+  effect3dRadius: number;
+  /** 混响是否开启 */
+  reverbEnabled: boolean;
+  /** 混响湿度（0-1） */
+  reverbWet: number;
+  /** 混响类型 */
+  reverbType: "hall" | "ktv" | "room";
+  /** 超重低音是否开启 */
+  bassBoostEnabled: boolean;
+  /** 超重低音增益 dB */
+  bassBoostGain: number;
+  /** 清澈人声是否开启 */
+  vocalEnhanceEnabled: boolean;
+  /** 清澈人声增益 dB */
+  vocalEnhanceGain: number;
   /** 自动关闭 */
   autoClose: {
     /** 自动关闭 */
@@ -225,11 +241,19 @@ export const useStatusStore = defineStore("status", {
     eqEnabled: false,
     eqBands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     eqPreset: "acoustic",
-    spatialEnabled: false,
-    spatialRate: 0.25,
-    spatialDepth: 0.9,
-    spatialWaveform: "sine",
-    spatialPreset: "classic8d",
+    effect8dEnabled: false,
+    effect8dRate: 0.25,
+    effect8dDepth: 0.9,
+    effect3dEnabled: false,
+    effect3dRate: 0.25,
+    effect3dRadius: 0.8,
+    reverbEnabled: false,
+    reverbWet: 0.4,
+    reverbType: "hall",
+    bassBoostEnabled: false,
+    bassBoostGain: 8,
+    vocalEnhanceEnabled: false,
+    vocalEnhanceGain: 6,
     autoClose: {
       enable: false,
       time: 30,
@@ -427,39 +451,71 @@ export const useStatusStore = defineStore("status", {
     setEqPreset(preset: string) {
       this.eqPreset = preset;
     },
-    /**
-     * 设置空间音效开关
-     */
-    setSpatialEnabled(enabled: boolean) {
-      this.spatialEnabled = enabled;
+    /** 设置 8D 环绕开关 */
+    setEffect8dEnabled(enabled: boolean) {
+      this.effect8dEnabled = enabled;
     },
-    /**
-     * 设置空间音效速率 (Hz)
-     */
-    setSpatialRate(hz: number) {
+    /** 设置 8D 速率 (Hz) */
+    setEffect8dRate(hz: number) {
       if (Number.isFinite(hz)) {
-        this.spatialRate = Math.max(0.05, Math.min(20, hz));
+        this.effect8dRate = Math.max(0.05, Math.min(4, hz));
       }
     },
-    /**
-     * 设置空间音效深度 (0 - 1)
-     */
-    setSpatialDepth(depth: number) {
+    /** 设置 8D 深度 (0-1) */
+    setEffect8dDepth(depth: number) {
       if (Number.isFinite(depth)) {
-        this.spatialDepth = Math.max(0, Math.min(1, depth));
+        this.effect8dDepth = Math.max(0, Math.min(1, depth));
       }
     },
-    /**
-     * 设置空间音效波形
-     */
-    setSpatialWaveform(waveform: "sine" | "triangle" | "square") {
-      this.spatialWaveform = waveform;
+    /** 设置 3D HRTF 环绕开关 */
+    setEffect3dEnabled(enabled: boolean) {
+      this.effect3dEnabled = enabled;
     },
-    /**
-     * 设置空间音效预设 key
-     */
-    setSpatialPreset(preset: string) {
-      this.spatialPreset = preset;
+    /** 设置 3D 速率 (Hz) */
+    setEffect3dRate(hz: number) {
+      if (Number.isFinite(hz)) {
+        this.effect3dRate = Math.max(0.02, Math.min(3, hz));
+      }
+    },
+    /** 设置 3D 半径 (0-1) */
+    setEffect3dRadius(radius: number) {
+      if (Number.isFinite(radius)) {
+        this.effect3dRadius = Math.max(0, Math.min(1, radius));
+      }
+    },
+    /** 设置混响开关 */
+    setReverbEnabled(enabled: boolean) {
+      this.reverbEnabled = enabled;
+    },
+    /** 设置混响湿度 (0-1) */
+    setReverbWet(wet: number) {
+      if (Number.isFinite(wet)) {
+        this.reverbWet = Math.max(0, Math.min(1, wet));
+      }
+    },
+    /** 设置混响类型 */
+    setReverbType(type: "hall" | "ktv" | "room") {
+      this.reverbType = type;
+    },
+    /** 设置超重低音开关 */
+    setBassBoostEnabled(enabled: boolean) {
+      this.bassBoostEnabled = enabled;
+    },
+    /** 设置超重低音增益 dB */
+    setBassBoostGain(gain: number) {
+      if (Number.isFinite(gain)) {
+        this.bassBoostGain = Math.max(0, Math.min(15, gain));
+      }
+    },
+    /** 设置清澈人声开关 */
+    setVocalEnhanceEnabled(enabled: boolean) {
+      this.vocalEnhanceEnabled = enabled;
+    },
+    /** 设置清澈人声增益 dB */
+    setVocalEnhanceGain(gain: number) {
+      if (Number.isFinite(gain)) {
+        this.vocalEnhanceGain = Math.max(0, Math.min(12, gain));
+      }
     },
     /**
      * 重置播放状态
@@ -511,11 +567,19 @@ export const useStatusStore = defineStore("status", {
       "eqEnabled",
       "eqBands",
       "eqPreset",
-      "spatialEnabled",
-      "spatialRate",
-      "spatialDepth",
-      "spatialWaveform",
-      "spatialPreset",
+      "effect8dEnabled",
+      "effect8dRate",
+      "effect8dDepth",
+      "effect3dEnabled",
+      "effect3dRate",
+      "effect3dRadius",
+      "reverbEnabled",
+      "reverbWet",
+      "reverbType",
+      "bassBoostEnabled",
+      "bassBoostGain",
+      "vocalEnhanceEnabled",
+      "vocalEnhanceGain",
       "developerMode",
       "themeBackgroundMode",
       "backgroundConfig",

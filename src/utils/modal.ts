@@ -429,17 +429,17 @@ export const openEqualizer = async () => {
   });
 };
 
-/** 打开空间音效弹窗 (Auto-Pan / 8D) */
-export const openSpatialAudio = async () => {
-  const { default: SpatialAudio } = await import("@/components/Modal/SpatialAudio.vue");
+/** 打开音效弹窗 (8D / 3D / 混响 / 超重低音 / 清澈人声) */
+export const openSoundEffects = async () => {
+  const { default: SoundEffects } = await import("@/components/Modal/SoundEffects.vue");
   window.$modal.create({
     preset: "card",
     transformOrigin: "center",
     autoFocus: false,
-    style: { width: "520px" },
-    title: "空间音效",
+    style: { width: "560px" },
+    title: "音效",
     content: () => {
-      return h(SpatialAudio);
+      return h(SoundEffects);
     },
   });
 };

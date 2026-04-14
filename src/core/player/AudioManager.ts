@@ -432,32 +432,53 @@ class AudioManager extends TypedEventTarget<AudioEventMap> implements IPlaybackE
     return this.engine.getFilterGains?.() ?? [];
   }
 
-  /**
-   * 设置空间音效开关
-   */
-  public setSpatialEnabled(enabled: boolean, depth: number = 1, rampTime: number = 0.05): void {
-    this.engine.setSpatialEnabled?.(enabled, depth, rampTime);
+  // ---- 8D 环绕 ----
+  public setEffect8dEnabled(enabled: boolean, depth: number = 1): void {
+    this.engine.setEffect8dEnabled?.(enabled, depth);
+  }
+  public setEffect8dRate(hz: number): void {
+    this.engine.setEffect8dRate?.(hz);
+  }
+  public setEffect8dDepth(depth: number): void {
+    this.engine.setEffect8dDepth?.(depth);
   }
 
-  /**
-   * 设置空间音效速率 (Hz)
-   */
-  public setSpatialRate(hz: number, rampTime: number = 0.1): void {
-    this.engine.setSpatialRate?.(hz, rampTime);
+  // ---- 3D HRTF 环绕 ----
+  public setEffect3dEnabled(enabled: boolean, radius: number = 1): void {
+    this.engine.setEffect3dEnabled?.(enabled, radius);
+  }
+  public setEffect3dRate(hz: number): void {
+    this.engine.setEffect3dRate?.(hz);
+  }
+  public setEffect3dRadius(radius: number): void {
+    this.engine.setEffect3dRadius?.(radius);
   }
 
-  /**
-   * 设置空间音效深度 (0-1)
-   */
-  public setSpatialDepth(depth: number, rampTime: number = 0.1): void {
-    this.engine.setSpatialDepth?.(depth, rampTime);
+  // ---- 混响 ----
+  public setReverbEnabled(enabled: boolean, wet: number = 0.4): void {
+    this.engine.setReverbEnabled?.(enabled, wet);
+  }
+  public setReverbWet(wet: number): void {
+    this.engine.setReverbWet?.(wet);
+  }
+  public setReverbType(type: "hall" | "ktv" | "room"): void {
+    this.engine.setReverbType?.(type);
   }
 
-  /**
-   * 设置空间音效 LFO 波形
-   */
-  public setSpatialWaveform(waveform: "sine" | "triangle" | "square"): void {
-    this.engine.setSpatialWaveform?.(waveform);
+  // ---- 超重低音 ----
+  public setBassBoostEnabled(enabled: boolean, gain: number = 8): void {
+    this.engine.setBassBoostEnabled?.(enabled, gain);
+  }
+  public setBassBoostGain(gain: number): void {
+    this.engine.setBassBoostGain?.(gain);
+  }
+
+  // ---- 清澈人声 ----
+  public setVocalEnhanceEnabled(enabled: boolean, gain: number = 6): void {
+    this.engine.setVocalEnhanceEnabled?.(enabled, gain);
+  }
+  public setVocalEnhanceGain(gain: number): void {
+    this.engine.setVocalEnhanceGain?.(gain);
   }
 
   /**

@@ -82,7 +82,7 @@ export class FFmpegAudioPlayer extends BaseAudioPlayer {
     supportsSinkId: true,
     supportsEqualizer: true,
     supportsSpectrum: true,
-    supportsSpatialAudio: true,
+    supportsAudioEffects: true,
   };
 
   constructor() {

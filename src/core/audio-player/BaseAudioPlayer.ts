@@ -1,7 +1,7 @@
 import { useSettingStore } from "@/stores";
 import { TypedEventTarget } from "@/utils/TypedEventTarget";
 import type { IExtendedAudioContext } from "@/types/audio/context";
-import { AudioEffectManager, type SpatialWaveform } from "./AudioEffectManager";
+import { AudioEffectManager, type ReverbType } from "./AudioEffectManager";
 import type { EngineCapabilities, IPlaybackEngine, FadeCurve } from "./IPlaybackEngine";
 import { getSharedAudioContext, getSharedMasterInput } from "../automix/SharedAudioContext";
 
@@ -492,24 +492,53 @@ export abstract class BaseAudioPlayer
     return this.effectManager ? this.effectManager.getFilterGains() : [];
   }
 
-  /** 设置空间音效开关 */
-  public setSpatialEnabled(enabled: boolean, depth: number = 1, rampTime: number = 0.05) {
-    this.effectManager?.setSpatialEnabled(enabled, depth, rampTime);
+  // ---- 8D 环绕 ----
+  public setEffect8dEnabled(enabled: boolean, depth: number = 1) {
+    this.effectManager?.setEffect8dEnabled(enabled, depth);
+  }
+  public setEffect8dRate(hz: number) {
+    this.effectManager?.setEffect8dRate(hz);
+  }
+  public setEffect8dDepth(depth: number) {
+    this.effectManager?.setEffect8dDepth(depth);
   }
 
-  /** 设置空间音效速率 (Hz) */
-  public setSpatialRate(hz: number, rampTime: number = 0.1) {
-    this.effectManager?.setSpatialRate(hz, rampTime);
+  // ---- 3D HRTF 环绕 ----
+  public setEffect3dEnabled(enabled: boolean, radius: number = 1) {
+    this.effectManager?.setEffect3dEnabled(enabled, radius);
+  }
+  public setEffect3dRate(hz: number) {
+    this.effectManager?.setEffect3dRate(hz);
+  }
+  public setEffect3dRadius(radius: number) {
+    this.effectManager?.setEffect3dRadius(radius);
   }
 
-  /** 设置空间音效深度 (0-1) */
-  public setSpatialDepth(depth: number, rampTime: number = 0.1) {
-    this.effectManager?.setSpatialDepth(depth, rampTime);
+  // ---- 混响 ----
+  public setReverbEnabled(enabled: boolean, wet: number = 0.4) {
+    this.effectManager?.setReverbEnabled(enabled, wet);
+  }
+  public setReverbWet(wet: number) {
+    this.effectManager?.setReverbWet(wet);
+  }
+  public setReverbType(type: ReverbType) {
+    this.effectManager?.setReverbType(type);
   }
 
-  /** 设置空间音效 LFO 波形 */
-  public setSpatialWaveform(waveform: SpatialWaveform) {
-    this.effectManager?.setSpatialWaveform(waveform);
+  // ---- 超重低音 ----
+  public setBassBoostEnabled(enabled: boolean, gain: number = 8) {
+    this.effectManager?.setBassBoostEnabled(enabled, gain);
+  }
+  public setBassBoostGain(gain: number) {
+    this.effectManager?.setBassBoostGain(gain);
+  }
+
+  // ---- 清澈人声 ----
+  public setVocalEnhanceEnabled(enabled: boolean, gain: number = 6) {
+    this.effectManager?.setVocalEnhanceEnabled(enabled, gain);
+  }
+  public setVocalEnhanceGain(gain: number) {
+    this.effectManager?.setVocalEnhanceGain(gain);
   }
 
   /**

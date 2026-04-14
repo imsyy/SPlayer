@@ -107,7 +107,7 @@ import {
   openChangeRate,
   openEqualizer,
   openABLoop,
-  openSpatialAudio,
+  openSoundEffects,
 } from "@/utils/modal";
 import { useAudioManager } from "@/core/player/AudioManager";
 import type { DropdownOption } from "naive-ui";
@@ -161,10 +161,10 @@ const controlsOptions = computed<DropdownOption[]>(() => [
     disabled: !audioManager.capabilities.supportsEqualizer,
   },
   {
-    label: "空间音效",
-    key: "spatialAudio",
+    label: "音效",
+    key: "soundEffects",
     icon: renderIcon("AutoFix"),
-    disabled: !audioManager.capabilities.supportsSpatialAudio,
+    disabled: !audioManager.capabilities.supportsAudioEffects,
   },
   {
     label: "自动关闭",
@@ -194,12 +194,12 @@ const handleControls = (key: string) => {
       }
       openEqualizer();
       break;
-    case "spatialAudio":
-      if (!audioManager.capabilities.supportsSpatialAudio) {
-        window.$message.warning("当前引擎不支持空间音效");
+    case "soundEffects":
+      if (!audioManager.capabilities.supportsAudioEffects) {
+        window.$message.warning("当前引擎不支持音效");
         return;
       }
-      openSpatialAudio();
+      openSoundEffects();
       break;
     case "autoClose":
       openAutoClose();

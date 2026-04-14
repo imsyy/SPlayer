@@ -30,7 +30,7 @@ export class AudioElementPlayer extends BaseAudioPlayer {
     supportsSinkId: true,
     supportsEqualizer: true,
     supportsSpectrum: true,
-    supportsSpatialAudio: true,
+    supportsAudioEffects: true,
   };
 
   constructor() {

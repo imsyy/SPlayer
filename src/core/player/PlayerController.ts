@@ -673,14 +673,26 @@ class PlayerController {
           bands.forEach((val, idx) => audioManager.setFilterGain(idx, val));
         }
       }
-      // 恢复空间音效
-      if (audioManager.capabilities.supportsSpatialAudio) {
-        audioManager.setSpatialRate(statusStore.spatialRate, 0);
-        audioManager.setSpatialWaveform(statusStore.spatialWaveform);
-        audioManager.setSpatialEnabled(
-          statusStore.spatialEnabled,
-          statusStore.spatialDepth,
-          0.05,
+      // 恢复音效状态 (8D / 3D / 混响 / 超重低音 / 清澈人声)
+      if (audioManager.capabilities.supportsAudioEffects) {
+        // 8D
+        audioManager.setEffect8dRate(statusStore.effect8dRate);
+        audioManager.setEffect8dEnabled(statusStore.effect8dEnabled, statusStore.effect8dDepth);
+        // 3D
+        audioManager.setEffect3dRate(statusStore.effect3dRate);
+        audioManager.setEffect3dEnabled(statusStore.effect3dEnabled, statusStore.effect3dRadius);
+        // 混响
+        audioManager.setReverbType(statusStore.reverbType);
+        audioManager.setReverbEnabled(statusStore.reverbEnabled, statusStore.reverbWet);
+        // 超重低音
+        audioManager.setBassBoostEnabled(
+          statusStore.bassBoostEnabled,
+          statusStore.bassBoostGain,
+        );
+        // 清澈人声
+        audioManager.setVocalEnhanceEnabled(
+          statusStore.vocalEnhanceEnabled,
+          statusStore.vocalEnhanceGain,
         );
       }
       if (isElectron) {
@@ -1525,36 +1537,84 @@ class PlayerController {
   }
 
   /**
-   * 更新空间音效 (Auto-Pan / 8D)
-   * @param options 空间音效选项
-   * @param options.enabled 是否启用
-   * @param options.rate LFO 速率 (Hz)
-   * @param options.depth 深度 (0-1)
-   * @param options.waveform LFO 波形
+   * 更新 8D 环绕
    */
-  public updateSpatialAudio(options: {
-    enabled?: boolean;
-    rate?: number;
-    depth?: number;
-    waveform?: "sine" | "triangle" | "square";
-  }) {
+  public updateEffect8d(options: { enabled?: boolean; rate?: number; depth?: number }) {
     const audioManager = useAudioManager();
-    if (!audioManager.capabilities.supportsSpatialAudio) return;
-    if (options.rate !== undefined) audioManager.setSpatialRate(options.rate);
-    if (options.depth !== undefined) audioManager.setSpatialDepth(options.depth);
-    if (options.waveform !== undefined) audioManager.setSpatialWaveform(options.waveform);
+    if (!audioManager.capabilities.supportsAudioEffects) return;
+    const statusStore = useStatusStore();
+    if (options.rate !== undefined) audioManager.setEffect8dRate(options.rate);
+    if (options.depth !== undefined) audioManager.setEffect8dDepth(options.depth);
     if (options.enabled !== undefined) {
-      const statusStore = useStatusStore();
-      audioManager.setSpatialEnabled(options.enabled, options.depth ?? statusStore.spatialDepth);
+      audioManager.setEffect8dEnabled(options.enabled, options.depth ?? statusStore.effect8dDepth);
     }
   }
 
   /**
-   * 禁用空间音效
+   * 更新 3D HRTF 环绕
    */
-  public disableSpatialAudio() {
+  public updateEffect3d(options: { enabled?: boolean; rate?: number; radius?: number }) {
     const audioManager = useAudioManager();
-    audioManager.setSpatialEnabled(false);
+    if (!audioManager.capabilities.supportsAudioEffects) return;
+    const statusStore = useStatusStore();
+    if (options.rate !== undefined) audioManager.setEffect3dRate(options.rate);
+    if (options.radius !== undefined) audioManager.setEffect3dRadius(options.radius);
+    if (options.enabled !== undefined) {
+      audioManager.setEffect3dEnabled(
+        options.enabled,
+        options.radius ?? statusStore.effect3dRadius,
+      );
+    }
+  }
+
+  /**
+   * 更新混响
+   */
+  public updateReverb(options: {
+    enabled?: boolean;
+    wet?: number;
+    type?: "hall" | "ktv" | "room";
+  }) {
+    const audioManager = useAudioManager();
+    if (!audioManager.capabilities.supportsAudioEffects) return;
+    const statusStore = useStatusStore();
+    if (options.type !== undefined) audioManager.setReverbType(options.type);
+    if (options.wet !== undefined) audioManager.setReverbWet(options.wet);
+    if (options.enabled !== undefined) {
+      audioManager.setReverbEnabled(options.enabled, options.wet ?? statusStore.reverbWet);
+    }
+  }
+
+  /**
+   * 更新超重低音
+   */
+  public updateBassBoost(options: { enabled?: boolean; gain?: number }) {
+    const audioManager = useAudioManager();
+    if (!audioManager.capabilities.supportsAudioEffects) return;
+    const statusStore = useStatusStore();
+    if (options.gain !== undefined) audioManager.setBassBoostGain(options.gain);
+    if (options.enabled !== undefined) {
+      audioManager.setBassBoostEnabled(
+        options.enabled,
+        options.gain ?? statusStore.bassBoostGain,
+      );
+    }
+  }
+
+  /**
+   * 更新清澈人声
+   */
+  public updateVocalEnhance(options: { enabled?: boolean; gain?: number }) {
+    const audioManager = useAudioManager();
+    if (!audioManager.capabilities.supportsAudioEffects) return;
+    const statusStore = useStatusStore();
+    if (options.gain !== undefined) audioManager.setVocalEnhanceGain(options.gain);
+    if (options.enabled !== undefined) {
+      audioManager.setVocalEnhanceEnabled(
+        options.enabled,
+        options.gain ?? statusStore.vocalEnhanceGain,
+      );
+    }
   }
 
   /**

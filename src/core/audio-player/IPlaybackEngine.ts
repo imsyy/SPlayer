@@ -10,8 +10,8 @@ export interface EngineCapabilities {
   supportsEqualizer: boolean;
   /** 是否支持频谱分析 */
   supportsSpectrum: boolean;
-  /** 是否支持空间音效 (Auto-Pan / 8D) */
-  supportsSpatialAudio: boolean;
+  /** 是否支持音效 (8D / 3D / 混响 / 超重低音 / 清澈人声 等 Web Audio 效果) */
+  supportsAudioEffects: boolean;
 }
 
 /**
@@ -192,30 +192,28 @@ export interface IPlaybackEngine {
 
   setLowPassQAt?(q: number, when: number): void;
 
-  /**
-   * 设置空间音效 (Auto-Pan) 开关
-   * @param enabled 是否启用
-   * @param depth 深度 (0-1)
-   * @param rampTime 渐变时间 (秒)
-   */
-  setSpatialEnabled?(enabled: boolean, depth?: number, rampTime?: number): void;
+  // ---- 8D 环绕 ----
+  setEffect8dEnabled?(enabled: boolean, depth?: number): void;
+  setEffect8dRate?(hz: number): void;
+  setEffect8dDepth?(depth: number): void;
 
-  /**
-   * 设置空间音效 LFO 速率
-   * @param hz 左右摇摆频率 (Hz)
-   */
-  setSpatialRate?(hz: number, rampTime?: number): void;
+  // ---- 3D HRTF 环绕 ----
+  setEffect3dEnabled?(enabled: boolean, radius?: number): void;
+  setEffect3dRate?(hz: number): void;
+  setEffect3dRadius?(radius: number): void;
 
-  /**
-   * 设置空间音效深度
-   * @param depth 深度 (0-1)
-   */
-  setSpatialDepth?(depth: number, rampTime?: number): void;
+  // ---- 混响 ----
+  setReverbEnabled?(enabled: boolean, wet?: number): void;
+  setReverbWet?(wet: number): void;
+  setReverbType?(type: "hall" | "ktv" | "room"): void;
 
-  /**
-   * 设置空间音效 LFO 波形
-   */
-  setSpatialWaveform?(waveform: "sine" | "triangle" | "square"): void;
+  // ---- 超重低音 ----
+  setBassBoostEnabled?(enabled: boolean, gain?: number): void;
+  setBassBoostGain?(gain: number): void;
+
+  // ---- 清澈人声 ----
+  setVocalEnhanceEnabled?(enabled: boolean, gain?: number): void;
+  setVocalEnhanceGain?(gain: number): void;
 
   /**
    * 获取频谱数据
