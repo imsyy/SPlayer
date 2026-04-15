@@ -1,10 +1,30 @@
 <template>
   <n-flex class="sound-effects" size="large" vertical>
-    <n-alert :show-icon="false">
-      实验性功能，所有音效通过 Web Audio API 实时处理，建议戴耳机体验。
-      <br />
-      8D 与 3D 环绕互斥，开启其中一个会自动关闭另一个。
-    </n-alert>
+    <div class="header-row">
+      <n-alert :show-icon="false" class="header-tip">
+        实验性功能，所有音效通过 Web Audio API 实时处理，建议戴耳机体验。
+        <br />
+        8D 与 3D 环绕互斥，开启其中一个会自动关闭另一个。
+      </n-alert>
+      <n-button
+        secondary
+        size="small"
+        :disabled="!supportsEffects"
+        class="reset-btn"
+        @click="resetAllEffects"
+      >
+        <template #icon>
+          <n-icon>
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6s-2.69 6-6 6s-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8s-3.58-8-8-8z"
+              />
+            </svg>
+          </n-icon>
+        </template>
+        重置
+      </n-button>
+    </div>
 
     <!-- ============ 空间环绕类 ============ -->
     <div class="effect-section">
@@ -230,6 +250,37 @@ import { useAudioManager } from "@/core/player/AudioManager";
 
 type ReverbType = "hall" | "ktv" | "room";
 
+/**
+ * 音效默认参数
+ * 这些值是经过音频工程经验调整的"一键开启就好听"的推荐值，
+ * 用户不懂怎么调时可以点重置按钮恢复。
+ */
+const DEFAULT_EFFECTS = {
+  effect8d: {
+    enabled: false,
+    rate: 0.25, // 4 秒一个摇摆周期，经典 8D 节奏
+    depth: 0.9, // 90% 深度，明显但不夸张
+  },
+  effect3d: {
+    enabled: false,
+    rate: 0.15, // 约 6.7 秒绕一圈，最有沉浸感
+    radius: 0.8, // 80% 半径，3D 效果明显
+  },
+  reverb: {
+    enabled: false,
+    wet: 0.35, // 35% 湿度，经典"音乐厅"感
+    type: "hall" as ReverbType,
+  },
+  bassBoost: {
+    enabled: false,
+    gain: 8, // +8 dB，低音厚实不轰头
+  },
+  vocalEnhance: {
+    enabled: false,
+    gain: 6, // +6 dB，人声突出不刺耳
+  },
+} as const;
+
 const player = usePlayerController();
 const statusStore = useStatusStore();
 const audioManager = useAudioManager();
@@ -359,10 +410,93 @@ const onVocalGainChange = (val: number) => {
   statusStore.setVocalEnhanceGain(val);
   if (vocalEnhanceEnabled.value) player.updateVocalEnhance({ gain: val });
 };
+
+// ========== 重置 ==========
+/**
+ * 重置所有音效：关闭所有开关，参数恢复到 DEFAULT_EFFECTS
+ * 用于用户"不知道怎么调"时一键回到干净状态
+ */
+const resetAllEffects = () => {
+  if (!supportsEffects.value) return;
+
+  // 1. 本地 refs 恢复默认
+  effect8dEnabled.value = DEFAULT_EFFECTS.effect8d.enabled;
+  effect8dRate.value = DEFAULT_EFFECTS.effect8d.rate;
+  effect8dDepth.value = DEFAULT_EFFECTS.effect8d.depth;
+
+  effect3dEnabled.value = DEFAULT_EFFECTS.effect3d.enabled;
+  effect3dRate.value = DEFAULT_EFFECTS.effect3d.rate;
+  effect3dRadius.value = DEFAULT_EFFECTS.effect3d.radius;
+
+  reverbEnabled.value = DEFAULT_EFFECTS.reverb.enabled;
+  reverbWet.value = DEFAULT_EFFECTS.reverb.wet;
+  reverbType.value = DEFAULT_EFFECTS.reverb.type;
+
+  bassBoostEnabled.value = DEFAULT_EFFECTS.bassBoost.enabled;
+  bassBoostGain.value = DEFAULT_EFFECTS.bassBoost.gain;
+
+  vocalEnhanceEnabled.value = DEFAULT_EFFECTS.vocalEnhance.enabled;
+  vocalEnhanceGain.value = DEFAULT_EFFECTS.vocalEnhance.gain;
+
+  // 2. store 同步
+  statusStore.setEffect8dEnabled(DEFAULT_EFFECTS.effect8d.enabled);
+  statusStore.setEffect8dRate(DEFAULT_EFFECTS.effect8d.rate);
+  statusStore.setEffect8dDepth(DEFAULT_EFFECTS.effect8d.depth);
+  statusStore.setEffect3dEnabled(DEFAULT_EFFECTS.effect3d.enabled);
+  statusStore.setEffect3dRate(DEFAULT_EFFECTS.effect3d.rate);
+  statusStore.setEffect3dRadius(DEFAULT_EFFECTS.effect3d.radius);
+  statusStore.setReverbEnabled(DEFAULT_EFFECTS.reverb.enabled);
+  statusStore.setReverbWet(DEFAULT_EFFECTS.reverb.wet);
+  statusStore.setReverbType(DEFAULT_EFFECTS.reverb.type);
+  statusStore.setBassBoostEnabled(DEFAULT_EFFECTS.bassBoost.enabled);
+  statusStore.setBassBoostGain(DEFAULT_EFFECTS.bassBoost.gain);
+  statusStore.setVocalEnhanceEnabled(DEFAULT_EFFECTS.vocalEnhance.enabled);
+  statusStore.setVocalEnhanceGain(DEFAULT_EFFECTS.vocalEnhance.gain);
+
+  // 3. 音频引擎同步 (关闭所有启用的效果)
+  player.updateEffect8d({
+    enabled: false,
+    rate: DEFAULT_EFFECTS.effect8d.rate,
+    depth: DEFAULT_EFFECTS.effect8d.depth,
+  });
+  player.updateEffect3d({
+    enabled: false,
+    rate: DEFAULT_EFFECTS.effect3d.rate,
+    radius: DEFAULT_EFFECTS.effect3d.radius,
+  });
+  player.updateReverb({
+    enabled: false,
+    wet: DEFAULT_EFFECTS.reverb.wet,
+    type: DEFAULT_EFFECTS.reverb.type,
+  });
+  player.updateBassBoost({
+    enabled: false,
+    gain: DEFAULT_EFFECTS.bassBoost.gain,
+  });
+  player.updateVocalEnhance({
+    enabled: false,
+    gain: DEFAULT_EFFECTS.vocalEnhance.gain,
+  });
+
+  window.$message?.success?.("已重置所有音效");
+};
 </script>
 
 <style scoped lang="scss">
 .sound-effects {
+  .header-row {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    .header-tip {
+      flex: 1;
+    }
+    .reset-btn {
+      align-self: flex-start;
+      white-space: nowrap;
+    }
+  }
+
   .effect-section {
     display: flex;
     flex-direction: column;

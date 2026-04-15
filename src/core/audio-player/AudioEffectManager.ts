@@ -53,8 +53,6 @@ export class AudioEffectManager {
   private effect3dRadiusGainX: GainNode | null = null;
   /** 3D Z 轴半径增益 */
   private effect3dRadiusGainZ: GainNode | null = null;
-  /** 3D Z 轴基准偏移 (让声源默认在前方，避免居中时静音) */
-  private effect3dBaseZ: ConstantSourceNode | null = null;
 
   /** 混响输入分接点 (同时连到 dry 和 convolver) */
   private reverbInput: GainNode | null = null;
@@ -135,6 +133,11 @@ export class AudioEffectManager {
 
     // 3D: PannerNode (HRTF) + 两个 LFO 做圆周运动
     // 默认 panningModel="equalpower" 近似直通，启用时切到 HRTF
+    // 位置以听者 (listener) 为原点，声源从 (0,0,0) 开始，通过 LFO 调制 X/Z
+    // 形成围绕听者的圆周运动：
+    //   X = sin(wt) * radius    → 左右
+    //   Z = -cos(wt) * radius   → 前后 (负号让 t=0 时位于前方 -radius)
+    // 合成轨迹：t=0 前 → t=T/4 右 → t=T/2 后 → t=3T/4 左 → t=T 前
     this.panner3d = this.audioCtx.createPanner();
     this.panner3d.panningModel = "equalpower";
     this.panner3d.distanceModel = "inverse";
@@ -143,7 +146,7 @@ export class AudioEffectManager {
     this.panner3d.rolloffFactor = 0;
     this.panner3d.positionX.value = 0;
     this.panner3d.positionY.value = 0;
-    this.panner3d.positionZ.value = -1;
+    this.panner3d.positionZ.value = 0;
 
     // X 轴使用正弦相位
     this.effect3dLfoX = this.audioCtx.createOscillator();
@@ -154,7 +157,7 @@ export class AudioEffectManager {
     this.effect3dLfoX.setPeriodicWave(sineWave);
     this.effect3dLfoX.frequency.value = 0.25;
 
-    // Z 轴使用余弦相位 (与 X 相差 90°)
+    // Z 轴使用余弦相位 (与 X 相差 90°，保证圆周运动)
     this.effect3dLfoZ = this.audioCtx.createOscillator();
     const cosineWave = this.audioCtx.createPeriodicWave(
       new Float32Array([0, 1]),
@@ -168,19 +171,11 @@ export class AudioEffectManager {
     this.effect3dRadiusGainZ = this.audioCtx.createGain();
     this.effect3dRadiusGainZ.gain.value = 0;
 
-    // Z 轴的基准值 (常数 -1，即"默认在前方 1 米")
-    // 3D 启用时，positionZ = baseZ + radiusGainZ * -cos(wt)
-    // 3D 关闭时，radiusGainZ = 0，只剩 baseZ = -1，即静态在前方
-    this.effect3dBaseZ = this.audioCtx.createConstantSource();
-    this.effect3dBaseZ.offset.value = -1;
-
     this.effect3dLfoX.connect(this.effect3dRadiusGainX);
     this.effect3dRadiusGainX.connect(this.panner3d.positionX);
 
     this.effect3dLfoZ.connect(this.effect3dRadiusGainZ);
     this.effect3dRadiusGainZ.connect(this.panner3d.positionZ);
-
-    this.effect3dBaseZ.connect(this.panner3d.positionZ);
 
     // 混响：dry/wet 并行混合
     this.reverbInput = this.audioCtx.createGain();
@@ -294,17 +289,25 @@ export class AudioEffectManager {
   }
 
   /**
-   * 启动所有 LFO 和常量源 (只能调一次)
+   * 启动所有 LFO (OscillatorNode 的 start 只能调用一次)
    */
   private ensureLfosStarted() {
     if (this.lfosStarted) return;
+    // 每个 LFO 独立 try，避免一个失败影响其它
     try {
       this.effect8dLfo?.start();
-      this.effect3dLfoX?.start();
-      this.effect3dLfoZ?.start();
-      this.effect3dBaseZ?.start();
     } catch {
-      // 已经启动过
+      /* 已启动 */
+    }
+    try {
+      this.effect3dLfoX?.start();
+    } catch {
+      /* 已启动 */
+    }
+    try {
+      this.effect3dLfoZ?.start();
+    } catch {
+      /* 已启动 */
     }
     this.lfosStarted = true;
   }
@@ -710,11 +713,18 @@ export class AudioEffectManager {
     if (this.lfosStarted) {
       try {
         this.effect8dLfo?.stop();
-        this.effect3dLfoX?.stop();
-        this.effect3dLfoZ?.stop();
-        this.effect3dBaseZ?.stop();
       } catch {
-        // 已停止
+        /* 已停止 */
+      }
+      try {
+        this.effect3dLfoX?.stop();
+      } catch {
+        /* 已停止 */
+      }
+      try {
+        this.effect3dLfoZ?.stop();
+      } catch {
+        /* 已停止 */
       }
     }
 
@@ -726,7 +736,6 @@ export class AudioEffectManager {
     this.effect3dLfoZ?.disconnect();
     this.effect3dRadiusGainX?.disconnect();
     this.effect3dRadiusGainZ?.disconnect();
-    this.effect3dBaseZ?.disconnect();
     this.panner3d?.disconnect();
 
     this.reverbInput?.disconnect();
