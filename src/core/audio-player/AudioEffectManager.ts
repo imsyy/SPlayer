@@ -31,9 +31,9 @@ export class AudioEffectManager {
   /** AutoMIX 专用滤波器：低通 */
   private lowPassFilter: BiquadFilterNode | null = null;
 
-  /** 超重低音滤波器 (lowshelf @ 80Hz) */
+  /** 超重低音滤波器 (peaking @ 100Hz, Q=0.8，直接在耳朵敏感的低频区形成峰值) */
   private bassBoost: BiquadFilterNode | null = null;
-  /** 清澈人声滤波器 (peaking @ 2.5kHz) */
+  /** 清澈人声滤波器 (peaking @ 2.5kHz, Q=0.9) */
   private vocalEnhance: BiquadFilterNode | null = null;
 
   /** 8D 声像节点 */
@@ -108,10 +108,13 @@ export class AudioEffectManager {
     this.lowPassFilter.frequency.value = 22000;
     this.lowPassFilter.Q.value = 0.707;
 
-    // 超重低音 (lowshelf 在 80Hz 以下提升)
+    // 超重低音 (peaking 在 100Hz 形成钟型峰值)
+    // 100Hz 正好是大多数流行音乐鼓点与贝斯的基频，Q=0.8 给出宽广的低频段
+    // 实测效果比 lowshelf@80Hz 强得多：peaking 直接把峰值打在耳朵最敏感的低频区
     this.bassBoost = this.audioCtx.createBiquadFilter();
-    this.bassBoost.type = "lowshelf";
-    this.bassBoost.frequency.value = 80;
+    this.bassBoost.type = "peaking";
+    this.bassBoost.frequency.value = 100;
+    this.bassBoost.Q.value = 0.8;
     this.bassBoost.gain.value = 0;
 
     // 清澈人声 (peaking 在 2.5kHz 附近提升)
