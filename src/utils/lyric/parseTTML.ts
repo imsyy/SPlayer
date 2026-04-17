@@ -196,19 +196,30 @@ export const extractTtmlBgWithOwner = (ttml: string): TtmlBgExtractResult[] => {
  */
 // TODO: 当支持 i18n 之后，需要对其中的部分函数进行修改，使其优选逻辑能够根据用户界面语言变化
 export const cleanTTMLTranslations = (ttmlContent: string): string => {
+  // 无条件剔除繁体替换翻译段 <translation type="replacement" xml:lang="zh-Hant*">
+  ttmlContent = ttmlContent.replace(
+    /<translation(?=[^>]*type="replacement")(?=[^>]*xml:lang="zh-Hant[^"]*")[^>]*>[\s\S]*?<\/translation>/g,
+    "",
+  );
+  // 无条件剔除音译类型且语言声明为汉语拼音的 span (拒绝胎教 Mode)
+  ttmlContent = ttmlContent.replace(
+    /<span(?=[^>]*ttm:role="x-roman")(?=[^>]*xml:lang="zh-Hans-Latn")[^>]*>[\s\S]*?<\/span>/g,
+    "",
+  );
+
   /**
    * 统计 TTML 中的语言
    * @param ttml_text TTML 文本
    * @returns 语言列表
    */
   const langCounter = (ttml_text: string) => {
-    // 使用正则匹配所有 xml:lang="xx-XX" 格式的字符串
-    const langRegex = /(?<=<(span|translation)[^<>]+)xml:lang="([^"]+)"/g;
+    // 仅提取 translation 的语言，不对 span (原词) 进行匹配，防止被意外清洗
+    const langRegex = /<translation[^>]+xml:lang="([^"]+)"/g;
     const matches = ttml_text.matchAll(langRegex);
     // 提取匹配结果并去重
     const langSet = new Set<string>();
     for (const match of matches) {
-      if (match[2]) langSet.add(match[2]);
+      if (match[1]) langSet.add(match[1]);
     }
     return Array.from(langSet);
   };
@@ -255,13 +266,13 @@ export const cleanTTMLTranslations = (ttmlContent: string): string => {
     if (major_lang === null) return ttml_text;
     /**
      * 替换逻辑回调函数
-     * @param match 完整匹配到的标签字符串 (例如 <code><span ...>...<\/span></code>)
-     * @param lang 正则中第一个捕获组匹配到的语言代码 (例如 "ja-JP")
+     * @param match 完整匹配到的标签字符串
+     * @param lang 语言代码
      */
     const replacer = (match: string, lang: string) => (lang === major_lang ? match : "");
     const translationRegex = /<translation[^>]+xml:lang="([^"]+)"[^>]*>[\s\S]*?<\/translation>/g;
-    const spanRegex = /<span[^>]+xml:lang="([^" ]+)"[^>]*>[\s\S]*?<\/span>/g;
-    return ttml_text.replace(translationRegex, replacer).replace(spanRegex, replacer);
+    // 不清理 span，保留原词和音译内容
+    return ttml_text.replace(translationRegex, replacer);
   };
   // 统计语言
   const context_lang = langCounter(ttmlContent);

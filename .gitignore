@@ -40,3 +40,22 @@ docs/.vitepress/dist
 .trae/*
 .cursor/*
 .claude/*
+*.tsbuildinfo
+
+# Build-time auto-generated files
+auto-imports.d.ts
+components.d.ts
+dev-app-update.yml
+electron-builder.yml
+
+# IDE - Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/code-snippets
+
+# Local env files
+.env.local
+.env.*.local

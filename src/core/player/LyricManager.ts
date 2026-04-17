@@ -461,6 +461,7 @@ class LyricManager {
   }
 
   /**
+
    * 检测本地歌词覆盖
    * @param id 歌曲 ID
    * @returns 歌词数据和元数据
@@ -708,6 +709,7 @@ class LyricManager {
     // 应用括号替换
     lyricData = applyBracketReplacement(lyricData);
     lyricData = applyProfanityUncensor(lyricData, settingStore.uncensorMaskedProfanity);
+    // 拒绝胎教 Mode: 汉语拼音音译已在 cleanTTMLTranslations 中基于 xml:lang 声明精确剔除
     // 规范化时间
     this.normalizeLyricLines(lyricData.yrcData);
     this.normalizeLyricLines(lyricData.lrcData);
