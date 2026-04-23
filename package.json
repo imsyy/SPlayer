@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@applemusic-like-lyrics/core": "^0.3.2",
-    "@applemusic-like-lyrics/lyric": "^0.4.1",
+    "@applemusic-like-lyrics/lyric": "^1.0.0-alpha.0",
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "@imsyy/color-utils": "^1.0.2",

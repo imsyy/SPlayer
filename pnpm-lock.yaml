@@ -16,8 +16,8 @@ importers:
         specifier: ^0.3.2
         version: 0.3.2(@pixi/app@7.4.3(@pixi/core@7.4.3)(@pixi/display@7.4.3(@pixi/core@7.4.3)))(@pixi/core@7.4.3)(@pixi/display@7.4.3(@pixi/core@7.4.3))(@pixi/filter-blur@7.4.3(@pixi/core@7.4.3))(@pixi/filter-bulge-pinch@5.1.1(@pixi/core@7.4.3))(@pixi/filter-color-matrix@7.4.3(@pixi/core@7.4.3))(@pixi/sprite@7.4.3(@pixi/core@7.4.3)(@pixi/display@7.4.3(@pixi/core@7.4.3)))
       '@applemusic-like-lyrics/lyric':
-        specifier: ^0.4.1
-        version: 0.4.1
+        specifier: ^1.0.0-alpha.0
+        version: 1.0.0-alpha.0
       '@electron-toolkit/preload':
         specifier: ^3.0.2
         version: 3.0.2(electron@39.4.0)
@@ -309,8 +309,11 @@ packages:
       '@pixi/filter-color-matrix': '*'
       '@pixi/sprite': '*'
 
-  '@applemusic-like-lyrics/lyric@0.4.1':
-    resolution: {integrity: sha512-5h326zeH3zmaXyP5Lhh2tMb68x6HQ+EXn2n2UZNS27L+AOrK6v6VPCDjTHte9pH+TTKm+dYNXzrIeFP9FzQivg==}
+  '@applemusic-like-lyrics/lyric@1.0.0-alpha.0':
+    resolution: {integrity: sha512-pmoyPjePynDaWjBGovEdDDHZVO5PcpT2FS/bn1/E/o+l8PLDgMa0PtVsmTKr92kY6FJ012aENkb6Gc6io8OlhA==}
+
+  '@applemusic-like-lyrics/ttml@1.0.0-alpha.0':
+    resolution: {integrity: sha512-xrtCvoxDrDA9jffgaiT9CE9BQcKJ9n79uAJrqmhZ2nW5JCDubTj0/n0YzwBRbFLR74fiZPd01k/eb0zuGiOJOQ==}
 
   '@babel/code-frame@7.29.0':
     resolution: {integrity: sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw==}
@@ -4604,6 +4607,9 @@ packages:
   package-json-from-dist@1.0.1:
     resolution: {integrity: sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==}
 
+  pako@2.1.0:
+    resolution: {integrity: sha512-w+eufiZ1WuJYgPXbV/PO3NCMEc3xqylkKHzp8bxp1uW4qaSNQUkwmLLEc3kKsfz8lpV1F8Ht3U1Cm+9Srog2ug==}
+
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
     engines: {node: '>=6'}
@@ -5861,7 +5867,12 @@ snapshots:
       deep-freeze: 0.0.1
       gl-matrix: 4.0.0-beta.2
 
-  '@applemusic-like-lyrics/lyric@0.4.1': {}
+  '@applemusic-like-lyrics/lyric@1.0.0-alpha.0':
+    dependencies:
+      '@applemusic-like-lyrics/ttml': 1.0.0-alpha.0
+      pako: 2.1.0
+
+  '@applemusic-like-lyrics/ttml@1.0.0-alpha.0': {}
 
   '@babel/code-frame@7.29.0':
     dependencies:
@@ -10479,6 +10490,8 @@ snapshots:
       netmask: 2.0.2
 
   package-json-from-dist@1.0.1: {}
+
+  pako@2.1.0: {}
 
   parent-module@1.0.1:
     dependencies:
