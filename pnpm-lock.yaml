@@ -13,11 +13,11 @@ importers:
   .:
     dependencies:
       '@applemusic-like-lyrics/core':
-        specifier: ^0.4.0
-        version: 0.4.0(@pixi/app@7.4.3(@pixi/core@7.4.3)(@pixi/display@7.4.3(@pixi/core@7.4.3)))(@pixi/core@7.4.3)(@pixi/display@7.4.3(@pixi/core@7.4.3))(@pixi/filter-blur@7.4.3(@pixi/core@7.4.3))(@pixi/filter-bulge-pinch@5.1.1(@pixi/core@7.4.3))(@pixi/filter-color-matrix@7.4.3(@pixi/core@7.4.3))(@pixi/sprite@7.4.3(@pixi/core@7.4.3)(@pixi/display@7.4.3(@pixi/core@7.4.3)))
+        specifier: ^0.4.1
+        version: 0.4.1(@pixi/app@7.4.3(@pixi/core@7.4.3)(@pixi/display@7.4.3(@pixi/core@7.4.3)))(@pixi/core@7.4.3)(@pixi/display@7.4.3(@pixi/core@7.4.3))(@pixi/filter-blur@7.4.3(@pixi/core@7.4.3))(@pixi/filter-bulge-pinch@5.1.1(@pixi/core@7.4.3))(@pixi/filter-color-matrix@7.4.3(@pixi/core@7.4.3))(@pixi/sprite@7.4.3(@pixi/core@7.4.3)(@pixi/display@7.4.3(@pixi/core@7.4.3)))
       '@applemusic-like-lyrics/lyric':
-        specifier: ^1.0.0-alpha.0
-        version: 1.0.0-alpha.0
+        specifier: ^1.0.0
+        version: 1.0.0
       '@electron-toolkit/preload':
         specifier: ^3.0.2
         version: 3.0.2(electron@39.4.0)
@@ -298,8 +298,8 @@ packages:
   7zip-bin@5.2.0:
     resolution: {integrity: sha512-ukTPVhqG4jNzMro2qA9HSCSSVJN3aN7tlb+hfqYCt3ER0yWroeA2VR38MNrOHLQ/cVj+DaIMad0kFCtWWowh/A==}
 
-  '@applemusic-like-lyrics/core@0.4.0':
-    resolution: {integrity: sha512-Kc5jaSzXBdveEBfsCjMRb9B5eM7D+5Gf/tllwUt+W56UIhX8dLLZjOBm8BWZ7m0tbPe2LRSC3U+EMU0IZmvA4g==}
+  '@applemusic-like-lyrics/core@0.4.1':
+    resolution: {integrity: sha512-Gr2MMjf3FXBJRlFuEENZaVn2fBFbOipyU0bsiA2/2GGKVou9dTyL64tuVhzAlVWdSfQEyhuXBhvADig21qd4ig==}
     peerDependencies:
       '@pixi/app': '*'
       '@pixi/core': '*'
@@ -309,11 +309,11 @@ packages:
       '@pixi/filter-color-matrix': '*'
       '@pixi/sprite': '*'
 
-  '@applemusic-like-lyrics/lyric@1.0.0-alpha.0':
-    resolution: {integrity: sha512-pmoyPjePynDaWjBGovEdDDHZVO5PcpT2FS/bn1/E/o+l8PLDgMa0PtVsmTKr92kY6FJ012aENkb6Gc6io8OlhA==}
+  '@applemusic-like-lyrics/lyric@1.0.0':
+    resolution: {integrity: sha512-fAIg2peCvEu7WwnQswbrajtJ8kXFgR/H7QWL++WppkzG3rwsyR+oWj1EseLbbA3IBdHPO9C8/OOMfKtkGn0rxQ==}
 
-  '@applemusic-like-lyrics/ttml@1.0.0-alpha.0':
-    resolution: {integrity: sha512-xrtCvoxDrDA9jffgaiT9CE9BQcKJ9n79uAJrqmhZ2nW5JCDubTj0/n0YzwBRbFLR74fiZPd01k/eb0zuGiOJOQ==}
+  '@applemusic-like-lyrics/ttml@1.0.0':
+    resolution: {integrity: sha512-vZuYe5Q2kbUGNBKD7yizj4n+mFkKAa7pabZzr+JZco5gYbPvKqiMZbsvAyqLPs1IPmpA9n77X/FTqEfRvdEu3Q==}
 
   '@babel/code-frame@7.29.0':
     resolution: {integrity: sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw==}
@@ -5853,7 +5853,7 @@ snapshots:
 
   7zip-bin@5.2.0: {}
 
-  '@applemusic-like-lyrics/core@0.4.0(@pixi/app@7.4.3(@pixi/core@7.4.3)(@pixi/display@7.4.3(@pixi/core@7.4.3)))(@pixi/core@7.4.3)(@pixi/display@7.4.3(@pixi/core@7.4.3))(@pixi/filter-blur@7.4.3(@pixi/core@7.4.3))(@pixi/filter-bulge-pinch@5.1.1(@pixi/core@7.4.3))(@pixi/filter-color-matrix@7.4.3(@pixi/core@7.4.3))(@pixi/sprite@7.4.3(@pixi/core@7.4.3)(@pixi/display@7.4.3(@pixi/core@7.4.3)))':
+  '@applemusic-like-lyrics/core@0.4.1(@pixi/app@7.4.3(@pixi/core@7.4.3)(@pixi/display@7.4.3(@pixi/core@7.4.3)))(@pixi/core@7.4.3)(@pixi/display@7.4.3(@pixi/core@7.4.3))(@pixi/filter-blur@7.4.3(@pixi/core@7.4.3))(@pixi/filter-bulge-pinch@5.1.1(@pixi/core@7.4.3))(@pixi/filter-color-matrix@7.4.3(@pixi/core@7.4.3))(@pixi/sprite@7.4.3(@pixi/core@7.4.3)(@pixi/display@7.4.3(@pixi/core@7.4.3)))':
     dependencies:
       '@pixi/app': 7.4.3(@pixi/core@7.4.3)(@pixi/display@7.4.3(@pixi/core@7.4.3))
       '@pixi/core': 7.4.3
@@ -5867,12 +5867,12 @@ snapshots:
       deep-freeze: 0.0.1
       gl-matrix: 4.0.0-beta.2
 
-  '@applemusic-like-lyrics/lyric@1.0.0-alpha.0':
+  '@applemusic-like-lyrics/lyric@1.0.0':
     dependencies:
-      '@applemusic-like-lyrics/ttml': 1.0.0-alpha.0
+      '@applemusic-like-lyrics/ttml': 1.0.0
       pako: 2.1.0
 
-  '@applemusic-like-lyrics/ttml@1.0.0-alpha.0': {}
+  '@applemusic-like-lyrics/ttml@1.0.0': {}
 
   '@babel/code-frame@7.29.0':
     dependencies:
