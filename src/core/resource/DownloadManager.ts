@@ -579,7 +579,7 @@ class DownloadManager {
         if (!strategy.downloadUrl) throw new Error("Download URL missing");
 
         const axios = (await import("axios")).default;
-        const { ID3Writer } = await import("browser-id3-writer");
+        const { injectAudioMetadata } = await import("./MetadataWriter");
 
         const mixedContentSafeURL = (downloadUrl: string) => {
           if (window.location.protocol === "https:" && downloadUrl.startsWith("http://")) {
@@ -591,7 +591,7 @@ class DownloadManager {
         };
 
         let downloaded = false;
-        if (config.downloadMeta && config.fileType.toLowerCase() === "mp3" && config.songData) {
+        if (config.downloadMeta && config.songData) {
           try {
             // 获取歌曲数据
             const songResponse = await axios.get(mixedContentSafeURL(strategy.downloadUrl), {
@@ -599,10 +599,7 @@ class DownloadManager {
             });
             const songBuffer = songResponse.data;
 
-            // 写入标签
-            const writer = new ID3Writer(songBuffer);
-
-            // 设置标题、歌手、专辑
+            // 获取歌手名字列表
             const artists = config.songData.artists;
             let artistNames: string[] = [];
             if (typeof artists === "string") {
@@ -610,32 +607,14 @@ class DownloadManager {
             } else if (Array.isArray(artists)) {
               artistNames = artists.map((a: any) => (typeof a === "string" ? a : a.name || ""));
             }
-            writer
-              .setFrame("TIT2", config.songData.name)
-              .setFrame("TPE1", artistNames)
-              .setFrame(
-                "TALB",
-                (typeof config.songData.album === "string"
-                  ? config.songData.album
-                  : config.songData.album?.name),
-              );
 
-            // 设置专辑歌手
-            const albumArtist = config.albumArtists?.join("; ");
-            if (albumArtist) {
-              writer.setFrame("TPE2", albumArtist);
-            }
-
-            // 设置歌词
-            if (config.downloadLyric && config.lyric) {
-              writer.setFrame("USLT", {
-                description: "",
-                lyrics: config.lyric,
-                language: "eng",
-              });
-            }
+            const albumString =
+              typeof config.songData.album === "string"
+                ? config.songData.album
+                : config.songData.album?.name;
 
             // 获取并嵌入封面图片
+            let coverBuffer: ArrayBuffer | undefined = undefined;
             if (config.downloadCover) {
               const coverUrl = config.songData.coverSize?.l || config.songData.cover;
               if (coverUrl) {
@@ -643,21 +622,22 @@ class DownloadManager {
                   const coverResponse = await axios.get(mixedContentSafeURL(coverUrl), {
                     responseType: "arraybuffer",
                   });
-                  const coverBuffer = coverResponse.data;
-                  writer.setFrame("APIC", {
-                    type: 3,
-                    data: coverBuffer,
-                    description: "Cover",
-                    useUnicodeEncoding: true,
-                  });
+                  coverBuffer = coverResponse.data;
                 } catch (coverErr) {
-                  console.error("Failed to download or embed cover:", coverErr);
+                  console.error("Failed to download cover:", coverErr);
                 }
               }
             }
 
-            writer.addTag();
-            const taggedBlob = writer.getBlob();
+            const taggedBlob = await injectAudioMetadata(songBuffer, config.fileType, {
+              title: config.songData.name,
+              artists: artistNames,
+              album: albumString || undefined,
+              lyric: config.downloadLyric && config.lyric ? config.lyric : undefined,
+              coverBuffer: coverBuffer,
+              albumArtist: config.albumArtists?.join("; ") || undefined,
+            });
+
             saveAs(taggedBlob, config.fileName + "." + config.fileType);
             downloaded = true;
           } catch (metaErr) {
