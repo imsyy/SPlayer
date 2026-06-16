@@ -65,7 +65,7 @@ class SongDownloadStrategy implements DownloadStrategy {
   constructor(
     public readonly song: SongType,
     private quality: SongLevelType,
-  ) {}
+  ) { }
 
   get id() {
     return this.song.id;
@@ -579,9 +579,9 @@ class DownloadManager {
         if (!strategy.downloadUrl) throw new Error("Download URL missing");
 
         const axios = (await import("axios")).default;
-        const {ID3Writer} = await import("browser-id3-writer");
+        const { ID3Writer } = await import("browser-id3-writer");
 
-        const mixedContentSafeURL = (downloadUrl:string)=>{
+        const mixedContentSafeURL = (downloadUrl: string) => {
           if (window.location.protocol === "https:" && downloadUrl.startsWith("http://")) {
             console.warn(`Rewrote HTTP request to HTTPS: ${downloadUrl}`);
             return downloadUrl.replace(/^http:\/\//, "https://");
@@ -589,7 +589,7 @@ class DownloadManager {
             return downloadUrl;
           }
         };
-        
+
         let downloaded = false;
         if (config.downloadMeta && config.fileType.toLowerCase() === "mp3" && config.songData) {
           try {
@@ -610,10 +610,9 @@ class DownloadManager {
             } else if (Array.isArray(artists)) {
               artistNames = artists.map((a: any) => (typeof a === "string" ? a : a.name || ""));
             }
-            const artist = artistNames.join(", ");
             writer
               .setFrame("TIT2", config.songData.name)
-              .setFrame("TPE1", [artist])
+              .setFrame("TPE1", artistNames)
               .setFrame(
                 "TALB",
                 (typeof config.songData.album === "string"
@@ -622,7 +621,7 @@ class DownloadManager {
               );
 
             // 设置专辑歌手
-            const albumArtist = config.albumArtists?.join(", ");
+            const albumArtist = config.albumArtists?.join("; ");
             if (albumArtist) {
               writer.setFrame("TPE2", albumArtist);
             }
