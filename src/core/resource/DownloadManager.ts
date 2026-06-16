@@ -577,7 +577,101 @@ class DownloadManager {
       } else {
         // 浏览器端兜底处理
         if (!strategy.downloadUrl) throw new Error("Download URL missing");
-        saveAs(strategy.downloadUrl, config.fileName + "." + config.fileType);
+
+        const axios = (await import("axios")).default;
+        const {ID3Writer} = await import("browser-id3-writer");
+
+        const mixedContentSafeURL = (downloadUrl:string)=>{
+          if (window.location.protocol === "https:" && downloadUrl.startsWith("http://")) {
+            console.warn(`Rewrote HTTP request to HTTPS: ${downloadUrl}`);
+            return downloadUrl.replace(/^http:\/\//, "https://");
+          } else {
+            return downloadUrl;
+          }
+        };
+        
+        let downloaded = false;
+        if (config.downloadMeta && config.fileType.toLowerCase() === "mp3" && config.songData) {
+          try {
+            // 获取歌曲数据
+            const songResponse = await axios.get(mixedContentSafeURL(strategy.downloadUrl), {
+              responseType: "arraybuffer",
+            });
+            const songBuffer = songResponse.data;
+
+            // 写入标签
+            const writer = new ID3Writer(songBuffer);
+
+            // 设置标题、歌手、专辑
+            const artists = config.songData.artists;
+            let artistNames: string[] = [];
+            if (typeof artists === "string") {
+              artistNames = [artists];
+            } else if (Array.isArray(artists)) {
+              artistNames = artists.map((a: any) => (typeof a === "string" ? a : a.name || ""));
+            }
+            const artist = artistNames.join(", ");
+            writer
+              .setFrame("TIT2", config.songData.name)
+              .setFrame("TPE1", [artist])
+              .setFrame(
+                "TALB",
+                (typeof config.songData.album === "string"
+                  ? config.songData.album
+                  : config.songData.album?.name),
+              );
+
+            // 设置专辑歌手
+            const albumArtist = config.albumArtists?.join(", ");
+            if (albumArtist) {
+              writer.setFrame("TPE2", albumArtist);
+            }
+
+            // 设置歌词
+            if (config.downloadLyric && config.lyric) {
+              writer.setFrame("USLT", {
+                description: "",
+                lyrics: config.lyric,
+                language: "eng",
+              });
+            }
+
+            // 获取并嵌入封面图片
+            if (config.downloadCover) {
+              const coverUrl = config.songData.coverSize?.l || config.songData.cover;
+              if (coverUrl) {
+                try {
+                  const coverResponse = await axios.get(mixedContentSafeURL(coverUrl), {
+                    responseType: "arraybuffer",
+                  });
+                  const coverBuffer = coverResponse.data;
+                  writer.setFrame("APIC", {
+                    type: 3,
+                    data: coverBuffer,
+                    description: "Cover",
+                    useUnicodeEncoding: true,
+                  });
+                } catch (coverErr) {
+                  console.error("Failed to download or embed cover:", coverErr);
+                }
+              }
+            }
+
+            writer.addTag();
+            const taggedBlob = writer.getBlob();
+            saveAs(taggedBlob, config.fileName + "." + config.fileType);
+            downloaded = true;
+          } catch (metaErr) {
+            console.error("Failed to inject metadata, falling back to basic download:", metaErr);
+          }
+        }
+
+        // 兜底下载
+        if (!downloaded) {
+          console.warn("Cannot download song with metadata. Trying fallback method...");
+          saveAs(mixedContentSafeURL(strategy.downloadUrl), config.fileName + "." + config.fileType);
+        }
+
         dataStore.removeDownloadingSong(strategy.id);
       }
     } catch (error: any) {
