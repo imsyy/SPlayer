@@ -65,7 +65,7 @@ class SongDownloadStrategy implements DownloadStrategy {
   constructor(
     public readonly song: SongType,
     private quality: SongLevelType,
-  ) {}
+  ) { }
 
   get id() {
     return this.song.id;
@@ -577,7 +577,80 @@ class DownloadManager {
       } else {
         // 浏览器端兜底处理
         if (!strategy.downloadUrl) throw new Error("Download URL missing");
-        saveAs(strategy.downloadUrl, config.fileName + "." + config.fileType);
+
+        const axios = (await import("axios")).default;
+        const { injectAudioMetadata } = await import("./MetadataWriter");
+
+        const mixedContentSafeURL = (downloadUrl: string) => {
+          if (window.location.protocol === "https:" && downloadUrl.startsWith("http://")) {
+            console.warn(`Rewrote HTTP request to HTTPS: ${downloadUrl}`);
+            return downloadUrl.replace(/^http:\/\//, "https://");
+          } else {
+            return downloadUrl;
+          }
+        };
+
+        let downloaded = false;
+        if (config.downloadMeta && config.songData) {
+          try {
+            // 获取歌曲数据
+            const songResponse = await axios.get(mixedContentSafeURL(strategy.downloadUrl), {
+              responseType: "arraybuffer",
+            });
+            const songBuffer = songResponse.data;
+
+            // 获取歌手名字列表
+            const artists = config.songData.artists;
+            let artistNames: string[] = [];
+            if (typeof artists === "string") {
+              artistNames = [artists];
+            } else if (Array.isArray(artists)) {
+              artistNames = artists.map((a: any) => (typeof a === "string" ? a : a.name || ""));
+            }
+
+            const albumString =
+              typeof config.songData.album === "string"
+                ? config.songData.album
+                : config.songData.album?.name;
+
+            // 获取并嵌入封面图片
+            let coverBuffer: ArrayBuffer | undefined = undefined;
+            if (config.downloadCover) {
+              const coverUrl = config.songData.coverSize?.l || config.songData.cover;
+              if (coverUrl) {
+                try {
+                  const coverResponse = await axios.get(mixedContentSafeURL(coverUrl), {
+                    responseType: "arraybuffer",
+                  });
+                  coverBuffer = coverResponse.data;
+                } catch (coverErr) {
+                  console.error("Failed to download cover:", coverErr);
+                }
+              }
+            }
+
+            const taggedBlob = await injectAudioMetadata(songBuffer, config.fileType, {
+              title: config.songData.name,
+              artists: artistNames,
+              album: albumString || undefined,
+              lyric: config.downloadLyric && config.lyric ? config.lyric : undefined,
+              coverBuffer: coverBuffer,
+              albumArtist: config.albumArtists?.join("; ") || undefined,
+            });
+
+            saveAs(taggedBlob, config.fileName + "." + config.fileType);
+            downloaded = true;
+          } catch (metaErr) {
+            console.error("Failed to inject metadata, falling back to basic download:", metaErr);
+          }
+        }
+
+        // 兜底下载
+        if (!downloaded) {
+          console.warn("Cannot download song with metadata. Trying fallback method...");
+          saveAs(mixedContentSafeURL(strategy.downloadUrl), config.fileName + "." + config.fileType);
+        }
+
         dataStore.removeDownloadingSong(strategy.id);
       }
     } catch (error: any) {
