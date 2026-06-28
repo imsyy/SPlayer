@@ -40,3 +40,5 @@ docs/.vitepress/dist
 .trae/*
 .cursor/*
 .claude/*
+# OMO
+.omo
