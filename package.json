@@ -122,27 +122,5 @@
     "vue": "^3.5.35",
     "vue-router": "^5.1.0",
     "vue-tsc": "^3.3.3"
-  },
-  "pnpm": {
-    "overrides": {
-      "dmg-builder": "26.0.12",
-      "electron-builder-squirrel-windows": "26.0.12"
-    },
-    "onlyBuiltDependencies": [
-      "@applemusic-like-lyrics/core",
-      "@applemusic-like-lyrics/lyric",
-      "@parcel/watcher",
-      "better-sqlite3",
-      "core-js",
-      "electron",
-      "electron-winstaller",
-      "esbuild",
-      "sharp",
-      "vue-demi"
-    ],
-    "ignoredBuiltDependencies": [
-      "register-scheme",
-      "wasm-pack"
-    ]
   }
 }

@@ -53,7 +53,9 @@ class RustSidecarService {
           ...process.env,
           NCM_SERVER_PORT: String(this._port),
           ...(app.isPackaged
-            ? { NCM_STATIC_DIR: join(process.resourcesPath, "app.asar.unpacked", "out", "renderer") }
+            ? {
+                NCM_STATIC_DIR: join(process.resourcesPath, "app.asar.unpacked", "out", "renderer"),
+              }
             : {}),
         },
         stdio: ["ignore", "pipe", "pipe"],
