@@ -48,12 +48,9 @@ const modules: NativeModule[] = [
     name: "taskbar-lyric",
     enabled: isWindows,
   },
-  // 有人抱怨编译 wasm 总是有问题，暂时注释掉
-  // {
-  //   name: "ferrous-opencc-wasm",
-  // },
 ];
 
+// 构建 napi-rs 原生模块
 try {
   const args = process.argv.slice(2);
   const isDev = args.includes("--dev");
@@ -68,6 +65,19 @@ try {
     });
   }
 } catch (error) {
-  console.error("[BuildNative] 模块构建失败", error);
+  console.error("[BuildNative] napi-rs 模块构建失败", error);
+  process.exit(1);
+}
+
+// 构建 ncm-server sidecar
+try {
+  console.log("[BuildNative] 构建 ncm-server sidecar...");
+  execSync("cargo build --package ncm-server --release", {
+    cwd: path.resolve(import.meta.dirname, ".."),
+    stdio: "inherit",
+  });
+  console.log("[BuildNative] ncm-server 构建成功");
+} catch (error) {
+  console.error("[BuildNative] ncm-server 构建失败", error);
   process.exit(1);
 }

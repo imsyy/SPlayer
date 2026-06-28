@@ -23,7 +23,7 @@ const config: Configuration = {
   ],
   electronLanguages: ["zh-CN", "en-US"],
   // 哪些文件将不会被压缩，而是解压到构建目录
-  asarUnpack: ["public/**"],
+  asarUnpack: ["public/**", "out/renderer/**"],
   // 将原生插件作为外部资源复制
   extraResources: [
     {
@@ -40,6 +40,11 @@ const config: Configuration = {
       from: "native/tools",
       to: "native",
       filter: ["*.node"],
+    },
+    {
+      from: "target/release",
+      to: "native",
+      filter: ["ncm-server", "ncm-server.exe"],
     },
   ],
   win: {

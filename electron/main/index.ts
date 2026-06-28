@@ -2,7 +2,7 @@ import { electronApp } from "@electron-toolkit/utils";
 import { app, BrowserWindow, session } from "electron";
 import { existsSync, mkdirSync } from "fs";
 import { join } from "path";
-import initAppServer from "../server";
+import { rustSidecar } from "./services/RustSidecarService";
 import initIpc from "./ipc";
 import { shutdownMedia } from "./ipc/ipc-media";
 import { processLog } from "./logger";
@@ -41,6 +41,9 @@ class MainProcess {
   mainTray: MainTray | null = null;
   // 是否退出
   isQuit: boolean = false;
+  // Rust sidecar 是否已启用
+  useRustBackend: boolean = false;
+
   constructor() {
     processLog.info("🚀 Main process startup");
 
@@ -56,39 +59,26 @@ class MainProcess {
     }
 
     if (platform === "win32") {
-      // GPU 稳定性配置：禁用 GPU 进程崩溃次数限制，允许 GPU 进程自动恢复
       app.commandLine.appendSwitch("disable-gpu-process-crash-limit");
     }
 
-    // 防止后台时渲染进程被休眠
     app.commandLine.appendSwitch("disable-renderer-backgrounding");
     app.commandLine.appendSwitch("disable-backgrounding-occluded-windows");
 
-    // 程序单例锁
     initSingleLock();
-    // 监听应用事件
     this.handleAppEvents();
-    // Electron 初始化完成后
-    // 某些 API 只有在此事件发生后才能使用
     app.whenReady().then(async () => {
       processLog.info("🚀 Application Process Startup");
 
-      // 配置 COOP/COEP/CORP 头，FFmpeg 需要
       session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
         const responseHeaders = { ...details.responseHeaders };
         const url = new URL(details.url);
 
-        // 桌面歌词窗口需要透明背景，必须排除严格的安全策略
         if (url.searchParams.get("win") === "desktop-lyric") {
           callback({ responseHeaders });
           return;
         }
 
-        // 同样可以解决 CORS 限制，但为了避免安全问题，等真有需要的时候再开
-        // responseHeaders["Access-Control-Allow-Origin"] = ["*"];
-        // responseHeaders["Access-Control-Allow-Headers"] = ["*"];
-
-        // COOP/COEP/CORP 配置
         responseHeaders["Cross-Origin-Opener-Policy"] = ["same-origin"];
         responseHeaders["Cross-Origin-Embedder-Policy"] = ["require-corp"];
         responseHeaders["Cross-Origin-Resource-Policy"] = ["cross-origin"];
@@ -96,31 +86,33 @@ class MainProcess {
         callback({ responseHeaders });
       });
 
-      // 设置应用程序名称
       electronApp.setAppUserModelId("com.imsyy.splayer");
-      // 启动主服务进程
-      await initAppServer();
-      // 启动窗口
+
+      // 启动 Rust sidecar API 服务
+      const rustOk = await rustSidecar.start();
+      if (!rustOk) {
+        processLog.error("❌ Rust sidecar 启动失败，应用不可用");
+        app.quit();
+        return;
+      }
+
+      this.useRustBackend = true;
+
       this.loadWindow = loadWindow.create();
       this.mainWindow = mainWindow.create();
-      // 注册其他服务
       this.mainTray = initTray(this.mainWindow!);
-      // 注册 IPC 通信
       initIpc();
-      // 自动启动 WebSocket
       SocketService.tryAutoStart();
     });
   }
-  // 应用程序事件
+
   handleAppEvents() {
-    // 窗口被关闭时
     app.on("window-all-closed", () => {
       if (!isMac) app.quit();
       this.mainWindow = null;
       this.loadWindow = null;
     });
 
-    // 应用被激活
     app.on("activate", () => {
       if (isMac) {
         mainWindow.showWindow();
@@ -133,26 +125,24 @@ class MainProcess {
       }
     });
 
-    // 自定义协议
     app.on("open-url", (_, url) => {
       processLog.log("🔗 Received custom protocol URL:", url);
       trySendCustomProtocol(url);
     });
 
-    // 退出前
     app.on("before-quit", (event) => {
       if (this.isQuit) return;
       event.preventDefault();
       this.isQuit = true;
       setAppQuitting();
       (async () => {
-        // 注销全部快捷键
         unregisterShortcuts();
-        // 清理媒体集成资源
         shutdownMedia();
-        // 关闭任务栏歌词窗口（停止原生 watcher / service）
         closeTaskbarLyricWindow();
-        // 停止 MPV 服务
+
+        // 停止 Rust sidecar
+        rustSidecar.stop();
+
         const mpvService = MpvService.getInstance();
         try {
           await mpvService.stop();

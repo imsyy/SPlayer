@@ -4,6 +4,7 @@ members = [
   "native/ferrous-opencc-wasm",
   "native/taskbar-lyric",
   "native/tools",
+  "native/ncm-server",
 ]
 
 resolver = "3"
@@ -13,4 +14,4 @@ opt-level = 3
 debug = false
 lto = true
 codegen-units = 1
-panic = "unwind"  # 考虑到 Electron 已经非常大了，我们牺牲一些空间来换取稳定性
+panic = "unwind"
